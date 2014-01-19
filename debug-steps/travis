@@ -20,7 +20,20 @@ trap "error_handler_travis" ERR
 
 true "INFO $0: Script running as user: $(logname)"
 
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+## Back to whonix-developer-meta-files folder.
+cd ..
+
+## Back to parent folder.
+cd ..
+
+## Get into Whonix folder.
+cd Whonix
+
 ## Debugging.
+ls -la
 ls -la ./debian/
 
 ## {{ minimal
