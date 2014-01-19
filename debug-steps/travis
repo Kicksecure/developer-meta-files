@@ -32,6 +32,8 @@ cd ..
 ## Get into Whonix folder.
 cd Whonix
 
+source ./help-steps/variables
+
 ## Debugging.
 ls -la
 ls -la ./debian/
@@ -126,7 +128,7 @@ elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
    minimal
    sudo -E ./whonix_build --tor-workstation --bare-metal --build
@@ -135,7 +137,7 @@ elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $0."
 fi
@@ -169,22 +171,22 @@ export whonix_build_closest_git_tag="101"
 
 if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $0."
 fi
