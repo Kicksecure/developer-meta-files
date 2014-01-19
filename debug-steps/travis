@@ -32,6 +32,9 @@ cd ..
 ## Get into Whonix folder.
 cd Whonix
 
+WHONIX_BUILD_PARSED="1"
+VMNAME="internalrun"
+
 source ./help-steps/variables
 
 ## Debugging.
