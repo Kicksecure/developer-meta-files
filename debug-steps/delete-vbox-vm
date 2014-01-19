@@ -9,13 +9,10 @@ set -x
 true "Currently running script: $0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 cd "$MYDIR"
-cd ..
-cd help-steps
 
-source pre
-source variables
+source ../../Whonix/help-steps/pre
+source ../../Whonix/help-steps/variables
 
 delete_vm() {
    trap "error_handler_general" ERR INT TERM

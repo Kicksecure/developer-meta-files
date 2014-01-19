@@ -9,18 +9,15 @@
 
 set -x
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-cd "$MYDIR"
-cd ..
-cd help-steps
-
 ROOT_CHECK="0"
 WHONIX_BUILD_PARSED="1"
 VMNAME="internalrun"
 
-source pre
-source variables
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../Whonix/help-steps/pre
+source ../../Whonix/help-steps/variables
 
 reprepro_wrapper() {
 
