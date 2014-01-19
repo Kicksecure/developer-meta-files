@@ -1,0 +1,30 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o pipefail
+
+error_handler() {
+   echo "FAILED!"
+   exit 1
+}
+
+trap "error_handler" ERR
+
+## disable cmd line parser, since not needed
+export WHONIX_BUILD_PARSED="1"
+export VMNAME="internalrun"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../Whonix/help-steps/variables
+
+"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stable
+"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
+"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export developers
+
+true "${cyan}Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"
