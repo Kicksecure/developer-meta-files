@@ -6,7 +6,7 @@
 
 set -x
 
-true "Currently running script: $0"
+true "Currently running script: $0 ${1+"$@"}"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -55,7 +55,7 @@ move_sources() {
    "$MYDIR"/unmount-img
 }
 
-true "${bold}INFO: Currently running script: $0${reset}"
+true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
 
 download_sources
 move_sources
