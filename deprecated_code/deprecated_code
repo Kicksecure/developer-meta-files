@@ -1166,3 +1166,18 @@ whonix_build_closest_git_tag: $whonix_build_closest_git_tag"
       debug "INFO: TBB 2.x not detected. Patching startup script no longer required."
    fi
 
+   ## Check if libguestfs-tools is installed.
+   ## (Build Dependency for Whonix Build Script for creating .deb packages.)
+   local dpkg_exit_code
+   dpkg_exit_code="0"
+   dpkg-query -Wf '${db:Status-abbrev}' "libguestfs-tools" 2>/dev/null | grep -q '^i' || { dpkg_exit_code="$?" ; true; };
+   if [ ! "$dpkg_exit_code" = "0" ]; then
+      if [ "$BARE_METAL" = "1" ]; then
+         true "INFO: BARE_METAL is $BARE_METAL, installation of libguestfs-tools not required, ok."
+      else
+         local install_from_testing_required="1"
+         local libguestfs_tools_install_required="1"
+      fi
+   else
+      true "INFO: libguestfs-tools already installed, ok."
+   fi
