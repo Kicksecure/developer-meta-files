@@ -30,6 +30,7 @@ version="$whonix_build_closest_git_tag"
 cd "$WHONIX_BINARY"
 
 rm --force sha512sum
+rm --force sha1sum
 
 ## Create sha512sum sum to ensure copying was done without bit flip.
 sha512sum *.ova >> sha512sum
@@ -41,6 +42,7 @@ cat sha512sum
 
 ## Create sha1sum to compare with sourceforge.
 sha1sum *.ova > sha1sum
+sha1sum *.qcow2 > sha1sum
 sync
 
 ## Debugging.
