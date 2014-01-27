@@ -6,9 +6,9 @@
 
 ## Whonix News v4
 ## A deterministic tarball on
-## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.gz/download
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz/download
 ## and a detached armored OpenPGP signature on
-## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.gz.asc/download
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
 
 set -x
 set -o pipefail
@@ -63,14 +63,32 @@ rm --force "$WHONIX_BINARY/news_v4_temp/.directory"
 
 sync
 
+## Explicitly set access time, so we end up with a deterministic archive.
+shopt -s globstar
+touch -t "201308151102.35" "$WHONIX_BINARY/news_v4_temp"
+touch -t "201308151102.35" "$WHONIX_BINARY/news_v4_temp/"**
+shopt -u globstar
+
+## cd into temporary folder so we do not have the full path names in the archive.
+cd "$WHONIX_BINARY/news_v4_temp"
+
 ## Deterministic.
-find "$WHONIX_BINARY/news_v4_temp/"* -print0 | sort -z | tar --no-recursion --null -Jcvf "$WHONIX_BINARY/news_v4/whonix_news.tar.gz" -T -
+find . -print0 \
+   | sort -z \
+      | tar \
+         --no-recursion \
+         --create \
+         --xz \
+         --verbose \
+         --file="$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
+         -T \
+         -
 
 sync
 
-gpg --detach-sign --armor --yes "$WHONIX_BINARY/news_v4/whonix_news.tar.gz"
+gpg --detach-sign --armor --yes "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
 sync
-gpg --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.gz.asc"
+gpg --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
 
 true "INFO $0: Please press any key to continue with --dry-run."
 
@@ -83,8 +101,8 @@ rsync \
    --progress \
    --verbose \
    --rsh ssh \
-   "$WHONIX_BINARY/news_v4/whonix_news.tar.gz.asc" \
-   "$WHONIX_BINARY/news_v4/whonix_news.tar.gz" \
+   "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
+   "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
 
 true "INFO $0: Please press any key to continue to upload."
@@ -97,6 +115,6 @@ rsync \
    --progress \
    --verbose \
    --rsh ssh \
-   "$WHONIX_BINARY/news_v4/whonix_news.tar.gz.asc" \
-   "$WHONIX_BINARY/news_v4/whonix_news.tar.gz" \
+   "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
+   "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
