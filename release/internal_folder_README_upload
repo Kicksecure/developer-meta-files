@@ -51,3 +51,5 @@ sudo -u "$user_name" \
       --rsh ssh \
       "$WHONIX_BINARY/internal_folder_README.asc" \
       adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/internal/README
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

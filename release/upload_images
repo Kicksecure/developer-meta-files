@@ -65,3 +65,5 @@ while true; do
    sleep 10
 
 done
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

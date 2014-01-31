@@ -60,3 +60,5 @@ sudo -E -u "$user_name" mktorrent \
 ## Not working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org.8008.nyud.net/Whonix-Gateway-7.ova");' "$2")"
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org.8008.nyud.net/Whonix-Workstation-7.ova");' "$2")"
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

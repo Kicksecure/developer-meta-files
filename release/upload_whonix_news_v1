@@ -63,3 +63,5 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/whonix_news.asc" \
    adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/news/
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

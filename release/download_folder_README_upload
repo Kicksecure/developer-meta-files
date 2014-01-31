@@ -51,3 +51,5 @@ sudo -u "$user_name" \
       --rsh ssh \
       "$WHONIX_BINARY/download_folder_README.asc" \
       "adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/whonix-$WHONIX_BUILD_WHONIX_VERSION/README"
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

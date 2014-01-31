@@ -108,4 +108,4 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
-true "INFO $0: End. No error detected."
+true "${bold}INFO: End of: $0 No error detected.${reset}"

@@ -93,3 +93,5 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/news/"* \
    adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news/
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"

@@ -27,4 +27,6 @@ source ../../Whonix/help-steps/variables
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export developers
 
-true "${cyan}Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"
+true "${bold}INFO: End of: $0 No error detected.${reset}"
+
+true "${cyan}INFO: Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"

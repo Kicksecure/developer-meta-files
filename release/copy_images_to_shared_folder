@@ -61,3 +61,5 @@ sync
 cp "Whonix-Workstation-$version.ova" "/mnt/shared/"
 cp "Whonix-Workstation-$version.qcow2" "/mnt/shared/"
 sync
+
+true "${bold}INFO: End of: $0 No error detected.${reset}"
