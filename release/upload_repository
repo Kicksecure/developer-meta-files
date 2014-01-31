@@ -41,7 +41,7 @@ for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
 done
 unset file
 
-echo "INFO $0: Please press any key to continue showing pool."
+echo "INFO $0: Please press enter to continue showing pool."
 read temp
 
 echo "INFO $0: Showing pool..."
@@ -56,7 +56,7 @@ unset file
 
 set -x
 
-true "INFO $0: Please press any key to continue with dists with --dry-run."
+true "INFO $0: Please press enter to continue with dists with --dry-run."
 read temp
 
 true "INFO $0: Running dists with --dry-run..."
@@ -70,7 +70,7 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
-true "INFO $0: Please press any key to continue with pool with --dry-run."
+true "INFO $0: Please press enter to continue with pool with --dry-run."
 read temp
 
 true "INFO $0: Running pool with --dry-run..."
@@ -85,7 +85,7 @@ rsync \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
 
-true "INFO $0: Please press any key to continue to uploading dists and pool."
+true "INFO $0: Please press enter to continue to uploading dists and pool."
 read temp
 
 true "INFO $0: Uploading dists..."

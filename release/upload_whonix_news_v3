@@ -76,7 +76,7 @@ gpg --detach-sign --armor --yes "$WHONIX_BINARY/news_v3/whonix_news.tar.gz"
 sync
 gpg --verify "$WHONIX_BINARY/news_v3/whonix_news.tar.gz.asc"
 
-true "INFO $0: Please press any key to continue with --dry-run."
+true "INFO $0: Please press enter to continue with --dry-run."
 
 read temp
 
@@ -91,7 +91,7 @@ rsync \
    "$WHONIX_BINARY/news_v3/whonix_news.tar.gz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v3/"
 
-true "INFO $0: Please press any key to continue to upload."
+true "INFO $0: Please press enter to continue to upload."
 
 read temp
 
