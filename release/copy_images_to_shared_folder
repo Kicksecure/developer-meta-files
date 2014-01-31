@@ -41,8 +41,8 @@ sync
 cat sha512sum
 
 ## Create sha1sum to compare with sourceforge.
-sha1sum *.ova > sha1sum
-sha1sum *.qcow2 > sha1sum
+sha1sum *.ova >> sha1sum
+sha1sum *.qcow2 >> sha1sum
 sync
 
 ## Debugging.
