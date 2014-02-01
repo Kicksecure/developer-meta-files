@@ -34,6 +34,13 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
+## sanity tests
+required_tools="find sort tar rm mkdir basename touch sync gpg rsync sha512sum"
+for tool in $required_tools; do
+   command -v "$tool" >/dev/null
+done
+unset tool
+
 compress_news() {
    trap "error_handler" ERR
 
@@ -71,7 +78,7 @@ for i in "$whonix_dev_meta_files_folder/release/news/"*; do
    cp --preserve "$i" "$WHONIX_BINARY/news_v4_temp/$filename"
 
    ## Debugging.
-   cat "$WHONIX_BINARY/news_v4_temp/$filename"
+   #cat "$WHONIX_BINARY/news_v4_temp/$filename"
 
 done
 
