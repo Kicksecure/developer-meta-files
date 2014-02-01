@@ -1,3 +1,8 @@
+Whonix Blog Moved to new Location
+#################################
+
+https://www.whonix.org/blog/category/important/
+
 giving up pseudonymity after collecting experiences with pseudonymous
 project development
 #####################################################################
