@@ -14,7 +14,7 @@ set -x
 set -o pipefail
 
 error_handler() {
-   echo "FAILED!"
+   echo "ERROR: FAILED!"
    exit 1
 }
 
@@ -33,6 +33,22 @@ if [ "$(id -u)" = "0" ]; then
    echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
    exit 1
 fi
+
+compress_news() {
+   trap "error_handler" ERR
+
+   ## Deterministic.
+   find . -print0 \
+      | sort -z \
+         | tar \
+            --no-recursion \
+            --create \
+            --xz \
+            --verbose \
+            --file="$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
+            -T \
+            -
+}
 
 rm --force --recursive "$WHONIX_BINARY/news_v4_temp"
 rm --force --recursive "$WHONIX_BINARY/news_v4"
@@ -72,17 +88,19 @@ shopt -u globstar
 ## cd into temporary folder so we do not have the full path names in the archive.
 cd "$WHONIX_BINARY/news_v4_temp"
 
-## Deterministic.
-find . -print0 \
-   | sort -z \
-      | tar \
-         --no-recursion \
-         --create \
-         --xz \
-         --verbose \
-         --file="$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
-         -T \
-         -
+compress_news
+
+checksum_old="$(sha512sum "$WHONIX_BINARY/news_v4/whonix_news.tar.xz")"
+
+rm --force "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
+
+compress_news
+
+checksum_new="$(sha512sum "$WHONIX_BINARY/news_v4/whonix_news.tar.xz")"
+
+if [ ! "$checksum_new" = "$checksum_old" ]; then
+   error="Checksum mismatch. $WHONIX_BINARY/news_v4/whonix_news.tar.xz is non deterministic!"
+fi
 
 sync
 
