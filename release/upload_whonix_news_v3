@@ -11,6 +11,7 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v3/whonix_news.tar.gz.asc/download
 
 set -x
+true "Currently running script: $0 ${1+"$@"}"
 set -o pipefail
 
 error_handler() {

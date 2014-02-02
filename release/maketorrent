@@ -5,6 +5,8 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+true "Currently running script: $0 ${1+"$@"}"
+set -o pipefile
 
 ## disable cmd line parser, since not needed
 export WHONIX_BUILD_PARSED="1"
