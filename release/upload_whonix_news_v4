@@ -145,4 +145,5 @@ rsync \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
 
-true "${bold}INFO: End of: $0 No error detected.${reset}"
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

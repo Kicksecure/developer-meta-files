@@ -109,4 +109,5 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
-true "${bold}INFO: End of: $0 No error detected.${reset}"
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

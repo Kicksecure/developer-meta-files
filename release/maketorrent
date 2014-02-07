@@ -63,4 +63,5 @@ sudo -E -u "$user_name" mktorrent \
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org.8008.nyud.net/Whonix-Gateway-7.ova");' "$2")"
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org.8008.nyud.net/Whonix-Workstation-7.ova");' "$2")"
 
-true "${bold}INFO: End of: $0 No error detected.${reset}"
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

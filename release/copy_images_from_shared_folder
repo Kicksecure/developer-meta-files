@@ -44,4 +44,5 @@ cp "Whonix-Workstation-$version.ova" "$WHONIX_BINARY/"
 cp "Whonix-Workstation-$version.qcow2" "$WHONIX_BINARY/"
 sync
 
-true "${bold}INFO: End of: $0 No error detected.${reset}"
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

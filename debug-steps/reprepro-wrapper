@@ -28,4 +28,5 @@ reprepro_wrapper() {
 
 true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
 reprepro_wrapper ${1+"$@"}
-true "${bold}INFO: End of: $0 No error detected.${reset}"
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
