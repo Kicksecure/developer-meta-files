@@ -1,0 +1,45 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o pipefail
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $0: | caller: $(caller)${reset}
+"
+   exit 1
+}
+
+trap "build_all_error_handler" ERR
+
+cd ..
+cd ..
+cd Whonix
+
+rm --recursive --force /home/user/whonix_binary
+rm --recursive --force /home/user/whonix_binary_first
+rm --recursive --force /home/user/whonix_binary_second
+
+./whonix_build --clean --tor-gateway ${1+"$@"}
+./whonix_build --clean --tor-workstation ${1+"$@"}
+
+./whonix_build --build --tor-gateway ${1+"$@"}
+./whonix_build --build --tor-workstation ${1+"$@"}
+
+mv /home/user/whonix_binary /home/user/whonix_binary_first
+
+./whonix_build --clean --tor-gateway ${1+"$@"}
+./whonix_build --clean --tor-workstation ${1+"$@"}
+
+./whonix_build --build --tor-gateway ${1+"$@"}
+./whonix_build --build --tor-workstation ${1+"$@"}
+
+mv /home/user/whonix_binary /home/user/whonix_binary_second
+
+true "meld /home/user/whonix_binary_first/Whonix-Gateway-*.report /home/user/whonix_binary_second/Whonix-Gateway-*.report"
+true "meld /home/user/whonix_binary_first/Whonix-Workstation-*.report /home/user/whonix_binary_second/Whonix-Workstation-*.report"
