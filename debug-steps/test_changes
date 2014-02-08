@@ -1,0 +1,38 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o pipefail
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $0: | caller: $(caller)${reset}
+"
+   exit 1
+}
+
+trap "build_all_error_handler" ERR
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+
+cd ..
+cd ..
+cd Whonix
+
+rm --recursive --force /home/user/whonix_binary
+
+./whonix_build --clean --tor-gateway ${1+"$@"}
+./build-steps.d/2500_convert-img-to-vdi --tor-gateway ${1+"$@"}
+./build-steps.d/2600_create-vbox-vm --tor-gateway ${1+"$@"}
+./build-steps.d/2700_export-vbox-vm --tor-gateway ${1+"$@"}
+
+./whonix_build --clean --tor-workstation ${1+"$@"}
+./build-steps.d/2500_convert-img-to-vdi --tor-workstation ${1+"$@"}
+./build-steps.d/2600_create-vbox-vm --tor-workstation ${1+"$@"}
+./build-steps.d/2700_export-vbox-vm --tor-workstation ${1+"$@"}
