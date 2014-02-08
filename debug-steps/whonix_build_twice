@@ -17,6 +17,10 @@ ${red}${bold}ERROR $0: | caller: $(caller)${reset}
 
 trap "build_all_error_handler" ERR
 
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+
 cd ..
 cd ..
 cd Whonix
