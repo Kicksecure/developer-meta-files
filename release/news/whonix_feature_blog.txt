@@ -1,3 +1,69 @@
+Future Goals for Whonix’s Website
+#################################
+
+In an ideal world, everything would be connected. Same login would
+work on the whole website, wiki, forum and blog. Blog posts would also
+be forum posts. Comments posted in the blog result in comments in the
+forum and vice versa. Wiki pages have a comment section, that is also
+redirected to the forum. Rather, [github
+issues](https://github.com/Whonix/Whonix/issues) become mailing list
+posts and forum posts. [Mailing
+lists](https://www.whonix.org/pipermail/whonix-devel/) would just be
+an alternative interface for forum and blog comments. You name it.
+
+That is too high a goal. Not possible yet without being a web
+development project.
+
+To get at least a bit closer to that goal, I've added a new sidebar
+widget to the blog: "RSS Latest Whonix Forum Topics". I hope this will
+boost forum posts, but if you think it does more harm than gain, we
+can remove it.
+
+We are supporting OpenID login on Whonix's wiki, forum and blog for a
+while now already, so you can use the same account for all parts of
+whonix.org. Unfortunately, this requires a third party, the OpenID
+provider. As alternative it's also possible to register native
+wiki/forum/blog accounts, but then you need three logins instead of one.
+
+I've also found a new WPSMF - WordPress to SMF plugin. New blog posts
+will be mirrored to whonix.org/forum General Discussions. Forum
+replies probably won't become blog comments. One way only. Nevermind.
+Let's see how it works. If it works, it would be better anyway. I can
+imagine that many people active in forums don't check the blog at all
+or as often as the forum. Reduces need to tell the same story in the
+blog and in the forum.
+
+My plan is to add a "latest blog posts" and "latest forum posts" to
+whonix.org's (wiki) home/main page. To make it look more up to date,
+dynamic, more useful. To archive that, an rss reader has been
+installed in the wiki by me. Test page:
+[https://www.whonix.org/wiki/T](https://www.whonix.org/wiki/T)
+
+Displaying latest blog posts seems to work fine. Displaying latest
+forum topics not, only latest forum posts. The "CDATA" seems like a
+bug, no idea about that. Very strange.
+
+I would like to organize whonix.org's (wiki) home/main page in
+multiple rows, two or three or so. Have the content and blog/forum
+rss. Before that can happen, a replacement for the default wiki design
+with left sidebar has to be found because that wastes space.
+
+The mediawiki skin
+[strapping](https://github.com/OSAS/strapping-mediawiki) looks nice.
+Example page: [http://www.ovirt.org/](http://www.ovirt.org/)
+
+Good candidate to replace our current wiki skin. Unfortunately, there
+is an [issue](https://github.com/OSAS/strapping-mediawiki/issues/53)
+preventing us from using it.
+
+____
+
+The post [Future Goals for Whonix's
+Website](https://www.whonix.org/blog/goals-whonix-website/) appeared
+first on [Whonix | Privacy and Anonymity OS](https://www.whonix.org/blog).
+
+URL: https://www.whonix.org/blog/goals-whonix-website/
+
 Testers wanted! Testers-Only version Whonix 7.7.2 Debian Packages released!
 ###########################################################################
 
