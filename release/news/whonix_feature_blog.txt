@@ -1,3 +1,16 @@
+Backup Whonix VMs – new wiki pages
+##################################
+
+A new wiki page on how to backup your Whonix VMs has been written.
+You can find it here: https://www.whonix.org/wiki/Backup_Whonix_VMs
+
+The post [Backup Whonix VMs - new wiki page]
+(https://www.whonix.org/blog/backup-whonix-vms-new-wiki-page/)
+appeared first on
+[Whonix | Privacy and Anonymity OS](https://www.whonix.org/blog).
+
+URL: https://www.whonix.org/blog/backup-whonix-vms-new-wiki-page/
+
 Future Goals for Whonix’s Website
 #################################
 
