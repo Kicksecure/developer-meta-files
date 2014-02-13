@@ -24,11 +24,15 @@ trap "error_handler" ERR
 ## disable cmd line parser, since not needed
 export WHONIX_BUILD_PARSED="1"
 export VMNAME="internalrun"
+ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
+
+whonix_news_gpg_sign_with_options="--sign-with 9C131AD3713AAEEF"
 
 if [ "$(id -u)" = "0" ]; then
    echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
@@ -73,7 +77,7 @@ tar -zcvpf "$WHONIX_BINARY/news_v3/whonix_news.tar.gz" -C "$WHONIX_BINARY/news_v
 
 sync
 
-gpg --detach-sign --armor --yes "$WHONIX_BINARY/news_v3/whonix_news.tar.gz"
+gpg $whonix_news_gpg_sign_with_options --detach-sign --armor --yes "$WHONIX_BINARY/news_v3/whonix_news.tar.gz"
 sync
 gpg --verify "$WHONIX_BINARY/news_v3/whonix_news.tar.gz.asc"
 

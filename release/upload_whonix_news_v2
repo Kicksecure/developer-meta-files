@@ -22,11 +22,15 @@ trap "error_handler" ERR
 ## disable cmd line parser, since not needed
 export WHONIX_BUILD_PARSED="1"
 export VMNAME="internalrun"
+ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
+
+whonix_news_gpg_sign_with_options="--sign-with 9C131AD3713AAEEF"
 
 mkdir --parents "$WHONIX_BINARY/news"
 
@@ -54,7 +58,7 @@ for i in "$whonix_dev_meta_files_folder/release/news/"*; do
 
    rm --force "$WHONIX_BINARY/news/$filename.asc"
 
-   gpg --clearsign "$WHONIX_BINARY/news/$filename"
+   gpg $whonix_news_gpg_sign_with_options --clearsign "$WHONIX_BINARY/news/$filename"
 
    rm "$WHONIX_BINARY/news/$filename"
 
