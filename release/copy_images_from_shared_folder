@@ -30,11 +30,17 @@ mkdir --parents "$WHONIX_BINARY"
 
 cd "/mnt/shared/"
 
-cp "sha512sum" "$WHONIX_BINARY/"
+## {{ hash sum
+
+## md5sum is sufficient here, because it gets only used for an integrity check,
+## to see if copying around on a local hdd succeeded.
+
+#cp "sha512sum" "$WHONIX_BINARY/"
+#cp "sha1sum" "$WHONIX_BINARY/"
+cp "md5sum" "$WHONIX_BINARY/"
 sync
 
-cp "sha1sum" "$WHONIX_BINARY/"
-sync
+## }}
 
 cp "Whonix-Gateway-$version.ova" "$WHONIX_BINARY/"
 cp "Whonix-Gateway-$version.qcow2" "$WHONIX_BINARY/"

@@ -28,7 +28,14 @@ version="$whonix_build_closest_git_tag"
 
 cd "$WHONIX_BINARY"
 
-sha512sum --check sha512sum
+## {{ hash sum
+
+## md5sum is sufficient here, because it gets only used for an integrity check,
+## to see if copying around on a local hdd succeeded.
+
+md5sum --check md5sum
+
+## }}
 
 ## Create detached signatures.
 gpg --detach-sign --armor --yes "Whonix-Gateway-$version.ova"
