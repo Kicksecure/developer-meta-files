@@ -18,10 +18,12 @@ trap "error_handler" ERR
 ## disable cmd line parser, since not needed
 export WHONIX_BUILD_PARSED="1"
 export VMNAME="internalrun"
+ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
 #sudo mount -t vboxsf -o uid=1000,gid=1000 shared /mnt/shared

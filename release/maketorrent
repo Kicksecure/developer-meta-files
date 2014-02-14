@@ -11,7 +11,6 @@ set -o pipefile
 ## disable cmd line parser, since not needed
 export WHONIX_BUILD_PARSED="1"
 export VMNAME="internalrun"
-
 ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
