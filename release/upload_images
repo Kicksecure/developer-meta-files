@@ -8,13 +8,6 @@ set -x
 true "INFO: Currently running script: $0${1+"$@"}"
 set -o pipefail
 
-error_handler() {
-   echo "FAILED!"
-   exit 1
-}
-
-trap "error_handler" ERR
-
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ## disable cmd line parser, since not needed
