@@ -25,7 +25,7 @@ project="whonixdevelopermetafiles"
 
 shopt -s globstar
 
-true "INFO $0: Showing dists..."
+true "${cyan}INFO $0: Showing dists...${reset}"
 
 set +x
 
@@ -52,10 +52,10 @@ unset file
 
 set -x
 
-true "INFO $0: Please press enter to continue with dists with --dry-run."
+true "${cyan}INFO $0: Please press enter to continue with dists with --dry-run.${reset}"
 read temp
 
-true "INFO $0: Running dists with --dry-run..."
+true "${cyan}INFO $0: Running dists with --dry-run...${reset}"
 rsync \
    --dry-run \
    --partial \
@@ -66,10 +66,10 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
-true "INFO $0: Please press enter to continue with pool with --dry-run."
+true "${cyan}INFO $0: Please press enter to continue with pool with --dry-run.${reset}"
 read temp
 
-true "INFO $0: Running pool with --dry-run..."
+true "${cyan}INFO $0: Running pool with --dry-run...${reset}"
 rsync \
    --dry-run \
    --partial \
@@ -81,10 +81,10 @@ rsync \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
 
-true "INFO $0: Please press enter to continue to uploading dists and pool."
+true "${cyan}INFO $0: Please press enter to continue to uploading dists and pool.${reset}"
 read temp
 
-true "INFO $0: Uploading dists..."
+true "${cyan}INFO $0: Uploading dists...${reset}"
 rsync \
    --partial \
    --progress \
@@ -94,7 +94,7 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
-true "INFO $0: Uploading pool..."
+true "${cyan}INFO $0: Uploading pool...${reset}"
 rsync \
    --partial \
    --progress \

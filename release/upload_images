@@ -38,7 +38,7 @@ rsync \
    "$WHONIX_BINARY"/*.asc \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/whonix-"$version"/
 
-true "Press any key to continue."
+true "${cyan}INFO: Press any key to continue.${reset}"
 read temp
 
 while true; do

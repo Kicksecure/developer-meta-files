@@ -113,11 +113,11 @@ gpg $whonix_news_gpg_sign_with_options --detach-sign --armor --yes "$WHONIX_BINA
 sync
 gpg --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
 
-true "INFO $0: Please press enter to continue with --dry-run."
+true "${cyan}INFO $0: Please press enter to continue with --dry-run.${reset}"
 
 read temp
 
-true "INFO $0: Running with --dry-run..."
+true "${cyan}INFO $0: Running with --dry-run...${reset}"
 rsync \
    --dry-run \
    --partial \
@@ -128,11 +128,11 @@ rsync \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
 
-true "INFO $0: Please press enter to continue to upload."
+true "${cyan}INFO $0: Please press enter to continue to upload.${reset}"
 
 read temp
 
-true "INFO $0: Uploading..."
+true "${cyan}INFO $0: Uploading...${reset}"
 rsync \
    --partial \
    --progress \
