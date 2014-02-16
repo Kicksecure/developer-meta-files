@@ -9,7 +9,7 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news/
 
 set -x
-true "Currently running script: $0 ${1+"$@"}"
+true "INFO: Currently running script: $0${1+"$@"}"
 set -o pipefail
 
 error_handler() {
