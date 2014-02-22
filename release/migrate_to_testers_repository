@@ -22,7 +22,7 @@ source ../../Whonix/help-steps/variables
 
 cd "$mydir_backup"
 
-../debug-steps/reprepro-wrapper copymatched stable testers "*"
+../debug-steps/reprepro-wrapper copymatched testers developers "*"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
