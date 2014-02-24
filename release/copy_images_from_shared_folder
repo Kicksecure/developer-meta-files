@@ -30,8 +30,6 @@ cd "/mnt/shared/"
 ## md5sum is sufficient here, because it gets only used for an integrity check,
 ## to see if copying around on a local hdd succeeded.
 
-#cp "sha512sum" "$WHONIX_BINARY/"
-#cp "sha1sum" "$WHONIX_BINARY/"
 cp "md5sum" "$WHONIX_BINARY/"
 sync
 

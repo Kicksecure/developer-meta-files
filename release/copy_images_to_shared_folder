@@ -30,34 +30,18 @@ cd "$WHONIX_BINARY"
 ## md5sum is sufficient here, because it gets only used for an integrity check,
 ## to see if copying around on a local hdd succeeded.
 
-#rm --force sha512sum
-#rm --force sha1sum
-rm --force md5sum
-
-## Create sha512sum sum to ensure copying was done without bit flip.
-#sha512sum *.ova >> sha512sum
-#sha512sum *.qcow2 >> sha512sum
-#sync
-## Debugging.
-#cat sha512sum
-
-## Create sha1sum to compare with sourceforge.
-#sha1sum *.ova >> sha1sum
-#sha1sum *.qcow2 >> sha1sum
-#sync
-## Debugging.
-#cat sha1sum
+rm --force "md5sum"
 
 ## Create md5sum to compare with sourceforge.
-md5sum *.ova >> md5sum
-md5sum *.qcow2 >> md5sum
+md5sum *.ova >> "md5sum"
+md5sum *.qcow2 >> "md5sum"
 sync
-## Debugging.
-cat md5sum
 
-#cp "sha512sum" "/mnt/shared/"
-#cp "sha1sum" "/mnt/shared/"
+## Debugging.
+cat "md5sum"
+
 cp "md5sum" "/mnt/shared/"
+sync
 
 ## }}
 
