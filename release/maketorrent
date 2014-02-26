@@ -19,6 +19,8 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
+version="$whonix_build_closest_git_tag"
+
 ## Thanks to:
 ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
 
@@ -26,8 +28,8 @@ source ../../Whonix/help-steps/variables
 
 TRACKERS="http://announce.torrentsmd.com:6969/announce"
 
-sudo -E -u "$user_name" mkdir --parents "$WHONIX_BINARY/torrent-$whonix_build_closest_git_tag"
-chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$whonix_build_closest_git_tag"
+sudo -E -u "$user_name" mkdir --parents "$WHONIX_BINARY/torrent-$version"
+chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 
 ## Not well supported by BitTorrent clients.
 ## Multi file webseeds do not work
@@ -43,16 +45,16 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$whonix_build_
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Gateway-$whonix_build_closest_git_tag.ova" \
-   -o "$WHONIX_BINARY/torrent-$whonix_build_closest_git_tag/Whonix-Gateway-$whonix_build_closest_git_tag.ova.torrent" \
-   "$WHONIX_BINARY/Whonix-Gateway-$whonix_build_closest_git_tag.ova"
+   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Gateway-$version.ova" \
+   -o "$WHONIX_BINARY/torrent-$version/Whonix-Gateway-$version.ova.torrent" \
+   "$WHONIX_BINARY/Whonix-Gateway-$version.ova"
 
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Workstation-$whonix_build_closest_git_tag.ova" \
-   -o "$WHONIX_BINARY/torrent-$whonix_build_closest_git_tag/Whonix-Workstation-$whonix_build_closest_git_tag.ova.torrent" \
-   "$WHONIX_BINARY/Whonix-Workstation-$whonix_build_closest_git_tag.ova"
+   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Workstation-$version.ova" \
+   -o "$WHONIX_BINARY/torrent-$version/Whonix-Workstation-$version.ova.torrent" \
+   "$WHONIX_BINARY/Whonix-Workstation-$version.ova"
 
 ## Working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Gateway-7.ova");' "$2")"
