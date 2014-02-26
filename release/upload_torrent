@@ -1,0 +1,56 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+true "INFO: Currently running script: $0${1+"$@"}"
+set -o pipefail
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+## disable cmd line parser, since not needed
+export WHONIX_BUILD_PARSED="1"
+export VMNAME="internalrun"
+ROOT_CHECK="0"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../Whonix/help-steps/pre
+source ../../Whonix/help-steps/variables
+
+version="$whonix_build_closest_git_tag"
+
+ls -la ~"/whonix_binary/torrent-$version/"*
+
+true "${cyan}INFO: Press enter to continue.${reset}"
+read temp
+
+## Test.
+rsync \
+   --dry-run \
+   --compress \
+   --archive \
+   --verbose \
+   --compress-level=9 \
+   --rsh='ssh -p54485' \
+   ~"/whonix_binary/torrent-$version/"* \
+   "adrelanos@92.243.7.197:/home/adrelanos/download/$version-torrent/"
+
+true "${cyan}INFO: Press enter to continue.${reset}"
+read temp
+
+rsync \
+   --dry-run \
+   --compress \
+   --archive \
+   --verbose \
+   --compress-level=9 \
+   --rsh='ssh -p54485' \
+   ~"/whonix_binary/torrent-$version/"* \
+   "adrelanos@92.243.7.197:/home/adrelanos/download/$version-torrent/"
+
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
