@@ -37,7 +37,7 @@ rsync \
    "$WHONIX_BINARY/"*".ova" \
    "$WHONIX_BINARY/"*".qcow2" \
    "$WHONIX_BINARY/"*".asc" \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/whonix-$version/"
+   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
 read temp
@@ -53,7 +53,7 @@ while true; do
       "$WHONIX_BINARY/"*".ova" \
       "$WHONIX_BINARY/"*".qcow2" \
       "$WHONIX_BINARY/"*".asc" \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/whonix-$version/" \
+      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/" \
       || { rsync_exit_code="$?" ; true; };
 
    if [ "$rsync_exit_code" = "0" ]; then

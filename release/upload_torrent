@@ -23,7 +23,7 @@ source ../../Whonix/help-steps/variables
 
 version="$whonix_build_closest_git_tag"
 
-ls -la ~"/whonix_binary/torrent-$version/"*
+ls -la ~/"whonix_binary/torrent-$version/"*
 
 true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
@@ -36,7 +36,7 @@ rsync \
    --verbose \
    --compress-level=9 \
    --rsh='ssh -p54485' \
-   ~"/whonix_binary/torrent-$version/"* \
+   ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@92.243.7.197:/home/adrelanos/download/$version-torrent/"
 
 true "${cyan}INFO: Press enter to continue.${reset}"
@@ -49,7 +49,7 @@ rsync \
    --verbose \
    --compress-level=9 \
    --rsh='ssh -p54485' \
-   ~"/whonix_binary/torrent-$version/"* \
+   ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@92.243.7.197:/home/adrelanos/download/$version-torrent/"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
