@@ -45,14 +45,14 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Gateway-$version.ova" \
+   --web-seed "http://webseed.whonix.org.8008.nyud.net/$version/Whonix-Gateway-$version.ova" \
    -o "$WHONIX_BINARY/torrent-$version/Whonix-Gateway-$version.ova.torrent" \
    "$WHONIX_BINARY/Whonix-Gateway-$version.ova"
 
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org.8008.nyud.net/Whonix-Workstation-$version.ova" \
+   --web-seed "http://webseed.whonix.org.8008.nyud.net/$version/Whonix-Workstation-$version.ova" \
    -o "$WHONIX_BINARY/torrent-$version/Whonix-Workstation-$version.ova.torrent" \
    "$WHONIX_BINARY/Whonix-Workstation-$version.ova"
 
