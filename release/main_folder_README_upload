@@ -19,27 +19,27 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    mkdir --parents "$WHONIX_BINARY"
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    cp "$whonix_dev_meta_files_folder/release/main_folder_README" "$WHONIX_BINARY/"
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    rm --force "$WHONIX_BINARY/main_folder_README.asc"
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    gpg --clearsign "$WHONIX_BINARY/main_folder_README"
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    cat "$WHONIX_BINARY/main_folder_README.asc"
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    gpg --verify "$WHONIX_BINARY/main_folder_README.asc"
 
 sleep 10
 
-sudo -u "$user_name" \
+sudo -E -u "$user_name" \
    rsync \
       --partial \
       --progress \
