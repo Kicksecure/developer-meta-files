@@ -50,8 +50,8 @@ locally-upgrade-whonix-debian-packages() {
    sync
 
    ## Sanity tests.
-   $CHROOT $update_grub_bin -v
-   $CHROOT sync
+   maybe_run_in_chroot $update_grub_bin -v
+   maybe_run_in_chroot sync
 
    sync
 
@@ -92,9 +92,9 @@ locally-upgrade-whonix-debian-packages() {
       #true "INFO $0: skipping apt-get update and apt-get dist-upgrade, because CI detected."
       #true "INFO $0: (Would try to upgrade using Ubuntu precising using /etc/apt/sources.list containing Debian testing.)"
    #else
-      #$CHROOT apt-get $apt_timeout_opts update
+      #maybe_run_in_chroot apt-get $apt_timeout_opts update
 
-      #$CHROOT apt-get $apt_timeout_opts --yes dist-upgrade
+      #maybe_run_in_chroot apt-get $apt_timeout_opts --yes dist-upgrade
    #fi
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/create-local-temp-apt-repo
@@ -111,20 +111,20 @@ locally-upgrade-whonix-debian-packages() {
    fi
 
    ## Debugging.
-   $CHROOT apt-key finger
+   maybe_run_in_chroot apt-key finger
 
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
-   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts -o APT::Get::List-Cleanup="0" update
+   maybe_run_in_chroot apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts -o APT::Get::List-Cleanup="0" update
 
    ## Upgrade Whonix Debian Packages.
-   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes dist-upgrade
+   maybe_run_in_chroot apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes dist-upgrade
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/remove-local-temp-apt-repo
 
    ## Forget about local repository containing Whonix's packages.
-   $CHROOT apt-get --no-download --list-cleanup update
+   maybe_run_in_chroot apt-get --no-download --list-cleanup update
 
-   $CHROOT sync
+   maybe_run_in_chroot sync
    sync
 
    ## Implemented in help-steps/pre.
