@@ -55,9 +55,9 @@ interactive-chroot-img() {
    sync
 
    ## Sanity tests.
-   maybe_run_in_chroot mount
-   maybe_run_in_chroot $update_grub_bin -v
-   maybe_run_in_chroot sync
+   $CHROOT mount
+   $CHROOT $update_grub_bin -v
+   $CHROOT sync
 
    sync
 
@@ -66,7 +66,7 @@ interactive-chroot-img() {
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/create-local-temp-apt-repo || true
 
    ## Debugging.
-   maybe_run_in_chroot apt-key finger  || true
+   $CHROOT apt-key finger  || true
 
    ## Implemented in help-steps/pre.
    maybe_enable_apt_cache
@@ -80,13 +80,13 @@ interactive-chroot-img() {
 
    ## Run interactive shell.
    trap "error_handler_interactive-chroot-img-shell" ERR INT TERM
-   maybe_run_in_chroot "/bin/bash"
+   $CHROOT "/bin/bash"
 
    echo "${green}INFO: Exited (0) interactive shell.${reset}"
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/remove-local-temp-apt-repo
 
-   maybe_run_in_chroot sync
+   $CHROOT sync
    sync
 
    ## Implemented in help-steps/pre.

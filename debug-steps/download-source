@@ -25,7 +25,7 @@ download_sources() {
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
    "$MYDIR"/chroot-img
 
-   maybe_run_in_chroot "/usr/share/whonix/whonix_download_sources"
+   $CHROOT "/usr/share/whonix/whonix_download_sources"
    sync
 
    "$MYDIR"/unchroot-img
