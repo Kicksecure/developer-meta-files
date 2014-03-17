@@ -33,8 +33,10 @@ cd "$WHONIX_BINARY"
 rm --force "md5sum"
 
 ## Create md5sum to compare with sourceforge.
-md5sum *.ova >> "md5sum"
-md5sum *.qcow2 >> "md5sum"
+md5sum "Whonix-Gateway-$version.ova" >> "md5sum"
+md5sum "Whonix-Gateway-$version.qcow2" >> "md5sum"
+md5sum "Whonix-Workstation-$version.ova" >> "md5sum"
+md5sum "Whonix-Workstation-$version.qcow2" >> "md5sum"
 sync
 
 ## Debugging.
