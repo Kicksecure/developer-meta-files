@@ -27,6 +27,14 @@ project="whonixdevelopermetafiles"
 
 version="$whonix_build_closest_git_tag"
 
+ls -la "$WHONIX_BINARY/sha512sum"
+ls -la "$WHONIX_BINARY/"*".ova"
+ls -la "$WHONIX_BINARY/"*".qcow2"
+ls -la "$WHONIX_BINARY/"*".asc"
+
+true "${cyan}INFO: Press any enter to continue.${reset}"
+read temp
+
 ## Test.
 rsync \
    --dry-run \
