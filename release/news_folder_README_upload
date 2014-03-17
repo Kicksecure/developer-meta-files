@@ -23,7 +23,7 @@ sudo -u "$user_name" \
    mkdir --parents "$WHONIX_BINARY"
 
 sudo -u "$user_name" \
-   cp "$whonix_dev_meta_files_folder/release/news_folder_README" "$WHONIX_BINARY/"
+   cp "$whonix_dev_meta_files_folder/release/readme/news_folder_README" "$WHONIX_BINARY/"
 
 sudo -u "$user_name" \
    rm --force "$WHONIX_BINARY/news_folder_README.asc"
