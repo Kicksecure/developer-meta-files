@@ -1,0 +1,42 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+## Whonix News v4
+## A deterministic tarball on
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz/download
+## and a detached armored OpenPGP signature on
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
+
+set -x
+true "INFO: Currently running script: $0${1+"$@"}"
+set -o pipefail
+
+## disable cmd line parser, since not needed
+export WHONIX_BUILD_PARSED="1"
+export VMNAME="internalrun"
+ROOT_CHECK="0"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../Whonix/help-steps/pre
+source ../../Whonix/help-steps/variables
+
+if [ "$(id -u)" = "0" ]; then
+   echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
+   exit 1
+fi
+
+"$whonix_dev_meta_files_folder/release/sign_images"
+
+"$whonix_dev_meta_files_folder/release/create_torrent"
+
+"$whonix_dev_meta_files_folder/release/upload_signatures"
+
+"$whonix_dev_meta_files_folder/release/upload_images"
+
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
