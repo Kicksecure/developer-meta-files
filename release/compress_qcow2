@@ -1,0 +1,38 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+true "INFO: Currently running script: $0${1+"$@"}"
+set -o pipefail
+
+## disable cmd line parser, since not needed
+export WHONIX_BUILD_PARSED="1"
+export VMNAME="internalrun"
+ROOT_CHECK="0"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../Whonix/help-steps/pre
+source ../../Whonix/help-steps/variables
+
+version="$whonix_build_closest_git_tag"
+
+## Using gzip -n: so compressing the same image
+## will result in a deterministic archive. We do not have deterministic
+## images yet in the first place (but at least verifiable ones), but
+## hopefully some day. Does not hurt to already use tar options that do not
+## add unnecessary non-deterministic contents.
+##
+## Not using tar --sparse: slows down tar too much.
+## Not using tar --verbose: slows down tar too much.
+pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.tar.gz"
+sync
+pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.tar.gz"
+sync
+
+benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
