@@ -29,7 +29,7 @@ version="$whonix_build_closest_git_tag"
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
-ls -la "$WHONIX_BINARY/"*".qcow2"
+ls -la "$WHONIX_BINARY/"*".qcow2.tar.gz"
 ls -la "$WHONIX_BINARY/"*".asc"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -43,7 +43,7 @@ rsync \
    --verbose \
    "$WHONIX_BINARY/sha512sum" \
    "$WHONIX_BINARY/"*".ova" \
-   "$WHONIX_BINARY/"*".qcow2" \
+   "$WHONIX_BINARY/"*".qcow2.tar.gz" \
    "$WHONIX_BINARY/"*".asc" \
    "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/"
 
@@ -59,7 +59,7 @@ while true; do
       --verbose \
       "$WHONIX_BINARY/sha512sum" \
       "$WHONIX_BINARY/"*".ova" \
-      "$WHONIX_BINARY/"*".qcow2" \
+      "$WHONIX_BINARY/"*".qcow2.tar.gz" \
       "$WHONIX_BINARY/"*".asc" \
       "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/" \
       || { rsync_exit_code="$?" ; true; };

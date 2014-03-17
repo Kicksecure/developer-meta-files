@@ -34,26 +34,26 @@ md5sum --check md5sum
 
 ## Create detached signatures.
 gpg --detach-sign --armor --yes "Whonix-Gateway-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Gateway-$version.qcow2"
+gpg --detach-sign --armor --yes "Whonix-Gateway-$version.qcow2.tar.gz"
 gpg --detach-sign --armor --yes "Whonix-Workstation-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Workstation-$version.qcow2"
+gpg --detach-sign --armor --yes "Whonix-Workstation-$version.qcow2.tar.gz"
 
 ## Verify, that signing worked.
 gpg --verify "Whonix-Gateway-$version.ova.asc"
-gpg --verify "Whonix-Gateway-$version.qcow2.asc"
+gpg --verify "Whonix-Gateway-$version.qcow2.tar.gz.asc"
 gpg --verify "Whonix-Workstation-$version.ova.asc"
-gpg --verify "Whonix-Workstation-$version.qcow2.asc"
+gpg --verify "Whonix-Workstation-$version.qcow2.tar.gz.asc"
 
 ## Create sha512sum.
 rm --force sha512sum
 sha512sum "Whonix-Gateway-$version.ova" >> sha512sum
 sha512sum "Whonix-Gateway-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Gateway-$version.qcow2" >> sha512sum
-sha512sum "Whonix-Gateway-$version.qcow2.asc" >> sha512sum
+sha512sum "Whonix-Gateway-$version.qcow2.tar.gz" >> sha512sum
+sha512sum "Whonix-Gateway-$version.qcow2.tar.gz.asc" >> sha512sum
 sha512sum "Whonix-Workstation-$version.ova" >> sha512sum
 sha512sum "Whonix-Workstation-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Workstation-$version.qcow2" >> sha512sum
-sha512sum "Whonix-Workstation-$version.qcow2.asc" >> sha512sum
+sha512sum "Whonix-Workstation-$version.qcow2.tar.gz" >> sha512sum
+sha512sum "Whonix-Workstation-$version.qcow2.tar.gz.asc" >> sha512sum
 
 sync
 
