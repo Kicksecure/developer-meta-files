@@ -37,7 +37,8 @@ sudo -E -u "$user_name" \
 sudo -E -u "$user_name" \
    gpg --verify "$WHONIX_BINARY/main_folder_README.asc"
 
-sleep 10
+true "${cyan}INFO: Press enter to continue.${reset}"
+read temp
 
 sudo -E -u "$user_name" \
    rsync \
