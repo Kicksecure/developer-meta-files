@@ -1,3 +1,88 @@
+survey: consideration to drop VirtualBox support for Linux users
+################################################################
+
+TLDR:
+As a Linux user(!), would you mind to use Whonix with KVM instead of VirtualBox?
+
+How important is VirtualBox to you, if you could use KVM instead?
+
+What features in VirtualBox do you believe are superior to KVM?
+
+Which things in KVM do you dislike?
+
+Long:
+This one needs user feedback.
+
+First of all, relax. Nothing has been decided yet. I am just thinking aloud. Without the controversy, there can not be real progress.
+
+Maybe it is too early to even think about this yet, because running Whonix in KVM development hasn't finished yet. However, if development continues at current speed, I predict it won't be long until we can open it up for wider testing.
+
+On of Whonix's biggest usability failures is, that no easy, secure and recommend way to get files inside a VM and how to backup from VMs. We only have a list of methods (https://www.whonix.org/wiki/File_Transfer) but none of these is ideal.
+
+Jason just started a very much needed development discussion about this. (https://github.com/Whonix/Whonix/issues/131) I added an overview of current status and thoughts to that thread.
+
+Moreover I tried to come up with usable, yet secure solution, that is.
+
+Windows users:
+
+	- recommend to use USB extensions
+	- they're using lots of closed source software already anyway
+	- they're downloading and blindly trusting VirtualBox in binary form from oracle without gpg verification already anyway, the closed source USB extensions shouldn't make it any worse
+	- we add screenshot / video instructions for installing and using this feature
+	- file transfer question solved
+
+Linux users:
+
+	- recommend to use KVM over VirtualBox
+	- they're accustomed to using more difficult solutions already anyway
+	- there are reasons for Use KVM Over VirtualBox anyway
+	- if this solution is as simple as it seems, file transfer issue would be solved
+
+Thoughts?
+
+I need to remind myself... Arguments for keeping VirtualBox Support Still valid?
+
+Now, what does "drop VirtualBox support" mean? Nothing is as bad as it looks. Since VirtualBox support has been implemented for long, is stable, needs very little maintenance and has be maintained for Windows users anyway because on Windows KVM is unavailable... We won't stop producing VirtualBox builds. Just, for Linux users the default and recommend way to use Whonix will be KVM, not VirtualBox. KVM will be better tested. Running Whonix in VirtualBox will still be possible. But... When the question arrives, "On a Linux host, what is the best way to transfer files between host and VM", answer will be "use Whonix with KVM".
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/virtualbox-for-linux-users/
+
+Documentation index layout improved
+###################################
+
+lasko prettied up Whonix's Documentation index page. Check it out:
+ https://www.whonix.org/wiki/Documentation
+
+Thank you, lasko!
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links),
+go to https://www.whonix.org/blog/documentation-layout-improved/
+
+Contribute page updated
+#######################
+
+lasko prettied up Whonix's contribute page. Check it out:
+https://www.whonix.org/wiki/Contribute
+
+Thank you, lasko!
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links),
+go to https://www.whonix.org/blog/contribute-page-updated/
+
+Testers Wanted for upcoming Whonix 8.1 Maintenance release
+##########################################################
+
+Download link for Virtual Box images (.ova), experimental .qcow images and OpenPGP signatures (.asc):
+
+https://sourceforge.net/projects/whonixdevelopermetafiles/files/8.1/
+
+Please test so this can soon become the new stable release.
+
+Changelog:
+- updated Debian packages
+- fixed Tor restart bug when updated by apt-get
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/testers-wanted-8-1-maintenance/
+
 Whonix Anonymous Operating System Version 8 Released!
 #####################################################
 
