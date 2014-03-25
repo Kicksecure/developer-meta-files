@@ -1,3 +1,151 @@
+Plans to discontinue this offline blog service
+##############################################
+
+This feature is documented here:
+https://www.whonix.org/wiki/Download#Whonix_News_Blogs
+
+This is about this icon:
+
+Here is a screenshot.
+
+[caption id="" align="alignnone" width="1024"] Whonix News Blog opened offline[/caption]
+
+We should now be talking about the same feature.
+
+I planed to discontinue this feature anyway. It causes a lot effort, to manually create a text-only version of every new blog post. In fact, it demotivates me to create new blog posts to keep your posted and involved about Whonix developments and plans.
+
+The question for you is: How many are using this Tor Browser Recommended / Whonix News Blogs Offline feature anyway?
+
+When no one actually does, then it's save to discontinue the service. Otherwise would anyone have an idea how to semi-automate it to reduce the burden of maintaining a text file? (https://github.com/Whonix/whonix-developer-meta-files/blob/master/release/news/whonix_feature_blog.txt)
+
+There are lots of other options following Whonix's blog:
+- https://www.whonix.org/wiki/Download#Whonix_News_Blogs
+- https://www.whonix.org/wiki/Download#WhonixNewsBlogOtherChoices
+
+Occq suggested to make remove the Tor Browser Recommended icon from Whonix's desktop among other desktop icon and start menu changes. (https://www.whonix.org/forum/index.php/topic,184.0.html) Looks like a good time to discuss discontinuation of this feature.
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/offline-blog-feature/
+
+Job Offer: Developer
+####################
+
+Your impact will involve:
+- developing Whonix, generally we like to improve security and usability, see github https://github.com/Whonix/Whonix/issues and forum https://www.whonix.org/forum/index.php/board,5.0.html for a roadmap
+
+Other tasks:
+- improving documentation, fixing language, reorganization, documentation of new features, creating screenshots, etc.
+- user support, answering user questions about Whonix
+- creating videos about Whonix
+- coordination of translators
+- generally working on project related tasks depending on your optional abilities
+- speaking for Whonix in virtual places (mailing lists, social media, etc.)
+- speaking for Whonix in public at conferences
+
+Job description:
+- self employed
+- needless to say, this can not be done anonymously
+
+Mandatory requirements:
+- very good English language skills
+- shell scripting, python, C, C++
+- Being familiar with git.
+
+Bonus, non mandatory requirements:
+- html, javascript, php
+- webapps (mediawiki, wordpress, smf) and development of extension for those
+- Have a history as Whonix contributor.
+- Very good German language skills.
+- Have experience with open-source software development, including working with distributed teams across different time-zones containing employees and volunteers of differing skill levels over multiple mediums, including email, instant messaging, and IRC.
+- Have experience maintaining long-term software projects.
+- Have a history of advocating Free Software.
+- Have a history of advocating privacy and anonymity.
+- Other language skills.
+- SEO
+- marketing
+- computer law knowledge
+- accounting / taxes knowledge
+
+Other notes:
+- Whonix has no office. You can work from wherever you want, in basically any country.
+You'll need to be comfortable in this environment! We coordinate via IRC, Instant Messaging, email, phone and video chats, bug trackers and forum.
+- Academic degrees are great, but not required if you have the right experience.
+- We only write free and open source software, and we don't believe in software patents.
+- We do not have founding for this position yet. In order to write a founding proposal, we need to be able to name interested people and expenses first.
+
+How to apply:
+- Link to a sample of projects you've coordinated in the past that you're allowed to show us.
+- Provide a CV explaining your background, experience, skills, and other relevant qualifications.
+- List some people who can tell us more about you: these references could be employers or coworkers, open source projects, etc.
+- Add your salary expectation.
+- Add your availability.
+- Add how many weekly hours you prefer.
+- Email the above to Patrick Schleizer, adrelanos@riseup.net, specifying project coordinator position
+
+License of this post:
+- Whonix is produced independently of, with no guarantee from, The Tor Project.
+- Some sentences taken from https://www.torproject.org/about/jobs-projectcoordinator.html.en http://www.webcitation.org/6ODZXBs6E license: https://www.torproject.org/docs/trademark-faq.html.en http://www.webcitation.org/6ODZWtaDD https://creativecommons.org/licenses/by/3.0/us/ http://www.webcitation.org/6ODZWa8T5
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/job-offer-developer/
+
+Job / Project Offer: Project Coordinator
+########################################
+
+Your impact will involve:
+- communication with funds, getting founding for Whonix, keeping in touch with funds
+- improving documentation, fixing language, reorganization, documentation of new features, creating screenshots, etc.
+- user support, answering user questions about Whonix
+- creating videos about Whonix
+- coordination of translators
+- generally working on project related tasks depending on your optional abilities
+- speaking for Whonix in virtual places (mailing lists, social media, etc.)
+- speaking for Whonix in public at conferences
+
+Job description:
+- no payment until we got founding for Whonix which includes founding for your own salary
+- self employed
+- needless to say, this can not be done anonymously
+
+Mandatory requirements:
+- very good English language skills
+
+Bonus, non mandatory requirements:
+- Have a history as Whonix contributor.
+- Very good German language skills.
+- Have experience with open-source software development, including working with distributed teams across different time-zones containing employees and volunteers of differing skill levels over multiple mediums, including email, instant messaging, and IRC.
+- Have experience maintaining long-term software projects.
+- shell scripting
+- html, javascript, php, python, C, C++
+- webapps (mediawiki, wordpress, smf)
+- Being familiar with git.
+- Have a history of advocating Free Software.
+- Have a history of advocating privacy and anonymity.
+- Other language skills.
+- SEO
+- marketing
+- computer law knowledge
+- accounting / taxes knowledge
+
+Other notes:
+- Whonix has no office. You can work from wherever you want, in basically any country.
+You'll need to be comfortable in this environment! We coordinate via IRC, Instant Messaging, email, phone and video chats, bug trackers and forum.
+- Academic degrees are great, but not required if you have the right experience.
+- We only write free and open source software, and we don't believe in software patents.
+
+How to apply:
+- Link to a sample of projects you've coordinated in the past that you're allowed to show us.
+- Provide a CV explaining your background, experience, skills, and other relevant qualifications.
+- List some people who can tell us more about you: these references could be employers or coworkers, open source projects, etc.
+- Add your salary expectation.
+- Add your availability.
+- Add how many weekly hours you prefer.
+- Email the above to Patrick Schleizer, adrelanos@riseup.net, specifying project coordinator position
+
+License of this post:
+- Whonix is produced independently of, with no guarantee from, The Tor Project.
+- Some sentences taken from https://www.torproject.org/about/jobs-projectcoordinator.html.en http://www.webcitation.org/6ODZXBs6E license: https://www.torproject.org/docs/trademark-faq.html.en http://www.webcitation.org/6ODZWtaDD https://creativecommons.org/licenses/by/3.0/us/ http://www.webcitation.org/6ODZWa8T5
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/project-coordinator/
+
 survey: consideration to drop VirtualBox support for Linux users
 ################################################################
 

@@ -1,3 +1,31 @@
+Plans to discontinue this offline blog service
+##############################################
+
+This feature is documented here:
+https://www.whonix.org/wiki/Download#Whonix_News_Blogs
+
+This is about this icon:
+
+Here is a screenshot.
+
+[caption id="" align="alignnone" width="1024"] Whonix News Blog opened offline[/caption]
+
+We should now be talking about the same feature.
+
+I planed to discontinue this feature anyway. It causes a lot effort, to manually create a text-only version of every new blog post. In fact, it demotivates me to create new blog posts to keep your posted and involved about Whonix developments and plans.
+
+The question for you is: How many are using this Tor Browser Recommended / Whonix News Blogs Offline feature anyway?
+
+When no one actually does, then it's save to discontinue the service. Otherwise would anyone have an idea how to semi-automate it to reduce the burden of maintaining a text file? (https://github.com/Whonix/whonix-developer-meta-files/blob/master/release/news/whonix_feature_blog.txt)
+
+There are lots of other options following Whonix's blog:
+- https://www.whonix.org/wiki/Download#Whonix_News_Blogs
+- https://www.whonix.org/wiki/Download#WhonixNewsBlogOtherChoices
+
+Occq suggested to make remove the Tor Browser Recommended icon from Whonix's desktop among other desktop icon and start menu changes. (https://www.whonix.org/forum/index.php/topic,184.0.html) Looks like a good time to discuss discontinuation of this feature.
+
+This post has been automatically cross-posted by whonix.org/blog To see the original (including links), go to https://www.whonix.org/blog/offline-blog-feature/
+
 Whonix Anonymous Operating System Version 8 Released!
 #####################################################
 
