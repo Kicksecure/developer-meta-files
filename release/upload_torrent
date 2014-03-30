@@ -43,7 +43,6 @@ true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
 
 rsync \
-   --dry-run \
    --compress \
    --archive \
    --verbose \
