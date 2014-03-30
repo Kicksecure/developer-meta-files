@@ -38,25 +38,25 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 #sudo -E -u "$user_name" mktorrent \
 #   --verbose \
 #   --announce="$TRACKERS" \
-#   --web-seed "http://webseed.whonix.org/Whonix-Gateway-7.ova" \
-#   --web-seed "http://webseed.whonix.org/Whonix-Workstation-7.ova" \
+#   --web-seed "http://webseed.whonix.org:8008/Whonix-Gateway-7.ova" \
+#   --web-seed "http://webseed.whonix.org:8008/Whonix-Workstation-7.ova" \
 #   ~/7
 
 ## CoralCDN:
-## .8008.nyud.net can no longer be appended to http://webseed.whonix.org,
+## .8008.nyud.net can no longer be appended to http://webseed.whonix.org:8008,
 ## because CoralCDN appear to no longer support files greater than 50 MB.
 
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org/$version/Whonix-Gateway-$version.ova" \
+   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Gateway-$version.ova" \
    -o "$WHONIX_BINARY/torrent-$version/Whonix-Gateway-$version.ova.torrent" \
    "$WHONIX_BINARY/Whonix-Gateway-$version.ova"
 
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org/$version/Whonix-Workstation-$version.ova" \
+   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Workstation-$version.ova" \
    -o "$WHONIX_BINARY/torrent-$version/Whonix-Workstation-$version.ova.torrent" \
    "$WHONIX_BINARY/Whonix-Workstation-$version.ova"
 
@@ -65,8 +65,8 @@ sudo -E -u "$user_name" mktorrent \
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Workstation-7.ova");' "$2")"
 
 ## Not working.
-#echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org/Whonix-Gateway-7.ova");' "$2")"
-#echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org/Whonix-Workstation-7.ova");' "$2")"
+#echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Gateway-7.ova");' "$2")"
+#echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Workstation-7.ova");' "$2")"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
