@@ -170,11 +170,11 @@ show_output() {
    ## was started with --showcli
    ## (was automatically started by /etc/profile.d/)
    if [ "$SHOW_CLI" = "1" ]; then
-      if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running" ]; then
+      if [ -e /var/run/whonixcheck/""$SCRIPTNAME"_running" ]; then
 
          if [ "$WAITING_MSG" = "" ]; then
-            if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting" ]; then
-               WAITING_MSG="$(cat /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting")"
+            if [ -e /var/run/whonixcheck/""$SCRIPTNAME"_waiting" ]; then
+               WAITING_MSG="$(cat /var/run/whonixcheck/""$SCRIPTNAME"_waiting")"
                echo "$WAITING_MSG" | write user tty1 2>/dev/null || true
             fi
          fi
@@ -194,17 +194,17 @@ $ZENITY_MESSAGE" | write user tty1 2>/dev/null || true
    ## was started with --showx
    ## (was automatically started by /etc/xdg/autostart/)
    if [ "$SHOW_X" = "1" ]; then
-      if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_running" ]; then
+      if [ -e /var/run/whonixcheck/""$SCRIPTNAME"_running" ]; then
 
-         if [ -e "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress" ]; then
-            local STORED_PROGRESS="$(cat "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress")"
+         if [ -e "/var/run/whonixcheck/"$SCRIPTNAME"_progress" ]; then
+            local STORED_PROGRESS="$(cat "/var/run/whonixcheck/"$SCRIPTNAME"_progress")"
             welcome ## 30_welcome
             progress_bar "$STORED_PROGRESS"
          fi
 
          if [ "$WAITING_MSG" = "" ]; then
-            if [ -e /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting" ]; then
-               WAITING_MSG="$(cat /var/run/whonix/whonixcheck/""$SCRIPTNAME"_waiting")"
+            if [ -e /var/run/whonixcheck/""$SCRIPTNAME"_waiting" ]; then
+               WAITING_MSG="$(cat /var/run/whonixcheck/""$SCRIPTNAME"_waiting")"
 
                #notify-send --expire-time ""$DELAY"000" "$SCRIPTNAME" "$WAITING_MSG" || true
                kdialog --passivepopup "$WAITING_MSG" "$DELAY" 2>/dev/null || true
@@ -220,10 +220,10 @@ $ZENITY_MESSAGE" | write user tty1 2>/dev/null || true
 
          if [ "$ZENITY_MESSAGE" = "" ]; then
             local temp="0"
-            if [ -e "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run" ]; then
+            if [ -e "/var/run/whonixcheck/"$SCRIPTNAME"_recently_run" ]; then
                local temp="1"
             fi
-            rm -f /var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run
+            rm -f /var/run/whonixcheck/"$SCRIPTNAME"_recently_run
             ZENITY_MESSAGE="ZENITY_MESSAGE is empty. ($SCRIPTNAME) ($temp) Please report this bug!"
          fi
 
@@ -235,7 +235,7 @@ $ZENITY_MESSAGE" | write user tty1 2>/dev/null || true
          ## it just says "whonixcheck was recently run, no need to run again", in that case,
          ## use kdialog --passivepopup, because that is non-intrusive and will automatically fade out.
          ## (When whonixcheck is manually started, zenity is always used.)
-         if [ -e "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_recently_run" ]; then
+         if [ -e "/var/run/whonixcheck/"$SCRIPTNAME"_recently_run" ]; then
             kdialog --passivepopup "$ZENITY_MESSAGE" "20"
             return 0
          fi
@@ -330,7 +330,7 @@ progress_bar() {
    ## When it was autostarted, there is no progress bar. (Thats up to --showx.)
    ## So just write the progress into a file, so --showx can read it.
    if [ "$AUTOSTARTED" = "1" ]; then
-      echo "$1" > "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress"
+      echo "$1" > "/var/run/whonixcheck/"$SCRIPTNAME"_progress"
       return 0
    fi
 
@@ -375,9 +375,9 @@ progress_bar() {
    if [ "$1" = "100" ]; then
       KILLED_ZENITY_BAR="1"
       kill -9 "$ZENITY_PROGRESS_PID" || true
-      rm -f "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress"
+      rm -f "/var/run/whonixcheck/"$SCRIPTNAME"_progress"
    else
       echo "$1" >&3 || true
-      echo "$1" > "/var/run/whonix/whonixcheck/"$SCRIPTNAME"_progress"
+      echo "$1" > "/var/run/whonixcheck/"$SCRIPTNAME"_progress"
    fi
 }
