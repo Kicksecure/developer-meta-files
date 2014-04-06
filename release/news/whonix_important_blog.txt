@@ -202,7 +202,7 @@ repository, since that repository has been removed by The Tor Project
 * fixed a bug reported by scarp,
 whonix_shared/usr/share/whonix/postinst.d/70_disable_kdm_autostart: was
 not disabling other display managers other than kdm. Now using the more
-generic /usr/lib/whonix/display-manager-dpkg-post-invoke.
+generic /usr/lib/ram_adjusted_desktop_starter/display-manager-dpkg-post-invoke.
 * msgcollector: fix race condition not always closing progress bar when
 it reached 100%
 * Whonix-Gateway: Workaround for
