@@ -21,11 +21,15 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
+version="$whonix_build_closest_git_tag"
+
+#sf_user="adrelanos"
 #project="testprojectwh"
 #project="whonix"
-project="whonixdevelopermetafiles"
+#sf_project="whonixdevelopermetafiles"
+#server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$project/$version/"
 
-version="$whonix_build_closest_git_tag"
+server="root@199.127.226.139:/var/www/$version/"
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
@@ -45,7 +49,7 @@ rsync \
    "$WHONIX_BINARY/"*".ova" \
    "$WHONIX_BINARY/"*".qcow2.tar.gz" \
    "$WHONIX_BINARY/"*".asc" \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/"
+   "$server"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
 read temp
@@ -65,7 +69,7 @@ while true; do
       "$WHONIX_BINARY/"*".ova" \
       "$WHONIX_BINARY/"*".qcow2.tar.gz" \
       "$WHONIX_BINARY/"*".asc" \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/$version/" \
+      "$server" \
       || { rsync_exit_code="$?" ; true; };
 
    if [ "$rsync_exit_code" = "0" ]; then
