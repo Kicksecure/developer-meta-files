@@ -33,7 +33,7 @@ server="root@199.127.226.139:/var/www/$version/"
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
-ls -la "$WHONIX_BINARY/"*".qcow2.tar.gz"
+ls -la "$WHONIX_BINARY/"*".qcow2.xz"
 ls -la "$WHONIX_BINARY/"*".asc"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -47,7 +47,7 @@ rsync \
    --verbose \
    "$WHONIX_BINARY/sha512sum" \
    "$WHONIX_BINARY/"*".ova" \
-   "$WHONIX_BINARY/"*".qcow2.tar.gz" \
+   "$WHONIX_BINARY/"*".qcow2.xz" \
    "$WHONIX_BINARY/"*".asc" \
    "$server"
 
@@ -67,7 +67,7 @@ while true; do
       --verbose \
       "$WHONIX_BINARY/sha512sum" \
       "$WHONIX_BINARY/"*".ova" \
-      "$WHONIX_BINARY/"*".qcow2.tar.gz" \
+      "$WHONIX_BINARY/"*".qcow2.xz" \
       "$WHONIX_BINARY/"*".asc" \
       "$server" \
       || { rsync_exit_code="$?" ; true; };
