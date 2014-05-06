@@ -58,33 +58,33 @@ output() {
 
    if [ "$ZENITY_TYPE" = "" ]; then
       ZENITY_TYPE="$1"
-      echo "$1" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+      echo "$1" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
    fi
 
    if [ "$1" = "--error" ]; then
       ZENITY_TYPE="$1"
-      echo "$1" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+      echo "$1" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
    fi
 
    if [ "$1" = "--warning" ]; then
       if [ "$ZENITY_TYPE" = "--error" ]; then
          ## Never downgrade from warning to info.
-         echo "--error" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         echo "--error" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
       else
          ZENITY_TYPE="$1"
-         echo "$1" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         echo "$1" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
       fi
    fi
 
    if [ "$1" = "--info" ]; then
       if [ "$ZENITY_TYPE" = "--error" ]; then
          ## Never downgrade from error to info.
-         echo "--error" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         echo "--error" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
       elif [ "$ZENITY_TYPE" = "--warning" ]; then
          ## Never downgrade from warning to info.
-         echo "--warning" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         echo "--warning" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
       else
-         echo "--info" > "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type"
+         echo "--info" > "/var/lib/whonixcheck/"$SCRIPTNAME"_type"
       fi
    fi
 
@@ -109,7 +109,7 @@ output() {
       if [ "$AUTOSTARTED" = "1" ]; then
          ## Auto started, there is no output channel available.
          ## Therefore store this output.
-         echo "$2" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli
+         echo "$2" >> /var/lib/whonixcheck/"$SCRIPTNAME"_message_cli
       else
          echo "$2"
       fi
@@ -118,9 +118,9 @@ output() {
 
 $2"
       if [ "$AUTOSTARTED" = "1" ]; then
-         echo "$2" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli
+         echo "$2" >> /var/lib/whonixcheck/"$SCRIPTNAME"_message_cli
          echo "
-$2" >> /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_x
+$2" >> /var/lib/whonixcheck/"$SCRIPTNAME"_message_x
       else
          echo "$2"
       fi
@@ -140,8 +140,8 @@ show_output() {
       fi
    fi
 
-   if [ -e "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type" ]; then
-      ZENITY_TYPE="$(cat "/var/lib/whonix/whonixcheck/"$SCRIPTNAME"_type")"
+   if [ -e "/var/lib/whonixcheck/"$SCRIPTNAME"_type" ]; then
+      ZENITY_TYPE="$(cat "/var/lib/whonixcheck/"$SCRIPTNAME"_type")"
    fi
 
    ## fallback
@@ -184,7 +184,7 @@ show_output() {
          show_output
          return 0
       else
-         ZENITY_MESSAGE="$(cat /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_cli)"
+         ZENITY_MESSAGE="$(cat /var/lib/whonixcheck/"$SCRIPTNAME"_message_cli)"
             echo "$TITLE
 $ZENITY_MESSAGE" | write user tty1 2>/dev/null || true
          return 0
@@ -216,7 +216,7 @@ $ZENITY_MESSAGE" | write user tty1 2>/dev/null || true
          show_output
          return 0
       else
-         ZENITY_MESSAGE="$(cat /var/lib/whonix/whonixcheck/"$SCRIPTNAME"_message_x)" || true
+         ZENITY_MESSAGE="$(cat /var/lib/whonixcheck/"$SCRIPTNAME"_message_x)" || true
 
          if [ "$ZENITY_MESSAGE" = "" ]; then
             local temp="0"

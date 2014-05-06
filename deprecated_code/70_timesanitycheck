@@ -21,9 +21,9 @@ error_handler() {
 trap "error_handler" ERR
 
 own_filename="$(basename $0)"
-for skip_script in $WHONIX_BUILD_SKIP_SCRIPTS; do
+for skip_script in $SKIP_SCRIPTS; do
    if [ "$skip_script" = "$own_filename" ]; then
-      force_echo "INFO: Skipping $own_filename, because WHONIX_BUILD_SKIP_SCRIPTS includes it."
+      force_echo "INFO: Skipping $own_filename, because SKIP_SCRIPTS includes it."
       exit 0
    fi
 done

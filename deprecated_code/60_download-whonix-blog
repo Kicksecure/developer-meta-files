@@ -15,7 +15,7 @@ download_important_blog() {
    BLOG_TXT_FILE="important_blog.txt"
    BLOG_URL="https://anonymousoperatingsystem.wordpress.com/category/important/feed/"
    RAWDOG_CONFIG="/etc/whonixcheck_rawdog/importantblog.conf"
-   FEED_FILE="/var/lib/whonix/whonixcheck/importantblog.feed"
+   FEED_FILE="/var/lib/whonixcheck/importantblog.feed"
 
    download_blog
 
@@ -34,7 +34,7 @@ download_feature_blog() {
    BLOG_TXT_FILE="feature_blog.txt"
    BLOG_URL="https://anonymousoperatingsystem.wordpress.com/feed/"
    RAWDOG_CONFIG="/etc/whonixcheck_rawdog/featureblog.conf"
-   FEED_FILE="/var/lib/whonix/whonixcheck/featureblog.feed"
+   FEED_FILE="/var/lib/whonixcheck/featureblog.feed"
 
    download_blog
 
@@ -91,7 +91,7 @@ parse_blog() {
 
    ## rawdog default config file suggest to place a style.css in the same folder as the
    ## output file.
-   cp "/etc/whonixcheck_rawdog/style.css" "/var/lib/whonix/whonixcheck/"
+   cp "/etc/whonixcheck_rawdog/style.css" "/var/lib/whonixcheck/"
 
    ## Delete the state file, because we use curl to download the feed and
    ## our own interval anyway. Maybe not necessary.
@@ -129,13 +129,13 @@ parse_blog() {
          #--read=html \
          #--write=plain \
          #--output="/var/lib/whonix/whonixblog/$BLOG_TXT_FILE" \
-         #"/var/lib/whonix/whonixcheck/$BLOG_HTML_FILE" \
+         #"/var/lib/whonixcheck/$BLOG_HTML_FILE" \
          #&
 
    sudo -u rawdog \
       html2text \
          -o "/var/lib/whonix/whonixblog/$BLOG_TXT_FILE" \
-         "/var/lib/whonix/whonixcheck/$BLOG_HTML_FILE" \
+         "/var/lib/whonixcheck/$BLOG_HTML_FILE" \
          &
 
    lastpid="$!"
