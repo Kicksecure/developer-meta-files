@@ -21,19 +21,20 @@ source ../../Whonix/help-steps/variables
 
 version="$whonix_build_closest_git_tag"
 
+## Not using `gzip`, because it cannot handle sparse files:
 ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
-## Using gzip -n: so compressing the same image
-## will result in a deterministic archive. We do not have deterministic
-## images yet in the first place (but at least verifiable ones), but
-## hopefully some day. Does not hurt to already use tar options that do not
-## add unnecessary non-deterministic contents.
-##
-## Not using tar --sparse: slows down tar too much.
-## Not using tar --verbose: slows down tar too much.
 #pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.tar.gz"
-#sync
 #pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.tar.gz"
-#sync
+
+## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
+## - will result in a deterministic archive. We do not have deterministic
+##   images yet in the first place (but at least verifiable ones), but
+##   hopefully some day. Does not hurt to already use tar options that do
+##   not add unnecessary non-deterministic contents.
+## Not using tar --verbose:
+## - slows down tar too much.
+
+## TODO: add progress meter (using `pv`?)
 
 tar \
    --create \
@@ -43,6 +44,8 @@ tar \
    --directory="$WHONIX_BINARY" \
    --file "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.xz" "Whonix-Gateway-$version.qcow2"
 
+sync
+
 tar \
    --create \
    --sparse \
@@ -50,6 +53,8 @@ tar \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
    --file "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.xz" "Whonix-Workstation-$version.qcow2"
+
+sync
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
