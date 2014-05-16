@@ -47,7 +47,7 @@ source ../../Whonix/help-steps/variables
 ## - https://wiki.debian.org/SecureApt#How_to_manually_check_for_package.27s_integrity
 
 ## TODO: Read which version to check or filename from command line?
-whonix_build_whonix_version_new="137adretemp"
+anon_dist_build_version="137adretemp"
 
 WHONIX_BUILD_VERIFY_OLD_PWD="$PWD"
 
@@ -76,7 +76,7 @@ preparation() {
    trap "error_handler_general" ERR INT TERM
 
    temp_folder="$WHONIX_BINARY/verification"
-   whonix_source="$temp_folder/Whonix-$whonix_build_whonix_version_new"
+   whonix_source="$temp_folder/Whonix-$anon_dist_build_version"
 
    sudo -u "$user_name" mkdir --parents "$temp_folder"
    sudo -u "$user_name" mkdir --parents "$temp_folder/status"
@@ -97,10 +97,10 @@ preparation() {
    sudo -u "$user_name" git reset --hard
 
    true "${bold}${cyan}INFO: Git OpenPGP verify the Whonix version we want to audit... (Feel free to comment this out.) ${reset}"
-   sudo -u "$user_name" git tag -v "$whonix_build_whonix_version_new"
+   sudo -u "$user_name" git tag -v "$anon_dist_build_version"
 
    true "${bold}${cyan}INFO: Git checkout the Whonix version we want to audit... ${reset}"
-   sudo -u "$user_name" git checkout "$whonix_build_whonix_version_new"
+   sudo -u "$user_name" git checkout "$anon_dist_build_version"
 
    true "${bold}${cyan}INFO: Get into the verification folder, so \"apt-get download\" stores its downloads there.... ${reset}"
    cd "$temp_folder"
@@ -123,12 +123,12 @@ preparation() {
    unset http_proxy
 
    ## export, so help-steps/(un)mount-img opens this one.
-   export WHONIX_BUILD_MOUNT_IMG_FILE="$temp_folder/$VMNAME-$whonix_build_whonix_version_new.img"
+   export WHONIX_BUILD_MOUNT_IMG_FILE="$temp_folder/$VMNAME-$anon_dist_build_version.img"
 
    if [ -f "$WHONIX_BUILD_MOUNT_IMG_FILE" ]; then
       true "${bold}${cyan}INFO: Unpacking .ova not required, .img already exists, skipping. ${reset}"
    else
-      ova="$WHONIX_BINARY/$VMNAME-$whonix_build_whonix_version_new.ova"
+      ova="$WHONIX_BINARY/$VMNAME-$anon_dist_build_version.ova"
       if [ ! -f "$ova" ]; then
          error "${red}${bold}ERROR: "$ova" does not exist. ${reset}"
       else
@@ -138,7 +138,7 @@ preparation() {
       fi
    fi
 
-   vmdk="$temp_folder/$VMNAME-$whonix_build_whonix_version_new-disk1.vmdk"
+   vmdk="$temp_folder/$VMNAME-$anon_dist_build_version-disk1.vmdk"
 
    if [ ! -f "$vmdk" ]; then
       error "${red}${bold}ERROR: "$vmdk" does not exist. ${reset}"
