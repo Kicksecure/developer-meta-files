@@ -7,7 +7,7 @@
 SCRIPTNAME="$(basename $0)"
 
 ## Not in use for Whonix-Workstation.
-if [ -e /usr/share/whonix/whonix_workstation ]; then
+if [ -e /usr/share/anon-ws-base-files/workstation ]; then
    true
    exit 0
 fi

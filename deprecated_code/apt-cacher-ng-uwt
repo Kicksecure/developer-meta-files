@@ -22,9 +22,9 @@
 
 port="9104"
 
-if [ -f "/usr/share/whonix/whonix_workstation" ]; then
+if [ -f "/usr/share/anon-ws-base-files/workstation" ]; then
    ip="192.168.0.10"
-elif [ -f "/usr/share/whonix/whonix_gateway" ]; then
+elif [ -f "/usr/share/anon-gw-base-files/gateway" ]; then
    ip="127.0.0.1"
 else
    error "/usr/bin/apt-cacher-ng-uwt wrapper could not determine if this is Whonix-Workstation or Whonix-Gateway."

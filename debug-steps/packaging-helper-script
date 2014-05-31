@@ -1,0 +1,79 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o pipefail
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $0: | caller: $(caller)${reset}
+"
+   echo "Press enter to continue or ctrl +c to break."
+   read temp
+}
+
+#trap "build_all_error_handler" ERR
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+cd ..
+cd ..
+
+counter=0
+
+xxx="# On branch master
+nothing to commit (working directory clean)"
+
+for item in ./*; do
+   if [ ! -d "$item" ]; then
+      continue
+   fi
+
+
+   counter=$(( $counter + 1 ))
+   true "item: $item | counter: $counter"
+
+   #true "cp "./anon-apt-sources-list/build" "$item/""
+   #true "cp "./anon-apt-sources-list/clean" "$item/""
+   #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
+   #true "cp "./anon-apt-sources-list/GPLv3" "$item/""
+   #true "cp "./anon-apt-sources-list/Makefile" "$item/""
+   #true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
+
+   #cp "./anon-apt-sources-list/build" "$item/"
+   #cp "./anon-apt-sources-list/clean" "$item/"
+   #cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
+   #cp "./anon-apt-sources-list/GPLv3" "$item/"
+   #cp "./anon-apt-sources-list/Makefile" "$item/"
+   #cp "./anon-apt-sources-list/.gitattributes" "$item/"
+
+   #true "press enter to continue"
+   #read temp
+
+   cd "$item"
+   ./clean
+   returned="$(git status)"
+   if [ "$returned" = "$xxx" ]; then
+      cd ..
+      true "press enter to continue_not"
+      read temp
+      continue
+   fi
+
+   git add -A
+   git diff --cached
+   true "enter commit message!"
+   read msg
+   git commit -a -m "$xxx"
+   git status
+   cd ..
+
+   true "press enter to continue_did"
+   read temp
+
+done
