@@ -12,7 +12,7 @@ build_all_error_handler() {
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $0: | caller: $(caller)${reset}
 "
-   echo "Press enter to continue or ctrl +c to break."
+   echo "Press enter to continue or ctrl +c to break or enter to continue."
    read temp
 }
 
@@ -34,6 +34,7 @@ for item in ./*; do
       continue
    fi
 
+   #set +x
 
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
@@ -56,12 +57,12 @@ for item in ./*; do
    #read temp
 
    cd "$item"
-   ./clean
+   #./clean
    returned="$(git status)"
    if [ "$returned" = "$xxx" ]; then
       cd ..
       true "press enter to continue_not"
-      read temp
+      #read temp
       continue
    fi
 
@@ -69,8 +70,26 @@ for item in ./*; do
    git diff --cached
    true "enter commit message!"
    read msg
+   if [ "$msg" ] = "x" ]; then
+      true "press enter to continue_abort"
+      read temp
+      continue
+   fi
    git commit -a -m "$xxx"
    git status
+
+   reponame="$(basename "$item")"
+
+   #git remote add adre git@github.com:adrelanos/$reponame.git
+   #git remote add troubadoour git@github.com:troubadoour/$reponame.git
+   #git remote add origin git@github.com:Whonix/$reponame.git
+   #git remote -v
+
+   #echo "** https://github.com/Whonix/$reponame"
+   #echo "** https://github.com/adrelanos/$reponame"
+
+   #kate debian/control
+
    cd ..
 
    true "press enter to continue_did"
