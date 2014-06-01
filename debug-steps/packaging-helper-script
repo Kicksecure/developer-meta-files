@@ -26,7 +26,7 @@ cd ..
 
 counter=0
 
-xxx="# On branch master
+nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
 
 echo_links() {
@@ -84,31 +84,48 @@ push_remotes() {
    #git push adre master
 }
 
+git_commit_readme() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+
+   returned="$(git status)"
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+      cd ..
+      return
+   fi
+
+   git add README.md
+   msg="readme"
+   git commit -a -m "$msg"
+   git status
+   cd ..
+}
+
 git_diff_and_commit() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
 
    returned="$(git status)"
-   if [ "$returned" = "$xxx" ]; then
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
       cd ..
-      #true "press enter to continue_not"
+      true "press enter to continue_not"
       #read temp
       return
    fi
 
-   #git add -A
-   git add README.md
-   #git diff --cached
-   #true "enter commit message!"
-   #read msg
+   git add -A
+   git diff --cached
+   true "enter commit message!"
+   read msg
    if [ "$msg" = "" ]; then
-      msg="readme"
+      msg="packaging"
    fi
    if [ "$msg" = "x" ]; then
       cd ..
-      #true "press enter to continue_abort"
-      #read temp
+      true "press enter to continue_abort"
+      read temp
       return
    fi
    git commit -a -m "$msg"
