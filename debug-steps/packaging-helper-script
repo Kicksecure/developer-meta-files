@@ -29,22 +29,45 @@ counter=0
 xxx="# On branch master
 nothing to commit (working directory clean)"
 
-for item in ./*; do
-   if [ ! -d "$item" ]; then
-      continue
+echo_links() {
+   trap "build_all_error_handler" ERR
+
+   echo "https://github.com/Whonix/$reponame"
+   #echo "https://github.com/adrelanos/$reponame"
+}
+
+add_remotes() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   git remote add adre git@github.com:adrelanos/$reponame.git
+   git remote add troubadoour git@github.com:troubadoour/$reponame.git
+   git remote add origin git@github.com:Whonix/$reponame.git
+   git remote -v
+}
+
+generic_readme_copy() {
+   echo "$item" | grep --quiet "whonix"
+   if [ "$?" = "0" ]; then
+      true "skipped $item"
+      return
    fi
 
-   set +x
+   trap "build_all_error_handler" ERR
 
-   counter=$(( $counter + 1 ))
-   true "item: $item | counter: $counter"
+   #echo "cp ./anon-apt-sources-list/README.md "$item/""
+   cp ./anon-apt-sources-list/README.md "$item/"
+}
 
-   #true "cp "./anon-apt-sources-list/build" "$item/""
-   #true "cp "./anon-apt-sources-list/clean" "$item/""
-   #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
-   #true "cp "./anon-apt-sources-list/GPLv3" "$item/""
-   #true "cp "./anon-apt-sources-list/Makefile" "$item/""
-   #true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
+copy_packaging() {
+   trap "build_all_error_handler" ERR
+
+   true "cp "./anon-apt-sources-list/build" "$item/""
+   true "cp "./anon-apt-sources-list/clean" "$item/""
+   true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
+   true "cp "./anon-apt-sources-list/GPLv3" "$item/""
+   true "cp "./anon-apt-sources-list/Makefile" "$item/""
+   true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
 
    #cp "./anon-apt-sources-list/build" "$item/"
    #cp "./anon-apt-sources-list/clean" "$item/"
@@ -52,55 +75,65 @@ for item in ./*; do
    #cp "./anon-apt-sources-list/GPLv3" "$item/"
    #cp "./anon-apt-sources-list/Makefile" "$item/"
    #cp "./anon-apt-sources-list/.gitattributes" "$item/"
+}
 
-   #true "press enter to continue"
-   #read temp
+push_remotes() {
+   trap "build_all_error_handler" ERR
+
+   git push origin master
+   #git push adre master
+}
+
+git_diff_and_commit() {
+   trap "build_all_error_handler" ERR
 
    cd "$item"
 
-   #git push origin master
-   #git push adre master
-   #cd ..
-   #continue
-
-   #./clean
-   #returned="$(git status)"
-   #if [ "$returned" = "$xxx" ]; then
-      #cd ..
+   returned="$(git status)"
+   if [ "$returned" = "$xxx" ]; then
+      cd ..
       #true "press enter to continue_not"
       #read temp
-      #continue
-   #fi
+      return
+   fi
 
    #git add -A
+   git add README.md
    #git diff --cached
    #true "enter commit message!"
    #read msg
-   #if [ "$msg" ] = "x" ]; then
+   if [ "$msg" = "" ]; then
+      msg="readme"
+   fi
+   if [ "$msg" = "x" ]; then
+      cd ..
       #true "press enter to continue_abort"
       #read temp
-      #continue
-   #fi
-   #git commit -a -m "$xxx"
-   #git status
-
-   reponame="$(basename "$item")"
-
-   #git remote add adre git@github.com:adrelanos/$reponame.git
-   #git remote add troubadoour git@github.com:troubadoour/$reponame.git
-   #git remote add origin git@github.com:Whonix/$reponame.git
-   #git remote -v
-
-   #echo "https://github.com/Whonix/$reponame"
-   #echo "** https://github.com/adrelanos/$reponame"
-
-   echo "$reponame"
-
-   #kate debian/control
-
+      return
+   fi
+   git commit -a -m "$msg"
+   git status
    cd ..
+}
 
-   true "press enter to continue_did"
+for item in ./*; do
+   if [ ! -d "$item" ]; then
+      continue
+   fi
+
+   #set +x
+
+   counter=$(( $counter + 1 ))
+   true "item: $item | counter: $counter"
+
+   #generic_readme_copy
+   git_diff_and_commit
+
+   true
+   true
+   true
+
+   #true "press enter to continue_did"
    #read temp
 
 done
