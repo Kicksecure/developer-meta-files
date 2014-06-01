@@ -152,12 +152,6 @@ ca-certificates
 ## required for sdwdate ## dependency
 curl
 
-## required for whonixcheck, provides /usr/bin/wall ## dependency
-bsdutils
-
-## required for whonixcheck, provides /usr/bin/mesg ## dependency
-sysvinit-utils
-
 ## required for graphical whonixcheck ## dependency
 ## required for graphical timesync ## dependency
 zenity
@@ -175,10 +169,6 @@ python-stem
 
 ## required for whonixcheck (for msgcollector), for moving the window on the desktop
 wmctrl
-
-## required for backgroundd (desktop background image manipulation)
-imagemagick
-gsfonts
 
 ## Can detect whether we are running in a virtual machine or not, ## dependency
 ## depending on that, we can enable/disable certain features. For example
@@ -203,7 +193,7 @@ vrms
 ## Contains killall. ## dependency
 psmisc
 
-## For setting default locale in whonix_shared/usr/share/whonix/postinst.d/70_locale ## dependency
+## dependency
 locales
 
 ## required for the whonix_repository tool GUI
@@ -215,7 +205,7 @@ dialog
 ## (not in debian/control, otherwise lintian warning depends-on-essential-package-without-using-version)
 coreutils
 
-## contains tput (required for cli colors whonxicheck, timesync and torbrowser) ## dependency
+## contains tput (required for cli colors whonixcheck, timesync and torbrowser) ## dependency
 ## (not in debian/control, otherwise lintian warning depends-on-essential-package-without-using-version)
 ncurses-bin
 
