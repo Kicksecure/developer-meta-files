@@ -80,8 +80,15 @@ copy_packaging() {
 push_remotes() {
    trap "build_all_error_handler" ERR
 
-   git push origin master
+   cd "$item"
+
+   git push origin master &
+   git_pid="$!"
+   git_pid_list="$git_pid_list $git_pid"
+
    #git push adre master
+
+   cd ..
 }
 
 git_commit_readme() {
@@ -117,20 +124,29 @@ git_diff_and_commit() {
 
    git add -A
    git diff --cached
-   true "enter commit message!"
-   read msg
-   if [ "$msg" = "" ]; then
-      msg="packaging"
-   fi
-   if [ "$msg" = "x" ]; then
-      cd ..
-      true "press enter to continue_abort"
-      read temp
-      return
-   fi
-   git commit -a -m "$msg"
+   git commit
+   #true "enter commit message!"
+   #local msg
+   #msg=""
+   #read msg
+   #if [ "$msg" = "" ]; then
+      #msg="packaging"
+   #fi
+   #if [ "$msg" = "x" ]; then
+      #cd ..
+      #true "press enter to continue_abort"
+      #read temp
+      #return
+   #fi
+   #git commit -a -m "$msg"
    git status
    cd ..
+}
+
+open_debian_control() {
+   trap "build_all_error_handler" ERR
+
+   kate "$item/debian/control"
 }
 
 for item in ./*; do
@@ -145,6 +161,8 @@ for item in ./*; do
 
    #generic_readme_copy
    git_diff_and_commit
+   #push_remotes
+   #open_debian_control
 
    true
    true
