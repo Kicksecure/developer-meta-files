@@ -78,19 +78,19 @@ echo '\
 ##       (This is a limitation of (grml-)debootstrap.)
 
 ## i386 is the default target architecture,
-## if WHONIX_TARGET_ARCH variable is not set or empty.
-#export WHONIX_TARGET_ARCH="i386"
+## if BUILD_TARGET_ARCH variable is not set or empty.
+#export BUILD_TARGET_ARCH="i386"
 
 ## Interesting target architecture for custom builds: 64 bit
 ## Despite its name, works on AMD and Intel.
-export WHONIX_TARGET_ARCH="amd64"
+export BUILD_TARGET_ARCH="amd64"
 
 ## Also interesting target architectures for custom builds: Kernel of FreeBSD
 ## Will not work out of the box for Whonix-Gateway, because Whonix Firewall
 ## is based on iptables (Linux) and the FreeBSD does not support iptables,
 ## its firewall is pf. The Whonix iptables rules would have to be rewritten in pf.
-#export WHONIX_TARGET_ARCH="kfreebsd-amd64"
-#export WHONIX_TARGET_ARCH="kfreebsd-i386"
+#export BUILD_TARGET_ARCH="kfreebsd-amd64"
+#export BUILD_TARGET_ARCH="kfreebsd-i386"
 ' | sudo tee "/etc/whonix_buildconfig.d/50_target_arch" > /dev/null
 
 ## Currently out commented, because apt-cacher-ng does not like our sourceforge

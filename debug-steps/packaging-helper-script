@@ -95,19 +95,6 @@ add_remotes() {
    git remote -v
 }
 
-generic_readme_copy() {
-   echo "$item" | grep --quiet "whonix"
-   if [ "$?" = "0" ]; then
-      true "skipped $item"
-      return
-   fi
-
-   trap "build_all_error_handler" ERR
-
-   #echo "cp ./anon-apt-sources-list/README.md "$item/""
-   cp ./anon-apt-sources-list/README.md "$item/"
-}
-
 copy_packaging() {
    trap "build_all_error_handler" ERR
 
@@ -144,16 +131,9 @@ git_commit_readme() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
-
-   returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
-      cd ..
-      return
-   fi
-
    git add README.md
    msg="readme"
-   git commit -a -m "$msg"
+   git commit -m "$msg"
    git status
    cd ..
 }
@@ -208,10 +188,10 @@ for item in ./*; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
-   make_readme
-   #generic_readme_copy
+   #make_readme
+   #git_commit_readme
    #git_diff_and_commit
-   #push_remotes
+   push_remotes
    #open_debian_control
 
    true
