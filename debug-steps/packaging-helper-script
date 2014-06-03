@@ -29,6 +29,56 @@ counter=0
 nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
 
+make_readme() {
+   trap "build_all_error_handler" ERR
+
+   if [ ! -f "$item/debian/control" ]; then
+      true "No file. Press enter to continue."
+      read temp
+      return
+   fi
+
+   local readme_file line first_word matched
+   readme_file="$item/README.md"
+   rm --force "$readme_file"
+
+   matched="false"
+
+   while read -r line; do
+      read -r first_word _ <<< "$line"
+      if [ "$matched" = "true" ]; then
+         if [ "$line" = "." ]; then
+            echo "" >> "$readme_file"
+         else
+            echo "$line" >> "$readme_file"
+         fi
+      fi
+      if [ "$first_word" = "Description:" ]; then
+         matched="true"
+         line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
+         echo "#$line_with_keyword #" >> "$readme_file"
+         echo "" >> "$readme_file"
+      fi
+   done < "$item/debian/control"
+
+   echo "" >> "$readme_file"
+   echo '(This package description has been [automatically](https://github.com/Whonix/whonix-developer-meta-files/blob/master/debug-steps/packaging-helper-script) extracted and mirrored from `debian/control`.)' >> "$readme_file"
+   echo "" >> "$readme_file"
+
+   if [ -d "$item/man" ]; then
+      echo "# Manual Page #" >> "$readme_file"
+      echo ""
+      echo "See also `man` folder for more information"
+      echo ""
+   fi
+
+   while read -r line; do
+      echo "$line" >> "$readme_file"
+   done < ./whonix-developer-meta-files/README_generic.md
+
+   true "Done: $readme_file"
+}
+
 echo_links() {
    trap "build_all_error_handler" ERR
 
@@ -159,8 +209,9 @@ for item in ./*; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
+   make_readme
    #generic_readme_copy
-   git_diff_and_commit
+   #git_diff_and_commit
    #push_remotes
    #open_debian_control
 
