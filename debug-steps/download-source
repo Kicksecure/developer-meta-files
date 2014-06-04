@@ -19,28 +19,28 @@ source ../../Whonix/help-steps/variables
 download_sources() {
    trap "error_handler_general" ERR INT TERM
 
-   "$MYDIR"/mount-img
+   "$MYDIR"/mount-raw
    "$MYDIR"/prevent-daemons-from-starting
 
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
-   "$MYDIR"/chroot-img
+   "$MYDIR"/chroot-raw
 
    $CHROOT "/usr/share/whonix/whonix_download_sources"
    sync
 
-   "$MYDIR"/unchroot-img
+   "$MYDIR"/unchroot-raw
    "$MYDIR"/unprevent-daemons-from-starting
-   "$MYDIR"/unmount-img
+   "$MYDIR"/unmount-raw
 }
 
 move_sources() {
    trap "error_handler_general" ERR INT TERM
 
-   "$MYDIR"/mount-img
+   "$MYDIR"/mount-raw
    "$MYDIR"/prevent-daemons-from-starting
 
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
-   "$MYDIR"/chroot-img
+   "$MYDIR"/chroot-raw
 
    mkdir --parents ""$WHONIX_BINARY"/sources/"$VMNAME""
 
@@ -50,9 +50,9 @@ move_sources() {
 
    chown --recursive "$user_name:$user_name" ""$WHONIX_BINARY"/"
 
-   "$MYDIR"/unchroot-img
+   "$MYDIR"/unchroot-raw
    "$MYDIR"/unprevent-daemons-from-starting
-   "$MYDIR"/unmount-img
+   "$MYDIR"/unmount-raw
 }
 
 true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"

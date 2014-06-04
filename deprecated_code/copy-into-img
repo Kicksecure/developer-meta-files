@@ -16,14 +16,14 @@ source ../../Whonix/help-steps/variables
 
 trap "error_handler_general" ERR INT TERM
 
-error_handler_copy-into-img() {
+error_handler_copy-into-raw() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $0: | caller: $(caller)${reset}
-Unmounting img...
+Unmounting raw...
 "
 
-   "$WHONIX_SOURCE_FOLDER"/help-steps/unmount-img
+   "$WHONIX_SOURCE_FOLDER"/help-steps/unmount-raw
 
    : echo "
 {red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
@@ -34,7 +34,7 @@ ${red}${bold}ERROR $0: | caller: $(caller)${reset}
 }
 
 copy_into_vm_image_whonix_gateway() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    copy_backup_shared
    copy_into_shared
@@ -47,7 +47,7 @@ copy_into_vm_image_whonix_gateway() {
 }
 
 copy_into_vm_image_whonix_workstation() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    copy_backup_shared
    copy_into_shared
@@ -60,7 +60,7 @@ copy_into_vm_image_whonix_workstation() {
 }
 
 copy_backup_shared() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## Better no backup of localtime.
    #cp --no-clobber "$CHROOT_FOLDER"/etc/localtime "$CHROOT_FOLDER"/etc/localtime.backup
@@ -79,28 +79,28 @@ copy_backup_shared() {
 }
 
 copy_into_shared() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## Copy
    rsync --verbose --perms --recursive --checksum "$WHONIX_SOURCE_FOLDER"/whonix_shared/ "$CHROOT_FOLDER"/
 }
 
 copy_backup_gateway() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## Backup torrc inside VM before replacing it with Whonix version.
    cp --no-clobber "$CHROOT_FOLDER"/etc/tor/torrc "$CHROOT_FOLDER"/etc/tor/torrc.backup
 }
 
 copy_into_gateway() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## Copy
    rsync --verbose --perms --recursive --checksum "$WHONIX_SOURCE_FOLDER"/whonix_gateway/ "$CHROOT_FOLDER"/
 }
 
 copy_backup_workstation() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## /etc/polipo/config
    ## not installing polipo by default
@@ -112,7 +112,7 @@ copy_backup_workstation() {
 }
 
 copy_into_workstation() {
-   trap "error_handler_copy-into-img" ERR INT TERM
+   trap "error_handler_copy-into-raw" ERR INT TERM
 
    ## /etc/resolv.conf
    ## We do not need chattr +i for Whonix-W resolv.conf, because
@@ -128,7 +128,7 @@ true "${cyan}NOTE: The $0 script will not automatically replace files with the .
 
 sleep 3
 
-"$WHONIX_SOURCE_FOLDER"/help-steps/mount-img
+"$WHONIX_SOURCE_FOLDER"/help-steps/mount-raw
 
 if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
    copy_into_vm_image_whonix_gateway
@@ -138,7 +138,7 @@ else
    bug "${red}${bold}ERROR${reset}: Neither WHONIX_BUILD_GATEWAY nor WHONIX_BUILD_WORKSTATION is set to 1. Please report this bug!"
 fi
 
-"$WHONIX_SOURCE_FOLDER"/help-steps/unmount-img
+"$WHONIX_SOURCE_FOLDER"/help-steps/unmount-raw
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

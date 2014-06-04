@@ -24,9 +24,9 @@ run-chroot-scripts() {
 
    sync
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/prevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-raw
 
    sync
 
@@ -68,9 +68,9 @@ run-chroot-scripts() {
 
    sync
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
 
    sync
 }

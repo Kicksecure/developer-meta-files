@@ -14,23 +14,23 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
-error_handler_interactive-chroot-img-shell() {
-   trap "error_handler_interactive-img" ERR INT TERM
+error_handler_interactive-chroot-raw-shell() {
+   trap "error_handler_interactive-raw" ERR INT TERM
 
    echo "${green}INFO${reset}: Exited (1) interactive shell."
    sync
 }
 
-error_handler_interactive-chroot-img() {
+error_handler_interactive-chroot-raw() {
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $0: | caller: $(caller)${reset}
-Unchrooting.. Unpreventing daemons from starting... Unmounting img...
+Unchrooting.. Unpreventing daemons from starting... Unmounting raw...
 "
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
 
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
@@ -40,17 +40,17 @@ ${red}${bold}ERROR $0: | caller: $(caller)${reset}
    exit 1
 }
 
-interactive-chroot-img() {
-   trap "error_handler_interactive-chroot-img" ERR INT TERM
+interactive-chroot-raw() {
+   trap "error_handler_interactive-chroot-raw" ERR INT TERM
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
 
    echo "${cyan}INFO: Trying to prevent daemons from starting, if /usr/sbin/ folder already exist (will fail open, if not)...${reset}"
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/prevent-daemons-from-starting || true
 
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-raw
 
    sync
 
@@ -79,7 +79,7 @@ interactive-chroot-img() {
    echo "    When you are done, do not forget to leave the shell using: exit 0${reset}"
 
    ## Run interactive shell.
-   trap "error_handler_interactive-chroot-img-shell" ERR INT TERM
+   trap "error_handler_interactive-chroot-raw-shell" ERR INT TERM
    $CHROOT "/bin/bash"
 
    echo "${green}INFO: Exited (0) interactive shell.${reset}"
@@ -92,9 +92,9 @@ interactive-chroot-img() {
    ## Implemented in help-steps/pre.
    disable_apt_cache
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
 
    sync
 
@@ -102,6 +102,6 @@ interactive-chroot-img() {
 }
 
 true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
-interactive-chroot-img
+interactive-chroot-raw
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"

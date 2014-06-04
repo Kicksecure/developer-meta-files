@@ -42,7 +42,7 @@ verify_copied_files() {
 verify_copied_f() {
    trap "error_handler_unmount" ERR INT TERM
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
    ## Setting +x because the for loops otherwise cause too much output.
    set +x
 
@@ -57,7 +57,7 @@ verify_copied_f() {
    fi
 
    set -x
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
 }
 
 true "${bold}${under}INFO: Currently running script: $0 ${1+"$@"}${reset}"

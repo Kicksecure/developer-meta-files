@@ -248,7 +248,7 @@ if [[ "$1" = "-tg-createimg" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    VMSIZE="2G"
-   create_img
+   create_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -259,7 +259,7 @@ fi
 if [[ "$1" = "-tg-copyimg" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
-   copy_img
+   copy_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -296,9 +296,9 @@ if [[ "$1" = "-tg-copyinto" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    copy_into_vm_image_whonix_gateway
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -310,11 +310,11 @@ if [[ "$1" = "-tg-chroot" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    inside_chroot
    do_unchroot
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -326,11 +326,11 @@ if [[ "$1" = "-tg-interactive" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    interactive_chroot
    do_unchroot
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -342,12 +342,12 @@ if [[ "$1" = "-tg-source" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    download_sources
    do_unchroot
    move_sources
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -395,7 +395,7 @@ if [[ "$1" = "-tw-createimg" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    VMSIZE="50G"
-   create_img
+   create_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -406,7 +406,7 @@ fi
 if [[ "$1" = "-tw-copyimg" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
-   copy_img
+   copy_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -443,9 +443,9 @@ if [[ "$1" = "-tw-copyinto" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    copy_into_vm_image_whonix_workstation
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -457,11 +457,11 @@ if [[ "$1" = "-tw-chroot" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    inside_chroot
    do_unchroot
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -473,11 +473,11 @@ if [[ "$1" = "-tw-interactive" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    interactive_chroot
    do_unchroot
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -489,12 +489,12 @@ if [[ "$1" = "-tw-source" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    do_chroot
    download_sources
    do_unchroot
    move_sources
-   unmount_img
+   unmount_raw
    : echo "BUILD INFO: Done, if success, next step should be: see sudo ./whonix_createvm -help"
    exit 0
 fi
@@ -542,7 +542,7 @@ if [[ "$1" = "-tg-mountimg" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    : echo "INFO: mount done."
    : echo "- Mounted to: cd \"$CHROOT_FOLDER\""
    : echo "- Leave the folder after you are done!!! cd ~"
@@ -558,7 +558,7 @@ if [[ "$1" = "-tg-unmountimg" ]]; then
    root_check
    VMNAME="Whonix-Gateway"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   unmount_img
+   unmount_raw
    : echo "INFO: unmount done."
    exit 0
 fi
@@ -570,7 +570,7 @@ if [[ "$1" = "-tw-mountimg" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   mount_img
+   mount_raw
    : echo "INFO: mount done."
    : echo "- Mounted to: cd \"$CHROOT_FOLDER\""
    : echo "- Leave the folder after you are done!!! cd ~"
@@ -586,7 +586,7 @@ if [[ "$1" = "-tw-unmountimg" ]]; then
    root_check
    VMNAME="Whonix-Workstation"
    CHROOT_FOLDER=/home/"$user_name"/whonix_binary/"$VMNAME"_image
-   unmount_img
+   unmount_raw
    echo "INFO: unmount done."
    exit 0
 fi
@@ -672,7 +672,7 @@ am_I_sourced() {
 if am_I_sourced -v; then
   true
 else
-  run-chroot-script-img
+  run-chroot-script-raw
 fi
 
    ## No longer neccessary.
@@ -1128,7 +1128,7 @@ Description: Dummy Tor Package
    /sbin/parted --machine "$raw_file" unit B print > "$auto_hash_folder/$raw_file_basename.parted_--unit_B_print"
 
    ## BYT;
-   ## /home/user/whonix_binary/$tempfolder/raw_folder/Whonix-Gateway-7.img:107374182400B:file:512:512:msdos:;
+   ## /home/user/whonix_binary/$tempfolder/raw_folder/Whonix-Gateway-7.raw:107374182400B:file:512:512:msdos:;
    ## 1:2097152B:107374182399B:107372085248B:ext4::;
 
    sudo -E -u "$user_name" \

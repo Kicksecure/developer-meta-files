@@ -25,7 +25,7 @@ unmount_vdi_force() {
    sync || true
 
    "$MYDIR"/unprevent-daemons-from-starting || true
-   "$MYDIR"/unchroot-img || true
+   "$MYDIR"/unchroot-raw || true
 
    ## Will be called if there is an error.
    ## || true to avoid more errors and to ensure

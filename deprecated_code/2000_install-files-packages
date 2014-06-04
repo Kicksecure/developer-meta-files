@@ -30,7 +30,7 @@ install-files-packages() {
 
    sync
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/prevent-daemons-from-starting
 
    ## Deactivate mounting of /etc/resolv.conf inside chroot,
@@ -38,7 +38,7 @@ install-files-packages() {
    ## is going to be installed.
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-raw
 
    unset WHONIX_CHROOT_MOUNT_RESOLV_CONF
 
@@ -86,9 +86,9 @@ install-files-packages() {
    ## Implemented in help-steps/pre.
    disable_apt_cache
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-img
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
 
    sync
 }
