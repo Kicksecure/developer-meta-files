@@ -215,6 +215,11 @@ udisks
 ## contains sfill, which can be used to zero out free space, which is required for disk shrinking ## recommended
 secure-delete
 
+## Useful for people who wish to hide Tor by using a VPN. ## recommended
+## Otherwise they would have a hard time installing it while hiding Tor, if not
+## installed by default
+openvpn
+
 ###################
 ## Desktop Basics #
 ###################
@@ -273,6 +278,9 @@ khelpcenter4
 
 ## log viewer ## LITE ## recommended
 ksystemlog
+
+## OpenVPN GUI
+network-manager-kde
 
 ## accessibility: kdeaccessibility ## LITE ## recommended
 kdeaccessibility
