@@ -29,7 +29,7 @@ version="$whonix_build_closest_git_tag"
 #sf_project="whonixdevelopermetafiles"
 #server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$project/$version/"
 
-server="root@199.127.226.139:/var/www/$version/"
+server="root@199.127.226.139:/var/rsync/$version/"
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
