@@ -37,7 +37,7 @@ rsync \
    --compress-level=9 \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/"*".asc" \
-   "adrelanos@92.243.7.197:/home/adrelanos/download/$version-sig/"
+   "adrelanos@whonix.org:/home/adrelanos/download/$version-sig/"
 
 true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
@@ -49,7 +49,7 @@ rsync \
    --compress-level=9 \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/"*".asc" \
-   "adrelanos@92.243.7.197:/home/adrelanos/download/$version-sig/"
+   "adrelanos@whonix.org:/home/adrelanos/download/$version-sig/"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
