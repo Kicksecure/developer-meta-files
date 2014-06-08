@@ -42,9 +42,7 @@ read temp
 ## Test.
 rsync \
    --dry-run \
-   --partial \
-   --progress \
-   --verbose \
+   $rsync_opts \
    "$WHONIX_BINARY/sha512sum" \
    "$WHONIX_BINARY/"*".ova" \
    "$WHONIX_BINARY/"*".qcow2.xz" \
@@ -62,9 +60,7 @@ while true; do
 
    rsync_exit_code="0"
    rsync \
-      --partial \
-      --progress \
-      --verbose \
+      $rsync_opts \
       "$WHONIX_BINARY/sha512sum" \
       "$WHONIX_BINARY/"*".ova" \
       "$WHONIX_BINARY/"*".qcow2.xz" \

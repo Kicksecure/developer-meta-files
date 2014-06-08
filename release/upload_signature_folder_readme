@@ -42,9 +42,7 @@ read temp
 
 sudo -u "$user_name" \
    rsync \
-      --partial \
-      --progress \
-      --verbose \
+      $rsync_opts \
       --rsh ssh \
       "$WHONIX_BINARY/signature_folder_README.asc" \
       "adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/whonix-$WHONIX_BUILD_WHONIX_VERSION-sig/README"

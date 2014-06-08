@@ -42,9 +42,7 @@ read temp
 
 sudo -E -u "$user_name" \
    rsync \
-      --partial \
-      --progress \
-      --verbose \
+      $rsync_opts \
       --rsh ssh \
       "$WHONIX_BINARY/main_folder_README.asc" \
       adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/README

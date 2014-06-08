@@ -58,10 +58,8 @@ read temp
 true "${cyan}INFO $0: Running dists with --dry-run...${reset}"
 rsync \
    --dry-run \
-   --partial \
-   --progress \
+   $rsync_opts \
    --recursive \
-   --verbose \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
@@ -72,10 +70,8 @@ read temp
 true "${cyan}INFO $0: Running pool with --dry-run...${reset}"
 rsync \
    --dry-run \
-   --partial \
-   --progress \
+   $rsync_opts \
    --recursive \
-   --verbose \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
@@ -86,20 +82,15 @@ read temp
 
 true "${cyan}INFO $0: Uploading dists...${reset}"
 rsync \
-   --partial \
-   --progress \
+   $rsync_opts \
    --recursive \
-   --verbose \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
 true "${cyan}INFO $0: Uploading pool...${reset}"
-rsync \
-   --partial \
-   --progress \
+   $rsync_opts \
    --recursive \
-   --verbose \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/

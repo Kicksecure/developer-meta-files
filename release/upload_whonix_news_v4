@@ -123,9 +123,7 @@ read temp
 true "${cyan}INFO $0: Running with --dry-run...${reset}"
 rsync \
    --dry-run \
-   --partial \
-   --progress \
-   --verbose \
+   $rsync_opts \
    --rsh ssh \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
@@ -136,9 +134,7 @@ read temp
 
 true "${cyan}INFO $0: Uploading...${reset}"
 rsync \
-   --partial \
-   --progress \
-   --verbose \
+   $rsync_opts \
    --rsh ssh \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \

@@ -31,10 +31,7 @@ read temp
 ## Test.
 rsync \
    --dry-run \
-   --compress \
-   --archive \
-   --verbose \
-   --compress-level=9 \
+   $rsync_opts \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@whonix.org:/home/adrelanos/download/$version-torrent/"
@@ -43,10 +40,7 @@ true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
 
 rsync \
-   --compress \
-   --archive \
-   --verbose \
-   --compress-level=9 \
+   $rsync_opts \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@whonix.org:/home/adrelanos/download/$version-torrent/"
