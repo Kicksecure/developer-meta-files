@@ -154,20 +154,6 @@ git_diff_and_commit() {
    git add -A
    git diff --cached
    git commit
-   #true "enter commit message!"
-   #local msg
-   #msg=""
-   #read msg
-   #if [ "$msg" = "" ]; then
-      #msg="packaging"
-   #fi
-   #if [ "$msg" = "x" ]; then
-      #cd ..
-      #true "press enter to continue_abort"
-      #read temp
-      #return
-   #fi
-   #git commit -a -m "$msg"
    git status
    cd ..
 }
