@@ -190,8 +190,8 @@ for item in ./*; do
 
    #make_readme
    #git_commit_readme
-   #git_diff_and_commit
-   push_remotes
+   git_diff_and_commit
+   #push_remotes
    #open_debian_control
 
    true

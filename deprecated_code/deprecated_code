@@ -805,11 +805,11 @@ echo '
 ## (See /etc/environment.)
 user_pref("extensions.torbutton.use_privoxy", false);
 user_pref("extensions.torbutton.settings_method", "custom");
-user_pref("extensions.torbutton.socks_host", "192.168.0.10");
+user_pref("extensions.torbutton.socks_host", "10.152.152.10");
 user_pref("extensions.torbutton.socks_port", 9100);
-user_pref("network.proxy.socks", "192.168.0.10");
+user_pref("network.proxy.socks", "10.152.152.10");
 user_pref("network.proxy.socks_port", 9100);
-user_pref("extensions.torbutton.custom.socks_host", "192.168.0.10");
+user_pref("extensions.torbutton.custom.socks_host", "10.152.152.10");
 user_pref("extensions.torbutton.custom.socks_port", 9100);
 
 ## End of Whonix user.js.
