@@ -1233,3 +1233,66 @@ install_initial_packages() {
 #rm --verbose --force /usr/sbin/policy-rc.d
 
 ## }}}
+
+bump_debian_changelog_version() {
+   trap "error_handler_general" ERR INT TERM
+
+   true "${cyan}$0 INFO: Automatically bumping version number in debian/changelog... ${reset}"
+
+   cd "$MYDIR"
+   cd ..
+
+   ## debchange in Ubuntu somehow does not support --vendor, only --distributor.
+   ## Small workaround for travis-ci (using Ubuntu).
+   if [ "$whonix_build_on_operating_system" = "ubuntu" ]; then
+      ## Using --distributor when Ubuntu is detected.
+      debchange_vendor_cmd="--distributor"
+   else
+      ## Otherwise fall back to --vendor.
+      debchange_vendor_cmd="--vendor"
+   fi
+
+   ## Debugging.
+   faketime --version
+   ls -la ./debian/changelog || true
+
+   ## bump changelog version numbers
+   ## whonix is written in lower case,
+   ## because that is the name of the file in /etc/dpkg/origins/
+   local package
+   package="whonix"
+   echo "\
+$package ($whonix_build_new_changelog_version) $WHONIX_BUILD_APT_CODENAME; urgency=low
+
+  * This is an auto-generated file. Local auto bump version. Build from:
+  * whonix_build_current_git_head: $whonix_build_current_git_head
+  * whonix_build_new_changelog_version: $whonix_build_new_changelog_version
+  * whonix_build_closest_git_tag: $whonix_build_closest_git_tag
+
+ -- $DEBFULLNAME <$DEBEMAIL>  Thu, 15 Aug 2013 11:02:35 +0000
+" > ./debian/changelog
+
+   ## Explicitly set access time, so we end up with a deterministic debian.tar.gz file
+   shopt -s globstar
+   touch -t "201308151102.35" ./debian
+   touch -t "201308151102.35" ./debian/**
+   shopt -u globstar
+
+   ## Debugging.
+   ls -la ./debian/changelog || true
+   cat ./debian/changelog
+
+   true "${cyan}$0 INFO: Bumped version number in debian/changelog. ${reset}"
+}
+
+create_whonix_upstream_tarball() {
+   trap "error_handler_general" ERR INT TERM
+
+   ## Creating upstream tarball, because we are creating a non-native Debian package.
+   true "${cyan}$0 INFO: Creating upstream tarball... ${reset}"
+
+   sudo -E -u "$user_name" \
+       "$WHONIX_SOURCE_HELP_STEPS_FOLDER/make-debian-package-upstream-tarball"
+
+   true "${cyan}$0 INFO: Created upstream tarball. ${reset}"
+}

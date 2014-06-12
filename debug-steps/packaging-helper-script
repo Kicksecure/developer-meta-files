@@ -23,6 +23,8 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 cd ..
 cd ..
+cd Whonix
+cd packages
 
 counter=0
 
@@ -164,7 +166,21 @@ open_debian_control() {
    kate "$item/debian/control"
 }
 
-for item in ./*; do
+git_submodule_file_writer() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+
+   echo "\
+[submodule \"packages/$reponame\"]
+        path = packages/$reponame
+        url = git@github.com:Whonix/$reponame.git
+" >> ../".gitmodules"
+}
+
+folder_list="$(echo ./* | sort)"
+
+for item in $folder_list; do
    if [ ! -d "$item" ]; then
       continue
    fi
@@ -179,6 +195,7 @@ for item in ./*; do
    git_diff_and_commit
    #push_remotes
    #open_debian_control
+   #git_submodule_file_writer
 
    true
    true
