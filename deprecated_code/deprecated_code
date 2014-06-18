@@ -1296,3 +1296,95 @@ create_whonix_upstream_tarball() {
 
    true "${cyan}$0 INFO: Created upstream tarball. ${reset}"
 }
+
+## {{{ whonix_build_old_changelog_version
+
+## fallback
+export whonix_build_old_changelog_version="ERROR. Please report this bug! whonix_build_old_changelog_version could not be determined."
+
+cd "$WHONIX_SOURCE_FOLDER"
+
+if [ "$no_dpkg_parsechangelog" = "1" ]; then
+   whonix_build_old_changelog_version="dpkg-parsechangelog deactivated"
+elif [ -f "$WHONIX_SOURCE_FOLDER/debian/changelog" ]; then
+   command -v dpkg-parsechangelog >/dev/null
+   OIFS="${IFS}"
+   NIFS=$'\n'
+   IFS="${NIFS}"
+   unset line
+   for line in $(dpkg-parsechangelog); do
+      first="$(echo "$line" | awk '{print $1}')"
+      second="$(echo "$line" | awk '{print $2}')"
+      first="$(echo "$first" | awk '{print tolower($0)}')"
+      if [ "$first" = "version:" ]; then
+         export whonix_build_old_changelog_version="$second"
+         break
+      fi
+   done
+   unset line
+
+   IFS="${OIFS}"
+else
+   whonix_build_old_changelog_version="none"
+fi
+
+#echo "whonix_build_old_changelog_version: $whonix_build_old_changelog_version"
+
+## }}}
+
+## {{{ whonix_build_whonix_version_old
+
+## Deactivated. No longer required.
+
+#whonix_build_whonix_version_old="$whonix_build_old_changelog_version"
+#whonix_build_whonix_version_old="$(echo "$whonix_build_whonix_version_old" | tr "-" " ")"
+#whonix_build_whonix_version_old="$(echo "$whonix_build_whonix_version_old" | awk '{print $1}')"
+
+#echo "whonix_build_whonix_version_old: $whonix_build_whonix_version_old"
+
+## }}}
+
+## {{{ whonix_build_old_deb_revision_version
+
+## Deactivated. No longer required.
+
+#whonix_build_old_deb_revision_version="$whonix_build_old_changelog_version"
+#whonix_build_old_deb_revision_version="$(echo "$whonix_build_old_deb_revision_version" | tr "-" " ")"
+#whonix_build_old_deb_revision_version="$(echo "$whonix_build_old_deb_revision_version" | awk '{print $2}')"
+#whonix_build_old_deb_revision_version="$(echo "$whonix_build_old_deb_revision_version" | sed 's/debpackage//g')"
+
+#echo "whonix_build_old_deb_revision_version: ${whonix_build_old_deb_revision_version}"
+
+## }}}
+
+## {{{ whonix_build_new_deb_revision_version
+
+#whonix_build_new_deb_revision_version="$(( ${whonix_build_old_deb_revision_version} + 1 ))"
+
+#whonix_build_new_deb_revision_version="${whonix_build_old_deb_revision_version}"
+
+#echo "whonix_build_new_deb_revision_version: $whonix_build_new_deb_revision_version"
+
+## }}}
+
+## {{{ whonix_build_new_changelog_version
+
+whonix_build_new_deb_revision_version="1"
+
+## You can learn more about epoch here:
+## http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version
+whonix_build_debian_version_epoch="2"
+
+whonix_build_new_changelog_version="${whonix_build_debian_version_epoch}:${whonix_build_closest_git_tag}-debpackage${whonix_build_new_deb_revision_version}"
+
+echo "whonix_build_new_changelog_version: $whonix_build_new_changelog_version"
+
+## }}}
+
+   ## Create backup of grml-debootstrap's original chroot-script.
+   cp --no-clobber "/etc/debootstrap/chroot-script" "/etc/debootstrap/chroot-script.backup"
+
+   ## Use chroot-script with fixed DPKG_OPTIONS variable.
+   ## This hack can be dropped as soon as
+   ## https://github.com/grml/grml-debootstrap/pull/11 is lands in Debian.
+   cp "$WHONIX_SOURCE_FOLDER/grml_chroot-script" "/etc/debootstrap/chroot-script"
