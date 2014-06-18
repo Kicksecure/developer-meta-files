@@ -56,7 +56,6 @@ interactive-chroot-raw() {
 
    ## Sanity tests.
    $CHROOT mount
-   $CHROOT $update_grub_bin -v
    $CHROOT sync
 
    sync
