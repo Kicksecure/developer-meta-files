@@ -229,8 +229,8 @@ for item in $folder_list; do
 
    #make_readme
    #git_commit_readme
-   git_diff_and_commit
-   #push_remotes
+   #git_diff_and_commit
+   push_remotes
    #open_debian_control
    #git_submodule_file_writer
    #diff_common_packaging_files
