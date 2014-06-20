@@ -25,9 +25,9 @@ cd ..
 cd ..
 cd Whonix
 
-rm --recursive --force /home/user/whonix_binary
-rm --recursive --force /home/user/whonix_binary_first
-rm --recursive --force /home/user/whonix_binary_second
+rm --recursive --force "/home/$SUDO_USER/whonix_binary"
+rm --recursive --force "/home/$SUDO_USER/whonix_binary_first"
+rm --recursive --force "/home/$SUDO_USER/whonix_binary_second"
 
 ./whonix_build --clean --tor-gateway ${1+"$@"}
 ./whonix_build --clean --tor-workstation ${1+"$@"}
@@ -35,7 +35,7 @@ rm --recursive --force /home/user/whonix_binary_second
 ./whonix_build --build --tor-gateway ${1+"$@"}
 ./whonix_build --build --tor-workstation ${1+"$@"}
 
-mv /home/user/whonix_binary /home/user/whonix_binary_first
+mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 
 ./whonix_build --clean --tor-gateway ${1+"$@"}
 ./whonix_build --clean --tor-workstation ${1+"$@"}
@@ -43,7 +43,7 @@ mv /home/user/whonix_binary /home/user/whonix_binary_first
 ./whonix_build --build --tor-gateway ${1+"$@"}
 ./whonix_build --build --tor-workstation ${1+"$@"}
 
-mv /home/user/whonix_binary /home/user/whonix_binary_second
+mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_second"
 
-true "meld /home/user/whonix_binary_first/Whonix-Gateway-*.report /home/user/whonix_binary_second/Whonix-Gateway-*.report"
-true "meld /home/user/whonix_binary_first/Whonix-Workstation-*.report /home/user/whonix_binary_second/Whonix-Workstation-*.report"
+true "meld /home/$SUDO_USER/whonix_binary_first/Whonix-Gateway-*.report /home/$SUDO_USER/whonix_binary_second/Whonix-Gateway-*.report"
+true "meld /home/$SUDO_USER/whonix_binary_first/Whonix-Workstation-*.report /home/$SUDO_USER/whonix_binary_second/Whonix-Workstation-*.report"
