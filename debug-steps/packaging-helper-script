@@ -91,10 +91,13 @@ add_remotes() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
+   cd "$reponame"
    git remote add adre git@github.com:adrelanos/$reponame.git
    git remote add troubadoour git@github.com:troubadoour/$reponame.git
+   git remote rm origin
    git remote add origin git@github.com:Whonix/$reponame.git
    git remote -v
+   cd ..
 }
 
 copy_packaging() {
@@ -227,6 +230,7 @@ for item in $folder_list; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
+   #add_remotes
    #make_readme
    #git_commit_readme
    #git_diff_and_commit
