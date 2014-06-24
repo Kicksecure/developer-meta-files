@@ -1388,3 +1388,35 @@ echo "whonix_build_new_changelog_version: $whonix_build_new_changelog_version"
    ## This hack can be dropped as soon as
    ## https://github.com/grml/grml-debootstrap/pull/11 is lands in Debian.
    cp "$WHONIX_SOURCE_FOLDER/grml_chroot-script" "/etc/debootstrap/chroot-script"
+
+## {{ get upstream version number from debian/changelog
+
+command -v dpkg-parsechangelog >/dev/null
+OIFS="${IFS}"
+NIFS=$'\n'
+IFS="${NIFS}"
+for line in $(dpkg-parsechangelog); do
+   ## Example line:
+   ## Version: 0.1-1
+   IFS="${OIFS}"
+   read -r first second _ <<< "$line"
+   ## Example first:
+   ## Version:
+   ## Example second:
+   ## 0.1-1
+   first="${first,,}"
+   ## Example first:
+   ## version
+   if [ "$first" = "version:" ]; then
+      version="$second"
+      ## Example version:
+      ## 0.1-1
+      version="${version%-*}"
+      ## Example version:
+      ## 0.1
+      break
+   fi
+done
+IFS="${OIFS}"
+
+## }}

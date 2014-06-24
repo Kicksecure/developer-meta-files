@@ -111,18 +111,31 @@ copy_packaging() {
    trap "build_all_error_handler" ERR
 
    true "cp "./anon-apt-sources-list/build" "$item/""
-   true "cp "./anon-apt-sources-list/clean" "$item/""
-   true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
-   true "cp "./anon-apt-sources-list/GPLv3" "$item/""
-   true "cp "./anon-apt-sources-list/Makefile" "$item/""
-   true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
+   #true "cp "./anon-apt-sources-list/clean" "$item/""
+   #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
+   #true "cp "./anon-apt-sources-list/GPLv3" "$item/""
+   #true "cp "./anon-apt-sources-list/Makefile" "$item/""
+   #true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
 
-   #cp "./anon-apt-sources-list/build" "$item/"
+   cp "./anon-apt-sources-list/build" "$item/"
    #cp "./anon-apt-sources-list/clean" "$item/"
    #cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
    #cp "./anon-apt-sources-list/GPLv3" "$item/"
    #cp "./anon-apt-sources-list/Makefile" "$item/"
    #cp "./anon-apt-sources-list/.gitattributes" "$item/"
+
+   true
+}
+
+add_epoch_to_changelog_version() {
+   trap "build_all_error_handler" ERR
+
+   temp="0.1-1"
+   new="3:0.1-1"
+
+   sed -i "s/$temp/$new/g" "$item/debian/changelog"
+
+   true
 }
 
 diff_common_packaging_files() {
@@ -239,6 +252,8 @@ for item in $folder_list; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
+   #copy_packaging
+   #add_epoch_to_changelog_version
    #open_links
    #add_remotes
    #make_readme
