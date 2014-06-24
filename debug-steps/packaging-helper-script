@@ -83,8 +83,15 @@ make_readme() {
 echo_links() {
    trap "build_all_error_handler" ERR
 
+   reponame="$(basename "$item")"
    echo "https://github.com/Whonix/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
+}
+
+open_links() {
+   trap "build_all_error_handler" ERR
+
+   torbrowser --new-tab "$(echo_links)"
 }
 
 add_remotes() {
@@ -92,10 +99,10 @@ add_remotes() {
 
    reponame="$(basename "$item")"
    cd "$reponame"
-   git remote add adre git@github.com:adrelanos/$reponame.git
-   git remote add troubadoour git@github.com:troubadoour/$reponame.git
-   git remote rm origin
-   git remote add origin git@github.com:Whonix/$reponame.git
+   #git remote add adre git@github.com:adrelanos/$reponame.git
+   #git remote add troubadoour git@github.com:troubadoour/$reponame.git
+   #git remote rm origin
+   #git remote add origin git@github.com:Whonix/$reponame.git
    git remote -v
    cd ..
 }
@@ -164,7 +171,9 @@ push_remotes() {
    git_pid="$!"
    git_pid_list="$git_pid_list $git_pid"
 
-   #git push adre master
+   git push adre master &
+   git_pid="$!"
+   git_pid_list="$git_pid_list $git_pid"
 
    cd ..
 }
@@ -230,6 +239,7 @@ for item in $folder_list; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
+   #open_links
    #add_remotes
    #make_readme
    #git_commit_readme
