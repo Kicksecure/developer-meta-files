@@ -1420,3 +1420,35 @@ done
 IFS="${OIFS}"
 
 ## }}
+
+   #if [ "$display" = "" ]; then
+   #   display=":0"
+   #fi
+   #fi
+
+
+   ## "sudo -u user" is required, because /etc/init.d/sdwdate runs
+   ## as root. When making changes, test this using:
+   ## sudo touch /var/lib/whonix/sdw_error
+   ## sudo service sdwdate restart
+   #sudo -u user zenity \
+   #   --display="$display" \
+   #   --height=600 \
+   #   --width=800 \
+   #   --timeout 86400 \
+   #   --no-markup \
+   #   --window-icon "$icon" \
+   #   --title="$title" \
+   #   "--$type" \
+   #     --text "$msg" \
+   #   >/dev/null 2>/dev/null &
+
+   #echo "$msg"
+
+   #if [ "$lefttop" = "1" ]; then
+      ## provided by /usr/lib/msgcollector/msgwmctrl
+   #   output_wmctrl_move_window_to_left_top "$title"
+      ## Not in Debian Wheezy, due to a bug in zenity resulting in no visible
+      ## text. Can be re-enabled in Debian Jessie.
+      #output_wmctrl_maximize_window "$title"
+   #fi
