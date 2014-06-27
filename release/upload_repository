@@ -89,6 +89,7 @@ rsync \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
 true "${cyan}INFO $0: Uploading pool...${reset}"
+rsync \
    $rsync_opts \
    --recursive \
    --rsh ssh \
