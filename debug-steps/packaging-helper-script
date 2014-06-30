@@ -39,6 +39,9 @@ make_readme() {
       return
    fi
 
+   generic_readme="../../whonix-developer-meta-files/README_generic.md"
+   test -f "$generic_readme"
+
    local readme_file line first_word matched
    readme_file="$item/README.md"
    rm --force "$readme_file"
@@ -75,7 +78,7 @@ make_readme() {
 
    while read -r line; do
       echo "$line" >> "$readme_file"
-   done < ./whonix-developer-meta-files/README_generic.md
+   done < "$generic_readme"
 
    true "Done: $readme_file"
 }
@@ -197,7 +200,7 @@ git_commit_readme() {
    cd "$item"
    git add README.md
    msg="readme"
-   git commit -m "$msg"
+   git commit -m "$msg" || true
    git status
    cd ..
 }
@@ -236,7 +239,7 @@ git_submodule_file_writer() {
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$reponame
-        url = git@github.com:Whonix/$reponame.git
+        url = https://github.com/Whonix/$reponame.git
 " >> ../".gitmodules"
 }
 
