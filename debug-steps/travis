@@ -39,7 +39,6 @@ source ./help-steps/variables
 
 ## Debugging.
 ls -la
-ls -la ./debian/
 
 ## {{ minimal
 
