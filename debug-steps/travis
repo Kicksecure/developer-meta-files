@@ -151,7 +151,7 @@ fi
 
 ## Cleanup, so we can create a dummy update package to test the upgrade
 ## process. (See if re-running all scripts is supported.)
-make clean
+help-steps/cleanup-files
 
 ## Commit a dummy change.
 git config --global user.email "you@example.com"
