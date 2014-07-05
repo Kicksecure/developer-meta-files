@@ -193,7 +193,7 @@ fi
 ## }}
 
 ## Cleanup.
-make clean
+help-steps/cleanup-files
 
 ## Debugging.
 ls -la ../
