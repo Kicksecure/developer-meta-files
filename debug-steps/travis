@@ -164,9 +164,6 @@ git commit -m "dummy commit"
 ## Create a new dummy tag
 git tag 101 -m "."
 
-## Debugging.
-ls -la ./debian/
-
 ## {{ Test the upgrading from local repository process.
 
 export whonix_build_closest_git_tag="101"
