@@ -91,10 +91,79 @@ echo_links() {
    #echo "https://github.com/adrelanos/$reponame"
 }
 
+echo_names() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   echo "$reponame"
+}
+
 open_links() {
    trap "build_all_error_handler" ERR
 
    torbrowser --new-tab "$(echo_links)"
+}
+
+add_twitter_to_github() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+
+#   echo "\
+#{
+#  "name": "web",
+#  "active": true,
+#  "events": [
+#    "push",
+#    "pull_request"
+#  ],
+#  "config": {
+#    "url": "http://example.com/webhook",
+#    "content_type": "json"
+#  }
+#}" > /tmp/xxx789
+
+   echo "\
+ {
+    \"name\": \"twitter\",
+    \"events\": [
+      \"push\"
+    ],
+    \"supported_events\": [
+      \"push\"
+    ],
+    \"title\": \"Twitter\",
+    \"schema\": [
+      [
+        \"string\",
+        \"1280368298-pfu7jKs5EwAq8JUlce9efKVURNIzH7BwtQkv78F\"
+      ],
+      [
+        \"string\",
+        \"NLRQlofXcg78Oo8B4ATmtQ3Njhx4rn9O4enWhSs\"
+      ],
+      [
+        \"false\",
+        \"digest\"
+      ],
+      [
+        \"boolean\",
+        \"short_format\"
+      ]
+    ]
+  }" > /tmp/xxx789
+
+
+   #POST /repos/:owner/:repo/hooks
+
+   #curl -X POST -d @/tmp/xxx789 http://example.com/path/to/resource --header "Content-Type:application/json"
+
+   #curl -v -u adrelanos:$gh_token -X POST https://api.github.com/authorizations --data @/tmp/xxx789
+
+   curl -v -H "Authorization: token $gh_token" -X POST https://api.github.com/orgs/Whonix/repos --data @/tmp/xxx789
+
+   true "press enter"
+   read temp
 }
 
 add_remotes() {
@@ -130,11 +199,11 @@ copy_packaging() {
    true
 }
 
-add_epoch_to_changelog_version() {
+modify_debian_changelog_version() {
    trap "build_all_error_handler" ERR
 
-   temp="0.1-1"
-   new="3:0.1-1"
+   temp="3:0.1-1"
+   new="3:0.1-2"
 
    sed -i "s/$temp/$new/g" "$item/debian/changelog"
 
@@ -205,6 +274,17 @@ git_commit_readme() {
    cd ..
 }
 
+git_commit_changelog() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+   git add debian/changelog
+   msg='Bumped debian revision number to avoid lintian warning "new-package-should-close-itp-bug" so we can use lintian --fail-on-warnings as sanity test.'
+   git commit -m "$msg"
+   git status
+   cd ..
+}
+
 git_diff_and_commit() {
    trap "build_all_error_handler" ERR
 
@@ -256,16 +336,20 @@ for item in $folder_list; do
    true "item: $item | counter: $counter"
 
    #copy_packaging
-   #add_epoch_to_changelog_version
+   #modify_debian_changelog_version
    #open_links
    #add_remotes
    #make_readme
    #git_commit_readme
+   #git_commit_changelog
    #git_diff_and_commit
    push_remotes
    #open_debian_control
    #git_submodule_file_writer
    #diff_common_packaging_files
+   #echo_links
+   #echo_names
+   #add_twitter_to_github
 
    true
    true
