@@ -43,7 +43,11 @@ tar \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
    --file "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.xz" \
-   "Whonix-Gateway-$version.qcow2"
+   "Whonix-Gateway-$version.qcow2" \
+   "Whonix-Gateway_kvm-$version.xml" \
+   "Whonix-Gateway_qemu-x86-x64-$version.xml" \
+   "Whonix_network-$version.xml" \
+   "README-$version.txt"
 
 sync
 
@@ -54,7 +58,10 @@ tar \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
    --file "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.xz" \
-   "Whonix-Workstation-$version.qcow2"
+   "Whonix-Workstation-$version.qcow2" \
+   "Whonix-Workstation_kvm-$version.xml" \
+   "Whonix-Workstation_qemu-x86-x64-$version.xml" \
+   "README-$version.txt"
 
 sync
 
