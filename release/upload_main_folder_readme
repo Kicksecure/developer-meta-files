@@ -5,7 +5,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
 ## disable cmd line parser, since not needed
@@ -48,4 +48,4 @@ sudo -E -u "$user_name" \
       adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/README
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

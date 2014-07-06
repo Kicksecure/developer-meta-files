@@ -8,7 +8,7 @@
 
 set -x
 
-true "INFO: Currently running script: $0"
+true "INFO: Currently running script: $BASH_SOURCE"
 
 set -o pipefail
 
@@ -18,7 +18,7 @@ error_handler_travis() {
 
 trap "error_handler_travis" ERR
 
-true "INFO $0: Script running as user: $(logname)"
+true "INFO $BASH_SOURCE: Script running as user: $(logname)"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -141,7 +141,7 @@ elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 else
-   error "Unknown $TRAVIS_BRANCH branch, check $0."
+   error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
 
 ## }}
@@ -187,7 +187,7 @@ elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
 else
-   error "Unknown $TRAVIS_BRANCH branch, check $0."
+   error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
 
 ## }}
@@ -200,13 +200,13 @@ ls -la ../
 ls -la /home/travis/whonix_binary/
 ls -la /home/travis/whonix_binary/*.report
 
-true "INFO $0: Showing report..."
+true "INFO $BASH_SOURCE: Showing report..."
 cat /home/travis/whonix_binary/*.report
-true "INFO $0: Done, showed report."
+true "INFO $BASH_SOURCE: Done, showed report."
 
-true "INFO $0: Executing Run Initializer Gui..."
+true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
 /usr/lib/whonix_initializer/first_run_initializer_gui
-true "INFO $0: Executed First Run Initializer Gui."
+true "INFO $BASH_SOURCE: Executed First Run Initializer Gui."
 
 service backgroundd start || true
 service timesanitycheck start || true
@@ -216,13 +216,13 @@ service msgcollector start || true
 service sdwdate start || true
 service whonixcheckd start || true
 
-true "INFO $0: Executing whonixcheck..."
+true "INFO $BASH_SOURCE: Executing whonixcheck..."
 sudo -E -u travis bash -x whonixcheck || true
-true "INFO $0: Executed whonixcheck."
+true "INFO $BASH_SOURCE: Executed whonixcheck."
 
-true "INFO $0: Executing timesync..."
+true "INFO $BASH_SOURCE: Executing timesync..."
 sudo -E -u travis bash -x timesync || true
-true "INFO $0: Executed timesync."
+true "INFO $BASH_SOURCE: Executed timesync."
 
 ## {{ Do not try to reboot Travis CI!
 
@@ -235,4 +235,4 @@ true "INFO $0: Executed timesync."
 ## }}
 
 ## End.
-true "INFO: End of: $0 No error detected."
+true "INFO: End of: $BASH_SOURCE No error detected."

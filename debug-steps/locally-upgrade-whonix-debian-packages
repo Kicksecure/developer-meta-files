@@ -6,9 +6,9 @@
 
 set -x
 
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
-TEMP_SCRIPTNAME="$0"
+TEMP_SCRIPTNAME="$BASH_SOURCE"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -21,7 +21,7 @@ locally-upgrade-whonix-debian-packages() {
 
    if [ "$WHONIX_BUILD_USE_AUTO_LOCAL_SIGNING_KEY" = "1" ]; then
       if [ ! -f "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"/done ]; then
-         error "${red}${bold}$0 ERROR: "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"/done does not exist. Most likely build-steps.d/1200_create-debian-packages has not been run yet.${reset}"
+         error "${red}${bold}$BASH_SOURCE ERROR: "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"/done does not exist. Most likely build-steps.d/1200_create-debian-packages has not been run yet.${reset}"
       fi
    fi
 
@@ -41,7 +41,7 @@ locally-upgrade-whonix-debian-packages() {
       ## We should mount /etc/resolv.conf.backup to /etc/resolv.conf to make network functional.
       ## (Nonfunctional in the first place because we installed the /etc/resolv.conf from
       ##  whonix-gateway/workstation-files package and didn't reboot.)
-      true "INFO $0: Not setting WHONIX_CHROOT_MOUNT_RESOLV_CONF to 0, because CI detected."
+      true "INFO $BASH_SOURCE: Not setting WHONIX_CHROOT_MOUNT_RESOLV_CONF to 0, because CI detected."
    else
       export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
    fi
@@ -64,7 +64,7 @@ locally-upgrade-whonix-debian-packages() {
    if [ "$CI" = "true" ]; then
       ## Workaround for Travis CI.
       ## This would mess up Ubuntu precise with Debian testing packages.
-      true "INFO $0: Not using $WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/sources.list.whonix because CI detected."
+      true "INFO $BASH_SOURCE: Not using $WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/sources.list.whonix because CI detected."
    else
       ## This file doesn't include Whonix's APT repository.
       cp "$WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/sources.list.whonix" "$CHROOT_FOLDER/etc/apt/sources.list"
@@ -89,8 +89,8 @@ locally-upgrade-whonix-debian-packages() {
    ## because this script would fail if some repository would not be reachable,
    ## such as torproject's Tor 0.2.4 apt repository.
    #if [ "$CI" = "true" ]; then
-      #true "INFO $0: skipping apt-get update and apt-get dist-upgrade, because CI detected."
-      #true "INFO $0: (Would try to upgrade using Ubuntu precising using /etc/apt/sources.list containing Debian testing.)"
+      #true "INFO $BASH_SOURCE: skipping apt-get update and apt-get dist-upgrade, because CI detected."
+      #true "INFO $BASH_SOURCE: (Would try to upgrade using Ubuntu precising using /etc/apt/sources.list containing Debian testing.)"
    #else
       #$CHROOT apt-get $apt_timeout_opts update
 
@@ -140,7 +140,7 @@ locally-upgrade-whonix-debian-packages() {
    sync
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 locally-upgrade-whonix-debian-packages
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

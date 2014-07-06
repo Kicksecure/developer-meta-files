@@ -7,7 +7,7 @@
 set -x
 
 error_handler() {
-   echo "${bold}${red}$0 ERROR:${reset} BASH_COMMAND: $BASH_COMMAND"
+   echo "${bold}${red}$BASH_SOURCE ERROR:${reset} BASH_COMMAND: $BASH_COMMAND"
    exit 1
 }
 
@@ -42,7 +42,7 @@ make_debian_upstream_tarball() {
    sync
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 make_debian_upstream_tarball
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

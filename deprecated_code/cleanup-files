@@ -6,7 +6,7 @@
 
 set -x
 
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -27,7 +27,7 @@ cleanup_files() {
    set +x
 
    local result
-   result="$(gawk '/^Package\:[[:space:]]*.*$$/ { match($$0, /^Package:[[:space:]]*(.*)$$/, m); print m[1]"*.deb" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
+   result="$(gawk '/^Package\:[[:space:]]*.*$$/ { match($$BASH_SOURCE, /^Package:[[:space:]]*(.*)$$/, m); print m[1]"*.deb" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
 
    for dp in $result; do
       local cmd
@@ -38,19 +38,19 @@ cleanup_files() {
 
    local cmd
 
-   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$0, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.dsc" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
+   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$BASH_SOURCE, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.dsc" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
    echo "$cmd"
    $cmd
 
-   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$0, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.changes" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
+   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$BASH_SOURCE, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.changes" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
    echo "$cmd"
    $cmd
 
-   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$0, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.tar.*" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
+   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$BASH_SOURCE, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.tar.*" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
    echo "$cmd"
    $cmd
 
-   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$0, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.build" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
+   cmd="rm --force $WHONIX_SOURCE_FOLDER/../$(gawk '/^Source\:[[:space:]]+.*$$/ { match($$BASH_SOURCE, /^Source:[[:space:]]+(.*)$$/, m); print m[1]"*.build" }' "$WHONIX_SOURCE_FOLDER/debian/control")"
    echo "$cmd"
    $cmd
 
@@ -61,7 +61,7 @@ cleanup_files() {
    rm --force "$WHONIX_SOURCE_FOLDER/debian/changelog"
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 cleanup_files
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

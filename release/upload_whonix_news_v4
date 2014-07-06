@@ -11,7 +11,7 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
 
 set -x
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
 ## disable cmd line parser, since not needed
@@ -107,7 +107,7 @@ if [ ! "$checksum_new" = "$checksum_old" ]; then
    error="Checksum mismatch. $WHONIX_BINARY/news_v4/whonix_news.tar.xz is non deterministic!"
 fi
 
-true "${cyan}INFO $0: Checksum matched, ok.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Checksum matched, ok.${reset}"
 
 sync
 
@@ -117,10 +117,10 @@ gpg --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
 
 ls -la "$WHONIX_BINARY/news_v4/"
 
-true "${cyan}INFO $0: Please press enter to continue with --dry-run.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with --dry-run.${reset}"
 read temp
 
-true "${cyan}INFO $0: Running with --dry-run...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Running with --dry-run...${reset}"
 rsync \
    --dry-run \
    $rsync_opts \
@@ -129,10 +129,10 @@ rsync \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
 
-true "${cyan}INFO $0: Please press enter to continue to upload.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to upload.${reset}"
 read temp
 
-true "${cyan}INFO $0: Uploading...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Uploading...${reset}"
 rsync \
    $rsync_opts \
    --rsh ssh \
@@ -141,4 +141,4 @@ rsync \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

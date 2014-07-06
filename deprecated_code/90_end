@@ -30,7 +30,7 @@ else
 fi
 ## }}
 
-own_filename="$(basename $0)"
+own_filename="$(basename $BASH_SOURCE)"
 for skip_script in $SKIP_SCRIPTS; do
    if [ "$skip_script" = "$own_filename" ]; then
       true "INFO: Skipping $own_filename, because SKIP_SCRIPTS includes it."

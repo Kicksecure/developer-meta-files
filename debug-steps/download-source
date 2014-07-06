@@ -6,7 +6,7 @@
 
 set -x
 
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -55,10 +55,10 @@ move_sources() {
    "$MYDIR"/unmount-raw
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 
 download_sources
 move_sources
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

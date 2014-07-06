@@ -10,7 +10,7 @@ set -o pipefail
 build_all_error_handler() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $0: | caller: $(caller)${reset}
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 "
    echo "Press enter to continue or ctrl +c to break or enter to continue."
    read temp
@@ -355,7 +355,7 @@ for item in $folder_list; do
    true
    true
 
-   #true "press enter to continue_did"
-   #read temp
+   true "press enter to continue_did"
+   read temp
 
 done

@@ -1001,7 +1001,7 @@ export SNAPSHOT_DESCRIPTION="
          ); do
  echo "XXX: $FINGERPRINT"
             #export DEBSIGN_KEYID="$FINGERPRINT"
-            #true "${cyan}$0 INFO: Fingerprint of local OpenPGP signing key is $FINGERPRINT. ${reset}"
+            #true "${cyan}$BASH_SOURCE INFO: Fingerprint of local OpenPGP signing key is $FINGERPRINT. ${reset}"
    done
 
 cd "$WHONIX_SOURCE_PARENTDIR"
@@ -1237,7 +1237,7 @@ install_initial_packages() {
 bump_debian_changelog_version() {
    trap "error_handler_general" ERR INT TERM
 
-   true "${cyan}$0 INFO: Automatically bumping version number in debian/changelog... ${reset}"
+   true "${cyan}$BASH_SOURCE INFO: Automatically bumping version number in debian/changelog... ${reset}"
 
    cd "$MYDIR"
    cd ..
@@ -1282,19 +1282,19 @@ $package ($whonix_build_new_changelog_version) $WHONIX_BUILD_APT_CODENAME; urgen
    ls -la ./debian/changelog || true
    cat ./debian/changelog
 
-   true "${cyan}$0 INFO: Bumped version number in debian/changelog. ${reset}"
+   true "${cyan}$BASH_SOURCE INFO: Bumped version number in debian/changelog. ${reset}"
 }
 
 create_whonix_upstream_tarball() {
    trap "error_handler_general" ERR INT TERM
 
    ## Creating upstream tarball, because we are creating a non-native Debian package.
-   true "${cyan}$0 INFO: Creating upstream tarball... ${reset}"
+   true "${cyan}$BASH_SOURCE INFO: Creating upstream tarball... ${reset}"
 
    sudo -E -u "$user_name" \
        "$WHONIX_SOURCE_HELP_STEPS_FOLDER/make-debian-package-upstream-tarball"
 
-   true "${cyan}$0 INFO: Created upstream tarball. ${reset}"
+   true "${cyan}$BASH_SOURCE INFO: Created upstream tarball. ${reset}"
 }
 
 ## {{{ whonix_build_old_changelog_version
@@ -1315,7 +1315,7 @@ elif [ -f "$WHONIX_SOURCE_FOLDER/debian/changelog" ]; then
    for line in $(dpkg-parsechangelog); do
       first="$(echo "$line" | awk '{print $1}')"
       second="$(echo "$line" | awk '{print $2}')"
-      first="$(echo "$first" | awk '{print tolower($0)}')"
+      first="$(echo "$first" | awk '{print tolower($BASH_SOURCE)}')"
       if [ "$first" = "version:" ]; then
          export whonix_build_old_changelog_version="$second"
          break

@@ -22,7 +22,7 @@ error_handler() {
 trap "error_handler" ERR
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-scriptname="$(basename "$0")"
+scriptname="$(basename "$BASH_SOURCE")"
 [ -n "$tempfolder" ] || tempfolder="$(mktemp --directory)"
 
 colors() {

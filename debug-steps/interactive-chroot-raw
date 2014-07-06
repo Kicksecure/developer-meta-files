@@ -6,7 +6,7 @@
 
 set -x
 
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -24,7 +24,7 @@ error_handler_interactive-chroot-raw-shell() {
 error_handler_interactive-chroot-raw() {
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $0: | caller: $(caller)${reset}
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 Unchrooting.. Unpreventing daemons from starting... Unmounting raw...
 "
 
@@ -34,7 +34,7 @@ Unchrooting.. Unpreventing daemons from starting... Unmounting raw...
 
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $0: | caller: $(caller)${reset}
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 "
 
    exit 1
@@ -100,7 +100,7 @@ interactive-chroot-raw() {
    echo "${green}INFO: Terminated interactive chroot without any errors.${reset}"
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 interactive-chroot-raw
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

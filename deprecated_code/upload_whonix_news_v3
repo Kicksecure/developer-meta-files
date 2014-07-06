@@ -11,7 +11,7 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v3/whonix_news.tar.gz.asc/download
 
 set -x
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
 ## disable cmd line parser, since not needed
@@ -74,11 +74,11 @@ gpg $whonix_news_gpg_sign_with_options --detach-sign --armor --yes "$WHONIX_BINA
 sync
 gpg --verify "$WHONIX_BINARY/news_v3/whonix_news.tar.gz.asc"
 
-true "${cyan}INFO $0: Please press enter to continue with --dry-run.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with --dry-run.${reset}"
 
 read temp
 
-true "${cyan}INFO $0: Running with --dry-run...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Running with --dry-run...${reset}"
 rsync \
    --dry-run \
    --partial \
@@ -89,11 +89,11 @@ rsync \
    "$WHONIX_BINARY/news_v3/whonix_news.tar.gz" \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v3/"
 
-true "${cyan}INFO $0: Please press enter to continue to upload.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to upload.${reset}"
 
 read temp
 
-true "${cyan}INFO $0: Uploading...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Uploading...${reset}"
 rsync \
    --partial \
    --progress \
@@ -104,4 +104,4 @@ rsync \
    "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v3/"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

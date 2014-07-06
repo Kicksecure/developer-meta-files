@@ -5,7 +5,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
 ## disable cmd line parser, since not needed
@@ -25,7 +25,7 @@ project="whonixdevelopermetafiles"
 
 shopt -s globstar
 
-true "${cyan}INFO $0: Showing dists...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
 
 set +x
 
@@ -37,10 +37,10 @@ for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
 done
 unset file
 
-echo "INFO $0: Please press enter to continue showing pool."
+echo "INFO $BASH_SOURCE: Please press enter to continue showing pool."
 read temp
 
-echo "INFO $0: Showing pool..."
+echo "INFO $BASH_SOURCE: Showing pool..."
 
 for file in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
    if [ -d "$file" ]; then
@@ -52,10 +52,10 @@ unset file
 
 set -x
 
-true "${cyan}INFO $0: Please press enter to continue with dists with --dry-run.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
 read temp
 
-true "${cyan}INFO $0: Running dists with --dry-run...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
 rsync \
    --dry-run \
    $rsync_opts \
@@ -64,10 +64,10 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
-true "${cyan}INFO $0: Please press enter to continue with pool with --dry-run.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
 read temp
 
-true "${cyan}INFO $0: Running pool with --dry-run...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
 rsync \
    --dry-run \
    $rsync_opts \
@@ -77,10 +77,10 @@ rsync \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
 
-true "${cyan}INFO $0: Please press enter to continue to uploading dists and pool.${reset}"
+true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
 read temp
 
-true "${cyan}INFO $0: Uploading dists...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Uploading dists...${reset}"
 rsync \
    $rsync_opts \
    --recursive \
@@ -88,7 +88,7 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
 
-true "${cyan}INFO $0: Uploading pool...${reset}"
+true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
 rsync \
    $rsync_opts \
    --recursive \
@@ -97,4 +97,4 @@ rsync \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

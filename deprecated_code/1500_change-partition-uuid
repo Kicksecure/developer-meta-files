@@ -6,9 +6,9 @@
 
 set -x
 
-true "INFO: Currently running script: $0${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
-TEMP_SCRIPTNAME="$0"
+TEMP_SCRIPTNAME="$BASH_SOURCE"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -24,7 +24,7 @@ change_partition_uuid() {
 
    ## If whonix_build is run with --fast2 switch.
    if [ "$WHONIX_BUILD_FAST2" = "1" ]; then
-      echo "${bold}${cyan}INFO: run with --fast2 switch, skipping $0. ${reset}"
+      echo "${bold}${cyan}INFO: run with --fast2 switch, skipping $BASH_SOURCE. ${reset}"
       exit 0
    fi
 
@@ -45,5 +45,5 @@ change_partition_uuid() {
    sync
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 change_partition_uuid

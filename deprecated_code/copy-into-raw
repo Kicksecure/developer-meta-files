@@ -6,7 +6,7 @@
 
 set -x
 
-true "INFO: Currently running script: $0"
+true "INFO: Currently running script: $BASH_SOURCE"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -19,7 +19,7 @@ trap "error_handler_general" ERR INT TERM
 error_handler_copy-into-raw() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $0: | caller: $(caller)${reset}
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 Unmounting raw...
 "
 
@@ -27,7 +27,7 @@ Unmounting raw...
 
    : echo "
 {red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $0: | caller: $(caller)${reset}
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 "
 
    exit 1
@@ -122,9 +122,9 @@ copy_into_workstation() {
    rsync --verbose --perms --recursive --checksum "$WHONIX_SOURCE_FOLDER"/whonix_workstation/ "$CHROOT_FOLDER"/
 }
 
-true "${bold}INFO: Currently running script: $0 ${1+"$@"}${reset}"
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 
-true "${cyan}NOTE: The $0 script will not automatically replace files with the .whonix extension with their corresponding files without the .whonix extension. For example, /etc/tor/torrc.whonix will not automatically replace /etc/tor/torrc.${reset}"
+true "${cyan}NOTE: The $BASH_SOURCE script will not automatically replace files with the .whonix extension with their corresponding files without the .whonix extension. For example, /etc/tor/torrc.whonix will not automatically replace /etc/tor/torrc.${reset}"
 
 sleep 3
 
@@ -141,4 +141,4 @@ fi
 "$WHONIX_SOURCE_FOLDER"/help-steps/unmount-raw
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $0 No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"

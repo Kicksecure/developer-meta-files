@@ -214,7 +214,7 @@ parse_dpkg_status_file() {
    ## Check which packages are claimed to be installed within the build.
    local dpkg_status_folder="$CHROOT_FOLDER/var/lib/dpkg"
 
-   echo "${cyan}${bold}$0 INFO: Parsing $dpkg_status_folder... ${reset}"
+   echo "${cyan}${bold}$BASH_SOURCE INFO: Parsing $dpkg_status_folder... ${reset}"
 
    local i=0
 
@@ -235,7 +235,7 @@ parse_dpkg_status_file() {
          ## Ok.
          true
       else
-         debug_echo "${cyan}${bold}$0 INFO: $i Skipping $package | $version_with | $arch | $status | $bp because status is $status."
+         debug_echo "${cyan}${bold}$BASH_SOURCE INFO: $i Skipping $package | $version_with | $arch | $status | $bp because status is $status."
          continue
       fi
 
@@ -250,11 +250,11 @@ parse_dpkg_status_file() {
       local first_six_chars="${package:0:6}"
       if [ "${first_six_chars,,}" = "whonix" ]; then
          ## Files coming with Whonix have already been checked against Whonix source code in function verify_whonix_source_files.
-         debug_echo "${cyan}${bold}$0 INFO $i: Skipping $package, because it begins with \"whonix\". ${reset}"
+         debug_echo "${cyan}${bold}$BASH_SOURCE INFO $i: Skipping $package, because it begins with \"whonix\". ${reset}"
          continue
       fi
 
-      debug_echo "${cyan}$0 INFO: $i Adding package: $package | $version_without | $arch | $status | $bp | to the list of packages to be audited. ${reset}"
+      debug_echo "${cyan}$BASH_SOURCE INFO: $i Adding package: $package | $version_without | $arch | $status | $bp | to the list of packages to be audited. ${reset}"
 
       pkg_name[$package]="$package"
       pkg_arch[$package]="$arch"
@@ -295,12 +295,12 @@ download_packages() {
    ##       For testing, change the path of the dpkg status file to a file in your homefolder and prepare it with things
    ##       like $(echo test).
    if [ "$pkg_list" = "" ]; then
-      true "${cyan}${bold}$0 INFO: Already downloaded all required packages. ${reset}"
+      true "${cyan}${bold}$BASH_SOURCE INFO: Already downloaded all required packages. ${reset}"
    else
       sudo -E -u "$user_name" \
          apt-get download $pkg_list
 
-      true "${cyan}${bold}$0 INFO: apt_get_exit_code: $? ${reset}"
+      true "${cyan}${bold}$BASH_SOURCE INFO: apt_get_exit_code: $? ${reset}"
    fi
 
    ## TODO: Use snapshot.debian.org?
@@ -319,7 +319,7 @@ download_packages() {
 extract_packages() {
    trap "error_handler_unmount_verify_build" ERR INT TERM
 
-   true "${cyan}${bold}$0 INFO: Extracting packages... ${reset}"
+   true "${cyan}${bold}$BASH_SOURCE INFO: Extracting packages... ${reset}"
 
    maybe_set_plus_x
 
@@ -348,7 +348,7 @@ extract_packages() {
 
    set -x
 
-   true "${cyan}${bold}$0 INFO: Extracted packages. ${reset}"
+   true "${cyan}${bold}$BASH_SOURCE INFO: Extracted packages. ${reset}"
 }
 
 verify_packages() {
@@ -366,7 +366,7 @@ verify_packages() {
    ## ourselves. If Debian were to ship a DEBIAN/sha512sums (or sha256sums) file some day,
    ## we could of course use that file instead.
 
-   true "${cyan}${bold}$0 INFO: Verifying packages... ${reset}"
+   true "${cyan}${bold}$BASH_SOURCE INFO: Verifying packages... ${reset}"
 
    maybe_set_plus_x
 
@@ -457,7 +457,7 @@ verify_packages() {
 
    set -x
 
-   true "${cyan}${bold}$0 INFO: Verified packages. (This does indicate neither failure nor success. Results at the end.) ${reset}"
+   true "${cyan}${bold}$BASH_SOURCE INFO: Verified packages. (This does indicate neither failure nor success. Results at the end.) ${reset}"
 }
 
 forgotten_files() {
@@ -616,10 +616,10 @@ end() {
 
    if [ "$WHONIX_BUILD_VERIFY_MISMATCH" = "0" ]; then
       ## ok, no mismatch
-      true "${green}${bold}$0 INFO: No mismatch found. ${reset}"
+      true "${green}${bold}$BASH_SOURCE INFO: No mismatch found. ${reset}"
       exit 0
    else
-      true "${red}${bold}$0 ERROR: $WHONIX_BUILD_VERIFY_MISMATCH files mismatched! See the red messages above to find out which files. ${reset}"
+      true "${red}${bold}$BASH_SOURCE ERROR: $WHONIX_BUILD_VERIFY_MISMATCH files mismatched! See the red messages above to find out which files. ${reset}"
       exit 1
    fi
 }

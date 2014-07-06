@@ -17,7 +17,7 @@ error_handler() {
 
 trap "error_handler" ERR
 
-own_filename="$(basename $0)"
+own_filename="$(basename $BASH_SOURCE)"
 for skip_script in $SKIP_SCRIPTS; do
    if [ "$skip_script" = "$own_filename" ]; then
       force_echo "INFO: Skipping $own_filename, because SKIP_SCRIPTS includes it."
@@ -39,5 +39,5 @@ if [ "$command_v_return" = "0" ]; then
    ## the creation process of these files is not deterministic. Not researched.
    update-command-not-found
 else
-   true "INFO $0: update-command-not-found not installed, skipping update-command-not-found."
+   true "INFO $BASH_SOURCE: update-command-not-found not installed, skipping update-command-not-found."
 fi
