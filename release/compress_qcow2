@@ -42,7 +42,8 @@ tar \
    --xz \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.xz" "Whonix-Gateway-$version.qcow2"
+   --file "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.xz" \
+   "Whonix-Gateway-$version.qcow2"
 
 sync
 
@@ -52,7 +53,8 @@ tar \
    --xz \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.xz" "Whonix-Workstation-$version.qcow2"
+   --file "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.xz" \
+   "Whonix-Workstation-$version.qcow2"
 
 sync
 
