@@ -30,7 +30,7 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-"$whonix_dev_meta_files_folder/release/compress_qcow2"
+"$whonix_dev_meta_files_folder/release/compress_libvirt"
 
 "$whonix_dev_meta_files_folder/release/sign_images"
 
