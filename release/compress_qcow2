@@ -23,8 +23,8 @@ version="$whonix_build_closest_git_tag"
 
 ## Not using `gzip`, because it cannot handle sparse files:
 ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
-#pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.tar.gz"
-#pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.tar.gz"
+#pv "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.tar.gz"
+#pv "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.tar.gz"
 
 ## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
 ## - will result in a deterministic archive. We do not have deterministic
@@ -42,8 +42,8 @@ tar \
    --xz \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2.xz" \
-   "Whonix-Gateway-$version.qcow2"
+   --file "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.xz" \
+   "Whonix-Gateway-$version.libvirt"
 
 sync
 
@@ -53,8 +53,8 @@ tar \
    --xz \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2.xz" \
-   "Whonix-Workstation-$version.qcow2"
+   --file "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.xz" \
+   "Whonix-Workstation-$version.libvirt"
 
 sync
 
