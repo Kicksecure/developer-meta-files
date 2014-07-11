@@ -33,7 +33,7 @@ server="root@rsync.whonix.org:/var/rsync/$version/"
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
-ls -la "$WHONIX_BINARY/"*".qcow2.xz"
+ls -la "$WHONIX_BINARY/"*".libvirt.xz"
 ls -la "$WHONIX_BINARY/"*".asc"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -45,7 +45,7 @@ rsync \
    $rsync_opts \
    "$WHONIX_BINARY/sha512sum" \
    "$WHONIX_BINARY/"*".ova" \
-   "$WHONIX_BINARY/"*".qcow2.xz" \
+   "$WHONIX_BINARY/"*".libvirt.xz" \
    "$WHONIX_BINARY/"*".asc" \
    "$server"
 
@@ -63,7 +63,7 @@ while true; do
       $rsync_opts \
       "$WHONIX_BINARY/sha512sum" \
       "$WHONIX_BINARY/"*".ova" \
-      "$WHONIX_BINARY/"*".qcow2.xz" \
+      "$WHONIX_BINARY/"*".libvirt.xz" \
       "$WHONIX_BINARY/"*".asc" \
       "$server" \
       || { rsync_exit_code="$?" ; true; };

@@ -24,8 +24,6 @@ source ../../Whonix/help-steps/variables
 ## Sanity test.
 ls -ls "/mnt/shared/" >/dev/null
 
-version="$whonix_build_closest_git_tag"
-
 cd "$WHONIX_BINARY"
 
 ## {{ hash sum
@@ -36,26 +34,23 @@ cd "$WHONIX_BINARY"
 rm --force "md5sum"
 
 ## Create md5sum to compare with sourceforge.
-md5sum "Whonix-Gateway-$version.ova" >> "md5sum"
-md5sum "Whonix-Gateway-$version.qcow2" >> "md5sum"
-md5sum "Whonix-Workstation-$version.ova" >> "md5sum"
-md5sum "Whonix-Workstation-$version.qcow2" >> "md5sum"
+for file_name in $whonix_build_files_list; do
+   sudo -u "$user_name" md5sum "$file_name" >> "md5sum"
+done
 sync
 
 ## Debugging.
-cat "md5sum"
+sudo -u "$user_name" cat "md5sum"
 
-cp "md5sum" "/mnt/shared/"
+sudo -u "$user_name" cp "md5sum" "/mnt/shared/"
 sync
 
-## }}
+## }} hash sum
 
-cp "Whonix-Gateway-$version.ova" "/mnt/shared/"
-cp "Whonix-Gateway-$version.qcow2" "/mnt/shared/"
-sync
+for file_name in $whonix_build_files_list; do
+   sudo -u "$user_name" cp "$file_name" "/mnt/shared/"
+done
 
-cp "Whonix-Workstation-$version.ova" "/mnt/shared/"
-cp "Whonix-Workstation-$version.qcow2" "/mnt/shared/"
 sync
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)

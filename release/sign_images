@@ -34,26 +34,26 @@ md5sum --check md5sum
 
 ## Create detached signatures.
 gpg --detach-sign --armor --yes "Whonix-Gateway-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Gateway-$version.qcow2.xz"
+gpg --detach-sign --armor --yes "Whonix-Gateway-$version.libvirt.xz"
 gpg --detach-sign --armor --yes "Whonix-Workstation-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Workstation-$version.qcow2.xz"
+gpg --detach-sign --armor --yes "Whonix-Workstation-$version.libvirt.xz"
 
 ## Verify, that signing worked.
 gpg --verify "Whonix-Gateway-$version.ova.asc"
-gpg --verify "Whonix-Gateway-$version.qcow2.xz.asc"
+gpg --verify "Whonix-Gateway-$version.libvirt.xz.asc"
 gpg --verify "Whonix-Workstation-$version.ova.asc"
-gpg --verify "Whonix-Workstation-$version.qcow2.xz.asc"
+gpg --verify "Whonix-Workstation-$version.libvirt.xz.asc"
 
 ## Create sha512sum.
 rm --force sha512sum
 sha512sum "Whonix-Gateway-$version.ova" >> sha512sum
 sha512sum "Whonix-Gateway-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Gateway-$version.qcow2.xz" >> sha512sum
-sha512sum "Whonix-Gateway-$version.qcow2.xz.asc" >> sha512sum
+sha512sum "Whonix-Gateway-$version.libvirt.xz" >> sha512sum
+sha512sum "Whonix-Gateway-$version.libvirt.xz.asc" >> sha512sum
 sha512sum "Whonix-Workstation-$version.ova" >> sha512sum
 sha512sum "Whonix-Workstation-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Workstation-$version.qcow2.xz" >> sha512sum
-sha512sum "Whonix-Workstation-$version.qcow2.xz.asc" >> sha512sum
+sha512sum "Whonix-Workstation-$version.libvirt.xz" >> sha512sum
+sha512sum "Whonix-Workstation-$version.libvirt.xz.asc" >> sha512sum
 
 sync
 

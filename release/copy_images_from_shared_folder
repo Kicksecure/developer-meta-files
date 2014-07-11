@@ -19,8 +19,6 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
-version="$whonix_build_closest_git_tag"
-
 mkdir --parents "$WHONIX_BINARY"
 
 cd "/mnt/shared/"
@@ -33,14 +31,11 @@ cd "/mnt/shared/"
 cp "md5sum" "$WHONIX_BINARY/"
 sync
 
-## }}
+## }} hash sum
 
-cp "Whonix-Gateway-$version.ova" "$WHONIX_BINARY/"
-cp "Whonix-Gateway-$version.qcow2" "$WHONIX_BINARY/"
-sync
-
-cp "Whonix-Workstation-$version.ova" "$WHONIX_BINARY/"
-cp "Whonix-Workstation-$version.qcow2" "$WHONIX_BINARY/"
+for file_name in $whonix_build_files_list; do
+   sudo -u "$user_name" cp "$file_name" "$WHONIX_BINARY/"
+done
 sync
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
