@@ -1452,3 +1452,70 @@ IFS="${OIFS}"
       ## text. Can be re-enabled in Debian Jessie.
       #output_wmctrl_maximize_window "$title"
    #fi
+
+   #mkdir --parents "$WHONIX_BINARY/temp_libvirt"
+   #chown "$user_name":"$user_name" "$WHONIX_BINARY/temp_libvirt"
+
+   #local source_xml temp_xml temp new
+
+   #if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+      #source_xml="$WHONIX_SOURCE_FOLDER/libvirt/whonix_gateway.xml"
+      #temp_xml="$WHONIX_BINARY/temp_libvirt/whonix_gateway.xml"
+   #elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
+      #source_xml="$WHONIX_SOURCE_FOLDER/libvirt/whonix_workstation.xml"
+      #temp_xml="$WHONIX_BINARY/temp_libvirt/whonix_workstation.xml"
+   #else
+      #bug "${red}${bold}ERROR: Neither WHONIX_BUILD_GATEWAY nor WHONIX_BUILD_WORKSTATION is set to 1. Please report this bug!${reset}"
+   #fi
+
+   #if [ ! "$whonix_build_script_no_validate_libvirt_xml" = "1" ]; then
+      #if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+         #sudo -u "$user_name" virt-xml-validate "$WHONIX_SOURCE_FOLDER/libvirt/whonix_network.xml"
+      #fi
+      #sudo -u "$user_name" virt-xml-validate "$source_xml"
+   #fi
+
+   #if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+      #sudo -u "$user_name" cp "$WHONIX_SOURCE_FOLDER/libvirt/whonix_network.xml" "$WHONIX_BINARY/temp_libvirt/"
+   #fi
+   #sudo -u "$user_name" cp "$source_xml" "$temp_xml"
+
+   ## Searching for:
+   ## <source file='/var/lib/libvirt/images/Whonix-Gateway.qcow2'/>
+   #[ -n "$vm_source_image" ] || vm_source_image="$(grep -oP "(?<=<source file=').*(?='/>)" "$source_xml")"
+   ## Example vm_source_image:
+   ## /var/lib/libvirt/images/Whonix-Gateway.qcow2
+
+   #local temp new
+   #temp="<source file='$vm_source_image'/>"
+   #temp=$(echo "$temp" | sed 's_/_\\/_g')
+   #new="<source file='$binary_image_qcow2'/>"
+   #new=$(echo "$new" | sed 's_/_\\/_g')
+
+   #sed -i "s/$temp/$new/g" "$temp_xml"
+
+## {{ Write to tty1. Using simple lock mechanism so messages from "write" do not get mixed up.
+output_write_to_tty() {
+   trap "error_handler" ERR
+
+   local lockfile
+   lockfile="/var/run/msgcollector/$who_ami/write_lock"
+
+   (
+      trap "error_handler" ERR
+
+      ## Use flock to wait up to 60 seconds to acquire an exclusive lock.
+      ## fd 200, see man flock
+      flock --wait 60 --exclusive 200
+
+      echo "${1+"$@"}
+$feel_free_to_press_enter_msg" | write user tty1 2>/dev/null || true
+
+      ## Hold the write lock up to 10 seconds.
+      sleep 10 &
+      wait "$!"
+
+   ) 200>"$lockfile" &
+   ## fd 200, see man flock
+}
+## }}
