@@ -182,18 +182,16 @@ add_remotes() {
 copy_packaging() {
    trap "build_all_error_handler" ERR
 
-   true "cp "./anon-apt-sources-list/build" "$item/""
-   #true "cp "./anon-apt-sources-list/clean" "$item/""
    #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
    #true "cp "./anon-apt-sources-list/GPLv3" "$item/""
    #true "cp "./anon-apt-sources-list/Makefile" "$item/""
+   #true "cp "./anon-apt-sources-list/make-helper.bsh" "$item/""
    #true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
 
-   cp "./anon-apt-sources-list/build" "$item/"
-   #cp "./anon-apt-sources-list/clean" "$item/"
    #cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
    #cp "./anon-apt-sources-list/GPLv3" "$item/"
    #cp "./anon-apt-sources-list/Makefile" "$item/"
+   #cp "./anon-apt-sources-list/make-helper.bsh" "$item/"
    #cp "./anon-apt-sources-list/.gitattributes" "$item/"
 
    true
@@ -213,19 +211,14 @@ modify_debian_changelog_version() {
 diff_common_packaging_files() {
    trap "build_all_error_handler" ERR
 
-   diff "./anon-apt-sources-list/build" "$item/"
-   diff "./anon-apt-sources-list/clean" "$item/"
    diff "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
    diff "./anon-apt-sources-list/GPLv3" "$item/"
    diff "./anon-apt-sources-list/Makefile" "$item/"
+   diff "./anon-apt-sources-list/make-helper.bsh" "$item/"
    diff "./anon-apt-sources-list/.gitattributes" "$item/"
    diff "./anon-apt-sources-list/debian/source/format" "$item/debian/source/format"
    diff "./anon-apt-sources-list/debian/compat" "$item/debian/compat"
    diff "./anon-apt-sources-list/debian/gain-root-command" "$item/debian/gain-root-command"
-
-   if [ -f "$item/build-scripts/man-helper.bsh" ]; then
-      diff "./sdwdate/build-scripts/man-helper.bsh" "$item/build-scripts/man-helper.bsh"
-   fi
 
    if [ ! -f "$item/debian/changelog" ]; then
       error "$item/debian/changelog does not exist."
@@ -290,6 +283,16 @@ git_diff_and_commit() {
 
    cd "$item"
 
+   #git reset --hard
+   #cd ..
+   #continue
+
+   ## Remove extra new lines.
+   ## Thanks to llua http://unix.stackexchange.com/a/81689
+   #a=$(<debian/rules); printf '%s\n' "$a" > debian/rules
+   #cd ..
+   #continue
+
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
       cd ..
@@ -299,6 +302,7 @@ git_diff_and_commit() {
    fi
 
    git add -A
+   git add -u
    git diff --cached
    git commit
    git status
@@ -351,11 +355,13 @@ for item in $folder_list; do
    #echo_names
    #add_twitter_to_github
 
+   #kate "$item/debian/rules" >/dev/null 2>&1
+
    true
    true
    true
 
-   true "press enter to continue_did"
-   read temp
+   #true "press enter to continue_did"
+   #read temp
 
 done

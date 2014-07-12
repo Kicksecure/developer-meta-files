@@ -23,6 +23,12 @@ version="$whonix_build_closest_git_tag"
 
 cd "$WHONIX_BINARY"
 
+echo "test" > "$WHONIX_BINARY/test_sign_file"
+gpg --detach-sign --armor --yes "$WHONIX_BINARY/test_sign_file"
+gpg --verify "$WHONIX_BINARY/test_sign_file.asc"
+rm "$WHONIX_BINARY/test_sign_file"
+rm "$WHONIX_BINARY/test_sign_file.asc"
+
 ## {{ hash sum
 
 ## md5sum is sufficient here, because it gets only used for an integrity check,
