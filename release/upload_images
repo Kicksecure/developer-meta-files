@@ -24,12 +24,16 @@ source ../../Whonix/help-steps/variables
 version="$whonix_build_closest_git_tag"
 
 #sf_user="adrelanos"
-#project="testprojectwh"
-#project="whonix"
+#sf_project="testprojectwh"
+#sf_project="whonix"
 #sf_project="whonixdevelopermetafiles"
-#server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$project/$version/"
+#server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$sf_project/$version/"
 
 server="root@rsync.whonix.org:/var/rsync/$version/"
+
+if [ "$server" = "" ]; then
+   error "Variable server is empty."
+fi
 
 ls -la "$WHONIX_BINARY/sha512sum"
 ls -la "$WHONIX_BINARY/"*".ova"
@@ -72,7 +76,7 @@ while true; do
       break
    fi
 
-   if [ "$attempts_counter" -ge "10" ]; then
+   if [ "$attempts_counter" -ge "$attempts_max" ]; then
       msg="${bold}${red}INFO: Upload failed.${reset}"
       true "$msg"
       error "$msg"

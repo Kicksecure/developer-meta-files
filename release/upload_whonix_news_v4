@@ -104,7 +104,7 @@ compress_news
 checksum_new="$(sha512sum "$WHONIX_BINARY/news_v4/whonix_news.tar.xz")"
 
 if [ ! "$checksum_new" = "$checksum_old" ]; then
-   error="Checksum mismatch. $WHONIX_BINARY/news_v4/whonix_news.tar.xz is non deterministic!"
+   error "Checksum mismatch. $WHONIX_BINARY/news_v4/whonix_news.tar.xz is non deterministic!"
 fi
 
 true "${cyan}INFO $BASH_SOURCE: Checksum matched, ok.${reset}"

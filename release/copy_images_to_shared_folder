@@ -35,7 +35,7 @@ rm --force "md5sum"
 
 ## Create md5sum to compare with sourceforge.
 for file_name in $whonix_build_files_list; do
-   sudo -u "$user_name" md5sum "$file_name" >> "md5sum"
+   sudo -u "$user_name" md5sum "$file_name" | sudo -u "$user_name" tee -a "md5sum"
 done
 sync
 

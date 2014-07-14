@@ -31,6 +31,53 @@ counter=0
 nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
 
+## copied from make-helper.bsh
+get_variables() {
+   command -v dpkg-parsechangelog >/dev/null
+   OIFS="${IFS}"
+   NIFS=$'\n'
+   IFS="${NIFS}"
+   for line in $(dpkg-parsechangelog); do
+      ## Example line:
+      ## Version: 0.1-1
+      IFS="${OIFS}"
+      read -r first second _ <<< "$line"
+      ## Example first:
+      ## Version:
+      ## Example second:
+      ## 0.1-1
+      first="${first,,}"
+      ## Example first:
+      ## version
+      if [ "$first" = "version:" ]; then
+         version="$second"
+         ## Example version:
+         ## 3:0.1-1
+         revision="${version#*-}"
+         ## Example revision:
+         ## 1
+         version="${version%-*}"
+         ## Example version:
+         ## 3:0.1
+         version="${version#*:}"
+         ## Example version:
+         ## 0.1
+         break
+      fi
+   done
+   IFS="${OIFS}"
+   if [ "$version" = "" ]; then
+      true "ERROR: variable version is empty."
+      exit 1
+   fi
+   #package_name="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ))"
+   #if [ "$package_name" = "" ]; then
+      #true "ERROR: variable package_name is empty."
+      #exit 1
+   #fi
+   deb_file="../${package_name}_${version}-${revision}_all.deb"
+}
+
 make_readme() {
    trap "build_all_error_handler" ERR
 
@@ -327,6 +374,40 @@ git_submodule_file_writer() {
 " >> ../".gitmodules"
 }
 
+git_make_giant_log() {
+   trap "build_all_error_handler" ERR
+
+   #git shortlog 8.2..8.6.3.0 > giant_git_log
+
+   cd "$item"
+
+   echo "$item" >> "../../giant_git_log"
+   git shortlog >> "../../giant_git_log"
+
+   ## TODO
+   #$(git describe)..master
+
+   cd ..
+}
+
+git_tags() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+
+   get_variables
+   reponame="$(basename "$item")"
+
+   true "version: $version"
+
+   if [ ! "$version" = "0.1" ]; then
+       true "press enter"
+       read temp
+   fi
+
+   cd ..
+}
+
 folder_list="$(echo ./* | sort)"
 
 for item in $folder_list; do
@@ -354,6 +435,8 @@ for item in $folder_list; do
    #echo_links
    #echo_names
    #add_twitter_to_github
+   #git_make_giant_log
+   #git_tags
 
    #kate "$item/debian/rules" >/dev/null 2>&1
 

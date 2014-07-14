@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -x
+#set -e
+set -o pipefail
+
+true "PWD: $PWD"
+
+opts="\
+   --exclude SC2086 \
+   --exclude SC2086 \
+   --exclude SC2016 \
+   --exclude SC2034 \
+   --exclude SC2129 \
+   --exclude SC2004 \
+   --exclude SC2088 \
+   --exclude SC2015 \
+   --exclude SC2068 \
+   "
+
+   ## var not required
+      ## --exclude SC2034
+
+shopt -s dotglob nullglob globstar
+
+for file_name in "$1"/**; do
+   true "file_name: $file_name"
+   if [ ! -f "$file_name" ]; then
+      continue
+   fi
+   grep "/bin/bash" "$file_name"
+   if [ ! "$?" = "0" ]; then
+      continue
+   fi
+   shellcheck $opts "$file_name"
+   if [ "$?" = "0" ]; then
+      continue
+   fi
+   echo "$file_name" | grep -q .git
+   if [ "$?" = "0" ]; then
+      continue
+   fi
+   file_name_short="${file_name##*/}"
+   if [ "$file_name_short" = "make-helper.bsh" ]; then
+      continue
+   fi
+   true "press y to open kate. enter to continue"
+   read temp
+   if [ "$temp" = "y" ]; then
+      kate "$file_name" >/dev/null 2>&1
+   fi
+done
