@@ -16,10 +16,8 @@ opts="\
    --exclude SC2088 \
    --exclude SC2015 \
    --exclude SC2068 \
+   --exclude SC2001 \
    "
-
-   ## var not required
-      ## --exclude SC2034
 
 shopt -s dotglob nullglob globstar
 
@@ -28,7 +26,7 @@ for file_name in "$1"/**; do
    if [ ! -f "$file_name" ]; then
       continue
    fi
-   grep "/bin/bash" "$file_name"
+   grep '#!/bin/bash' "$file_name"
    if [ ! "$?" = "0" ]; then
       continue
    fi
