@@ -26,19 +26,13 @@ cd "$MYDIR"
 ## Back to whonix-developer-meta-files folder.
 cd ..
 
+whonix_dev_meta_files_folder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 ## Back to parent folder.
 cd ..
 
 ## Get into Whonix folder.
 cd Whonix
-
-WHONIX_BUILD_PARSED="1"
-VMNAME="internalrun"
-
-source ./help-steps/variables
-
-unset WHONIX_BUILD_PARSED
-unset VMNAME
 
 ## Debugging.
 ls -la
