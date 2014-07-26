@@ -37,6 +37,9 @@ VMNAME="internalrun"
 
 source ./help-steps/variables
 
+unset WHONIX_BUILD_PARSED
+unset VMNAME
+
 ## Debugging.
 ls -la
 
