@@ -441,6 +441,7 @@ for item in $folder_list; do
    true "item: $item | counter: $counter"
 
    #copy_packaging
+   #diff_common_packaging_files
    #modify_debian_changelog_version
    #open_links
    #add_remotes
@@ -451,7 +452,6 @@ for item in $folder_list; do
    push_remotes
    #open_debian_control
    #git_submodule_file_writer
-   #diff_common_packaging_files
    #echo_links
    #echo_names
    #add_twitter_to_github
