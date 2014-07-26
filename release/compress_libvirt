@@ -46,7 +46,6 @@ tar \
    "Whonix-Gateway_kvm-$version.xml" \
    "Whonix-Gateway_qemu-x86-x64-$version.xml" \
    "Whonix_network-$version.xml" \
-   "README-$version.txt" \
    "Whonix-Gateway-$version.qcow2"
 
 sync
@@ -60,7 +59,6 @@ tar \
    --file "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.xz" \
    "Whonix-Workstation_kvm-$version.xml" \
    "Whonix-Workstation_qemu-x86-x64-$version.xml" \
-   "README-$version.txt" \
    "Whonix-Workstation-$version.qcow2"
 
 sync

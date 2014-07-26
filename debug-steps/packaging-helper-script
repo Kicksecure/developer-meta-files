@@ -408,6 +408,26 @@ git_tags() {
    cd ..
 }
 
+dput_cfg_writer() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+   get_variables
+   reponame="$(basename "$item")"
+
+   launchpad_name="adrelanos"
+
+   echo "\
+[${reponame}]
+fqdn			= ppa.launchpad.net
+method			= sftp
+incoming                = ~${launchpad_name}/${reponame}/ubuntu/
+login			= ${launchpad_name}
+allowed_distributions 	= trusty" >> /home/user/dput.cfg
+
+   cd ..
+}
+
 folder_list="$(echo ./* | sort)"
 
 for item in $folder_list; do
