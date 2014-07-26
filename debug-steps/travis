@@ -21,18 +21,27 @@ trap "error_handler_travis" ERR
 true "INFO $BASH_SOURCE: Script running as user: $(logname)"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
 
-## Back to whonix-developer-meta-files folder.
-cd ..
+## Example MYDIR:
+## /home/travis/build/Whonix/whonix-developer-meta-files/debug-steps
 
-whonix_dev_meta_files_folder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+whonix_dev_meta_files_folder="$(dirname "$MYDIR")"
 
-## Back to parent folder.
-cd ..
+## Example whonix_dev_meta_files_folder:
+## /home/travis/build/Whonix/whonix-developer-meta-files
+
+travis_root_folder="$(dirname "$whonix_dev_meta_files_folder")"
+
+## Example travis_root_folder:
+## /home/travis/build/Whonix
+
+whonix_source_folder="$travis_root_folder/Whonix"
+
+## Example whonix_source_folder:
+## /home/travis/build/Whonix/Whonix
 
 ## Get into Whonix folder.
-cd Whonix
+cd "$whonix_source_folder"
 
 ## Debugging.
 ls -la
