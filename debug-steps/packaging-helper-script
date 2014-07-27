@@ -325,6 +325,18 @@ git_commit_changelog() {
    cd ..
 }
 
+git_commit_packaging() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+   git add Makefile
+   git add make-helper.bsh
+   msg="packaging"
+   git commit -m "$msg" || true
+   git status
+   cd ..
+}
+
 git_diff_and_commit() {
    trap "build_all_error_handler" ERR
 
@@ -448,6 +460,7 @@ for item in $folder_list; do
    #make_readme
    #git_commit_readme
    #git_commit_changelog
+   #git_commit_packaging
    #git_diff_and_commit
    push_remotes
    #open_debian_control
