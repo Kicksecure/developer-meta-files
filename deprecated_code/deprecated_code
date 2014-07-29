@@ -1523,3 +1523,5 @@ $feel_free_to_press_enter_msg" | write user tty1 2>/dev/null || true
 override_dh_installchangelogs:
 	$(CURDIR)/make-helper.bsh uch
 	dh_installchangelogs debian/changelog.upstream
+
+whonix_build_apt_sources_mirror="$(grep -oP "(?<=deb ).*(?= "$whonix_build_apt_stable_release" )" "$whonix_build_sources_list")"

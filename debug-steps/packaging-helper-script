@@ -308,6 +308,7 @@ git_commit_readme() {
 
    cd "$item"
    git add README.md
+   git diff --cached
    msg="readme"
    git commit -m "$msg" || true
    git status
