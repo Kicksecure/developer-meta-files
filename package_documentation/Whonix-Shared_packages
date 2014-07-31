@@ -169,6 +169,8 @@ python-stem
 
 ## required for whonixcheck (for msgcollector), for moving the window on the desktop
 wmctrl
+## contains xwininfo
+x11-utils
 
 ## Can detect whether we are running in a virtual machine or not, ## dependency
 ## depending on that, we can enable/disable certain features. For example
