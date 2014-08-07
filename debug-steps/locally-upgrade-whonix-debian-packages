@@ -18,22 +18,18 @@ locally-upgrade-whonix-debian-packages() {
    trap "error_handler_unchroot_unprevent_unmount" ERR INT TERM
 
    if [ "$WHONIX_BUILD_USE_AUTO_LOCAL_SIGNING_KEY" = "1" ]; then
-      if [ ! -f "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"/done ]; then
+      if [ ! -f "$WHONIX_LOCAL_SIGNING_KEY_FOLDER/done" ]; then
          error "${red}${bold}$BASH_SOURCE ERROR: $WHONIX_LOCAL_SIGNING_KEY_FOLDER/done does not exist. Most likely build-steps.d/1200_create-debian-packages has not been run yet.${reset}"
       fi
    fi
 
    ## Lockfile for whonixcheck.
-   mkdir --parents "/var/run/whonix"
-   chown --recursive user:user /var/run/whonix
-   chmod --recursive o+w /var/run/whonix
-   chmod --recursive g+w /var/run/whonix
    sudo -u user touch "/var/run/package_manager_lock"
 
    sync
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
-   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/prevent-daemons-from-starting
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/mount-raw"
+   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER/prevent-daemons-from-starting"
 
    if [ "$CI" = "true" ]; then
       ## We should mount /etc/resolv.conf.backup to /etc/resolv.conf to make network functional.
@@ -43,18 +39,20 @@ locally-upgrade-whonix-debian-packages() {
    else
       export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
    fi
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/chroot-raw
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/chroot-raw"
 
    sync
 
-   ## Sanity tests.
-   $CHROOT $update_grub_bin -v
+   ## Sanity test.
    $CHROOT sync
 
    sync
 
-   ## backup exiting /etc/apt/sources.list, might be useful for bare metal users
-   cp --no-clobber --recursive --preserve "$CHROOT_FOLDER"/etc/apt/sources.list "$CHROOT_FOLDER"/etc/apt/sources.list.backup
+   ## Backup exiting /etc/apt/sources.list, might be useful for bare metal users.
+   ## No longer required, we are no longer shipping /etc/apt/sources.list.
+   #if [ -f "$CHROOT_FOLDER/etc/apt/sources.list" ]; then
+      #cp --no-clobber --recursive --preserve "$CHROOT_FOLDER/etc/apt/sources.list" "$CHROOT_FOLDER/etc/apt/sources.list.backup"
+   #fi
 
    ## We have to manually fix /etc/apt/sources.list, because the list which comes with
    ## grml-debootstrap is incomplete (does not complain debian security repository) and points to 127.0.0.1.
@@ -65,12 +63,14 @@ locally-upgrade-whonix-debian-packages() {
       true "INFO $BASH_SOURCE: Not using $WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/sources.list.whonix because CI detected."
    else
       ## This file doesn't include Whonix's APT repository.
-      cp "$WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/sources.list.whonix" "$CHROOT_FOLDER/etc/apt/sources.list"
+      cp "$WHONIX_SOURCE_FOLDER/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
    fi
 
-   cp "$WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
+   ## Not using any /etc/apt/preferences.d snippets at the moment.
+   #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
 
-   cp "$WHONIX_SOURCE_FOLDER/whonix_shared/etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
+   ## Not using any important /etc/apt/apt.conf.d snippets at the moment.
+   #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
 
    if [ "$CI" = "true" ]; then
       # export, so create-local-temp-apt-repo can read it
@@ -95,7 +95,7 @@ locally-upgrade-whonix-debian-packages() {
       #$CHROOT apt-get $apt_timeout_opts --yes dist-upgrade
    #fi
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/create-local-temp-apt-repo
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
 
    ## Check if we are running on a Whonix-Gateway.
    if [ -f "/usr/share/anon-gw-base-files/gateway" ]; then
@@ -117,7 +117,7 @@ locally-upgrade-whonix-debian-packages() {
    ## Upgrade Whonix Debian Packages.
    $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes dist-upgrade
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/remove-local-temp-apt-repo
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
 
    ## Forget about local repository containing Whonix's packages.
    $CHROOT apt-get --no-download --list-cleanup update
@@ -131,9 +131,9 @@ locally-upgrade-whonix-debian-packages() {
    ## Remove lockfile for whonixcheck.
    rm --force "/var/run/package_manager_lock"
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
-   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unmount-raw
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unchroot-raw"
+   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER/unprevent-daemons-from-starting"
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unmount-raw"
 
    sync
 }

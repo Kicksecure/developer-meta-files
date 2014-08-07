@@ -282,7 +282,7 @@ khelpcenter4
 ksystemlog
 
 ## OpenVPN GUI
-network-manager-kde
+plasma-widget-networkmanagement
 
 ## accessibility: kdeaccessibility ## LITE ## recommended
 kdeaccessibility
