@@ -37,10 +37,10 @@ for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
 done
 unset file
 
-echo "INFO $BASH_SOURCE: Please press enter to continue showing pool."
+echo "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing pool.${reset}"
 read temp
 
-echo "INFO $BASH_SOURCE: Showing pool..."
+echo "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
 
 for file in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
    if [ -d "$file" ]; then
