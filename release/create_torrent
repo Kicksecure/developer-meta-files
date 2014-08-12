@@ -60,6 +60,13 @@ sudo -E -u "$user_name" mktorrent \
    -o "$WHONIX_BINARY/torrent-$version/Whonix-Workstation-$version.ova.torrent" \
    "$WHONIX_BINARY/Whonix-Workstation-$version.ova"
 
+sudo -E -u "$user_name" mktorrent \
+   --verbose \
+   --announce="$TRACKERS" \
+   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Custom-Workstation-$version.ova" \
+   -o "$WHONIX_BINARY/torrent-$version/Whonix-Custom-Workstation-$version.ova.torrent" \
+   "$WHONIX_BINARY/Whonix-Custom-Workstation-$version.ova"
+
 ## Working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Gateway-7.ova");' "$2")"
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Workstation-7.ova");' "$2")"

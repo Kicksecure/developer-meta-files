@@ -63,5 +63,18 @@ tar \
 
 sync
 
+tar \
+   --create \
+   --sparse \
+   --xz \
+   --mtime="2014-05-06 00:00:00" \
+   --directory="$WHONIX_BINARY" \
+   --file "$WHONIX_BINARY/Whonix-Custom-Workstation-$version.libvirt.xz" \
+   "Whonix-Custom-Workstation_kvm-$version.xml" \
+   "Whonix-Custom-Workstation_qemu-x86-x64-$version.xml" \
+   "Whonix-Custom-Workstation-$version.qcow2"
+
+sync
+
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"
