@@ -24,14 +24,14 @@ source ../../Whonix/help-steps/variables
 ## Sanity test.
 ls -ls "/mnt/shared/" >/dev/null
 
-cd "$WHONIX_BINARY"
+#cd "$WHONIX_BINARY"
 
 ## {{ hash sum
 
 ## md5sum is sufficient here, because it gets only used for an integrity check,
 ## to see if copying around on a local hdd succeeded.
 
-rm --force "md5sum"
+#rm --force "md5sum"
 
 ## Create md5sum to compare with sourceforge.
 for file_name in $whonix_build_files_list; do

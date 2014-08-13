@@ -8,9 +8,6 @@ set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefile
 
-## disable cmd line parser, since not needed
-export WHONIX_BUILD_PARSED="1"
-export VMNAME="internalrun"
 ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -49,23 +46,9 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Gateway-$version.ova" \
-   -o "$WHONIX_BINARY/torrent-$version/Whonix-Gateway-$version.ova.torrent" \
-   "$WHONIX_BINARY/Whonix-Gateway-$version.ova"
-
-sudo -E -u "$user_name" mktorrent \
-   --verbose \
-   --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Workstation-$version.ova" \
-   -o "$WHONIX_BINARY/torrent-$version/Whonix-Workstation-$version.ova.torrent" \
-   "$WHONIX_BINARY/Whonix-Workstation-$version.ova"
-
-sudo -E -u "$user_name" mktorrent \
-   --verbose \
-   --announce="$TRACKERS" \
-   --web-seed "http://webseed.whonix.org:8008/$version/Whonix-Custom-Workstation-$version.ova" \
-   -o "$WHONIX_BINARY/torrent-$version/Whonix-Custom-Workstation-$version.ova.torrent" \
-   "$WHONIX_BINARY/Whonix-Custom-Workstation-$version.ova"
+   --web-seed "http://webseed.whonix.org:8008/$version/$VMNAME-$version.ova" \
+   -o "$binary_image_ova_torrent" \
+   "$binary_image_ova"
 
 ## Working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Gateway-7.ova");' "$2")"

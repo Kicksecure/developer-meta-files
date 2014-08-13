@@ -8,9 +8,6 @@ set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
-## disable cmd line parser, since not needed
-export WHONIX_BUILD_PARSED="1"
-export VMNAME="internalrun"
 ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -23,6 +20,7 @@ version="$whonix_build_closest_git_tag"
 
 cd "$WHONIX_BINARY"
 
+## Debugging.
 echo "test" > "$WHONIX_BINARY/test_sign_file"
 gpg --detach-sign --armor --yes "$WHONIX_BINARY/test_sign_file"
 gpg --verify "$WHONIX_BINARY/test_sign_file.asc"
@@ -34,40 +32,23 @@ rm "$WHONIX_BINARY/test_sign_file.asc"
 ## md5sum is sufficient here, because it gets only used for an integrity check,
 ## to see if copying around on a local hdd succeeded.
 
-md5sum --check md5sum
+#md5sum --check md5sum
 
 ## }}
 
 ## Create detached signatures.
-gpg --detach-sign --armor --yes "Whonix-Gateway-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Gateway-$version.libvirt.xz"
-gpg --detach-sign --armor --yes "Whonix-Workstation-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Workstation-$version.libvirt.xz"
-gpg --detach-sign --armor --yes "Whonix-Custom-Workstation-$version.ova"
-gpg --detach-sign --armor --yes "Whonix-Custom-Workstation-$version.libvirt.xz"
+gpg --detach-sign --armor --yes "$binary_image_ova"
+gpg --detach-sign --armor --yes "$libvirt_target_xz_archive"
 
 ## Verify, that signing worked.
-gpg --verify "Whonix-Gateway-$version.ova.asc"
-gpg --verify "Whonix-Gateway-$version.libvirt.xz.asc"
-gpg --verify "Whonix-Workstation-$version.ova.asc"
-gpg --verify "Whonix-Workstation-$version.libvirt.xz.asc"
-gpg --verify "Whonix-Custom-Workstation-$version.ova.asc"
-gpg --verify "Whonix-Custom-Workstation-$version.libvirt.xz.asc"
+gpg --verify "$binary_image_ova_signature"
+gpg --verify "$libvirt_target_xz_archive_signature"
 
 ## Create sha512sum.
-rm --force sha512sum
-sha512sum "Whonix-Gateway-$version.ova" >> sha512sum
-sha512sum "Whonix-Gateway-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Gateway-$version.libvirt.xz" >> sha512sum
-sha512sum "Whonix-Gateway-$version.libvirt.xz.asc" >> sha512sum
-sha512sum "Whonix-Workstation-$version.ova" >> sha512sum
-sha512sum "Whonix-Workstation-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Workstation-$version.libvirt.xz" >> sha512sum
-sha512sum "Whonix-Workstation-$version.libvirt.xz.asc" >> sha512sum
-sha512sum "Whonix-Custom-Workstation-$version.ova" >> sha512sum
-sha512sum "Whonix-Custom-Workstation-$version.ova.asc" >> sha512sum
-sha512sum "Whonix-Custom-Workstation-$version.libvirt.xz" >> sha512sum
-sha512sum "Whonix-Custom-Workstation-$version.libvirt.xz.asc" >> sha512sum
+sha512sum "$binary_image_ova" >> sha512sum
+sha512sum "$binary_image_ova_signature" >> sha512sum
+sha512sum "$libvirt_target_xz_archive" >> sha512sum
+sha512sum "$libvirt_target_xz_archive_signature" >> sha512sum
 
 sync
 

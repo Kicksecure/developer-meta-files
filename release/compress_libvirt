@@ -8,9 +8,6 @@ set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 set -o pipefail
 
-## disable cmd line parser, since not needed
-export WHONIX_BUILD_PARSED="1"
-export VMNAME="internalrun"
 ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -20,6 +17,14 @@ source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
 version="$whonix_build_closest_git_tag"
+
+if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+   maybe_add_libvirt_network_xml_file="$(basename "$libvirt_target_network_file")"
+else
+   maybe_add_libvirt_network_xml_file=""
+fi
+
+cd "$WHONIX_BINARY"
 
 ## Not using `gzip`, because it cannot handle sparse files:
 ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
@@ -42,37 +47,11 @@ tar \
    --xz \
    --mtime="2014-05-06 00:00:00" \
    --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.xz" \
-   "Whonix-Gateway_kvm-$version.xml" \
-   "Whonix-Gateway_qemu-x86-x64-$version.xml" \
-   "Whonix_network-$version.xml" \
-   "Whonix-Gateway-$version.qcow2"
-
-sync
-
-tar \
-   --create \
-   --sparse \
-   --xz \
-   --mtime="2014-05-06 00:00:00" \
-   --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.xz" \
-   "Whonix-Workstation_kvm-$version.xml" \
-   "Whonix-Workstation_qemu-x86-x64-$version.xml" \
-   "Whonix-Workstation-$version.qcow2"
-
-sync
-
-tar \
-   --create \
-   --sparse \
-   --xz \
-   --mtime="2014-05-06 00:00:00" \
-   --directory="$WHONIX_BINARY" \
-   --file "$WHONIX_BINARY/Whonix-Custom-Workstation-$version.libvirt.xz" \
-   "Whonix-Custom-Workstation_kvm-$version.xml" \
-   "Whonix-Custom-Workstation_qemu-x86-x64-$version.xml" \
-   "Whonix-Custom-Workstation-$version.qcow2"
+   --file "$(basename $libvirt_target_xz_archive)" \
+   "$(basename "$libvirt_target_kvm_file")" \
+   "$(basename "$libvirt_target_qemu_newer_archs_file")" \
+   "$(basename "$binary_image_qcow2")" \
+   $maybe_add_libvirt_network_xml_file
 
 sync
 
