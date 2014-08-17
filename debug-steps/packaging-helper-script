@@ -70,12 +70,33 @@ get_variables() {
       true "ERROR: variable version is empty."
       exit 1
    fi
-   #package_name="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ))"
-   #if [ "$package_name" = "" ]; then
-      #true "ERROR: variable package_name is empty."
-      #exit 1
-   #fi
-   deb_file="../${package_name}_${version}-${revision}_all.deb"
+   main_package_name="$mydir"
+   if [ "$main_package_name" = "" ]; then
+      true "ERROR: variable main_package_name is empty."
+      exit 1
+   fi
+   main_deb_file="../${main_package_name}_${version}-${revision}_all.deb"
+
+   local grep_output line a package
+   grep_output="$(grep "Package:" "debian/control")"
+   ## Example: grep_output
+   ## Package: anon-shared-packages-dependencies
+   ## Package: anon-shared-packages-recommended
+
+   package_list="$main_package_name"
+
+   OIFS="$IFS"
+   NIFS=$'\n'
+   IFS="$NIFS"
+   for line in $grep_output; do
+      IFS="$OIFS"
+      read a package _ <<< "$line"
+      if [ "$package" = "$main_package_name" ]; then
+         continue
+      fi
+      package_list="$package_list $package"
+   done
+   IFS="$OIFS"
 }
 
 make_readme() {
@@ -247,10 +268,48 @@ copy_packaging() {
 modify_debian_changelog_version() {
    trap "build_all_error_handler" ERR
 
-   temp="3:0.1-1"
-   new="3:0.1-2"
+   cd "$item"
 
-   sed -i "s/$temp/$new/g" "$item/debian/changelog"
+   mydir="$item"
+   get_variables
+   reponame="$(basename "$item")"
+
+   reponame="$(basename "$item")"
+
+   if [ "$version" = "0.1" ]; then
+      true
+   else
+      echo "$reponame" >> "$MYDIR/special"
+      cd ..
+      continue
+   fi
+
+   #temp="3:0.1-2"
+   #new="3:0.2-2"
+
+   #sed -i "s/$temp/$new/g" "$item/debian/changelog"
+
+   ## debchange in Ubuntu somehow does not support --vendor, only --distributor.
+   ## Small workaround for travis-ci (using Ubuntu).
+   if [ "$whonix_build_on_operating_system" = "ubuntu" ]; then
+      ## Using --distributor when Ubuntu is detected.
+      debchange_vendor_cmd="--distributor"
+   else
+      ## Otherwise fall back to --vendor.
+      debchange_vendor_cmd="--vendor"
+   fi
+
+   export DEBEMAIL="adrelanos@riseup.net"
+
+   debchange \
+      --newversion "3:0.2-1" \
+      "New upstream version."
+
+   debchange \
+      --release \
+      ""
+
+   cd ..
 
    true
 }
@@ -361,11 +420,14 @@ git_diff_and_commit() {
       return
    fi
 
-   git add -A
-   git add -u
-   git diff --cached
-   git commit
-   git status
+   #git add -A
+   #git add -u
+   #git diff --cached
+   #git commit -a -m "bump version number"
+   #git status
+
+   #git diff
+
    cd ..
 }
 
@@ -408,15 +470,20 @@ git_tags() {
 
    cd "$item"
 
+   mydir="$item"
    get_variables
    reponame="$(basename "$item")"
 
    true "version: $version"
 
-   if [ ! "$version" = "0.1" ]; then
-       true "press enter"
-       read temp
-   fi
+   #if [ ! "$version" = "0.2" ]; then
+       #true "press enter"
+       #read temp
+   #fi
+
+   git tag -s "$version" -m "."
+   git push origin "$version" &
+   git push adre "$version" &
 
    cd ..
 }
@@ -425,6 +492,8 @@ dput_cfg_writer() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
+
+   mydir="$item"
    get_variables
    reponame="$(basename "$item")"
 
