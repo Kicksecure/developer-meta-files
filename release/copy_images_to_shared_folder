@@ -21,7 +21,7 @@ source ../../Whonix/help-steps/variables
 ## Sanity test.
 ls -ls "/mnt/shared/" >/dev/null
 
-#cd "$WHONIX_BINARY"
+cd "$WHONIX_BINARY"
 
 ## {{ hash sum
 
