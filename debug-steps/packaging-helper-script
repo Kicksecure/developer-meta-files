@@ -276,7 +276,7 @@ modify_debian_changelog_version() {
 
    reponame="$(basename "$item")"
 
-   if [ "$version" = "0.1" ]; then
+   if [ "$version" = "0.2" ]; then
       true
    else
       echo "$reponame" >> "$MYDIR/special"
@@ -302,7 +302,7 @@ modify_debian_changelog_version() {
    export DEBEMAIL="adrelanos@riseup.net"
 
    debchange \
-      --newversion "3:0.2-1" \
+      --newversion "3:0.3-1" \
       "New upstream version."
 
    debchange \
@@ -353,10 +353,12 @@ push_remotes() {
 
    git push origin master &
    git_pid="$!"
+   #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
    git push adre master &
    git_pid="$!"
+   #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
    cd ..
@@ -379,7 +381,7 @@ git_commit_changelog() {
 
    cd "$item"
    git add debian/changelog
-   msg='Bumped debian revision number to avoid lintian warning "new-package-should-close-itp-bug" so we can use lintian --fail-on-warnings as sanity test.'
+   msg='Updated debian/changelog.'
    git commit -m "$msg"
    git status
    cd ..
@@ -473,17 +475,13 @@ git_tags() {
    mydir="$item"
    get_variables
    reponame="$(basename "$item")"
+   version_and_revision="$version-$revision"
 
-   true "version: $version"
+   true "version_and_revision: $version_and_revision"
 
-   #if [ ! "$version" = "0.2" ]; then
-       #true "press enter"
-       #read temp
-   #fi
-
-   git tag -s "$version" -m "."
-   git push origin "$version" &
-   git push adre "$version" &
+   git tag -s "$version_and_revision" -m "."
+   git push origin "$version_and_revision" &
+   git push adre "$version_and_revision" &
 
    cd ..
 }
