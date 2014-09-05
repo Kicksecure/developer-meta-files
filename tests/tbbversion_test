@@ -4,7 +4,7 @@
 
 RecommendedTBBVersions="./tests/RecommendedTBBVersions"
 
-source ../Whonix/whonix_shared/usr/lib/whonixcheck/help_tbbversion
+source ../Whonix/packages/tb-updater/usr/lib/tbbversion_parser
 
 tbbversion
 
