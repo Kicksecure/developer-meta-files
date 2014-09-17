@@ -259,6 +259,24 @@ add_branch_nine() {
    cd ..
 }
 
+checkout_branch_nine() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   cd "$reponame"
+   git checkout Whonix9
+   cd ..
+}
+
+diff_branch_master() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   cd "$reponame"
+   git diff master
+   cd ..
+}
+
 copy_packaging() {
    trap "build_all_error_handler" ERR
 
@@ -332,6 +350,16 @@ push_remotes() {
    git_pid_list="$git_pid_list $git_pid"
 
    git push adre master &
+   git_pid="$!"
+   #wait "$git_pid"
+   git_pid_list="$git_pid_list $git_pid"
+
+   git push origin Whonix9 &
+   git_pid="$!"
+   #wait "$git_pid"
+   git_pid_list="$git_pid_list $git_pid"
+
+   git push adre Whonix9 &
    git_pid="$!"
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
@@ -514,6 +542,8 @@ for item in $folder_list; do
    #git_make_giant_log
    #git_tags
    #add_branch_nine
+   #checkout_branch_nine
+   #diff_branch_master
 
    #kate "$item/debian/rules" >/dev/null 2>&1
 
