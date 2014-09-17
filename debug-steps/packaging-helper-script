@@ -249,6 +249,16 @@ add_remotes() {
    cd ..
 }
 
+add_branch_nine() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   cd "$reponame"
+   git checkout master
+   git branch Whonix9
+   cd ..
+}
+
 copy_packaging() {
    trap "build_all_error_handler" ERR
 
@@ -503,6 +513,7 @@ for item in $folder_list; do
    #add_twitter_to_github
    #git_make_giant_log
    #git_tags
+   #add_branch_nine
 
    #kate "$item/debian/rules" >/dev/null 2>&1
 
