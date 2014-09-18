@@ -50,6 +50,13 @@ sudo -E -u "$user_name" mktorrent \
    -o "$binary_image_ova_torrent" \
    "$binary_image_ova"
 
+sudo -E -u "$user_name" mktorrent \
+   --verbose \
+   --announce="$TRACKERS" \
+   --web-seed "http://webseed.whonix.org:8008/$version/$VMNAME-$version.libvirt.xz" \
+   -o "$libvirt_target_xz_archive_torrent" \
+   "$libvirt_target_xz_archive"
+
 ## Working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Gateway-7.ova");' "$2")"
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://webseed.whonix.org:8008/Whonix-Workstation-7.ova");' "$2")"
