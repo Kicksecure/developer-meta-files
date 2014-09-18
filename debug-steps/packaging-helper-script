@@ -286,6 +286,15 @@ diff_branch_master() {
    cd ..
 }
 
+diff_branch_development() {
+   trap "build_all_error_handler" ERR
+
+   reponame="$(basename "$item")"
+   cd "$reponame"
+   git diff development || true
+   cd ..
+}
+
 copy_packaging() {
    trap "build_all_error_handler" ERR
 
@@ -363,15 +372,15 @@ push_remotes() {
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
-   git push origin Whonix9 &
-   git_pid="$!"
+   #git push origin Whonix9 &
+   #git_pid="$!"
    #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   #git_pid_list="$git_pid_list $git_pid"
 
-   git push adre Whonix9 &
-   git_pid="$!"
+   #git push adre Whonix9 &
+   #git_pid="$!"
    #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   #git_pid_list="$git_pid_list $git_pid"
 
    cd ..
 }
@@ -554,6 +563,7 @@ for item in $folder_list; do
    #checkout_branch_nine
    #checkout_branch_master
    #diff_branch_master
+   #diff_branch_development
 
    #kate "$item/debian/rules" >/dev/null 2>&1
 
