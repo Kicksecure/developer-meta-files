@@ -9,6 +9,9 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz/download
 ## and a detached armored OpenPGP signature on
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
+## Used by:
+## - Whonix 7.x
+## - Whonix 8.x
 
 set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
