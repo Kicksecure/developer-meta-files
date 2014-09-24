@@ -22,6 +22,9 @@ source ../../Whonix/help-steps/variables
 
 cd "$mydir_backup"
 
+true "${bold}${red}INFO: Are you sure you want to do this? Stable repository is only for users of Whonix 8. If you want to continue, please press enter. Otherwise ctrl + c.${reset}"
+read temp
+
 ../debug-steps/reprepro-wrapper copymatched stable testers "*"
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
