@@ -529,9 +529,7 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
    cd ..
 }
 
-folder_list="$(echo ./* | sort)"
-
-for item in $folder_list; do
+for item in ./*; do
    if [ ! -d "$item" ]; then
       continue
    fi
