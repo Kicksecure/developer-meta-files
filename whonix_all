@@ -7,9 +7,7 @@
 set -x
 set -o pipefail
 
-## small hack to build all virtual machines, as long as whonix_build does not support --all.
-
-build_all_error_handler() {
+build_main_error_handler() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
@@ -17,10 +15,37 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
    exit 1
 }
 
-trap "build_all_error_handler" ERR
+trap "build_main_error_handler" ERR
 
-${1+"$@"} --build --install-to-root --tor-gateway
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
 
-${1+"$@"} --build --install-to-root --tor-workstation
+cd ..
+cd Whonix
 
-${1+"$@"} --build --install-to-root --tor-custom-workstation
+source ./help-steps/parse-cmd
+
+cd "$MYDIR"
+
+build_main_build() {
+   trap "build_main_error_handler" ERR
+   true "INFO $BASH_SOURCE $FUNCNAME: build_args: $build_args"
+   true "INFO $BASH_SOURCE $FUNCNAME: Build overview.
+WHONIX_MAIN_SCRIPT_BUILD_GATEWAY: $WHONIX_MAIN_SCRIPT_BUILD_GATEWAY
+WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION: $WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION
+WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION: $WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION"
+   if [ "$WHONIX_MAIN_SCRIPT_BUILD_GATEWAY" = "true" ]; then
+      $build_args  --tor-gateway
+   fi
+   if [ "$WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION" = "true" ]; then
+      $build_args  --tor-workstation
+   fi
+   if [ "$WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION" = "true" ]; then
+      $build_args  --tor-custom-workstation
+   fi
+   true "INFO $BASH_SOURCE $FUNCNAME: Done."
+}
+
+build_main_defaults
+build_main_parse_cmd ${1+"$@"}
+build_main_build
