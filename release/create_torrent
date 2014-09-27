@@ -43,6 +43,14 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 ## .8008.nyud.net can no longer be appended to http://webseed.whonix.org:8008,
 ## because CoralCDN appear to no longer support files greater than 50 MB.
 
+if [ ! -r "$binary_image_ova" ]; then
+   error "$binary_image_ova not readable!"
+fi
+
+if [ ! -r "$libvirt_target_xz_archive" ]; then
+   error "$libvirt_target_xz_archive not readable!"
+fi
+
 sudo -E -u "$user_name" mktorrent \
    --verbose \
    --announce="$TRACKERS" \
