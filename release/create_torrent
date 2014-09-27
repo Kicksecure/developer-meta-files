@@ -6,7 +6,7 @@
 
 set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefile
+set -o pipefail
 
 ROOT_CHECK="0"
 
