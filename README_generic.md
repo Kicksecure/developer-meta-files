@@ -1,7 +1,7 @@
 # Generic Readme #
 ## Readme Version ##
 
-[Generic Readme](https://github.com/Whonix/whonix-developer-meta-files/blob/master/README_generic.md) Version 0.2
+[Generic Readme](https://github.com/Whonix/whonix-developer-meta-files/blob/master/README_generic.md) Version 0.3
 
 ## Cooperating Anonymity Distributions ##
 
