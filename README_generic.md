@@ -32,7 +32,7 @@ See comments below and [instructions](https://www.whonix.org/wiki/Dev/Build_Docu
 
 Binary packages are available in Whonix's APT repository. By no means you are required to use the binary version of this package. This might be interesting for users of Debian and derivatives. **Note, that usage of this package outside of Whonix is untested and there is no maintainer that supports this use case.**
 
-1\. Get [Whonix's Signing Key](https://www.whonix.org/wiki/Whonix_Signing_Key)
+1\. Get [Whonix's Signing Key](https://www.whonix.org/wiki/Whonix_Signing_Key).
 
 2\. Add Whonix's Signing Key to apt-key.
 
