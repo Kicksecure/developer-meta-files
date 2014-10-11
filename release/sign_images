@@ -45,7 +45,7 @@ gpg --verify "$binary_image_ova_signature"
 gpg --verify "$libvirt_target_xz_archive_signature"
 
 ## Create sha512sum.
-## Using basename for using relative pathsin sha512sum file.
+## Using `basename` so we end up with relative paths in sha512sum file.
 sha512sum "$(basename "$binary_image_ova")" >> sha512sum
 sha512sum "$(basename "$binary_image_ova_signature")" >> sha512sum
 sha512sum "$(basename "$libvirt_target_xz_archive")" >> sha512sum
