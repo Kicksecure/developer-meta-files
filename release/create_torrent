@@ -43,7 +43,7 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 
 ## CoralCDN:
 ## .8008.nyud.net can no longer be appended to http://mirror.whonix.de,
-## because CoralCDN appear to no longer support files greater than 50 MB.
+## because CoralCDN appears to no longer support files greater than 50 MB.
 
 if [ ! -r "$binary_image_ova" ]; then
    error "$binary_image_ova not readable!"
