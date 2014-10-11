@@ -16,8 +16,6 @@ cd "$MYDIR"
 source ../../Whonix/help-steps/pre
 source ../../Whonix/help-steps/variables
 
-version="$whonix_build_closest_git_tag"
-
 cd "$WHONIX_BINARY"
 
 ## Debugging.
