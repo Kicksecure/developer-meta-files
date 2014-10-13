@@ -313,7 +313,7 @@ copy_packaging() {
    true
 }
 
-modify_debian_changelog_version() {
+bump_debian_changelog_version() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -390,6 +390,7 @@ git_commit_readme() {
 
    cd "$item"
    git add README.md
+   git add debian/changelog
    git diff --cached
    msg="readme"
    git commit -m "$msg" || true
@@ -541,7 +542,7 @@ for item in ./*; do
 
    #copy_packaging
    #diff_common_packaging_files
-   #modify_debian_changelog_version
+   #bump_debian_changelog_version
    #open_links
    #make_readme
    #git_commit_readme
