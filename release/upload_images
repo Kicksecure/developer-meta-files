@@ -35,7 +35,7 @@ if [ "$server" = "" ]; then
    error "Variable server is empty."
 fi
 
-ls -la "$WHONIX_BINARY/sha512sum"
+ls -la "$WHONIX_BINARY/"*".sha512sums"
 ls -la "$WHONIX_BINARY/"*".ova"
 ls -la "$WHONIX_BINARY/"*".libvirt.xz"
 ls -la "$WHONIX_BINARY/"*".asc"
@@ -47,7 +47,7 @@ read temp
 rsync \
    --dry-run \
    $rsync_opts \
-   "$WHONIX_BINARY/sha512sum" \
+   "$WHONIX_BINARY/"*".sha512sums" \
    "$WHONIX_BINARY/"*".ova" \
    "$WHONIX_BINARY/"*".libvirt.xz" \
    "$WHONIX_BINARY/"*".asc" \
@@ -65,7 +65,7 @@ while true; do
    rsync_exit_code="0"
    rsync \
       $rsync_opts \
-      "$WHONIX_BINARY/sha512sum" \
+      "$WHONIX_BINARY/"*".sha512sums" \
       "$WHONIX_BINARY/"*".ova" \
       "$WHONIX_BINARY/"*".libvirt.xz" \
       "$WHONIX_BINARY/"*".asc" \
