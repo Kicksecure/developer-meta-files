@@ -1,4 +1,3 @@
-Whonix-Gateway Build News:
 Due to the Heartbleed bug in OpenSSL, you are advised to run
     sudo apt-get update && sudo apt-get dist-upgrade
 as fast as possible. Then restart Tor ("sudo service tor restart" or simply reboot).
