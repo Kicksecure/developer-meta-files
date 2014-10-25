@@ -1525,3 +1525,9 @@ override_dh_installchangelogs:
 	dh_installchangelogs debian/changelog.upstream
 
 whonix_build_apt_sources_mirror="$(grep -oP "(?<=deb ).*(?= "$whonix_build_apt_stable_release" )" "$whonix_build_sources_list")"
+
+   ## Explicitly set access time, so we end up with a deterministic debian.tar.gz file.
+   shopt -s globstar dotglob
+   touch -t "201308151102.35" ./debian
+   touch -t "201308151102.35" ./debian/**
+   shopt -u globstar dotglob
