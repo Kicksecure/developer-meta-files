@@ -28,7 +28,7 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
-whonix_news_gpg_sign_with_options="--sign-with 8D66066A2EEACCDA"
+[ -n "$whonix_news_gpg_sign_with_options" ] || whonix_news_gpg_sign_with_options="--sign-with 8D66066A2EEACCDA"
 
 if [ "$(id -u)" = "0" ]; then
    echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
