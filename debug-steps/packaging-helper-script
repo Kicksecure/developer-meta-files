@@ -539,6 +539,11 @@ for item in ./*; do
    counter=$(( $counter + 1 ))
    true "item: $item | counter: $counter"
 
+   if [ "$(basename "$item")" = "$my_pkg_name" ]; then
+      true "Skipping myself ($my_pkg_name) as long as it is not a proper debian package."
+      continue
+   fi
+
    #copy_packaging
    #diff_common_packaging_files
    #bump_debian_changelog_version
