@@ -29,23 +29,23 @@ rm --recursive --force "/home/$SUDO_USER/whonix_binary"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_first"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_second"
 
-./whonix_build --clean --tor-gateway ${1+"$@"}
-./whonix_build --clean --tor-workstation ${1+"$@"}
-./whonix_build --clean --tor-custom-workstation ${1+"$@"}
+./whonix_build --tor-gateway -- --clean --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --clean --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --clean --vbox ${1+"$@"}
 
-./whonix_build --build --tor-gateway ${1+"$@"}
-./whonix_build --build --tor-workstation ${1+"$@"}
-./whonix_build --build --tor-custom-workstation ${1+"$@"}
+./whonix_build --tor-gateway -- --build --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --build --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --build --vbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 
-./whonix_build --clean --tor-gateway ${1+"$@"}
-./whonix_build --clean --tor-workstation ${1+"$@"}
-./whonix_build --clean --tor-custom-workstation ${1+"$@"}
+./whonix_build --tor-gateway -- --clean --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --clean --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --clean --vbox ${1+"$@"}
 
-./whonix_build --build --tor-gateway ${1+"$@"}
-./whonix_build --build --tor-workstation ${1+"$@"}
-./whonix_build --build --tor-custom-workstation ${1+"$@"}
+./whonix_build --tor-gateway -- --build --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --build --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --build --vbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_second"
 
