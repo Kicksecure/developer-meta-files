@@ -23,7 +23,7 @@ cd "$MYDIR"
 
 cd ..
 cd ..
-cd Whonix
+cd ..
 
 rm --recursive --force "/home/$SUDO_USER/whonix_binary"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_first"
