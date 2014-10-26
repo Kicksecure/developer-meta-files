@@ -23,8 +23,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 cd ..
 cd ..
-cd Whonix
-cd packages
 
 counter=0
 
