@@ -20,8 +20,8 @@ trap "build_main_error_handler" ERR
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../../help-steps/pre
-#source ../../../help-steps/variables
+source ../../help-steps/pre
+#source ../../help-steps/variables
 
 cd "$MYDIR"
 
