@@ -18,7 +18,6 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 trap "build_all_error_handler" ERR
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 cd "$MYDIR"
 
 cd ..

@@ -20,10 +20,8 @@ trap "build_main_error_handler" ERR
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-cd ..
-cd Whonix
-
-source ./help-steps/parse-cmd
+source ../../../help-steps/pre
+#source ../../../help-steps/variables
 
 cd "$MYDIR"
 

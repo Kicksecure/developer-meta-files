@@ -15,9 +15,10 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 }
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
 
-source "$MYDIR"/pre
-source "$MYDIR"/variables
+source ../../../help-steps/pre
+source ../../../help-steps/variables
 
 mount_vdi() {
    trap "error_handler_mount-vdi" ERR INT TERM
