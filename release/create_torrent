@@ -18,7 +18,7 @@ source ../../../help-steps/variables
 
 command -v mktorrent >/dev/null
 
-version="$whonix_build_closest_git_tag"
+[ -n "$version" ] || version="$whonix_build_closest_git_tag"
 
 ## Thanks to:
 ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh

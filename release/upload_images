@@ -21,7 +21,7 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
-version="$whonix_build_closest_git_tag"
+[ -n "$version" ] || version="$whonix_build_closest_git_tag"
 
 #sf_user="adrelanos"
 #sf_project="testprojectwh"
