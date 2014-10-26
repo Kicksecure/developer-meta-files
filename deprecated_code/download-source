@@ -13,8 +13,8 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../Whonix/help-steps/pre
-source ../../Whonix/help-steps/variables
+source ../../../help-steps/pre
+source ../../../help-steps/variables
 
 download_sources() {
    trap "error_handler_general" ERR INT TERM

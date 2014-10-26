@@ -13,8 +13,8 @@ ROOT_CHECK="0"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../Whonix/help-steps/pre
-source ../../Whonix/help-steps/variables
+source ../../../help-steps/pre
+source ../../../help-steps/variables
 
 version="$whonix_build_closest_git_tag"
 

@@ -11,8 +11,8 @@ true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../Whonix/help-steps/pre
-source ../../Whonix/help-steps/variables
+source ../../../help-steps/pre
+source ../../../help-steps/variables
 
 locally-upgrade-whonix-debian-packages() {
    trap "error_handler_unchroot_unprevent_unmount" ERR INT TERM
