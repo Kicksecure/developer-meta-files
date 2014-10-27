@@ -46,19 +46,19 @@ ls -la
 
 ## {{ Build physically isolated machine.
 
-if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
+if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
    sudo -E ./whonix_build --whonix-gateway -- --install-to-root --build
-elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    sudo -E ./whonix_build --whonix-gateway -- --install-to-root --build
-elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
-elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    sudo -E ./whonix_build --whonix-workstation -- --install-to-root --build
-elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
    sudo -E ./whonix_build --whonix-workstation -- --install-to-root --build
-elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
@@ -87,24 +87,24 @@ git tag 101 -m "."
 
 export anon_dist_build_version="101"
 
-if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
+if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
-elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
    #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
    true
-elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
-elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
    #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
    true
-elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
-elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
+elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages
    sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
 else
