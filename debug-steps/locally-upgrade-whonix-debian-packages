@@ -141,7 +141,7 @@ locally-upgrade-whonix-debian-packages() {
          anon-gateway-packages-recommended \
          whonix-gateway-packages-dependencies \
          whonix-gateway-packages-recommended
-   elif [ "$WHONIX_BUILD_CUSTOM_WORKSTATION" = "1" ]; then
+   elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
       $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes install \
          whonix-workstation-packages-dependencies-pre \
          anon-shared-build-apt-sources-tpo \
