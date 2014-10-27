@@ -118,11 +118,11 @@ fi
 
 ## Debugging.
 ls -la ../
-ls -la /home/travis/whonix_binary/
-ls -la /home/travis/whonix_binary/*.report
+ls -la /home/root/whonix_binary/
+ls -la /home/root/whonix_binary/*.report
 
 true "INFO $BASH_SOURCE: Showing report..."
-cat /home/travis/whonix_binary/*.report
+cat /home/root/whonix_binary/*.report
 true "INFO $BASH_SOURCE: Done, showed report."
 
 true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
