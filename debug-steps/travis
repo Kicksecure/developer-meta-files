@@ -53,7 +53,7 @@ elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
    sudo -E ./whonix_build --whonix-workstation -- --install-to-root --build
 elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
@@ -61,7 +61,7 @@ elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
@@ -92,22 +92,22 @@ export whonix_build_closest_git_tag="101"
 
 if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
