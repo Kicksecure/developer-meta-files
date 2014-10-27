@@ -68,7 +68,7 @@ interactive-chroot-raw() {
    $CHROOT apt-key finger  || true
 
    ## Implemented in help-steps/pre.
-   maybe_enable_apt_cache
+   apt_cache_maybe_enable
 
    sync
 
@@ -89,7 +89,7 @@ interactive-chroot-raw() {
    sync
 
    ## Implemented in help-steps/pre.
-   disable_apt_cache
+   apt_cache_disable
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
