@@ -50,106 +50,24 @@ cd "$whonix_source_folder"
 ## Debugging.
 ls -la
 
-## {{ minimal
-
-minimal() {
-   local config_folder="/etc/whonix_buildconfig.d"
-
-   mkdir --parents "$config_folder"
-
-echo '\
-## This file is part of Whonix.
-## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
-## See the file COPYING for copying conditions.
-
-whonix_build_script_whonix_package+=" whonix-shared-desktop "
-whonix_build_script_whonix_package+=" whonix-shared-desktop-kde "
-whonix_build_script_whonix_package+=" whonix-shared-kde-accessibility "
-' | sudo tee "/etc/whonix_buildconfig.d/50_terminal_only_gateway" > /dev/null
-
-echo '\
-## This file is part of Whonix.
-## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
-## See the file COPYING for copying conditions.
-
-whonix_build_script_whonix_package+=" whonix-shared-packages-recommended "
-whonix_build_script_whonix_package+=" whonix-gateway-packages-recommended "
-whonix_build_script_whonix_package+=" whonix-workstation-packages-recommended "
-whonix_build_script_whonix_package+=" whonix-workstation-default-applications "
-' | sudo tee "/etc/whonix_buildconfig.d/50_minimal" > /dev/null
-
-echo '\
-## This file is part of Whonix.
-## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
-## See the file COPYING for copying conditions.
-
-## NOTE: It is impossible to create 64 bit builds on 32 bit hosts.
-##       (This is a limitation of (grml-)debootstrap.)
-
-## i386 is the default target architecture,
-## if BUILD_TARGET_ARCH variable is not set or empty.
-#export BUILD_TARGET_ARCH="i386"
-
-## Interesting target architecture for custom builds: 64 bit
-## Despite its name, works on AMD and Intel.
-export BUILD_TARGET_ARCH="amd64"
-
-## Also interesting target architectures for custom builds: Kernel of FreeBSD
-## Will not work out of the box for Whonix-Gateway, because Whonix Firewall
-## is based on iptables (Linux) and the FreeBSD does not support iptables,
-## its firewall is pf. The Whonix iptables rules would have to be rewritten in pf.
-#export BUILD_TARGET_ARCH="kfreebsd-amd64"
-#export BUILD_TARGET_ARCH="kfreebsd-i386"
-' | sudo tee "/etc/whonix_buildconfig.d/50_target_arch" > /dev/null
-
-## Currently out commented, because apt-cacher-ng does not like our sourceforge
-## APT repository.
-##
-#echo '## This file is part of Whonix.
-## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
-## See the file COPYING for copying conditions.
-
-## Do use or do not use Whonix APT Repository.
-## 0: do use.
-## 1: do not use.
-#export WHONIX_APT_REPOSITORY_DISTRUST_ENV="0"
-
-## Which version of Whonix you want to use.
-## Defaults to stable.
-#export WHONIX_APT_REPOSITORY_DISTRIBUTION_CONFIG="stable"
-#export WHONIX_APT_REPOSITORY_DISTRIBUTION_CONFIG="testers"
-#export WHONIX_APT_REPOSITORY_DISTRIBUTION_CONFIG="developers"
-
-## Technical comment:
-## Using export so the /usr/bin/whonix_repository tool and
-## /usr/share/whonix/postinst.d/70_whonix_apt_key can read it.
-#' | sudo tee "/etc/whonix_buildconfig.d/50_whonix_apt_repository" > /dev/null
-
-   cat "$config_folder"/*
-}
-
-## }}
-
 ## {{ Build physically isolated machine.
 
 if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
-   sudo -E ./whonix_build --tor-gateway --bare-metal --build
+   sudo -E ./whonix_build --whonix-gateway -- --install-to-root --build
 elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
-   minimal
-   sudo -E ./whonix_build --tor-gateway --bare-metal --build
+   sudo -E ./whonix_build --whonix-gateway -- --install-to-root --build
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
-   minimal
-   sudo -E ./whonix_build --tor-workstation --bare-metal --build
+   sudo -E ./whonix_build --whonix-workstation -- --install-to-root --build
 elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
-   sudo -E ./whonix_build --tor-workstation --bare-metal --build
+   sudo -E ./whonix_build --whonix-workstation -- --install-to-root --build
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
@@ -180,22 +98,22 @@ export whonix_build_closest_git_tag="101"
 
 if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "pkg-only-gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-gateway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "minimal-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "pkg-only-workstation-travis" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --bare-metal --tor-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
