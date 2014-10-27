@@ -126,7 +126,8 @@ cat /home/root/whonix_binary/*.report
 true "INFO $BASH_SOURCE: Done, showed report."
 
 true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
-/usr/lib/first_run_initializer_gui
+## Not installed when using "-minimal".
+/usr/lib/first_run_initializer_gui || true
 true "INFO $BASH_SOURCE: Executed First Run Initializer Gui."
 
 service timesanitycheck start || true
