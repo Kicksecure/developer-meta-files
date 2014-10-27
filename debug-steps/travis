@@ -68,12 +68,9 @@ fi
 
 ## }}
 
-## Test Whonix First Run Initializer.
-./whonix_shared/usr/lib/whonix_initializer/first_run_initializer
-
 ## Cleanup, so we can create a dummy update package to test the upgrade
 ## process. (See if re-running all scripts is supported.)
-help-steps/cleanup-files
+./help-steps/cleanup-files
 
 ## Commit a dummy change.
 git config --global user.email "you@example.com"
@@ -127,13 +124,11 @@ cat /home/travis/whonix_binary/*.report
 true "INFO $BASH_SOURCE: Done, showed report."
 
 true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
-/usr/lib/whonix_initializer/first_run_initializer_gui
+/usr/lib/first_run_initializer_gui
 true "INFO $BASH_SOURCE: Executed First Run Initializer Gui."
 
-service backgroundd start || true
 service timesanitycheck start || true
 service bootclockrandomization start || true
-service timesyncd start || true
 service msgcollector start || true
 service sdwdate start || true
 service whonixcheckd start || true
