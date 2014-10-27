@@ -88,7 +88,7 @@ git tag 101 -m "."
 
 ## {{ Test the upgrading from local repository process.
 
-export whonix_build_closest_git_tag="101"
+export anon_dist_build_version="101"
 
 if [ "$TRAVIS_BRANCH" = "gateway-travis" ]; then
    ./build-steps.d/1200_create-debian-packages

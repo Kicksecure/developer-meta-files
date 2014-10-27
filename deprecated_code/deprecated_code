@@ -1143,7 +1143,7 @@ Description: Dummy Tor Package
 Local auto bump version. Build from:
 whonix_build_current_git_head: $whonix_build_current_git_head
 whonix_build_new_changelog_version: $whonix_build_new_changelog_version
-whonix_build_closest_git_tag: $whonix_build_closest_git_tag"
+anon_dist_build_version: $anon_dist_build_version"
 
    if [ "$tbb_version_first_char" = "2" ]; then
       debug "INFO: TBB 2.x detected. Patching startup script..."
@@ -1267,7 +1267,7 @@ $package ($whonix_build_new_changelog_version) $WHONIX_BUILD_APT_CODENAME; urgen
   * This is an auto-generated file. Local auto bump version. Build from:
   * whonix_build_current_git_head: $whonix_build_current_git_head
   * whonix_build_new_changelog_version: $whonix_build_new_changelog_version
-  * whonix_build_closest_git_tag: $whonix_build_closest_git_tag
+  * anon_dist_build_version: $anon_dist_build_version
 
  -- $DEBFULLNAME <$DEBEMAIL>  Thu, 15 Aug 2013 11:02:35 +0000
 " > ./debian/changelog
@@ -1375,7 +1375,7 @@ whonix_build_new_deb_revision_version="1"
 ## http://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version
 whonix_build_debian_version_epoch="2"
 
-whonix_build_new_changelog_version="${whonix_build_debian_version_epoch}:${whonix_build_closest_git_tag}-debpackage${whonix_build_new_deb_revision_version}"
+whonix_build_new_changelog_version="${whonix_build_debian_version_epoch}:${anon_dist_build_version}-debpackage${whonix_build_new_deb_revision_version}"
 
 echo "whonix_build_new_changelog_version: $whonix_build_new_changelog_version"
 

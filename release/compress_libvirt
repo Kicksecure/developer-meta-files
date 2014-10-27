@@ -16,7 +16,7 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
-[ -n "$version" ] || version="$whonix_build_closest_git_tag"
+[ -n "$version" ] || version="$anon_dist_build_version"
 
 cd "$WHONIX_BINARY"
 

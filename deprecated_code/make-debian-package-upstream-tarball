@@ -37,7 +37,7 @@ make_debian_upstream_tarball() {
    sudo -E -u "$user_name" \
          git archive \
             --format=tar HEAD \
-            | gzip -n > "$WHONIX_SOURCE_PARENTDIR/whonix_${whonix_build_closest_git_tag}.orig.tar.gz"
+            | gzip -n > "$WHONIX_SOURCE_PARENTDIR/whonix_${anon_dist_build_version}.orig.tar.gz"
 
    sync
 }
