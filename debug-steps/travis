@@ -155,4 +155,4 @@ true "INFO $BASH_SOURCE: Executed timesync."
 ## }}
 
 ## End.
-true "INFO: End of: $BASH_SOURCE No error detected."
+true "INFO: End of: $BASH_SOURCE $whonix_build_error_counter error(s) detected."

@@ -94,4 +94,4 @@ install-files-packages() {
 true "${bold}${under}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 install-files-packages
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}${under}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}${under}INFO: End of: $BASH_SOURCE $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

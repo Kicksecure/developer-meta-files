@@ -25,6 +25,6 @@ source ../../../help-steps/variables
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export developers
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE No error detected. (benchmark: $benchmark_took_time)${reset}"
+true "${bold}INFO: End of: $BASH_SOURCE $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
 
 true "${cyan}INFO: Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"
