@@ -336,6 +336,9 @@ diff_common_packaging_files() {
    diff "./anon-apt-sources-list/debian/compat" "$item/debian/compat"
    diff "./anon-apt-sources-list/debian/gain-root-command" "$item/debian/gain-root-command"
 
+   if [ ! -f "./anon-apt-sources-list/COPYING" ]; then
+      error "./anon-apt-sources-list/COPYING"
+   fi
    if [ ! -f "$item/debian/changelog" ]; then
       error "$item/debian/changelog does not exist."
    fi
@@ -354,6 +357,8 @@ diff_common_packaging_files() {
    if [ ! -f "$item/README.md" ]; then
       error "$item/README.md does not exist."
    fi
+
+   diff "./$item/COPYING" "$item/debian/copyright"
 }
 
 push_remotes() {
