@@ -10,7 +10,7 @@
 set -x
 
 ROOT_CHECK="0"
-WHONIX_BUILD_PARSED="1"
+whonix_build_one_parsed="1"
 VMNAME="internalrun"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
