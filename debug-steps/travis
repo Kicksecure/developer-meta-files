@@ -47,21 +47,21 @@ ls -la
 ## {{ Build physically isolated machine.
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
-   sudo -E ./whonix_build --flavor whonix-gatway -- --install-to-root --build
+   sudo -E ./whonix_build --flavor whonix-gatway -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
-   sudo -E ./whonix_build --flavor whonix-gatway -- --install-to-root --build
+   sudo -E ./whonix_build --flavor whonix-gatway -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
-   sudo -E ./whonix_build --flavor whonix-workstation -- --install-to-root --build
+   sudo -E ./whonix_build --flavor whonix-workstation -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
-   sudo -E ./whonix_build --flavor whonix-workstation -- --install-to-root --build
+   sudo -E ./whonix_build --flavor whonix-workstation -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
@@ -89,24 +89,24 @@ export anon_dist_build_version="101"
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
-   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-gatway
+   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
    true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
-   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-workstation
+   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
    true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --install-to-root --build --flavor whonix-workstation
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
