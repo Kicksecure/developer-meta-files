@@ -47,13 +47,13 @@ ls -la
 ## {{ Build physically isolated machine.
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
-   sudo -E ./whonix_build --flavor whonix-gatway -- --target root --build
+   sudo -E ./whonix_build --flavor whonix-gateway -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
-   sudo -E ./whonix_build --flavor whonix-gatway -- --target root --build
+   sudo -E ./whonix_build --flavor whonix-gateway -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    sudo -E ./build-steps.d/1100_prepare-build-machine
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    sudo -E ./whonix_build --flavor whonix-workstation -- --target root --build
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
@@ -89,14 +89,14 @@ export anon_dist_build_version="101"
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
-   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
+   #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
    true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages
-   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gatway
+   sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages
    #sudo -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
