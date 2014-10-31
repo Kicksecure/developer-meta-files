@@ -36,6 +36,7 @@ sync
 for file_name in $whonix_build_files_list; do
    sudo -u "$user_name" cp "$file_name" "$WHONIX_BINARY/"
 done
+
 sync
 
 benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
