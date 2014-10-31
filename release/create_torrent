@@ -45,29 +45,33 @@ chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
 ## .8008.nyud.net can no longer be appended to http://mirror.whonix.de,
 ## because CoralCDN appears to no longer support files greater than 50 MB.
 
-if [ ! -r "$binary_image_ova" ]; then
-   error "$binary_image_ova not readable!"
+if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
+   if [ ! -r "$binary_image_ova" ]; then
+      error "$binary_image_ova not readable!"
+   fi
+
+   sudo -E -u "$user_name" \
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.ova" \
+         -o "$binary_image_ova_torrent" \
+         "$binary_image_ova"
+elif [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
+   if [ ! -r "$libvirt_target_xz_archive" ]; then
+      error "$libvirt_target_xz_archive not readable!"
+   fi
+
+   sudo -E -u "$user_name" \
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.libvirt.xz" \
+         -o "$libvirt_target_xz_archive_torrent" \
+         "$libvirt_target_xz_archive"
+else
+   error "Neither --target virtualbox nor --target qcow2 chosen."
 fi
-
-if [ ! -r "$libvirt_target_xz_archive" ]; then
-   error "$libvirt_target_xz_archive not readable!"
-fi
-
-sudo -E -u "$user_name" \
-   mktorrent \
-      --verbose \
-      --announce="$TRACKERS" \
-      --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.ova" \
-      -o "$binary_image_ova_torrent" \
-      "$binary_image_ova"
-
-sudo -E -u "$user_name" \
-   mktorrent \
-      --verbose \
-      --announce="$TRACKERS" \
-      --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.libvirt.xz" \
-      -o "$libvirt_target_xz_archive_torrent" \
-      "$libvirt_target_xz_archive"
 
 ## Working.
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Gateway-7.ova");' "$2")"
