@@ -96,5 +96,5 @@ rsync \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
    adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

@@ -17,7 +17,7 @@ source ../../../help-steps/pre
 source ../../../help-steps/variables
 
 download_sources() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    "$MYDIR"/mount-raw
    "$MYDIR"/prevent-daemons-from-starting
@@ -34,7 +34,7 @@ download_sources() {
 }
 
 move_sources() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    "$MYDIR"/mount-raw
    "$MYDIR"/prevent-daemons-from-starting
@@ -60,5 +60,5 @@ true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 download_sources
 move_sources
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

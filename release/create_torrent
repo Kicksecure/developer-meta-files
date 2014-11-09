@@ -81,5 +81,5 @@ fi
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Gateway-7.ova");' "$2")"
 #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Workstation-7.ova");' "$2")"
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

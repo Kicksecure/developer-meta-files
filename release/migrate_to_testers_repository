@@ -24,6 +24,6 @@ cd "$mydir_backup"
 
 ../debug-steps/reprepro-wrapper copymatched testers developers "*"
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
 true "${cyan}INFO: Done. Migrated testers repository to stable repository. Do not forget to upload it.${reset}"

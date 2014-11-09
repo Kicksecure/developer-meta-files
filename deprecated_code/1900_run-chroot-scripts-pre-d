@@ -18,7 +18,7 @@ source pre
 source variables
 
 run-chroot-scripts() {
-   trap "error_handler_unchroot_unprevent_unmount" ERR INT TERM
+   trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
    sync
 
@@ -75,5 +75,5 @@ run-chroot-scripts() {
 
 true "${bold}${under}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 run-chroot-scripts
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}${under}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

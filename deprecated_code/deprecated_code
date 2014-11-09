@@ -890,7 +890,7 @@ echo "geoclue hold" | dpkg --set-selections
 echo "ufw hold" | dpkg --set-selections
 
 hardware_modifications() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    ## Thanks to:
    ## - http://www.dedmeet.com/software-projects-mainmenu-12/asus-recovery-cd-with-virtualbox.html
@@ -1235,7 +1235,7 @@ install_initial_packages() {
 ## }}}
 
 bump_debian_changelog_version() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    true "${cyan}$BASH_SOURCE INFO: Automatically bumping version number in debian/changelog... ${reset}"
 
@@ -1286,7 +1286,7 @@ $package ($whonix_build_new_changelog_version) $WHONIX_BUILD_APT_CODENAME; urgen
 }
 
 create_whonix_upstream_tarball() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    ## Creating upstream tarball, because we are creating a non-native Debian package.
    true "${cyan}$BASH_SOURCE INFO: Creating upstream tarball... ${reset}"

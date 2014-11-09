@@ -30,7 +30,7 @@ source pre
 source variables
 
 make_debian_upstream_tarball() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    ## The -n switch for gzip is required to produce a reproducible tarball.
 
@@ -44,5 +44,5 @@ make_debian_upstream_tarball() {
 
 true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 make_debian_upstream_tarball
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

@@ -18,7 +18,7 @@ source pre
 source variables
 
 verify_copied_files() {
-   trap "error_handler_unmount" ERR INT TERM
+   trap "errorhandlerunmount" ERR INT TERM
 
    for i in $(find "$1"); do
       if [ -d "$i" ]; then
@@ -38,7 +38,7 @@ verify_copied_files() {
 }
 
 verify_copied_f() {
-   trap "error_handler_unmount" ERR INT TERM
+   trap "errorhandlerunmount" ERR INT TERM
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
    ## Setting +x because the for loops otherwise cause too much output.
@@ -60,5 +60,5 @@ verify_copied_f() {
 
 true "${bold}${under}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 verify_copied_f
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}${under}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

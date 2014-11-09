@@ -6,7 +6,7 @@
 
 set -x
 
-error_handler_unmount-vdi() {
+errorhandlerunmount-vdi() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
@@ -21,7 +21,7 @@ source ../../../help-steps/pre
 source ../../../help-steps/variables
 
 unmount_vdi() {
-   trap "error_handler_unmount-vdi" ERR INT TERM
+   trap "errorhandlerunmount-vdi" ERR INT TERM
 
    sync
 
@@ -50,6 +50,6 @@ if [ "$BARE_METAL" = "1" ]; then
 else
    true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
    unmount_vdi
-   benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+   benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
    true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
 fi

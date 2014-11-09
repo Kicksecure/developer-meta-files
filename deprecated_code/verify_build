@@ -57,14 +57,14 @@ WHONIX_BUILD_VERIFY_MISMATCH="0"
 ## Enable (1) or disable (0) debug_echo's.
 debug="0"
 
-error_handler_unmount_verify_build() {
+errorhandlerunmount_verify_build() {
    ## Get out of this folder, so unmounting will work.
    cd "$WHONIX_BUILD_VERIFY_OLD_PWD"
 
-   error_handler_unmount
+   errorhandlerunmount
 }
 
-trap "error_handler_unmount_verify_build" ERR INT TERM
+trap "errorhandlerunmount_verify_build" ERR INT TERM
 
 debug_echo() {
    if [ "$debug" = 1 ]; then
@@ -73,7 +73,7 @@ debug_echo() {
 }
 
 preparation() {
-   trap "error_handler_general" ERR INT TERM
+   trap "errorhandlergeneral" ERR INT TERM
 
    temp_folder="$WHONIX_BINARY/verification"
    whonix_source="$temp_folder/Whonix-$anon_dist_build_version"
@@ -158,7 +158,7 @@ preparation() {
 }
 
 verify_whonix_source_files_helper() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    local i
 
@@ -195,7 +195,7 @@ verify_whonix_source_files_helper() {
 }
 
 verify_whonix_source_files() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
       verify_whonix_source_files_helper "$whonix_source/whonix_gateway"
@@ -209,7 +209,7 @@ verify_whonix_source_files() {
 }
 
 parse_dpkg_status_file() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    ## Check which packages are claimed to be installed within the build.
    local dpkg_status_folder="$CHROOT_FOLDER/var/lib/dpkg"
@@ -268,7 +268,7 @@ parse_dpkg_status_file() {
 }
 
 download_packages() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    ## We need to build a long line with all packages.
    ## Otherwise, running `apt-get download` with only one package by line over and over again would takes ages.
@@ -317,7 +317,7 @@ download_packages() {
 }
 
 extract_packages() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    true "${cyan}${bold}$BASH_SOURCE INFO: Extracting packages... ${reset}"
 
@@ -352,7 +352,7 @@ extract_packages() {
 }
 
 verify_packages() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    ## We don't use the DEBIAN/md5sums, because md5 is no longer considered safe. Maybe you
    ## consider it still safe enough, but I would like to dodge that discussion. Hopefully,
@@ -461,7 +461,7 @@ verify_packages() {
 }
 
 forgotten_files() {
-   trap "error_handler_unmount_verify_build" ERR INT TERM
+   trap "errorhandlerunmount_verify_build" ERR INT TERM
 
    local folder="$CHROOT_FOLDER"
 

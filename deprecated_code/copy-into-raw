@@ -14,7 +14,7 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
-trap "error_handler_general" ERR INT TERM
+trap "errorhandlergeneral" ERR INT TERM
 
 error_handler_copy-into-raw() {
    : echo "
@@ -140,5 +140,5 @@ fi
 
 "$WHONIX_SOURCE_FOLDER"/help-steps/unmount-raw
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

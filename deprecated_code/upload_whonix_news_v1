@@ -62,5 +62,5 @@ rsync \
    "$WHONIX_BINARY/whonix_news.asc" \
    adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/news/
 
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

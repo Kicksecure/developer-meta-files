@@ -18,7 +18,7 @@ source pre
 source variables
 
 install-files-packages() {
-   trap "error_handler_unchroot_unprevent_unmount" ERR INT TERM
+   trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
    if [ "$WHONIX_BUILD_USE_AUTO_LOCAL_SIGNING_KEY" = "1" ]; then
       if [ ! -f "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"/done ]; then
@@ -54,7 +54,7 @@ install-files-packages() {
    $CHROOT apt-key finger
 
    ## Implemented in help-steps/pre.
-   apt_cache_maybe_enable
+   aptcachemaybeenable
 
    sync
 
@@ -93,5 +93,5 @@ install-files-packages() {
 
 true "${bold}${under}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 install-files-packages
-benchmark_time_end ## sets benchmark_took_time (implemented in help-steps/pre)
+benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}${under}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
