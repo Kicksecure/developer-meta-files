@@ -34,15 +34,15 @@ if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
    ## Create md5sum to compare with sourceforge.
    sudo -u "$user_name" md5sum "$base_name_file_name" | sudo -u "$user_name" tee -a "md5sum"
    sudo -u "$user_name" cp "$binary_image_ova" "/mnt/shared/"
-elif [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
+fi
+
+if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
    for file_name in $whonix_build_qcow2_file_list; do
       true "file_name: $file_name"
       base_name_file_name="$(basename "$file_name")"
       sudo -u "$user_name" md5sum "$base_name_file_name" | sudo -u "$user_name" tee -a "md5sum"
       sudo -u "$user_name" cp "$file_name" "/mnt/shared/"
    done
-else
-   error "Neither --target virtualbox nor --target qcow2 chosen."
 fi
 
 ## Debugging.
