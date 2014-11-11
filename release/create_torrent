@@ -49,7 +49,15 @@ if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
    if [ ! -r "$binary_image_ova" ]; then
       error "$binary_image_ova not readable!"
    fi
+fi
 
+if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
+   if [ ! -r "$libvirt_target_xz_archive" ]; then
+      error "$libvirt_target_xz_archive not readable!"
+   fi
+fi
+
+if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
    sudo -E -u "$user_name" \
       mktorrent \
          --verbose \
@@ -57,11 +65,9 @@ if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
          --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.ova" \
          -o "$binary_image_ova_torrent" \
          "$binary_image_ova"
-elif [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-   if [ ! -r "$libvirt_target_xz_archive" ]; then
-      error "$libvirt_target_xz_archive not readable!"
-   fi
+fi
 
+if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
    sudo -E -u "$user_name" \
       mktorrent \
          --verbose \
@@ -69,8 +75,6 @@ elif [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
          --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.libvirt.xz" \
          -o "$libvirt_target_xz_archive_torrent" \
          "$libvirt_target_xz_archive"
-else
-   error "Neither --target virtualbox nor --target qcow2 chosen."
 fi
 
 ## Working.
