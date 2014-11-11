@@ -32,13 +32,13 @@ WHONIX_MAIN_SCRIPT_BUILD_GATEWAY: $WHONIX_MAIN_SCRIPT_BUILD_GATEWAY
 WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION: $WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION
 WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION: $WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION"
    if [ "$WHONIX_MAIN_SCRIPT_BUILD_GATEWAY" = "true" ]; then
-      $build_args  --tor-gateway
+      $build_args  --flavor whonix-gateway
    fi
    if [ "$WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION" = "true" ]; then
-      $build_args  --tor-workstation
+      $build_args  --flavor whonix-workstation
    fi
    if [ "$WHONIX_MAIN_SCRIPT_BUILD_CUSTOM_WORKSTATION" = "true" ]; then
-      $build_args  --tor-custom-workstation
+      $build_args  --flavor whonix-custom-workstation
    fi
    true "INFO $BASH_SOURCE $FUNCNAME: Done."
 }
