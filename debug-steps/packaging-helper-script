@@ -23,80 +23,16 @@ my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 
 cd "$MYDIR"
 cd ..
+
+## Source make-helper.bsh to get function make_get_variables.
+source ./make-helper.bsh
+
 cd ..
 
 counter=0
 
 nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
-
-## copied from make-helper.bsh
-get_variables() {
-   command -v dpkg-parsechangelog >/dev/null
-   OIFS="${IFS}"
-   NIFS=$'\n'
-   IFS="${NIFS}"
-   for line in $(dpkg-parsechangelog); do
-      ## Example line:
-      ## Version: 0.1-1
-      IFS="${OIFS}"
-      read -r first second _ <<< "$line"
-      ## Example first:
-      ## Version:
-      ## Example second:
-      ## 0.1-1
-      first="${first,,}"
-      ## Example first:
-      ## version
-      if [ "$first" = "version:" ]; then
-         version="$second"
-         ## Example version:
-         ## 3:0.1-1
-         revision="${version#*-}"
-         ## Example revision:
-         ## 1
-         version="${version%-*}"
-         ## Example version:
-         ## 3:0.1
-         version="${version#*:}"
-         ## Example version:
-         ## 0.1
-         break
-      fi
-   done
-   IFS="${OIFS}"
-   if [ "$version" = "" ]; then
-      true "ERROR: variable version is empty."
-      exit 1
-   fi
-   main_package_name="$mydir"
-   if [ "$main_package_name" = "" ]; then
-      true "ERROR: variable main_package_name is empty."
-      exit 1
-   fi
-   main_deb_file="../${main_package_name}_${version}-${revision}_all.deb"
-
-   local grep_output line a package
-   grep_output="$(grep "Package:" "debian/control")"
-   ## Example: grep_output
-   ## Package: anon-shared-packages-dependencies
-   ## Package: anon-shared-packages-recommended
-
-   package_list="$main_package_name"
-
-   OIFS="$IFS"
-   NIFS=$'\n'
-   IFS="$NIFS"
-   for line in $grep_output; do
-      IFS="$OIFS"
-      read a package _ <<< "$line"
-      if [ "$package" = "$main_package_name" ]; then
-         continue
-      fi
-      package_list="$package_list $package"
-   done
-   IFS="$OIFS"
-}
 
 make_readme() {
    trap "build_all_error_handler" ERR
@@ -498,16 +434,16 @@ git_tags() {
 
    cd "$item"
 
-   mydir="$item"
-   get_variables
-   reponame="$(basename "$item")"
-   version_and_revision="$version-$revision"
+   make_mydir="$item"
+   make_get_variables
+
+   version_and_revision="$make_changelog_version-$make_pkg_revision"
 
    true "version_and_revision: $version_and_revision"
 
-   git tag -s "$version_and_revision" -m "."
-   git push origin "$version_and_revision" &
-   git push adre "$version_and_revision" &
+   true "git tag -s "$version_and_revision" -m ".""
+   #git push origin "$version_and_revision" &
+   #git push adre "$version_and_revision" &
 
    cd ..
 }
@@ -517,8 +453,9 @@ dput_cfg_writer() {
 
    cd "$item"
 
-   mydir="$item"
-   get_variables
+   make_mydir="$item"
+   make_get_variables
+
    reponame="$(basename "$item")"
 
    launchpad_name="adrelanos"
