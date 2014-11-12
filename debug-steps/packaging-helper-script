@@ -437,13 +437,13 @@ git_tags() {
    make_mydir="$item"
    make_get_variables
 
-   version_and_revision="$make_changelog_version-$make_pkg_revision"
+   version_and_revision="$make_pkg_version-$make_pkg_revision"
 
    true "version_and_revision: $version_and_revision"
 
-   true "git tag -s "$version_and_revision" -m ".""
-   #git push origin "$version_and_revision" &
-   #git push adre "$version_and_revision" &
+   git tag -s "$version_and_revision" -m "."
+   git push origin "$version_and_revision" &
+   git push adre "$version_and_revision" &
 
    cd ..
 }
