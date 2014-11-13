@@ -220,7 +220,7 @@ make_parse_cmd() {
 }
 
 make_get_variables() {
-   local temp dpkg_line
+   local temp dpkg_line first second
    command -v dpkg-parsechangelog >/dev/null
    while read -r -d $'\n' dpkg_line; do
       ## Example dpkg_line:
