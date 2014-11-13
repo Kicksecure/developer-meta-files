@@ -19,11 +19,7 @@ source ../../../help-steps/variables
 cd "$WHONIX_BINARY"
 
 ## Debugging.
-echo "test" > "$WHONIX_BINARY/test_sign_file"
-gpg --detach-sign --armor --yes "$WHONIX_BINARY/test_sign_file"
-gpg --verify "$WHONIX_BINARY/test_sign_file.asc"
-rm "$WHONIX_BINARY/test_sign_file"
-rm "$WHONIX_BINARY/test_sign_file.asc"
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 
 ## {{ hash sum
 
