@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 
-## generic deb build script version 0.9
+## generic deb build script version 1.0
+
+## This is a copy.
+## master location:
+## https://github.com/Whonix/whonix-developer-meta-files/blob/master/Makefile
 
 DESTDIR ?= /
 
