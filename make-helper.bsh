@@ -235,8 +235,13 @@ make_get_variables() {
       ## Example second:
       ## 3:0.1-1
       first="${first,,}"
-      ## Example first:
-      ## version
+      ## Examples first:
+      ## version:
+      ## source:
+      if [ "$first" = "source:" ]; then
+         make_main_package_name="$second"
+         continue
+      fi
       if [ "$first" = "version:" ]; then
          make_changelog_version="$second"
          ## Example make_changelog_version:
@@ -260,7 +265,6 @@ make_get_variables() {
       true "ERROR: variable make_pkg_version is empty."
       exit 1
    fi
-   make_main_package_name="$make_mydir"
    if [ "$make_main_package_name" = "" ]; then
       true "ERROR: variable make_main_package_name is empty."
       exit 1
@@ -694,7 +698,6 @@ if [ "$make_script_was_sourced" = "false" ]; then
    set -o pipefail
 
    cd "${BASH_SOURCE[0]%/*}"
-   make_mydir="${PWD##*/}"
 
    make_parse_cmd ${1+"$@"}
 fi
