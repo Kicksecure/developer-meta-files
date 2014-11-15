@@ -92,5 +92,17 @@ uninstallsim:
 deb-chl-bumpup:
 	./make-helper.bsh deb-chl-bumpup
 
+tag-sign:
+	./make-helper.bsh tag-sign
+
+tag-verify:
+	./make-helper.bsh tag-verify
+
+tag-verify-checkout:
+	./make-helper.bsh tag-verify-checkout
+
+tag-check:
+	./make-helper.bsh tag-check
+
 help:
 	./make-helper.bsh help

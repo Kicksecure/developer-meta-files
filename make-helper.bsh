@@ -187,6 +187,30 @@ make_parse_cmd() {
                exit 0
                shift
                ;;
+           tag-sign)
+               matched="true"
+               make_tag_sign
+               exit 0
+               shift
+               ;;
+           tag-verify)
+               matched="true"
+               make_tag_verify
+               exit 0
+               shift
+               ;;
+           tag-verify-checkout)
+               matched="true"
+               make_tag_verify_checkout
+               exit 0
+               shift
+               ;;
+           tag-check)
+               matched="true"
+               make_tag_check
+               exit 0
+               shift
+               ;;
            --)
                shift
                break
@@ -354,7 +378,15 @@ make uninstall
 make uninstallsim
    Simulate what make uninstall would do.
 make deb-chl-bumpup
-   Bump upstream version number in debian/changelog."
+   Bump upstream version number in debian/changelog.
+make tag-sign
+   Sign git tag of latest debian/changelog version.
+make tag-verify
+   Verify git tag of latest debian/changelog version.
+make tag-verify-checkout
+   Verify and checkout git tag of latest debian/changelog version.
+make tag-check
+   Check if current git head needs to be tagged."
 }
 
 make_dist() {
@@ -679,6 +711,47 @@ $new_changelog_version"
    debchange \
       --release \
       ""
+}
+
+make_tag_shared() {
+   command -v git >/dev/null
+   make_get_variables
+}
+
+make_tag_sign() {
+   make_tag_shared
+   git tag -s "${make_pkg_version}-${make_pkg_revision}" -m .
+   ## Sanity test.
+   git tag -v "${make_pkg_version}-${make_pkg_revision}"
+}
+
+make_tag_verify() {
+   make_tag_shared
+   git tag -v "${make_pkg_version}-${make_pkg_revision}"
+}
+
+make_tag_verify_checkout() {
+   make_tag_verify
+   local answer
+   echo "Do you want to checkout that tag? y/n"
+   read answer
+   if [ "$answer" = "y" ]; then
+      git checkout "${make_pkg_version}-${make_pkg_revision}"
+   fi
+}
+
+make_tag_check() {
+   make_tag_shared
+   local git_describe_output
+   git_describe_output="$(git describe)"
+   if [ "${make_pkg_version}-${make_pkg_revision}" = "$git_describe_output" ]; then
+      true "MATCH: \${make_pkg_version}-\${make_pkg_revision} ${make_pkg_version}-${make_pkg_revision} | git_describe_output $git_describe_output"
+      echo "OK."
+   else
+      true "NO MATCH: \${make_pkg_version}-\${make_pkg_revision} ${make_pkg_version}-${make_pkg_revision} | git_describe_output $git_describe_output"
+      echo "FAILED!"
+      exit 1
+   fi
 }
 
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
