@@ -24,5 +24,112 @@ cd "$MYDIR"
 cd ..
 
 cd misc
-cd paypal_templates
+cd paypal_template
 
+paypal_write() {
+   trap "build_all_error_handler" ERR
+   echo "$1" >> "$file_name"
+}
+
+paypal_create() {
+   trap "build_all_error_handler" ERR
+
+   rm --force "$file_name"
+
+   paypal_write '<html>'
+   paypal_write '<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">'
+
+   if [ "$onetime" = "true" ]; then
+      paypal_write '<input type="hidden" name="cmd" value="_xclick">'
+   else
+      paypal_write '<input type="hidden" name="cmd" value="_xclick-subscriptions">'
+   fi
+
+   paypal_write '<input type="hidden" name="business" value="patrick_schleizer@web.de">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="item_name" value="Whonix Prefered Support">'
+
+   if [ "$onetime" = "true" ]; then
+      paypal_write '<input type="hidden" name="button_subtype" value="services">'
+   else
+      paypal_write '<input type="hidden" name="no_note" value="1">'
+   fi
+
+   if [ "$onetime" = "true" ]; then
+      paypal_write '<input type="hidden" name="no_note" value="0">'
+   else
+      paypal_write '<input type="hidden" name="src" value="1">'
+   fi
+
+   paypal_write "<input type=\"hidden\" name=\"currency_code\" value=\"$currency\">"
+
+   if [ "$onetime" = "true" ]; then
+      paypal_write '<input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest">'
+   else
+      paypal_write '<input type="hidden" name="bn" value="PP-SubscriptionsBF:btn_subscribeCC_LG.gif:NonHostedGuest">'
+   fi
+
+   paypal_write "\
+<table>
+<tr><td><input type=\"hidden\" name=\"on0\" value=\"$text\">$text</td></tr><tr><td><select name=\"os0\" style=\"width:240px;\">"
+
+   for level in $levels; do
+      if [ "$onetime" = "true" ]; then
+         paypal_write "	<option value=\"Level $level\">Level $level : \$${level}.00 $currency $text_onetime</option>"
+      else
+         paypal_write "	<option value=\"Level $level\">Level $level : \$${level}.00 $currency $text_reoccurring</option>"
+      fi
+   done
+
+   paypal_write '</select> </td></tr>'
+   paypal_write '</table>'
+
+   paypal_write "<input type=\"hidden\" name=\"currency_code\" value=\"$currency\">"
+
+   local i="0"
+   for level in $levels; do
+      paypal_write "<input type=\"hidden\" name=\"option_select${i}\" value=\"Level $level\">"
+      paypal_write "<input type=\"hidden\" name=\"option_amount${i}\" value=\"${level}.00\">"
+      if [ "$onetime" = "true" ]; then
+         true
+      else
+         paypal_write "<input type=\"hidden\" name=\"option_period${i}\" value=\"M\">"
+         paypal_write "<input type=\"hidden\" name=\"option_frequency${i}\" value=\"1\">"
+      fi
+      i="$(( i + 1 ))"
+   done
+
+   paypal_write '<input type="hidden" name="option_index" value="0">'
+
+   if [ "$onetime" = "true" ]; then
+      paypal_write '<input type="image" src="/w/images/c/cc/Btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">'
+   else
+      paypal_write '<input type="image" src="/w/images/6/69/Btn_subscribeCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">'
+   fi
+
+   paypal_write '<img alt="" border="0" src="/w/images/c/cd/Pixel.gif" width="1" height="1">
+</form>
+</html>'
+}
+
+paypal_loop() {
+   trap "build_all_error_handler" ERR
+
+   currency="USD"
+   file_name="onetime_${currency}"
+   text="Choose Your Support Level"
+   levels="1 2 5 10 20 50 100 500 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000"
+   #levels="1 2 3 4 5 7 10 15 20 30 40 50 60 70 80 90 100 200 300 400 500 600 700 800 900 1000"
+   text_onetime="- one time"
+   text_reoccurring="- monthly"
+   onetime="true"
+
+   paypal_create
+
+   file_name="subscription_${currency}"
+   onetime="false"
+
+   paypal_create
+}
+
+paypal_loop

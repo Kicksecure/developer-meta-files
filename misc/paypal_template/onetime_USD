@@ -18,16 +18,16 @@
 	<option value="Level 50">Level 50 : $50.00 USD - one time</option>
 	<option value="Level 100">Level 100 : $100.00 USD - one time</option>
 	<option value="Level 500">Level 500 : $500.00 USD - one time</option>
-	<option value="Level 1000">Level 1000 : $1,000.00 USD - one time</option>
-	<option value="Level 2000">Level 2000 : $2,000.00 USD - one time</option>
-	<option value="Level 3000">Level 3000 : $3,000.00 USD - one time</option>
-	<option value="Level 4000">Level 4000 : $4,000.00 USD - one time</option>
-	<option value="Level 5000">Level 5000 : $5,000.00 USD - one time</option>
-	<option value="Level 6000">Level 6000 : $6,000.00 USD - one time</option>
-	<option value="Level 7000">Level 7000 : $7,000.00 USD - one time</option>
-	<option value="Level 8000">Level 8000 : $8,000.00 USD - one time</option>
-	<option value="Level 9000">Level 9000 : $9,000.00 USD - one time</option>
-	<option value="Level 10000">Level 10000 : $10,000.00 USD - one time</option>
+	<option value="Level 1000">Level 1000 : $1000.00 USD - one time</option>
+	<option value="Level 2000">Level 2000 : $2000.00 USD - one time</option>
+	<option value="Level 3000">Level 3000 : $3000.00 USD - one time</option>
+	<option value="Level 4000">Level 4000 : $4000.00 USD - one time</option>
+	<option value="Level 5000">Level 5000 : $5000.00 USD - one time</option>
+	<option value="Level 6000">Level 6000 : $6000.00 USD - one time</option>
+	<option value="Level 7000">Level 7000 : $7000.00 USD - one time</option>
+	<option value="Level 8000">Level 8000 : $8000.00 USD - one time</option>
+	<option value="Level 9000">Level 9000 : $9000.00 USD - one time</option>
+	<option value="Level 10000">Level 10000 : $10000.00 USD - one time</option>
 </select> </td></tr>
 </table>
 <input type="hidden" name="currency_code" value="USD">
