@@ -1,0 +1,74 @@
+<html>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_xclick">
+<input type="hidden" name="business" value="patrick_schleizer@web.de">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="item_name" value="Whonix Prefered Support">
+<input type="hidden" name="button_subtype" value="services">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest">
+<table>
+<tr><td><input type="hidden" name="on0" value="Choose Your Support Level">Choose Your Support Level</td></tr><tr><td><select name="os0" style="width:240px;">
+	<option value="Level 1">Level 1 : $1.00 USD - one time</option>
+	<option value="Level 2">Level 2 : $2.00 USD - one time</option>
+	<option selected value="Level 5">Level 5 : $5.00 USD - one time</option>
+	<option value="Level 10">Level 10 : $10.00 USD - one time</option>
+	<option value="Level 20">Level 20 : $20.00 USD - one time</option>
+	<option value="Level 50">Level 50 : $50.00 USD - one time</option>
+	<option value="Level 100">Level 100 : $100.00 USD - one time</option>
+	<option value="Level 500">Level 500 : $500.00 USD - one time</option>
+	<option value="Level 1000">Level 1000 : $1,000.00 USD - one time</option>
+	<option value="Level 2000">Level 2000 : $2,000.00 USD - one time</option>
+	<option value="Level 3000">Level 3000 : $3,000.00 USD - one time</option>
+	<option value="Level 4000">Level 4000 : $4,000.00 USD - one time</option>
+	<option value="Level 5000">Level 5000 : $5,000.00 USD - one time</option>
+	<option value="Level 6000">Level 6000 : $6,000.00 USD - one time</option>
+	<option value="Level 7000">Level 7000 : $7,000.00 USD - one time</option>
+	<option value="Level 8000">Level 8000 : $8,000.00 USD - one time</option>
+	<option value="Level 9000">Level 9000 : $9,000.00 USD - one time</option>
+	<option value="Level 10000">Level 10000 : $10,000.00 USD - one time</option>
+</select> </td></tr>
+</table>
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="option_select0" value="Level 1">
+<input type="hidden" name="option_amount0" value="1.00">
+<input type="hidden" name="option_select1" value="Level 2">
+<input type="hidden" name="option_amount1" value="2.00">
+<input type="hidden" name="option_select2" value="Level 5">
+<input type="hidden" name="option_amount2" value="5.00">
+<input type="hidden" name="option_select3" value="Level 10">
+<input type="hidden" name="option_amount3" value="10.00">
+<input type="hidden" name="option_select4" value="Level 20">
+<input type="hidden" name="option_amount4" value="20.00">
+<input type="hidden" name="option_select5" value="Level 50">
+<input type="hidden" name="option_amount5" value="50.00">
+<input type="hidden" name="option_select6" value="Level 100">
+<input type="hidden" name="option_amount6" value="100.00">
+<input type="hidden" name="option_select7" value="Level 500">
+<input type="hidden" name="option_amount7" value="500.00">
+<input type="hidden" name="option_select8" value="Level 1000">
+<input type="hidden" name="option_amount8" value="1000.00">
+<input type="hidden" name="option_select9" value="Level 2000">
+<input type="hidden" name="option_amount9" value="2000.00">
+<input type="hidden" name="option_select10" value="Level 3000">
+<input type="hidden" name="option_amount10" value="3000.00">
+<input type="hidden" name="option_select11" value="Level 4000">
+<input type="hidden" name="option_amount11" value="4000.00">
+<input type="hidden" name="option_select12" value="Level 5000">
+<input type="hidden" name="option_amount12" value="5000.00">
+<input type="hidden" name="option_select13" value="Level 6000">
+<input type="hidden" name="option_amount13" value="6000.00">
+<input type="hidden" name="option_select14" value="Level 7000">
+<input type="hidden" name="option_amount14" value="7000.00">
+<input type="hidden" name="option_select15" value="Level 8000">
+<input type="hidden" name="option_amount15" value="8000.00">
+<input type="hidden" name="option_select16" value="Level 9000">
+<input type="hidden" name="option_amount16" value="9000.00">
+<input type="hidden" name="option_select17" value="Level 10000">
+<input type="hidden" name="option_amount17" value="10000.00">
+<input type="hidden" name="option_index" value="0">
+<input type="image" src="/w/images/c/cc/Btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="/w/images/c/cd/Pixel.gif" width="1" height="1">
+</form>
+</html>

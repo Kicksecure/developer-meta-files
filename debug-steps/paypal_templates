@@ -1,0 +1,28 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o pipefail
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+"
+   echo "Press enter to continue or ctrl +c to break or enter to continue."
+   read temp
+}
+
+trap "build_all_error_handler" ERR
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+cd ..
+
+cd misc
+cd paypal_templates
+
