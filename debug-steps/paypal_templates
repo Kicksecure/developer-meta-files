@@ -82,9 +82,9 @@ paypal_create() {
 
    for level in $levels; do
       if [ "$onetime" = "true" ]; then
-         paypal_write "	<option value=\"Level $level\">Level $level : \$${level}.00 $currency $text_onetime</option>"
+         paypal_write "	<option value=\"${level}.00\">${level}.00</option>"
       else
-         paypal_write "	<option value=\"Level $level\">Level $level : \$${level}.00 $currency $text_reoccurring</option>"
+         paypal_write "	<option value=\"${level}.00\">${level}.00</option>"
       fi
    done
 
@@ -95,7 +95,7 @@ paypal_create() {
 
    local i="0"
    for level in $levels; do
-      paypal_write "<input type=\"hidden\" name=\"option_select${i}\" value=\"Level $level\">"
+      paypal_write "<input type=\"hidden\" name=\"option_select${i}\" value=\"${level}.00\">"
       paypal_write "<input type=\"hidden\" name=\"option_amount${i}\" value=\"${level}.00\">"
       if [ "$onetime" = "true" ]; then
          true
