@@ -35,6 +35,9 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
+## Debugging.
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+
 ## sanity tests
 required_tools="find sort tar rm mkdir basename touch sync gpg rsync sha512sum"
 for tool in $required_tools; do

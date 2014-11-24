@@ -19,6 +19,9 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
+## Debugging.
+"$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stable
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export wheezy
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
