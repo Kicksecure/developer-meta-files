@@ -241,7 +241,6 @@ pkg_packaging_copy() {
       cp "../Makefile" "$item/"
    fi
    cp "../make-helper.bsh" "$item/"
-   rm --force "$item/.gitattributes"
 
    true
 }
@@ -257,10 +256,6 @@ pkg_packaging_files_diff() {
       diff "../Makefile" "$item/"
    fi
    diff "../make-helper.bsh" "$item/"
-   diff "../.gitattributes" "$item/"
-   diff "../debian/source/format" "$item/debian/source/format"
-   diff "../debian/compat" "$item/debian/compat"
-   diff "../debian/gain-root-command" "$item/debian/gain-root-command"
 
    if [ ! -f "../COPYING" ]; then
       error "../COPYING does not exist."
@@ -273,6 +268,9 @@ pkg_packaging_files_diff() {
    if [ -f "$item/setup.py" ]; then
       true
    else
+      diff "../debian/source/format" "$item/debian/source/format"
+      diff "../debian/compat" "$item/debian/compat"
+      diff "../debian/gain-root-command" "$item/debian/gain-root-command"
       diff "./$item/COPYING" "$item/debian/copyright"
 
       if [ ! -f "$item/debian/changelog" ]; then
