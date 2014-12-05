@@ -263,28 +263,34 @@ pkg_packaging_files_diff() {
    diff "../debian/gain-root-command" "$item/debian/gain-root-command"
 
    if [ ! -f "../COPYING" ]; then
-      error "../COPYING"
+      error "../COPYING does not exist."
    fi
-   if [ ! -f "$item/debian/changelog" ]; then
-      error "$item/debian/changelog does not exist."
-   fi
-   if [ ! -f "$item/debian/control" ]; then
-      error "$item/debian/control does not exist."
-   fi
-   if [ ! -f "$item/debian/copyright" ]; then
-      error "$item/debian/copyright does not exist."
-   fi
-   if [ ! -f "$item/debian/rules" ]; then
-      error "$item/debian/rules does not exist."
-   fi
-   if [ ! -f "$item/debian/watch" ]; then
-      error "$item/debian/watch does not exist."
-   fi
+
    if [ ! -f "$item/README.md" ]; then
       error "$item/README.md does not exist."
    fi
 
-   diff "./$item/COPYING" "$item/debian/copyright"
+   if [ -f "$item/setup.py" ]; then
+      true
+   else
+      diff "./$item/COPYING" "$item/debian/copyright"
+
+      if [ ! -f "$item/debian/changelog" ]; then
+         error "$item/debian/changelog does not exist."
+      fi
+      if [ ! -f "$item/debian/control" ]; then
+         error "$item/debian/control does not exist."
+      fi
+      if [ ! -f "$item/debian/copyright" ]; then
+         error "$item/debian/copyright does not exist."
+      fi
+      if [ ! -f "$item/debian/rules" ]; then
+         error "$item/debian/rules does not exist."
+      fi
+      if [ ! -f "$item/debian/watch" ]; then
+         error "$item/debian/watch does not exist."
+      fi
+   fi
 }
 
 pkg_debian_changelog_bump() {
