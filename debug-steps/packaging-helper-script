@@ -233,17 +233,17 @@ pkg_git_diff_branch_development() {
 pkg_packaging_copy() {
    trap "build_all_error_handler" ERR
 
-   #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
-   #true "cp "./anon-apt-sources-list/GPLv3" "$item/""
-   #true "cp "./anon-apt-sources-list/Makefile" "$item/""
-   #true "cp "./anon-apt-sources-list/make-helper.bsh" "$item/""
-   #true "cp "./anon-apt-sources-list/.gitattributes" "$item/""
+   #true "cp "../CONTRIBUTING.md" "$item/""
+   #true "cp "../GPLv3" "$item/""
+   #true "cp "../Makefile" "$item/""
+   #true "cp "../make-helper.bsh" "$item/""
+   #true "cp "../.gitattributes" "$item/""
 
-   #cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
-   #cp "./anon-apt-sources-list/GPLv3" "$item/"
-   #cp "./anon-apt-sources-list/Makefile" "$item/"
-   #cp "./anon-apt-sources-list/make-helper.bsh" "$item/"
-   #cp "./anon-apt-sources-list/.gitattributes" "$item/"
+   #cp "../CONTRIBUTING.md" "$item/"
+   #cp "../GPLv3" "$item/"
+   #cp "../Makefile" "$item/"
+   #cp "../make-helper.bsh" "$item/"
+   #cp "../.gitattributes" "$item/"
 
    true
 }
@@ -263,17 +263,17 @@ pkg_debian_changelog_bump() {
 pkg_packaging_files_diff() {
    trap "build_all_error_handler" ERR
 
-   diff "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
-   diff "./anon-apt-sources-list/GPLv3" "$item/"
-   diff "./anon-apt-sources-list/Makefile" "$item/"
-   diff "./anon-apt-sources-list/make-helper.bsh" "$item/"
-   diff "./anon-apt-sources-list/.gitattributes" "$item/"
-   diff "./anon-apt-sources-list/debian/source/format" "$item/debian/source/format"
-   diff "./anon-apt-sources-list/debian/compat" "$item/debian/compat"
-   diff "./anon-apt-sources-list/debian/gain-root-command" "$item/debian/gain-root-command"
+   diff "../CONTRIBUTING.md" "$item/"
+   diff "../GPLv3" "$item/"
+   diff "../Makefile" "$item/"
+   diff "../make-helper.bsh" "$item/"
+   diff "../.gitattributes" "$item/"
+   diff "../debian/source/format" "$item/debian/source/format"
+   diff "../debian/compat" "$item/debian/compat"
+   diff "../debian/gain-root-command" "$item/debian/gain-root-command"
 
-   if [ ! -f "./anon-apt-sources-list/COPYING" ]; then
-      error "./anon-apt-sources-list/COPYING"
+   if [ ! -f "../COPYING" ]; then
+      error "../COPYING"
    fi
    if [ ! -f "$item/debian/changelog" ]; then
       error "$item/debian/changelog does not exist."
@@ -471,52 +471,70 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
    cd ..
 }
 
-for item in ./*; do
-   if [ ! -d "$item" ]; then
-      continue
+loop_helper() {
+   trap "build_all_error_handler" ERR
+
+   for item in ./*; do
+      if [ ! -d "$item" ]; then
+         continue
+      fi
+
+      #set +x
+
+      counter=$(( $counter + 1 ))
+      true "item: $item | counter: $counter"
+
+      #if [ "$(basename "$item")" = "$my_pkg_name" ]; then
+         #true "Skipping myself ($my_pkg_name) as long as it is not a proper debian package."
+         #continue
+      #fi
+
+      #pkg_packaging_copy
+      #pkg_packaging_files_diff
+      #pkg_debian_changelog_bump
+      #pkg_links_open
+      #pkg_readme_creator
+      #pkg_git_commmit_readme
+      #pkg_git_commit_changelog
+      #pkg_git_commit_packaging
+      #pkg_git_diff_and_commit
+      #pkg_git_push_remotes
+      #pkg_debian_control_open
+      #pkg_git_submodule_file_writer
+      #pkg_git_remotes_add
+      #pkg_links_echo
+      #pkg_names_echo
+      #pkg_twitter_to_github
+      #pkg_git_log_giant_make
+      #pkg_git_sign_and_push_tags
+      #pkg_git_branch_nice
+      #pkg_git_branch_checkout_nine
+      #pkg_git_branch_checkout_master
+      #pkg_git_diff_branch_master
+      #pkg_git_diff_branch_development
+
+      #kate "$item/debian/rules" >/dev/null 2>&1
+
+      ${1+"$@"}
+
+      true
+      true
+      true
+
+      #true "press enter to continue_did"
+      #read temp
+   done
+}
+
+main_function() {
+   trap "build_all_error_handler" ERR
+   if [ "${1+"$@"}" = "" ]; then
+      true "INFO: Available functions..."
+      typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
+      true "INFO: syntax: ./$0 function-name"
+   else
+      loop_helper ${1+"$@"}
    fi
+}
 
-   #set +x
-
-   counter=$(( $counter + 1 ))
-   true "item: $item | counter: $counter"
-
-   if [ "$(basename "$item")" = "$my_pkg_name" ]; then
-      true "Skipping myself ($my_pkg_name) as long as it is not a proper debian package."
-      continue
-   fi
-
-   #pkg_packaging_copy
-   #pkg_packaging_files_diff
-   #pkg_debian_changelog_bump
-   #pkg_links_open
-   #pkg_readme_creator
-   #pkg_git_commmit_readme
-   #pkg_git_commit_changelog
-   #pkg_git_commit_packaging
-   #pkg_git_diff_and_commit
-   #pkg_git_push_remotes
-   #pkg_debian_control_open
-   #pkg_git_submodule_file_writer
-   #pkg_git_remotes_add
-   #pkg_links_echo
-   #pkg_names_echo
-   #pkg_twitter_to_github
-   #pkg_git_log_giant_make
-   #pkg_git_sign_and_push_tags
-   #pkg_git_branch_nice
-   #pkg_git_branch_checkout_nine
-   #pkg_git_branch_checkout_master
-   #pkg_git_diff_branch_master
-   #pkg_git_diff_branch_development
-
-   #kate "$item/debian/rules" >/dev/null 2>&1
-
-   true
-   true
-   true
-
-   #true "press enter to continue_did"
-   #read temp
-
-done
+main_function ${1+"$@"}
