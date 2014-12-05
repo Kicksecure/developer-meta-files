@@ -34,7 +34,7 @@ counter=0
 nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
 
-make_readme() {
+pkg_readme_creator() {
    trap "build_all_error_handler" ERR
 
    if [ ! -f "$item/debian/control" ]; then
@@ -86,7 +86,7 @@ make_readme() {
    true "Done: $readme_file"
 }
 
-echo_links() {
+pkg_links_echo() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -94,20 +94,20 @@ echo_links() {
    #echo "https://github.com/adrelanos/$reponame"
 }
 
-echo_names() {
+pkg_names_echo() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
    echo "$reponame"
 }
 
-open_links() {
+pkg_links_open() {
    trap "build_all_error_handler" ERR
 
-   torbrowser --new-tab "$(echo_links)"
+   torbrowser --new-tab "$(pkg_links_echo)"
 }
 
-add_twitter_to_github() {
+pkg_twitter_to_github() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -169,7 +169,7 @@ add_twitter_to_github() {
    read temp
 }
 
-add_remotes() {
+pkg_git_remotes_add() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -184,7 +184,7 @@ add_remotes() {
    cd ..
 }
 
-add_branch_nine() {
+pkg_git_branch_nice() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -194,7 +194,7 @@ add_branch_nine() {
    cd ..
 }
 
-checkout_branch_nine() {
+pkg_git_branch_checkout_nine() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -203,7 +203,7 @@ checkout_branch_nine() {
    cd ..
 }
 
-checkout_branch_master() {
+pkg_git_branch_checkout_master() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -212,7 +212,7 @@ checkout_branch_master() {
    cd ..
 }
 
-diff_branch_master() {
+pkg_git_diff_branch_master() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -221,7 +221,7 @@ diff_branch_master() {
    cd ..
 }
 
-diff_branch_development() {
+pkg_git_diff_branch_development() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -230,7 +230,7 @@ diff_branch_development() {
    cd ..
 }
 
-copy_packaging() {
+pkg_packaging_copy() {
    trap "build_all_error_handler" ERR
 
    #true "cp "./anon-apt-sources-list/CONTRIBUTING.md" "$item/""
@@ -248,7 +248,7 @@ copy_packaging() {
    true
 }
 
-bump_debian_changelog_version() {
+pkg_debian_changelog_bump() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -260,7 +260,7 @@ bump_debian_changelog_version() {
    true
 }
 
-diff_common_packaging_files() {
+pkg_packaging_files_diff() {
    trap "build_all_error_handler" ERR
 
    diff "./anon-apt-sources-list/CONTRIBUTING.md" "$item/"
@@ -297,7 +297,7 @@ diff_common_packaging_files() {
    diff "./$item/COPYING" "$item/debian/copyright"
 }
 
-push_remotes() {
+pkg_git_push_remotes() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -325,7 +325,7 @@ push_remotes() {
    cd ..
 }
 
-git_commit_readme() {
+pkg_git_commmit_readme() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -338,7 +338,7 @@ git_commit_readme() {
    cd ..
 }
 
-git_commit_changelog() {
+pkg_git_commit_changelog() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -349,7 +349,7 @@ git_commit_changelog() {
    cd ..
 }
 
-git_commit_packaging() {
+pkg_git_commit_packaging() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -361,7 +361,7 @@ git_commit_packaging() {
    cd ..
 }
 
-git_diff_and_commit() {
+pkg_git_diff_and_commit() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -395,13 +395,13 @@ git_diff_and_commit() {
    cd ..
 }
 
-open_debian_control() {
+pkg_debian_control_open() {
    trap "build_all_error_handler" ERR
 
    kate "$item/debian/control"
 }
 
-git_submodule_file_writer() {
+pkg_git_submodule_file_writer() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
@@ -413,7 +413,7 @@ git_submodule_file_writer() {
 " >> ../".gitmodules"
 }
 
-git_make_giant_log() {
+pkg_git_log_giant_make() {
    trap "build_all_error_handler" ERR
 
    #git shortlog 8.2..8.6.3.0 > giant_git_log
@@ -429,7 +429,7 @@ git_make_giant_log() {
    cd ..
 }
 
-git_tags() {
+pkg_git_sign_and_push_tags() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -448,7 +448,7 @@ git_tags() {
    cd ..
 }
 
-dput_cfg_writer() {
+pkg_dput_cfg_writer() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
@@ -486,29 +486,29 @@ for item in ./*; do
       continue
    fi
 
-   #copy_packaging
-   #diff_common_packaging_files
-   #bump_debian_changelog_version
-   #open_links
-   #make_readme
-   #git_commit_readme
-   #git_commit_changelog
-   #git_commit_packaging
-   #git_diff_and_commit
-   #push_remotes
-   #open_debian_control
-   #git_submodule_file_writer
-   #add_remotes
-   #echo_links
-   #echo_names
-   #add_twitter_to_github
-   #git_make_giant_log
-   #git_tags
-   #add_branch_nine
-   #checkout_branch_nine
-   #checkout_branch_master
-   #diff_branch_master
-   #diff_branch_development
+   #pkg_packaging_copy
+   #pkg_packaging_files_diff
+   #pkg_debian_changelog_bump
+   #pkg_links_open
+   #pkg_readme_creator
+   #pkg_git_commmit_readme
+   #pkg_git_commit_changelog
+   #pkg_git_commit_packaging
+   #pkg_git_diff_and_commit
+   #pkg_git_push_remotes
+   #pkg_debian_control_open
+   #pkg_git_submodule_file_writer
+   #pkg_git_remotes_add
+   #pkg_links_echo
+   #pkg_names_echo
+   #pkg_twitter_to_github
+   #pkg_git_log_giant_make
+   #pkg_git_sign_and_push_tags
+   #pkg_git_branch_nice
+   #pkg_git_branch_checkout_nine
+   #pkg_git_branch_checkout_master
+   #pkg_git_diff_branch_master
+   #pkg_git_diff_branch_development
 
    #kate "$item/debian/rules" >/dev/null 2>&1
 
