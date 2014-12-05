@@ -359,10 +359,11 @@ pkg_git_commit_packaging() {
    trap "build_all_error_handler" ERR
 
    cd "$item"
-   git add Makefile
-   git add make-helper.bsh
-   msg="packaging"
-   git commit -m "$msg" || true
+   #git add Makefile
+   #git add make-helper.bsh
+   git add -u
+   msg="updated generic makefile"
+   git commit -m "$msg"
    git status
    cd ..
 }
