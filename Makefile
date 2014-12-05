@@ -4,7 +4,7 @@
 
 ## This is a copy.
 ## master location:
-## https://github.com/Whonix/whonix-developer-meta-files/blob/master/Makefile
+## https://github.com/Whonix/Whonix/blob/master/Makefile
 
 DESTDIR ?= /
 
@@ -92,17 +92,20 @@ uninstallsim:
 deb-chl-bumpup:
 	./make-helper.bsh deb-chl-bumpup
 
-tag-sign:
-	./make-helper.bsh tag-sign
+git-tag-sign:
+	./make-helper.bsh git-tag-sign
 
-tag-verify:
-	./make-helper.bsh tag-verify
+git-tag-verify:
+	./make-helper.bsh git-tag-verify
 
-tag-verify-checkout:
-	./make-helper.bsh tag-verify-checkout
+git-tag-check:
+	./make-helper.bsh git-tag-check
 
-tag-check:
-	./make-helper.bsh tag-check
+git-commit-verify:
+	./make-helper.bsh git-commit-verify
+
+git-verify:
+	./make-helper.bsh git-verify
 
 help:
 	./make-helper.bsh help
