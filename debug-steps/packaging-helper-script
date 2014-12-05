@@ -246,18 +246,6 @@ pkg_packaging_copy() {
    true
 }
 
-pkg_debian_changelog_bump() {
-   trap "build_all_error_handler" ERR
-
-   cd "$item"
-
-   make deb-chl-bumpup
-
-   cd ..
-
-   true
-}
-
 pkg_packaging_files_diff() {
    trap "build_all_error_handler" ERR
 
@@ -297,6 +285,18 @@ pkg_packaging_files_diff() {
    fi
 
    diff "./$item/COPYING" "$item/debian/copyright"
+}
+
+pkg_debian_changelog_bump() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+
+   make deb-chl-bumpup
+
+   cd ..
+
+   true
 }
 
 pkg_git_push_remotes() {
