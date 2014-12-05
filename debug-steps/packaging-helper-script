@@ -528,8 +528,8 @@ loop_helper() {
       true
       true
 
-      true "press enter to continue_did"
-      read temp
+      #true "press enter to continue_did"
+      #read temp
    done
 }
 
