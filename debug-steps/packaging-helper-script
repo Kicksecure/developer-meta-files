@@ -233,17 +233,15 @@ pkg_git_diff_branch_development() {
 pkg_packaging_copy() {
    trap "build_all_error_handler" ERR
 
-   #true "cp "../CONTRIBUTING.md" "$item/""
-   #true "cp "../GPLv3" "$item/""
-   #true "cp "../Makefile" "$item/""
-   #true "cp "../make-helper.bsh" "$item/""
-   #true "cp "../.gitattributes" "$item/""
-
-   #cp "../CONTRIBUTING.md" "$item/"
-   #cp "../GPLv3" "$item/"
-   #cp "../Makefile" "$item/"
-   #cp "../make-helper.bsh" "$item/"
-   #cp "../.gitattributes" "$item/"
+   cp "../CONTRIBUTING.md" "$item/"
+   cp "../GPLv3" "$item/"
+   if [ -f "$item/setup.py" ]; then
+      cp "../Makefile" "$item/makefile_generic"
+   else
+      cp "../Makefile" "$item/"
+   fi
+   cp "../make-helper.bsh" "$item/"
+   rm --force "$item/.gitattributes"
 
    true
 }
@@ -265,7 +263,11 @@ pkg_packaging_files_diff() {
 
    diff "../CONTRIBUTING.md" "$item/"
    diff "../GPLv3" "$item/"
-   diff "../Makefile" "$item/"
+   if [ -f "$item/setup.py" ]; then
+      diff "../Makefile" "$item/makefile_generic"
+   else
+      diff "../Makefile" "$item/"
+   fi
    diff "../make-helper.bsh" "$item/"
    diff "../.gitattributes" "$item/"
    diff "../debian/source/format" "$item/debian/source/format"
