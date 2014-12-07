@@ -441,7 +441,6 @@ pkg_git_sign_and_push_tags() {
 
    cd "$item"
 
-   make_mydir="$item"
    make_get_variables
 
    version_and_revision="$make_pkg_version-$make_pkg_revision"
@@ -470,7 +469,6 @@ pkg_dput_cfg_writer() {
 
    cd "$item"
 
-   make_mydir="$item"
    make_get_variables
 
    reponame="$(basename "$item")"
