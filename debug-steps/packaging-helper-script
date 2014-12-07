@@ -454,6 +454,16 @@ pkg_git_sign_and_push_tags() {
    cd ..
 }
 
+pkg_verify_signed_commit() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+
+   make git-commit-verify
+
+   cd ..
+}
+
 pkg_verify_signed_commit_and_tag() {
    trap "build_all_error_handler" ERR
 
@@ -521,6 +531,7 @@ loop_helper() {
       #pkg_names_echo
       #pkg_twitter_to_github
       #pkg_git_log_giant_make
+      #pkg_verify_signed_commit
       #pkg_verify_signed_commit_and_tag
       #pkg_git_sign_and_push_tags
       #pkg_git_branch_nice
