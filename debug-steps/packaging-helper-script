@@ -509,39 +509,6 @@ loop_helper() {
       counter=$(( $counter + 1 ))
       true "item: $item | counter: $counter"
 
-      #if [ "$(basename "$item")" = "$my_pkg_name" ]; then
-         #true "Skipping myself ($my_pkg_name) as long as it is not a proper debian package."
-         #continue
-      #fi
-
-      #pkg_packaging_copy
-      #pkg_packaging_files_diff
-      #pkg_debian_changelog_bump
-      #pkg_links_open
-      #pkg_readme_creator
-      #pkg_git_commmit_readme
-      #pkg_git_commit_changelog
-      #pkg_git_commit_packaging
-      #pkg_git_diff_and_commit
-      #pkg_git_push_remotes
-      #pkg_debian_control_open
-      #pkg_git_submodule_file_writer
-      #pkg_git_remotes_add
-      #pkg_links_echo
-      #pkg_names_echo
-      #pkg_twitter_to_github
-      #pkg_git_log_giant_make
-      #pkg_verify_signed_commit
-      #pkg_verify_signed_commit_and_tag
-      #pkg_git_sign_and_push_tags
-      #pkg_git_branch_nice
-      #pkg_git_branch_checkout_nine
-      #pkg_git_branch_checkout_master
-      #pkg_git_diff_branch_master
-      #pkg_git_diff_branch_development
-
-      #kate "$item/debian/rules" >/dev/null 2>&1
-
       ${1+"$@"}
 
       true
