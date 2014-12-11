@@ -11,191 +11,191 @@
 <input type="hidden" name="bn" value="PP-SubscriptionsBF:btn_subscribeCC_LG.gif:NonHostedGuest">
 <table>
 <tr><td><input type="hidden" name="on0" value="Choose Your Support Level">Choose Your Support Level</td></tr><tr><td><select name="os0" style="width:300px;">
-	<option value="Level 1">Level 1 : $1.00 USD - monthly</option>
-	<option value="Level 2">Level 2 : $2.00 USD - monthly</option>
-	<option value="Level 3">Level 3 : $3.00 USD - monthly</option>
-	<option value="Level 4">Level 4 : $4.00 USD - monthly</option>
-	<option selected value="Level 5">Level 5 : $5.00 USD - monthly</option>
-	<option value="Level 7">Level 7 : $7.00 USD - monthly</option>
-	<option value="Level 8">Level 8 : $8.00 USD - monthly</option>
-	<option value="Level 10">Level 10 : $10.00 USD - monthly</option>
-	<option value="Level 15">Level 15 : $15.00 USD - monthly</option>
-	<option value="Level 20">Level 20 : $20.00 USD - monthly</option>
-	<option value="Level 30">Level 30 : $30.00 USD - monthly</option>
-	<option value="Level 40">Level 40 : $40.00 USD - monthly</option>
-	<option value="Level 50">Level 50 : $50.00 USD - monthly</option>
-	<option value="Level 60">Level 60 : $60.00 USD - monthly</option>
-	<option value="Level 70">Level 70 : $70.00 USD - monthly</option>
-	<option value="Level 80">Level 80 : $80.00 USD - monthly</option>
-	<option value="Level 90">Level 90 : $90.00 USD - monthly</option>
-	<option value="Level 100">Level 100 : $100.00 USD - monthly</option>
-	<option value="Level 150">Level 150 : $150.00 USD - monthly</option>
-	<option value="Level 200">Level 200 : $200.00 USD - monthly</option>
-	<option value="Level 300">Level 300 : $300.00 USD - monthly</option>
-	<option value="Level 400">Level 400 : $400.00 USD - monthly</option>
-	<option value="Level 500">Level 500 : $500.00 USD - monthly</option>
-	<option value="Level 600">Level 600 : $600.00 USD - monthly</option>
-	<option value="Level 700">Level 700 : $700.00 USD - monthly</option>
-	<option value="Level 800">Level 800 : $800.00 USD - monthly</option>
-	<option value="Level 900">Level 900 : $900.00 USD - monthly</option>
-	<option value="Level 1000">Level 1000 : $1000.00 USD - monthly</option>
-	<option value="Level 2000">Level 2000 : $2000.00 USD - monthly</option>
-	<option value="Level 3000">Level 3000 : $3000.00 USD - monthly</option>
-	<option value="Level 4000">Level 4000 : $4000.00 USD - monthly</option>
-	<option value="Level 5000">Level 5000 : $5000.00 USD - monthly</option>
-	<option value="Level 6000">Level 6000 : $6000.00 USD - monthly</option>
-	<option value="Level 7000">Level 7000 : $7000.00 USD - monthly</option>
-	<option value="Level 8000">Level 8000 : $8000.00 USD - monthly</option>
-	<option value="Level 9000">Level 9000 : $9000.00 USD - monthly</option>
-	<option value="Level 10000">Level 10000 : $10000.00 USD - monthly</option>
+	<option value="1.00">1.00</option>
+	<option value="2.00">2.00</option>
+	<option value="3.00">3.00</option>
+	<option value="4.00">4.00</option>
+	<option value="5.00">5.00</option>
+	<option value="7.00">7.00</option>
+	<option value="8.00">8.00</option>
+	<option value="10.00">10.00</option>
+	<option value="15.00">15.00</option>
+	<option value="20.00">20.00</option>
+	<option value="30.00">30.00</option>
+	<option value="40.00">40.00</option>
+	<option value="50.00">50.00</option>
+	<option value="60.00">60.00</option>
+	<option value="70.00">70.00</option>
+	<option value="80.00">80.00</option>
+	<option value="90.00">90.00</option>
+	<option value="100.00">100.00</option>
+	<option value="150.00">150.00</option>
+	<option value="200.00">200.00</option>
+	<option value="300.00">300.00</option>
+	<option value="400.00">400.00</option>
+	<option value="500.00">500.00</option>
+	<option value="600.00">600.00</option>
+	<option value="700.00">700.00</option>
+	<option value="800.00">800.00</option>
+	<option value="900.00">900.00</option>
+	<option value="1000.00">1000.00</option>
+	<option value="2000.00">2000.00</option>
+	<option value="3000.00">3000.00</option>
+	<option value="4000.00">4000.00</option>
+	<option value="5000.00">5000.00</option>
+	<option value="6000.00">6000.00</option>
+	<option value="7000.00">7000.00</option>
+	<option value="8000.00">8000.00</option>
+	<option value="9000.00">9000.00</option>
+	<option value="10000.00">10000.00</option>
 </select> </td></tr>
 </table>
 <input type="hidden" name="currency_code" value="USD">
-<input type="hidden" name="option_select0" value="Level 1">
+<input type="hidden" name="option_select0" value="1.00">
 <input type="hidden" name="option_amount0" value="1.00">
 <input type="hidden" name="option_period0" value="M">
 <input type="hidden" name="option_frequency0" value="1">
-<input type="hidden" name="option_select1" value="Level 2">
+<input type="hidden" name="option_select1" value="2.00">
 <input type="hidden" name="option_amount1" value="2.00">
 <input type="hidden" name="option_period1" value="M">
 <input type="hidden" name="option_frequency1" value="1">
-<input type="hidden" name="option_select2" value="Level 3">
+<input type="hidden" name="option_select2" value="3.00">
 <input type="hidden" name="option_amount2" value="3.00">
 <input type="hidden" name="option_period2" value="M">
 <input type="hidden" name="option_frequency2" value="1">
-<input type="hidden" name="option_select3" value="Level 4">
+<input type="hidden" name="option_select3" value="4.00">
 <input type="hidden" name="option_amount3" value="4.00">
 <input type="hidden" name="option_period3" value="M">
 <input type="hidden" name="option_frequency3" value="1">
-<input type="hidden" name="option_select4" value="Level 5">
+<input type="hidden" name="option_select4" value="5.00">
 <input type="hidden" name="option_amount4" value="5.00">
 <input type="hidden" name="option_period4" value="M">
 <input type="hidden" name="option_frequency4" value="1">
-<input type="hidden" name="option_select5" value="Level 7">
+<input type="hidden" name="option_select5" value="7.00">
 <input type="hidden" name="option_amount5" value="7.00">
 <input type="hidden" name="option_period5" value="M">
 <input type="hidden" name="option_frequency5" value="1">
-<input type="hidden" name="option_select6" value="Level 8">
+<input type="hidden" name="option_select6" value="8.00">
 <input type="hidden" name="option_amount6" value="8.00">
 <input type="hidden" name="option_period6" value="M">
 <input type="hidden" name="option_frequency6" value="1">
-<input type="hidden" name="option_select7" value="Level 10">
+<input type="hidden" name="option_select7" value="10.00">
 <input type="hidden" name="option_amount7" value="10.00">
 <input type="hidden" name="option_period7" value="M">
 <input type="hidden" name="option_frequency7" value="1">
-<input type="hidden" name="option_select8" value="Level 15">
+<input type="hidden" name="option_select8" value="15.00">
 <input type="hidden" name="option_amount8" value="15.00">
 <input type="hidden" name="option_period8" value="M">
 <input type="hidden" name="option_frequency8" value="1">
-<input type="hidden" name="option_select9" value="Level 20">
+<input type="hidden" name="option_select9" value="20.00">
 <input type="hidden" name="option_amount9" value="20.00">
 <input type="hidden" name="option_period9" value="M">
 <input type="hidden" name="option_frequency9" value="1">
-<input type="hidden" name="option_select10" value="Level 30">
+<input type="hidden" name="option_select10" value="30.00">
 <input type="hidden" name="option_amount10" value="30.00">
 <input type="hidden" name="option_period10" value="M">
 <input type="hidden" name="option_frequency10" value="1">
-<input type="hidden" name="option_select11" value="Level 40">
+<input type="hidden" name="option_select11" value="40.00">
 <input type="hidden" name="option_amount11" value="40.00">
 <input type="hidden" name="option_period11" value="M">
 <input type="hidden" name="option_frequency11" value="1">
-<input type="hidden" name="option_select12" value="Level 50">
+<input type="hidden" name="option_select12" value="50.00">
 <input type="hidden" name="option_amount12" value="50.00">
 <input type="hidden" name="option_period12" value="M">
 <input type="hidden" name="option_frequency12" value="1">
-<input type="hidden" name="option_select13" value="Level 60">
+<input type="hidden" name="option_select13" value="60.00">
 <input type="hidden" name="option_amount13" value="60.00">
 <input type="hidden" name="option_period13" value="M">
 <input type="hidden" name="option_frequency13" value="1">
-<input type="hidden" name="option_select14" value="Level 70">
+<input type="hidden" name="option_select14" value="70.00">
 <input type="hidden" name="option_amount14" value="70.00">
 <input type="hidden" name="option_period14" value="M">
 <input type="hidden" name="option_frequency14" value="1">
-<input type="hidden" name="option_select15" value="Level 80">
+<input type="hidden" name="option_select15" value="80.00">
 <input type="hidden" name="option_amount15" value="80.00">
 <input type="hidden" name="option_period15" value="M">
 <input type="hidden" name="option_frequency15" value="1">
-<input type="hidden" name="option_select16" value="Level 90">
+<input type="hidden" name="option_select16" value="90.00">
 <input type="hidden" name="option_amount16" value="90.00">
 <input type="hidden" name="option_period16" value="M">
 <input type="hidden" name="option_frequency16" value="1">
-<input type="hidden" name="option_select17" value="Level 100">
+<input type="hidden" name="option_select17" value="100.00">
 <input type="hidden" name="option_amount17" value="100.00">
 <input type="hidden" name="option_period17" value="M">
 <input type="hidden" name="option_frequency17" value="1">
-<input type="hidden" name="option_select18" value="Level 150">
+<input type="hidden" name="option_select18" value="150.00">
 <input type="hidden" name="option_amount18" value="150.00">
 <input type="hidden" name="option_period18" value="M">
 <input type="hidden" name="option_frequency18" value="1">
-<input type="hidden" name="option_select19" value="Level 200">
+<input type="hidden" name="option_select19" value="200.00">
 <input type="hidden" name="option_amount19" value="200.00">
 <input type="hidden" name="option_period19" value="M">
 <input type="hidden" name="option_frequency19" value="1">
-<input type="hidden" name="option_select20" value="Level 300">
+<input type="hidden" name="option_select20" value="300.00">
 <input type="hidden" name="option_amount20" value="300.00">
 <input type="hidden" name="option_period20" value="M">
 <input type="hidden" name="option_frequency20" value="1">
-<input type="hidden" name="option_select21" value="Level 400">
+<input type="hidden" name="option_select21" value="400.00">
 <input type="hidden" name="option_amount21" value="400.00">
 <input type="hidden" name="option_period21" value="M">
 <input type="hidden" name="option_frequency21" value="1">
-<input type="hidden" name="option_select22" value="Level 500">
+<input type="hidden" name="option_select22" value="500.00">
 <input type="hidden" name="option_amount22" value="500.00">
 <input type="hidden" name="option_period22" value="M">
 <input type="hidden" name="option_frequency22" value="1">
-<input type="hidden" name="option_select23" value="Level 600">
+<input type="hidden" name="option_select23" value="600.00">
 <input type="hidden" name="option_amount23" value="600.00">
 <input type="hidden" name="option_period23" value="M">
 <input type="hidden" name="option_frequency23" value="1">
-<input type="hidden" name="option_select24" value="Level 700">
+<input type="hidden" name="option_select24" value="700.00">
 <input type="hidden" name="option_amount24" value="700.00">
 <input type="hidden" name="option_period24" value="M">
 <input type="hidden" name="option_frequency24" value="1">
-<input type="hidden" name="option_select25" value="Level 800">
+<input type="hidden" name="option_select25" value="800.00">
 <input type="hidden" name="option_amount25" value="800.00">
 <input type="hidden" name="option_period25" value="M">
 <input type="hidden" name="option_frequency25" value="1">
-<input type="hidden" name="option_select26" value="Level 900">
+<input type="hidden" name="option_select26" value="900.00">
 <input type="hidden" name="option_amount26" value="900.00">
 <input type="hidden" name="option_period26" value="M">
 <input type="hidden" name="option_frequency26" value="1">
-<input type="hidden" name="option_select27" value="Level 1000">
+<input type="hidden" name="option_select27" value="1000.00">
 <input type="hidden" name="option_amount27" value="1000.00">
 <input type="hidden" name="option_period27" value="M">
 <input type="hidden" name="option_frequency27" value="1">
-<input type="hidden" name="option_select28" value="Level 2000">
+<input type="hidden" name="option_select28" value="2000.00">
 <input type="hidden" name="option_amount28" value="2000.00">
 <input type="hidden" name="option_period28" value="M">
 <input type="hidden" name="option_frequency28" value="1">
-<input type="hidden" name="option_select29" value="Level 3000">
+<input type="hidden" name="option_select29" value="3000.00">
 <input type="hidden" name="option_amount29" value="3000.00">
 <input type="hidden" name="option_period29" value="M">
 <input type="hidden" name="option_frequency29" value="1">
-<input type="hidden" name="option_select30" value="Level 4000">
+<input type="hidden" name="option_select30" value="4000.00">
 <input type="hidden" name="option_amount30" value="4000.00">
 <input type="hidden" name="option_period30" value="M">
 <input type="hidden" name="option_frequency30" value="1">
-<input type="hidden" name="option_select31" value="Level 5000">
+<input type="hidden" name="option_select31" value="5000.00">
 <input type="hidden" name="option_amount31" value="5000.00">
 <input type="hidden" name="option_period31" value="M">
 <input type="hidden" name="option_frequency31" value="1">
-<input type="hidden" name="option_select32" value="Level 6000">
+<input type="hidden" name="option_select32" value="6000.00">
 <input type="hidden" name="option_amount32" value="6000.00">
 <input type="hidden" name="option_period32" value="M">
 <input type="hidden" name="option_frequency32" value="1">
-<input type="hidden" name="option_select33" value="Level 7000">
+<input type="hidden" name="option_select33" value="7000.00">
 <input type="hidden" name="option_amount33" value="7000.00">
 <input type="hidden" name="option_period33" value="M">
 <input type="hidden" name="option_frequency33" value="1">
-<input type="hidden" name="option_select34" value="Level 8000">
+<input type="hidden" name="option_select34" value="8000.00">
 <input type="hidden" name="option_amount34" value="8000.00">
 <input type="hidden" name="option_period34" value="M">
 <input type="hidden" name="option_frequency34" value="1">
-<input type="hidden" name="option_select35" value="Level 9000">
+<input type="hidden" name="option_select35" value="9000.00">
 <input type="hidden" name="option_amount35" value="9000.00">
 <input type="hidden" name="option_period35" value="M">
 <input type="hidden" name="option_frequency35" value="1">
-<input type="hidden" name="option_select36" value="Level 10000">
+<input type="hidden" name="option_select36" value="10000.00">
 <input type="hidden" name="option_amount36" value="10000.00">
 <input type="hidden" name="option_period36" value="M">
 <input type="hidden" name="option_frequency36" value="1">
