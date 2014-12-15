@@ -202,6 +202,9 @@ locales
 ## required for whonixsetup
 dialog
 
+## required for whonixsetup, contains /usr/bin/xhost
+x11-xserver-utils
+
 ## contains uname (required for whonixcheck, torbrowser-update) ## dependency
 ## contains tty (required for whonixcheck, timesync, torbrowser-update)
 ## (not in debian/control, otherwise lintian warning depends-on-essential-package-without-using-version)
