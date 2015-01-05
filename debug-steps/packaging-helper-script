@@ -184,7 +184,7 @@ pkg_git_remotes_add() {
    cd ..
 }
 
-pkg_git_branch_nice() {
+pkg_git_branch_nine() {
    trap "build_all_error_handler" ERR
 
    reponame="$(basename "$item")"
