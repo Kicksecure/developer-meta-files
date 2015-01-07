@@ -42,7 +42,7 @@ pkg_readme_creator() {
       return
    fi
 
-   generic_readme="../../whonix-developer-meta-files/README_generic.md"
+   generic_readme="./whonix-developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
    local readme_file line first_word matched
