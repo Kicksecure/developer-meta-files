@@ -117,9 +117,15 @@ fi
 
 sync
 
-gpg $whonix_news_gpg_sign_with_options --detach-sign --armor --yes "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
+gpg \
+   $whonix_news_gpg_sign_with_options \
+   --detach-sign \
+   --armor \
+   --yes \
+   "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
 sync
-gpg --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
+gpg \
+   --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
 
 ls -la "$WHONIX_BINARY/news_v4/"
 
