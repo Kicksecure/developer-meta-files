@@ -1,3 +1,15 @@
 Whonix-Gateway Debian Package News:
-After upgrading your Tor connection might go down. If that happens, see workaround, Whonix Download Page, Known Issues:
-https://www.whonix.org/wiki/Download#Connection_Issues_-_Tor_stops_working_after_an_Upgrade_and_needs_a_Workaround
+Whonix Signing Key Expired (KEYEXPIRED Error).
+
+Solution. Open a terminal.
+
+fpr="916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA"
+gpg --recv-keys "$fpr"
+gpg --fingerprint "$fpr"
+gpg --export "$fpr" | sudo apt-key add -
+
+More info...
+Wiki:
+https://www.whonix.org/wiki/Download#KEYEXPIRED_Error
+Forum:
+https://www.whonix.org/forum/index.php/topic,892

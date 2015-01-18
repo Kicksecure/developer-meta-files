@@ -1,3 +1,21 @@
 Whonix-Workstation Debian Package News:
 Until further notice, it is recommended against to use Tor Browser's Internal Updater for security reasons. Read more:
 https://www.whonix.org/wiki/Tor_Browser#Update_Tor_Browser
+
+-----
+
+Whonix-Gateway Debian Package News:
+Whonix Signing Key Expired (KEYEXPIRED Error).
+
+Solution. Open a terminal.
+
+fpr="916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA"
+gpg --recv-keys "$fpr"
+gpg --fingerprint "$fpr"
+gpg --export "$fpr" | sudo apt-key add -
+
+More info...
+Wiki:
+https://www.whonix.org/wiki/Download#KEYEXPIRED_Error
+Forum:
+https://www.whonix.org/forum/index.php/topic,892
