@@ -4,6 +4,6 @@ https://www.whonix.org/wiki/Tor_Browser#Update_Tor_Browser
 
 -----
 
-Whonix Signing Key Expired (KEYEXPIRED Error).
-For fix and more info, see wiki:
+If you see a KEYEXPIRED error during apt-get dist-upgrade,
+for fix and more info, see wiki:
 https://www.whonix.org/wiki/Download#KEYEXPIRED_Error

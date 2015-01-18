@@ -1,4 +1,4 @@
 Whonix-Gateway Debian Package News:
-Whonix Signing Key Expired (KEYEXPIRED Error).
-For fix and more info, see wiki:
+If you see a KEYEXPIRED error during apt-get dist-upgrade,
+for fix and more info, see wiki:
 https://www.whonix.org/wiki/Download#KEYEXPIRED_Error
