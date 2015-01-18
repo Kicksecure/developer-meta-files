@@ -1,6 +1,0 @@
-Due to the Heartbleed bug in OpenSSL, you are advised to run
-    sudo apt-get update && sudo apt-get dist-upgrade
-as fast as possible. Then restart Tor ("sudo service tor restart" or simply reboot).
-(You only have to do this once. Otherwise do just regular upgrades.)
-If you are using hidden services, you should also create a new hidden service domain name, for more information, see:
-https://blog.torproject.org/blog/openssl-bug-cve-2014-0160

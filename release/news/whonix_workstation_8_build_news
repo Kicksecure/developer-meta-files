@@ -1,3 +1,0 @@
-Due to the Heartbleed bug in OpenSSL, you are advised to run
-    sudo apt-get update && sudo apt-get dist-upgrade
-as fast as possible. (You only have to do this once. Otherwise do just regular upgrades.)
