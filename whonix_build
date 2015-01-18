@@ -27,6 +27,13 @@ cd "$MYDIR"
 build_main_build() {
    trap "build_main_error_handler" ERR
    true "INFO $BASH_SOURCE $FUNCNAME: build_args: $build_args"
+
+   read -r build_args_first _ <<< "$build_args"
+   if [ ! -x "$build_args_first" ]; then
+      true "${red}${bold}build_args_first: $build_args_first not executable!${reset}"
+      error "See above!"
+   fi
+
    true "INFO $BASH_SOURCE $FUNCNAME: Build overview.
 WHONIX_MAIN_SCRIPT_BUILD_GATEWAY: $WHONIX_MAIN_SCRIPT_BUILD_GATEWAY
 WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION: $WHONIX_MAIN_SCRIPT_BUILD_WORKSTATION
