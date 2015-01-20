@@ -9,7 +9,6 @@
 
 set -x
 
-ROOT_CHECK="0"
 whonix_build_one_parsed="1"
 VMNAME="internalrun"
 

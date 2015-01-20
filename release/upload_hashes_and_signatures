@@ -13,7 +13,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"
 export VMNAME="internalrun"
-ROOT_CHECK="0"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
