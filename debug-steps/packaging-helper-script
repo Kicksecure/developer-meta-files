@@ -46,7 +46,16 @@ pkg_readme_creator() {
    test -f "$generic_readme"
 
    local readme_file line first_word matched
-   readme_file="$item/README.md"
+
+   if [ -f "$item/README_generic.md" ]; then
+      ## When there is a README_generic.md, this is a way to express
+      ## "do not create a generic README.md for that package, because it
+      ## already has a real readme."
+      readme_file="$item/README_generic.md"
+   else
+      readme_file="$item/README.md"
+   fi
+
    rm --force "$readme_file"
 
    matched="false"
