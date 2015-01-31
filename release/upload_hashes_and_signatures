@@ -33,7 +33,7 @@ rsync \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/"*".asc" \
    ~/"whonix_binary/"*".sha512sums" \
-   "adrelanos@whonix.org:/home/adrelanos/download/$version-sig/"
+   "adrelanos@whonix.org:/home/adrelanos/download/$version/"
 
 true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
@@ -43,7 +43,7 @@ rsync \
    --rsh='ssh -p54485' \
    ~/"whonix_binary/"*".asc" \
    ~/"whonix_binary/"*".sha512sums" \
-   "adrelanos@whonix.org:/home/adrelanos/download/$version-sig/"
+   "adrelanos@whonix.org:/home/adrelanos/download/$version/"
 
 benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
