@@ -336,7 +336,7 @@ pkg_git_commit_packaging() {
    #git add Makefile
    #git add make-helper.bsh
    git add -u
-   msg="updated generic makefile"
+   msg="Added creation of upstream changelog to debian/rules"
    git commit -m "$msg"
    git status
    cd ..
