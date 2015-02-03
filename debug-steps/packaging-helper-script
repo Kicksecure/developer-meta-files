@@ -377,6 +377,16 @@ pkg_git_commit_packaging() {
    cd ..
 }
 
+pkg_add_dh_changelogs_override_to_debian_rules() {
+   trap "build_all_error_handler" ERR
+
+   cd "$item"
+echo "
+override_dh_installchangelogs:
+	dh_installchangelogs changelog.upstream upstream" >> "debian/changelog"
+   cd ..
+}
+
 pkg_git_diff_and_commit() {
    trap "build_all_error_handler" ERR
 
