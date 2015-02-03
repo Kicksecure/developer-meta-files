@@ -6,6 +6,7 @@
 
 set -x
 set -o pipefail
+set -o errtrace
 
 build_all_error_handler() {
    : echo "
@@ -35,8 +36,6 @@ nothing_to_commit_msg="# On branch master
 nothing to commit (working directory clean)"
 
 pkg_readme_creator() {
-   trap "build_all_error_handler" ERR
-
    if [ ! -f "$item/debian/control" ]; then
       true "No file"
       return
@@ -96,29 +95,21 @@ pkg_readme_creator() {
 }
 
 pkg_links_echo() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    echo "https://github.com/Whonix/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
 }
 
 pkg_names_echo() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    echo "$reponame"
 }
 
 pkg_links_open() {
-   trap "build_all_error_handler" ERR
-
    torbrowser --new-tab "$(pkg_links_echo)"
 }
 
 pkg_twitter_to_github() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
 
 #   echo "\
@@ -179,8 +170,6 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git remote rm adre || true
@@ -194,8 +183,6 @@ pkg_git_remotes_add() {
 }
 
 pkg_git_branch_nine() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git checkout master
@@ -204,8 +191,6 @@ pkg_git_branch_nine() {
 }
 
 pkg_git_branch_checkout_nine() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git checkout Whonix9
@@ -213,8 +198,6 @@ pkg_git_branch_checkout_nine() {
 }
 
 pkg_git_branch_checkout_master() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git checkout master
@@ -222,8 +205,6 @@ pkg_git_branch_checkout_master() {
 }
 
 pkg_git_diff_branch_master() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git diff master
@@ -231,8 +212,6 @@ pkg_git_diff_branch_master() {
 }
 
 pkg_git_diff_branch_development() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
    cd "$reponame"
    git diff development || true
@@ -240,8 +219,6 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
-   trap "build_all_error_handler" ERR
-
    cp "../CONTRIBUTING.md" "$item/"
    cp "../GPLv3" "$item/"
    if [ -f "$item/setup.py" ]; then
@@ -255,8 +232,6 @@ pkg_packaging_copy() {
 }
 
 pkg_packaging_files_diff() {
-   trap "build_all_error_handler" ERR
-
    diff "../CONTRIBUTING.md" "$item/"
    diff "../GPLv3" "$item/"
    if [ -f "$item/setup.py" ]; then
@@ -301,8 +276,6 @@ pkg_packaging_files_diff() {
 }
 
 pkg_debian_changelog_bump() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    make deb-chl-bumpup
@@ -313,8 +286,6 @@ pkg_debian_changelog_bump() {
 }
 
 pkg_git_push_remotes() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    git push origin master &
@@ -341,8 +312,6 @@ pkg_git_push_remotes() {
 }
 
 pkg_git_commmit_readme() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
    git add README.md
    git add debian/changelog
@@ -354,8 +323,6 @@ pkg_git_commmit_readme() {
 }
 
 pkg_git_commit_changelog() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
    git add debian/changelog
    msg='Updated debian/changelog.'
@@ -365,8 +332,6 @@ pkg_git_commit_changelog() {
 }
 
 pkg_git_commit_packaging() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
    #git add Makefile
    #git add make-helper.bsh
@@ -378,8 +343,6 @@ pkg_git_commit_packaging() {
 }
 
 pkg_add_dh_changelogs_override_to_debian_rules() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 echo "
 override_dh_installchangelogs:
@@ -388,8 +351,6 @@ override_dh_installchangelogs:
 }
 
 pkg_git_diff_and_commit() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    #git reset --hard
@@ -422,14 +383,10 @@ pkg_git_diff_and_commit() {
 }
 
 pkg_debian_control_open() {
-   trap "build_all_error_handler" ERR
-
    kate "$item/debian/control"
 }
 
 pkg_git_submodule_file_writer() {
-   trap "build_all_error_handler" ERR
-
    reponame="$(basename "$item")"
 
    echo "\
@@ -440,8 +397,6 @@ pkg_git_submodule_file_writer() {
 }
 
 pkg_git_log_giant_make() {
-   trap "build_all_error_handler" ERR
-
    #git shortlog 8.2..8.6.3.0 > giant_git_log
 
    cd "$item"
@@ -456,8 +411,6 @@ pkg_git_log_giant_make() {
 }
 
 pkg_git_sign_and_push_tags() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    make_get_variables
@@ -474,8 +427,6 @@ pkg_git_sign_and_push_tags() {
 }
 
 pkg_verify_signed_commit() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    make git-commit-verify
@@ -484,8 +435,6 @@ pkg_verify_signed_commit() {
 }
 
 pkg_verify_signed_commit_and_tag() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    make git-verify
@@ -494,8 +443,6 @@ pkg_verify_signed_commit_and_tag() {
 }
 
 pkg_dput_cfg_writer() {
-   trap "build_all_error_handler" ERR
-
    cd "$item"
 
    make_get_variables
@@ -516,8 +463,6 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
 }
 
 loop_helper() {
-   trap "build_all_error_handler" ERR
-
    for item in ./*; do
       if [ ! -d "$item" ]; then
          continue
@@ -540,7 +485,6 @@ loop_helper() {
 }
 
 main_function() {
-   trap "build_all_error_handler" ERR
    if [ "${1+"$@"}" = "" ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
