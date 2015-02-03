@@ -346,7 +346,7 @@ pkg_add_dh_changelogs_override_to_debian_rules() {
    cd "$item"
 echo "
 override_dh_installchangelogs:
-	dh_installchangelogs changelog.upstream upstream" >> "debian/changelog"
+	dh_installchangelogs changelog.upstream upstream" >> "debian/rules"
    cd ..
 }
 
