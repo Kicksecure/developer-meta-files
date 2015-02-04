@@ -164,7 +164,7 @@ locally-upgrade-whonix-debian-packages() {
    fi
 
    ## Upgrade Whonix Debian Packages.
-   #$CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes dist-upgrade
+   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts --yes dist-upgrade
 
    #$CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts -f install
 
