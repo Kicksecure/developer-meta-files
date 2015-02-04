@@ -1,0 +1,2037 @@
+commit e0e40c0fe7dd81f68c3bfaee1a6623d7750a5666
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 4 00:42:10 2015 +0000
+
+    .
+
+commit e13cb649f286fc139e238ee06473c049269a897f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 4 00:41:20 2015 +0000
+
+    .
+
+commit 36e8e7db47b129e53c17259f40580193eab23222
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 4 00:40:58 2015 +0000
+
+    updated makefile generic to version 1.3
+
+commit b95720edc1d131cbf4d7284eefc1dc98daa23bc2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 4 00:36:30 2015 +0000
+
+    .
+
+commit 791080f91a6d23563e876056d5beb4afba4beda0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 4 00:03:23 2015 +0000
+
+    .
+
+commit 403b5e2749682c840a164ee0d9f26b8a49d66de6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 3 23:58:59 2015 +0000
+
+    Added creation of upstream changelog to debian/rules
+
+commit d9ccc4fa55c86b62edbe2d8e3434a91d989b4078
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 3 23:55:28 2015 +0000
+
+    .
+
+commit 7568a4dd4660cfc0238e1b8ed336e8978c4bd561
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 3 23:50:59 2015 +0000
+
+    .
+
+commit 49856985bf8c876a43f9331094d51035010267bb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 3 23:49:48 2015 +0000
+
+    .
+
+commit ab89ed6be674c5cb2f56eb7a066afc2153264517
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jan 31 04:30:42 2015 +0000
+
+    .
+
+commit 8fadde81542c9f124c7e6ca20ba323cc3d1c53bd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 26 17:11:42 2015 +0000
+
+    .
+
+commit 782a20aeec3657a6733a2c1fffa48d77f7e7f026
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 20 21:30:54 2015 +0000
+
+    fix
+
+commit 480d76ab3258ea39c4af1424d588abe7c53d2f2a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 20 21:29:07 2015 +0000
+
+    updated as per recent refactoring (root_check is now opt-in rather than opt-out)
+
+commit 939142fdf2f336bc26ed75a64acc856287383dc2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 20 21:15:09 2015 +0000
+
+    moved tb-updater unit tests to tb-updater package
+
+commit e17021326e6475a2e89f67c2bdf4de23db5560ee
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 20 21:10:10 2015 +0000
+
+    unit test
+
+commit 0f2114738a2afc93df889f421acfd177335214c0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 23:33:58 2015 +0000
+
+    colors
+
+commit fce5eef6cc05fde1c4c88979f05fadbae4702293
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 23:08:21 2015 +0000
+
+    moved to https://github.com/Whonix/deprecated-code
+
+commit aaadf9288cc145702f096e54afd5a748fbaf543c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 22:51:14 2015 +0000
+
+    sanity test
+
+commit 5d23b1456035ddbbb316ec192ce771decb8b14f2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 17:40:53 2015 +0000
+
+    news
+
+commit 46fc9d0a0c2e33f71400932af5ba508cf42abaf9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 02:34:32 2015 +0000
+
+    news
+
+commit 33ba6c3cae36222271bbe972dbc79d7cae7f7172
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 02:32:08 2015 +0000
+
+    news
+
+commit dca2704fca22656596a55cb526ced7f688c64898
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 02:28:58 2015 +0000
+
+    purged old news for deprecated versions
+
+commit 420c80ea64c2295808dcb13b55ab879efbc0458d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 18 02:23:27 2015 +0000
+
+    news
+
+commit ad7742a1034d728d2f9ef5d8f76caa45a7c39b6d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 16 02:12:22 2015 +0000
+
+    added file@name OpenPGP notation
+
+commit e1cde4dead6ccd117b8528d33bb3c7f365298045
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 16 02:10:21 2015 +0000
+
+    refactoring
+
+commit 1f9a11469cb12a426250272451c9e0c8b4e4d3a1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 12 23:29:03 2015 +0000
+
+    GPG signatures do not authenticate filenames by default, therefore add
+    the name of the file as a OpenPGP notation so at least users that look
+    at OpenPGP notations have a chance to detect if file names have been
+    tampered with.
+
+commit 0d974d7f81e3bd3b19b82344d2cf044bdbfe2f0a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 12 23:18:03 2015 +0000
+
+    use --verify-options show-notations
+
+commit 5c9d30de4977e4f373c5cf9538e872e23ee92bdc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jan 7 19:44:26 2015 +0000
+
+    fix
+
+commit a6928d5dfaa83ca2c5d0bf222ce1154d9b2be07d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jan 7 19:35:00 2015 +0000
+
+    bumped compat from 8 to 9
+
+commit 4b18e7043f40fa0502acd733a74a2e0739debb0f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 5 15:14:04 2015 +0000
+
+    fix typo
+
+commit 746895b2ff42cbbaa11fa7f63043f7f1d9916b7f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 15 00:19:01 2014 +0000
+
+    .
+
+commit b3a2c7001e56aee5f621010be6ddc236a36b78d2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Dec 14 00:23:02 2014 +0000
+
+    .
+
+commit c61eb6eea511a2dc8f476db8d31e511f79b31e87
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 11 17:04:53 2014 +0000
+
+    .
+
+commit d93450b82dc550d8a13a0b7a0a0ffb5bf92e7904
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 8 19:29:10 2014 +0000
+
+    .
+
+commit b732e91d1f53f97c21abfbebfce7c2f1a09c9971
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 8 02:00:00 2014 +0000
+
+    news
+
+commit e40e00c1811aea4b3fe3e7c49a3b1e1185e591c5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 8 01:56:56 2014 +0000
+
+    news
+
+commit fbf2655bf6df00cf8a611ab3da8369c16c3367ac
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 8 00:45:51 2014 +0000
+
+    .
+
+commit c8ee60c18a373105dd1820837fb2406d71cc8158
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Dec 7 01:18:16 2014 +0000
+
+    .
+
+commit ff9d644e85d82acff154a9bd922f9b085a25ad81
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Dec 7 00:52:09 2014 +0000
+
+    .
+
+commit cd51615619e0d3c2d6f4f46876874f88137ce3c7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Dec 7 00:51:14 2014 +0000
+
+    .
+
+commit b8e4b1c683b9b04ebec9520ac678f89fe63a5c9b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 19:00:56 2014 +0000
+
+    .
+
+commit efb4b2d63176f103b01c3a74574bc0e28f0d3d69
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 19:00:19 2014 +0000
+
+    .
+
+commit 4886679c8fa84951db215753cdbc826de2c4b3bc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 18:35:09 2014 +0000
+
+    .
+
+commit 77adebf0685fadbc73892f84c34f085448bc9b89
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 18:30:56 2014 +0000
+
+    .
+
+commit a44d57f67d4c1710c20a998aa2ce945d6ca2d55a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 18:30:40 2014 +0000
+
+    .
+
+commit 4b33497aec3e7c49ad3a1d7410e891d20f7b1e44
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 18:30:28 2014 +0000
+
+    updated generic makefile
+
+commit 0928e40ad5c293fc32aca1c5beaffaa46c3d1c84
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 17:44:35 2014 +0000
+
+    .
+
+commit 1f4e6f7e9f66ec3bbba04bd969aa43eb94ff67c8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 17:42:29 2014 +0000
+
+    .
+
+commit ab2d68c73f7d4e390ea5d35fc1d268c230de7a72
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 17:42:11 2014 +0000
+
+    .
+
+commit 5a6bae74ce6e393a82ad00440864ab85dbfef139
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 17:26:29 2014 +0000
+
+    .
+
+commit f6a91d1e2153a27f615d5a221e359e3c756dd6ee
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 5 17:08:09 2014 +0000
+
+    refactoring
+
+commit 139d6ff888ae0064d3d4ecb8aee1a7533f8c8590
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 24 00:20:11 2014 +0000
+
+    .
+
+commit b4613bf48733a44fc2c6c95272cd7e89102f507c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Nov 21 00:47:43 2014 +0000
+
+    .
+
+commit 60ffba0b9f5a2babe8147e771a208c50e856955e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 20 00:06:15 2014 +0000
+
+    .
+
+commit ce775f662ad51688fb13b5b90ae022c28bab4f0f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 18 22:32:53 2014 +0000
+
+    .
+
+commit 7a432575cacba7b03ecfa553ae34cf93a2dc9465
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 18 22:20:01 2014 +0000
+
+    .
+
+commit b7ca30aedf6b6e260bad426f960044fc2934c221
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 18 20:27:36 2014 +0000
+
+    .
+
+commit 04c096c79e2bd54a4c384a4d27948288ab13fe02
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Nov 15 17:19:33 2014 +0000
+
+    news
+
+commit c07187b51bcb518383d23cceb225f8098b87ac97
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Nov 15 15:47:38 2014 +0000
+
+    makefile: new features...
+    make tag-sign
+       Sign git tag of latest debian/changelog version.
+    make tag-verify
+       Verify git tag of latest debian/changelog version.
+    make tag-verify-checkout
+       Verify and checkout git tag of latest debian/changelog version.
+    make tag-check
+       Check if current git head needs to be tagged.
+
+commit 880997522d40ce4889450ba82faec408881c12ad
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 13 16:26:27 2014 +0000
+
+    .
+
+commit d9802ae8140c8c755b1d981546dd4f4e0aef1334
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 13 13:34:55 2014 +0000
+
+    obsoleted make_mydir variable
+
+commit cbe8b6842b952ffd16108efdb2151353cb66fa72
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 13 13:23:20 2014 +0000
+
+    comments
+
+commit 9a1c3850ead4e847ad79c86b5d29b2e7d6d700d6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 13 13:21:36 2014 +0000
+
+    local
+
+commit 454248d1643fe620a02dc1011cac6d095dec5b93
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 12 00:54:44 2014 +0000
+
+    .
+
+commit 9381d660ac8ca2332222e77ecd70543b411c1348
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 12 00:47:04 2014 +0000
+
+    .
+
+commit da71c820a2a0b624acee81b4fd8020960f1d1965
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 18:43:02 2014 +0000
+
+    upload_signatures -> upload_hashes_and_signatures
+
+commit 3c36603e05d351980b99ff8647bf0e6e10027970
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 18:42:44 2014 +0000
+
+    .
+
+commit f972d3a59b3f23e873396ba79387c2573e08a6ce
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 17:04:37 2014 +0000
+
+    .
+
+commit 512af4c9ba32e35627017f4cb9ff5afa712d35b0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 17:00:45 2014 +0000
+
+    .
+
+commit 2a5882e0cfa57c9f3e6d1abd449c55e09e88db46
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 13:37:49 2014 +0000
+
+    .
+
+commit ea8d431ca879c7336a194095d7922f640d4bd999
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 11 13:32:23 2014 +0000
+
+    .
+
+commit cefb7956611d375514f24745ff6a30e29c740cf3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 10 09:31:19 2014 +0000
+
+    news
+
+commit 708053b5f6e1e6eb76f2bc9be79cdb4e1f7c73df
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Nov 9 14:28:32 2014 +0000
+
+    workaround for "bash: Shellshock fix breaks bash function exporting" - https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=763164
+
+commit 31a6b7d733ea17504d6437edd64e2c0f93548914
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 31 22:43:18 2014 +0000
+
+    .
+
+commit 25f6ab123696f961fedad2d082409b6f5f46c43a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 31 22:11:10 2014 +0000
+
+    .
+
+commit af4dda87d28c6130094b7bf2161e6d2f35cf3f79
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 30 05:48:18 2014 +0000
+
+    refactoring
+
+commit da64445355078f9eef5f927ec84443e0a7297fee
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 30 05:07:03 2014 +0000
+
+    .
+
+commit d2ecf5bfd271f70113179658aa716c65f3d8b459
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 30 05:06:11 2014 +0000
+
+    .
+
+commit d97228bc6cac733a971b6cdd20385a8fa1c063e5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 30 05:05:30 2014 +0000
+
+    .
+
+commit 1b4a68d39a72fd0df08bf7dbd9c76b6c94f0f879
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Oct 29 19:03:36 2014 +0000
+
+    .
+
+commit f0221e8db85d42ec65629910a4de1b3d5a126771
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 28 23:14:10 2014 +0000
+
+    .
+
+commit ed940427db74075d79ca5fbeb0318f5df00ebf1c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 28 05:14:06 2014 +0000
+
+    output
+
+commit c8db84dd5089663fca57267df07a2e04d86d58b5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 28 05:07:34 2014 +0000
+
+    output
+
+commit 9d70b5c4e012887015e26082683e7d72477100b7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 05:47:19 2014 +0000
+
+    CI
+
+commit ebdaa5fb67d7b2963b6d63edeeeb829bc5d83b44
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 05:24:50 2014 +0000
+
+    CI
+
+commit 6c084fec70b3a7d733218ea19b16314319eff690
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 05:01:57 2014 +0000
+
+    CI
+
+commit 50dc57fa157d8d69cdcb24f2bf2351cf0f4e2529
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 04:40:58 2014 +0000
+
+    CI
+
+commit 04d85552e2ad739a4f6432baabf77d8a24712582
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:50:32 2014 +0000
+
+    CI
+
+commit ee598fedafc3d3011af0af3d92d32c533572620d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:34:03 2014 +0000
+
+    .
+
+commit 813069c9174749baa4e192f4b160aefec1da543d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:24:33 2014 +0000
+
+    fix
+
+commit 26e9b2e3654573a03773c478ee13e42853fd9c73
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:17:26 2014 +0000
+
+    refactoring
+
+commit 957bd156905e3714f4265130f9145c6b2af44ce4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:15:03 2014 +0000
+
+    CI
+
+commit bb117404e0ae27027fc0f5d0559dfbcefc29f7e9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:13:13 2014 +0000
+
+    CI
+
+commit 09cedf2c8b1d768e7738c424db65fe9a4ba00615
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 27 00:09:43 2014 +0000
+
+    CI
+
+commit 7f7a1f5a93950dd771c9f25a8bea984ce8d6d14c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 22:44:28 2014 +0000
+
+    .
+
+commit 74140ddcd36755532a925cf1a6fc420b1a4a6c51
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:51:50 2014 +0000
+
+    .
+
+commit 5915e39e52f4b7eccb945a67e6fceb32852c2a36
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:49:59 2014 +0000
+
+    .
+
+commit 2c59544cc5f056ae69c8d540b8fea65ac8afd3fc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:46:05 2014 +0000
+
+    .
+
+commit ebb803a7f08f25499ae3d890b7631d09364f502d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:43:41 2014 +0000
+
+    .
+
+commit 9d2b0edc62091dd470a0ebb79dc337e435b6a7c4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:42:31 2014 +0000
+
+    .
+
+commit 0247ad589a4108f28571a9fab4964516f51c2b8a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:39:50 2014 +0000
+
+    .
+
+commit 6dffed06d0d6354f1a6131ce93ede0a57fed341b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:32:24 2014 +0000
+
+    .
+
+commit ccb0ef48424c7d77442021329d78a2dc0b59cfa2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:29:50 2014 +0000
+
+    .
+
+commit 3edc01f067908a7c148c3e4f83755839593dd7c9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:15:35 2014 +0000
+
+    .
+
+commit 8eb6053c55c1d75ddd2cc97be96eb074048a75c9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:13:19 2014 +0000
+
+    .
+
+commit 32d2b5313f976c9a996b49d8d1bce7ff8fcad303
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 26 19:09:59 2014 +0000
+
+    .
+
+commit 7bd6f1177994530ee11f0c4372c0cec83c494ec5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 25 01:36:21 2014 +0000
+
+    .
+
+commit b9f94da0e1861a3a6361da4d92750f06707efdb0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 19 00:02:54 2014 +0000
+
+    news
+
+commit 11c50fa7a430ac033212d48aac5316ac9becf5d9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 18 16:05:50 2014 +0000
+
+    news
+
+commit dc7def330f4adb0d7078654d88b7b295f8183070
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 18 14:02:33 2014 +0000
+
+    .
+
+commit 589da76cef603002c5df6ee5b85417a90eba87a9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 13 12:40:32 2014 +0000
+
+    .
+
+commit 165868e34877944a595f07e2fa2dcd3037bbf72a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 22:33:46 2014 +0000
+
+    .
+
+commit 631cc85468d016800e6bf661f236fa3381046fce
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:13:19 2014 +0000
+
+    refactoring
+
+commit bb88c5757e735532a1df3af3e88b404c5dc96a97
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:10:50 2014 +0000
+
+    cleanup
+
+commit 66df347d78ddce8d05277d745145b17a03850d73
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:09:22 2014 +0000
+
+    comment
+
+commit 02f3c2272458fe42ad7bde617a35cbe8f36708bc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:05:44 2014 +0000
+
+    comment
+
+commit be815e8c8d963e11dc744bc646b04b80d3109e30
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:04:32 2014 +0000
+
+    changed torrent webseed domain: webseed.whonix.org:8008 -> mirror.whonix.de
+
+commit dc9e9594d0385dd9226bc562a1d1ef6cf8ab5c3b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 11 16:03:12 2014 +0000
+
+    .
+
+commit 70d76f7f6d3b8528ce1555aa583618b2448ea839
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 5 14:41:45 2014 +0000
+
+    news
+
+commit 25b59332322d0b38052aa30635fbb29187ecfe0b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 28 20:47:28 2014 +0000
+
+    readme
+
+commit bbb7ce10ff5b6e9ccd15f7fa08c3da71ec1a3bfe
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 28 20:46:32 2014 +0000
+
+    readme
+
+commit 384577f8cf1653065aa738c39542a48e30dc0f62
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 28 20:45:41 2014 +0000
+
+    readme
+
+commit 500d63a92ae09e3723bd7b7ce3e245a58b0a2c98
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 27 11:59:34 2014 +0000
+
+    sanity test
+
+commit 8c5ef6fed94d670d5523b91bf43c7c0b8cd3f2fa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 27 11:57:27 2014 +0000
+
+    sanity tests
+
+commit 22618607f9d0a8c3418d300724158e02b673b0bd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 27 11:55:02 2014 +0000
+
+    whonix_all renamed to whonix_build
+
+commit 7fbba46958b075657441c6709b7b4af034216099
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 27 11:54:44 2014 +0000
+
+    .
+
+commit 30bf77b9d06fae3bfb1540a93abd334e1801d465
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 27 11:52:22 2014 +0000
+
+    fix
+
+commit fdca17ef97d526492a1e18979afcdb9718eae37a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 26 19:39:47 2014 +0000
+
+    sanity tests
+
+commit d124713bd0f0161fc96afc3d0e5ef91cd2b35fb0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 26 14:56:02 2014 +0000
+
+    fix
+
+commit cf471ffdb19aa98474f50462bb318dab0a79790a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 25 22:11:19 2014 +0000
+
+    .
+
+commit 60b3f5b626ac4dd2db3272cd0f9eb407c6afa425
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 25 22:09:18 2014 +0000
+
+    news
+
+commit 2e61e17af75429b9087493bd9a414420a252cde2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 24 19:22:11 2014 +0000
+
+    .
+
+commit a0a38bee94de6a9ec9f8bd46a2ec9592d19f697e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 24 19:14:02 2014 +0000
+
+    news
+
+commit dc688b666d4d10197360c82bc71a98d196c24be3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Sep 22 15:06:26 2014 +0000
+
+    .
+
+commit d66c5fd62bb42d77fbcc74bd41d5b0b982c68b53
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 21 20:06:18 2014 +0000
+
+    comments
+
+commit 692a09fa73f86bfead84fc8bc9412049aeabd41b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 21 20:04:22 2014 +0000
+
+    news
+
+commit b1d623c98c0b1adc7ba33b754e109b49bd1c6c60
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 21 20:00:30 2014 +0000
+
+    news
+
+commit 9c414af76964a06f883728fd3804f8eb941177e2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 21 09:17:04 2014 +0000
+
+    news
+
+commit 76c33ce78dd33222b59abb3aa611f467496ec396
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 19 18:40:52 2014 +0000
+
+    .
+
+commit dde0661c07ac80dabe7ed1b864d02cf03d90966a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 16:47:26 2014 +0000
+
+    .
+
+commit 69409131dd492894a73658018da1446567b4350b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 15:52:05 2014 +0000
+
+    .
+
+commit 5e65a9d41c215dc59cf95ac104e2894e7907f321
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 15:50:29 2014 +0000
+
+    .
+
+commit e7cddfa2edab9fd43cbf38dab5c4181c1bd69254
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 15:25:42 2014 +0000
+
+    .
+
+commit fa9c911c3a57af01bb72f84df73396984f334217
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 14:55:31 2014 +0000
+
+    .
+
+commit 1742de5f92a597c7f3378b6da387f763106a44ac
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 18 14:45:37 2014 +0000
+
+    news
+
+commit ca56620393ac75ba1f0a3d60960d02263b9bb196
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 17 20:27:53 2014 +0000
+
+    .
+
+commit 8efc5d72c712dfc54ca0868098dccaa6ecb86e23
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 17 17:25:43 2014 +0000
+
+    .
+
+commit a16bcf5174a5496c7d1ef505cbaae132ffe04aae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 12 13:48:38 2014 +0000
+
+    news
+
+commit d8239d65d7af9b6657f7c9f608e3d181280c632f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 5 14:44:21 2014 +0000
+
+    .
+
+commit 48c90caabc366f25f32bd4204fbd8d4a171ba4c9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 5 12:24:48 2014 +0000
+
+    .
+
+commit 94859ccf4df529c9932e4566473771fd18350c3f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 28 17:49:21 2014 +0000
+
+    news
+
+commit 597a543f195798dd59b78e0253b1d0f149421059
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 20 21:59:34 2014 +0000
+
+    .
+
+commit 15060708c1075ef579ead3bcdc2f09d4e14ea438
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 20 14:11:05 2014 +0000
+
+    .
+
+commit 4827884c292d00a4e19242a4b97dbc5ace2e08fd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 19 03:00:13 2014 +0000
+
+    news
+
+commit f27f2c84bcc462ff74b88ac2999153082b17182a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 18 22:20:35 2014 +0000
+
+    .
+
+commit 1692b68f53b5bd817d92371c731319bc2375d666
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 18 13:21:58 2014 +0000
+
+    .
+
+commit 7f5fb109cc305cc392a8a52903ccfb4d8fe48341
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 18 13:21:04 2014 +0000
+
+    .
+
+commit 9f3d0b0d2c95cddab4b013c412a0917fdcfb0999
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Aug 17 18:36:23 2014 +0000
+
+    .
+
+commit d1efa8a44e48b3a4d7b408c47d53b16e001e62c5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Aug 16 15:20:27 2014 +0000
+
+    .
+
+commit 08ba94cc44d197f83407324009128f1371e5425a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 15 20:31:41 2014 +0000
+
+    .
+
+commit 59ce7de0d83e678fe24ad198205962aa722f6270
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 13 20:45:01 2014 +0000
+
+    .
+
+commit 366e340e780bef555dd18a8289d7a2fef6af2835
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 13 15:18:14 2014 +0000
+
+    .
+
+commit 07bc67c901b1db999c57e52eb89cc169feb239b3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 12 23:02:53 2014 +0000
+
+    .
+
+commit a4b19865e77d4037b4f2b8781fee05065cdf495c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 11 03:27:24 2014 +0000
+
+    output
+
+commit 09c6ff1be880655f543ac8d375bfe81f62986b9e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 7 14:55:51 2014 +0000
+
+    .
+
+commit aca8b234e4680a385568ff1d5f5418adb2a61ac8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Aug 3 16:41:20 2014 +0000
+
+    news
+
+commit 3f5e85e789c59a2891d0b2ad1177fa70f404bcef
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jul 31 22:43:06 2014 +0000
+
+    .
+
+commit 52ce9fb2bc2f913f21b603a03a9369f064faea5d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jul 29 14:56:49 2014 +0000
+
+    .
+
+commit a14a5551c01cd4b9c1b7a2f2c23e5804d8e0b5b4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 27 12:44:19 2014 +0000
+
+    .
+
+commit 5234c080edc999326353b8ca60f97190996a5330
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 23:26:55 2014 +0000
+
+    news
+
+commit c014c87c17c7c77c9164d75787c244db531a5545
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 23:24:18 2014 +0000
+
+    news
+
+commit 3e794119a22ad9f2ef1d317803dbef2ed3f23350
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 19:26:25 2014 +0000
+
+    .
+
+commit ae59bb2774a5de5187e22c86edce250e7347e08f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 19:09:28 2014 +0000
+
+    .
+
+commit 7e71da5b41d1b1f42033410b1e695ee7d5e97285
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 18:08:20 2014 +0000
+
+    .
+
+commit bcf8f5badc85352f1026a6b5ae0c3daeebaee864
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 17:49:56 2014 +0000
+
+    .
+
+commit 7dfcc82e25cc05069e8cefda6ee14c764d93d38f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 15:46:44 2014 +0000
+
+    .
+
+commit 141ae9554cf32ff7d375f5b4366524c12168522b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 13:06:45 2014 +0000
+
+    .
+
+commit 97bce63928768ceb96d76cd7fe46e0ba3a67975d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 26 13:06:27 2014 +0000
+
+    .
+
+commit b309fb5f3ee6fe1211e678ce4ba266af10664e94
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jul 14 02:33:04 2014 +0000
+
+    .
+
+commit ad94a8d7a235a24ee6e919c0375370aa18b3a671
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jul 14 02:18:36 2014 +0000
+
+    .
+
+commit 167a2c456e18ec9a257faefb9c83acc7c15b2610
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 12 17:34:58 2014 +0000
+
+    .
+
+commit 7437e3d47d0e54b6880443436d2723e9bdde2b02
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jul 11 22:19:51 2014 +0000
+
+    .
+
+commit 37220e1ed66d04c759124504227a2e4c49942152
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jul 11 19:13:40 2014 +0000
+
+    .
+
+commit 45e642b7421707b0f85275469f85a8030e7889f4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jul 11 18:16:44 2014 +0000
+
+    .
+
+commit 21ec36224729bdbd3cf626de1af7a2e44baffe1b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:49:04 2014 +0000
+
+    fix
+
+commit 15b91f88de4a14ceced86ce628ff4d84e09d9e90
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:48:28 2014 +0000
+
+    release/compress_qcow2 -> release/compress_libvirt
+
+commit 6564bbb20f4a11a0846c3c12bab08829ef5a91ad
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:47:49 2014 +0000
+
+    .
+
+commit 6a310b1bdc5d8c9e656a46bb63fc20d4b1df050f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:20:31 2014 +0000
+
+    fix
+
+commit 8da70ed0a6f53d8a86cbb5a63766e0671ee9468f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:19:39 2014 +0000
+
+    .qcow2.xz -> .libvirt.xz
+
+commit 71b4d0785c28d9daeb6f0d46c5dcb44e19c786c0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 14:18:30 2014 +0000
+
+    refactoring
+
+commit ea3873df9b8173657273549c11644481c8ceaaea
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 13:42:11 2014 +0000
+
+    cleanup
+
+commit 147e77b3a405e23847cf2c16902eed8d46811675
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 13:40:28 2014 +0000
+
+    .
+
+commit d11118e392892d8503faba49c1db14500f2b2fbd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jul 6 13:39:34 2014 +0000
+
+    use $BASH_SOURCE instead of $0
+
+commit 5e68d511d925abe088fff8a7f61d44bce0b4908a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 5 11:40:24 2014 +0000
+
+    fix
+
+commit cc8b83107c63f0656b8f6f7cf6d1bc28e01be683
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 5 11:39:45 2014 +0000
+
+    fix
+
+commit 6e5bb907e453b39a1bc3f153b060ba0366dac642
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 5 11:38:02 2014 +0000
+
+    fix
+
+commit 6a0c5d17a024662bdd534bb11ab674647bcb4295
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 5 11:37:02 2014 +0000
+
+    fix
+
+commit 5510320e734a07619e4cdc65365f4c6976d87d68
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 5 11:36:40 2014 +0000
+
+    .
+
+commit cadeeba9440a29226c725a9d833664c46a6c195f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jun 30 11:19:50 2014 +0000
+
+    .
+
+commit c6279f32e1c8ea1e69a9ed8da90f7d49b80a932b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jun 27 10:31:24 2014 +0000
+
+    fix
+
+commit 23853aa1d70b447642869ae580d4e3033e9ce907
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 26 12:56:10 2014 +0000
+
+    .
+
+commit c286646fd77a7a74381cb4686d6b680651de059b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 24 15:46:31 2014 +0000
+
+    .
+
+commit 945fc444d4c9ad323804ee075945cad110a5b0dd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 24 11:14:39 2014 +0000
+
+    .
+
+commit c30f9693fb6623787aa11ed03bdd8c02588b5775
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jun 23 21:51:12 2014 +0000
+
+    .
+
+commit 8516873a361d04a769a0b6c1c2c7366af34e4cb7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jun 23 21:05:53 2014 +0000
+
+    .
+
+commit 386190818270c3f0fec5443ab5489d92be996768
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jun 20 13:52:37 2014 +0000
+
+    .
+
+commit 39f53cf8461f19a62caef6a43f604a35b3cce98e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jun 20 13:50:28 2014 +0000
+
+    .
+
+commit f7e7f22e46cd1934075c23a65a4d8a07fb0744c7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 18 13:18:16 2014 +0000
+
+    .
+
+commit 57cb3fa6c5ff33fc1ca4c234ce877234a728d87d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 18 13:13:59 2014 +0000
+
+    .
+
+commit b31a0525d0fff8da1e2897922ee297b10cfd4d1d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 12 12:28:14 2014 +0000
+
+    .
+
+commit 8c98f99bc515d8a97df9590e3e65c2c061132065
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 12 05:13:55 2014 +0000
+
+    .
+
+commit 0532f37e3552344b5ab71035dd5bef97329a5d38
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 10 14:22:50 2014 +0000
+
+    .
+
+commit 2a03942c3d5b059e7927bfa07f5d39fb936623a3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 10 14:18:48 2014 +0000
+
+    .
+
+commit c9223607237beff09bca6f02e366e754e001585d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 8 21:36:00 2014 +0000
+
+    .
+
+commit 436f0a9382c934aad7b76efe964c409051507228
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 7 10:46:24 2014 +0000
+
+    .
+
+commit 105cce2a9d97af6fa3ca4f500f69e0a1742176dc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jun 6 20:00:57 2014 +0000
+
+    .
+
+commit 02c64abb4bb57ddc6d446d081cb17e5d1766a3a9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 4 21:43:34 2014 +0000
+
+    .
+
+commit 7dd9a27990a6bdb7aed71399feafd288532b46c9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 4 20:30:06 2014 +0000
+
+    renamed:    debug-steps/interactive-chroot-img -> debug-steps/interactive-chroot-raw
+    renamed:    deprecated_code/copy-into-img -> deprecated_code/copy-into-raw
+
+commit a6236f74485a4c32a1c7fe5223c7c7c6835a80fa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 4 20:28:35 2014 +0000
+
+    Renamed "img" to "raw", because "img" was a poor name for raw images.
+
+commit cadab534bb971508351dd0e3db1075196d9d1ff3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 4 10:58:06 2014 +0000
+
+    update
+
+commit cbad4148796756e897e129b5129181fc83c4aab0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 3 21:03:43 2014 +0000
+
+    .
+
+commit 44b8b0436735ba2afc48f173ee0e43396b56ba29
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 3 18:25:23 2014 +0000
+
+    .
+
+commit 7a480a84f1a44a565f646709ecf15f3a6527b9d8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 3 18:20:11 2014 +0000
+
+    .
+
+commit 03a4d7d37225db993b0ed9d7ef59ae9cf4af819d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jun 2 14:40:16 2014 +0000
+
+    .
+
+commit ee69e7b4363c18094545b68dceba5edbccf0cdf9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 1 15:42:38 2014 +0000
+
+    .
+
+commit e72f65d9093d148313831ad9aa5eb4d36d51053d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 1 15:38:49 2014 +0000
+
+    readme
+
+commit 390b375a0856bbc9817daa8f00b4ef3a92f91fdb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 1 12:23:48 2014 +0000
+
+    .
+
+commit ac5b5da794c4aa10436e81b58ffe3186fa67ee2d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 1 12:23:36 2014 +0000
+
+    .
+
+commit caa7aa9b1ac967a2db9270832166806214cbdd21
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 1 12:23:20 2014 +0000
+
+    updates
+
+commit 62c91d64af63dc7734402f4644a65206b3478507
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat May 31 16:32:16 2014 +0000
+
+    # On branch master
+    nothing to commit (working directory clean)
+
+commit 19b7506ed74840f2a7ff08ada11d0ec4fbcfdd85
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat May 31 14:43:06 2014 +0000
+
+    # On branch master
+    nothing to commit (working directory clean)
+
+commit 4827a1fe503bb27bb7eee1c6e16d44ad3e6a34f4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu May 29 09:33:32 2014 +0000
+
+    .
+
+commit e6c701db0df51323b517a8fde7f5e5818c156462
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 23 16:50:00 2014 +0000
+
+    .
+
+commit 607ee8b5d7741ce758980f403fe7cf594ff6229f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 16 01:44:14 2014 +0000
+
+    news
+
+commit dd6ca7b99c5dc440b54a714b04a6c7320319b4a2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 16 01:43:56 2014 +0000
+
+    .
+
+commit 042967e2a38fdda5bbc9ea2f94ba3aa20db7376b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 7 15:06:25 2014 +0000
+
+    .
+
+commit 72c72002f495b3485b0084e14b0d8d4b367d085a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 7 14:27:50 2014 +0000
+
+    fix
+
+commit 6501bf4155519c8bb7dd9da70c247c7f02ac31b9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue May 6 18:30:07 2014 +0000
+
+    .
+
+commit ce7a3beaed48f793826150e9120d2421c7166b63
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue May 6 18:25:29 2014 +0000
+
+    back to tar, because gzip doesn't support sparse files
+
+commit aa4ada7d132f9de391a35b1e1f2348a46ff823a3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue May 6 18:23:55 2014 +0000
+
+    .
+
+commit 60d41486e9e5753b2daa3fbdfaa0e7422b7782bd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Apr 29 19:49:10 2014 +0000
+
+    .
+
+commit 9d8a8cfcb63d53681e916974af350b84de20ab63
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 21 09:31:27 2014 +0000
+
+    .
+
+commit 65f1d670374e64887a2de947156da97793e496e3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 16 14:06:18 2014 +0000
+
+    added fpm2 as per https://www.whonix.org/forum/index.php/topic,187.15.html
+
+commit 67912b9f8bfff3e276c27aea6467ff8746d4ec6c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 16 13:30:30 2014 +0000
+
+    .
+
+commit aa4015c8e8839a45e49f7e85a15ff80cc53eb727
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 12 17:17:16 2014 +0000
+
+    news
+
+commit 2aa0254ab5a8870335c24a8684a5d835aee8d254
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Apr 8 15:49:50 2014 +0000
+
+    news
+
+commit 341eb0d31ec2aecb8d4f28dca37d644d1f1ff0e5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Apr 8 00:06:30 2014 +0000
+
+    news
+
+commit f243282b58e6287827c1a963a44b7895572e5bf5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 7 21:12:14 2014 +0000
+
+    news
+
+commit a1911b3b5b2660a3cac34f07f41c86eaa0c9ecd1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Apr 6 18:16:23 2014 +0000
+
+    .
+
+commit b7f9c9c16882606734d79e918ce1e0bb4e68505e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 30 23:12:45 2014 +0000
+
+    .
+
+commit 984998fc3e8c4b866beb45b96b9d21d4e4668b61
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 30 22:59:07 2014 +0000
+
+    .
+
+commit 3548ff22e39bdc68f4b812eea437d8da8004781f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 30 19:22:55 2014 +0000
+
+    .
+
+commit 38b35e36e3298f8c96cf7191b42fe7e3fa25ab89
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 30 18:44:51 2014 +0000
+
+    .
+
+commit 002338b88134bd0aecd89f8f69ce297bb7cf53fa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 30 18:36:17 2014 +0000
+
+    .
+
+commit d24880e64dcdf4644cda4097bebe589ec513e0eb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 25 15:01:04 2014 +0000
+
+    news
+
+commit f3c99efa5467f2956cd800d8743dfe382525ab2b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Mar 20 04:13:51 2014 +0000
+
+    news
+
+commit c8ed49c5278f3f641308b2277bb898559cd8139d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 18:52:20 2014 +0000
+
+    .
+
+commit 1387079b4f28b28b965f43d440c95538af1d4dcc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 18:45:17 2014 +0000
+
+    new qcow2 compression script
+
+commit b166183e5ea66713c93576e7c2d8cd6810525966
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 18:43:55 2014 +0000
+
+    .
+
+commit 2f518db3c605cccc214c112cd432ffa1ffc8cc0c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 15:09:06 2014 +0000
+
+    new new_release script
+
+commit 916c87546273ffc1eb22e89cb008c99a5ce2e888
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:46:38 2014 +0000
+
+    .
+
+commit 69e1a8abf8e48a7f218c8e2a8fb5be09f0ecccb5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:44:17 2014 +0000
+
+    .
+
+commit 165e9c570d3883e4ab45c714a91580a8a414a781
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:32:49 2014 +0000
+
+    news
+
+commit 8e132389d819bdb52fe6416828053b08b8afcb75
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:29:51 2014 +0000
+
+    .
+
+commit 2673109e7f2b84f6177f545e3ddb97eb3eba98b7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:28:23 2014 +0000
+
+    .
+
+commit e4a625f01f97b89e7390c0bd5fd5a30ecf9b016b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:27:02 2014 +0000
+
+    .
+
+commit aaf03a7f7035298bdafbca914db2ad62da695ade
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:21:38 2014 +0000
+
+    .
+
+commit f9b6ab235175e498f1763011243456f320b32cdb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:18:36 2014 +0000
+
+    .
+
+commit 4f3f2bb643f69f00cb864853568c1bafe75633dc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 17 12:12:13 2014 +0000
+
+    fix
+
+commit 1839c61258f56c7933552f6d684d22bffc2878cd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Mar 1 15:00:03 2014 +0000
+
+    Revert "build script: provide variable whonix_build_script_currently_inside_chroot when running maybe_run_in_chroot"
+    Fortunately not required.
+    This reverts commit 5524c140820cee56e82455af23452a81b829c721.
+
+commit 5524c140820cee56e82455af23452a81b829c721
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Mar 1 14:05:25 2014 +0000
+
+    build script: provide variable whonix_build_script_currently_inside_chroot when running maybe_run_in_chroot
+
+commit dffea133623cfd04fbe51575f38ffac62ec1d307
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 27 17:33:51 2014 +0000
+
+    .
+
+commit af337062e1e3e61585487a643f8b1c85c690b016
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 27 17:28:26 2014 +0000
+
+    news
+
+commit b432d17e3860878a86543f1e1fed69bd3214e3b4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 27 15:59:53 2014 +0000
+
+    news
+
+commit ad02c4ba853c054f216e8e97b32c4f9c3a974b22
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 19:42:31 2014 +0000
+
+    .
+
+commit 1c40230c029b2ff3e99e046591cbc5a1123964fb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 19:41:59 2014 +0000
+
+    .
+
+commit 965432165d2b702028738843da088aa656271fda
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 19:40:49 2014 +0000
+
+    .
+
+commit be2152d5a82512bbb84322c4921b4cb7157f87d6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 19:26:06 2014 +0000
+
+    .
+
+commit c7ea48cb574d53b362479fa083d3543c990e0683
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 19:25:30 2014 +0000
+
+    .
+
+commit 948ac23a0318c97b6015a12090920283e275bff0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 16:48:25 2014 +0000
+
+    .
+
+commit 405b229cfbf613ca12bab80fdea02233544235a0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 15:41:16 2014 +0000
+
+    .
+
+commit 70e4853c3b920a144f534a6791b79f1ac58dc923
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 15:40:57 2014 +0000
+
+    .
+
+commit 30c93126ab43cfe86c1f55abde06bf428f918c42
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 26 13:50:46 2014 +0000
+
+    .
+
+commit 0092b82df204cc7d382ff6e85d4e727d3da9514f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 24 13:35:56 2014 +0000
+
+    .
+
+commit 3f13bc0f51026b972252457f450ed72958277981
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 22 15:59:15 2014 +0000
+
+    fix release/migrate_to_stable_repository + release/migrate_to_testers_repository
+
+commit 7bde8007ce161c7fc12fffe08e1ba256262d724b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 20 22:27:29 2014 +0000
+
+    news
+
+commit 7a6a6e116559bb4bf24924eb3c552d9e71c9072d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 20 00:12:07 2014 +0000
+
+    .
+
+commit 1588ad7304607880588cc5af2a9a931c2e83a242
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 17 23:18:54 2014 +0000
+
+    .
+
+commit da260c65fc044d61fcab709345d731f5218d31b7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 16 14:50:29 2014 +0000
+
+    new scripts release/migrate_to_stable_repository and release/migrate_to_testers_repository
+
+commit 99bd9538985b63319e217aa09e12fd4d1420617c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 16 11:05:10 2014 +0000
+
+    colors
+
+commit c4f7a8efc9899dd08ae83f50593e0186e043676e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 16 10:55:56 2014 +0000
+
+    using error handler from help-steps/pre instead
+
+commit db6c115669231f09e1f9ef6ae74ea58af87bc47e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 16 10:52:31 2014 +0000
+
+    output
+
+commit 38c1e2228aeef9255392a0ab7f4171721068a2cc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 15 07:14:54 2014 +0000
+
+    news
+
+commit 0f8b3809d8caf049d81729da32b0abdcf9c93260
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 14 07:02:50 2014 +0000
+
+    .
+
+commit b5cf1853ab38b39604af177481e91c7e367950e0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 14 06:59:04 2014 +0000
+
+    .
+
+commit a0660eae319c594bf7e6a937990bea96b6794d8e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 13 19:41:17 2014 +0000
+
+    news
+
+commit 35a84e8731469abb4a0780ecf46e803ad14aedf5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 13 19:33:48 2014 +0000
+
+    .
+
+commit 96f2fad49c85d48ed2130e29e9ba39e9251b2b86
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 13 17:31:50 2014 +0000
+
+    news
+
+commit b9f5de1e144b2284c8afd6e448deee84e55f86fd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 13 17:22:39 2014 +0000
+
+    news
+
+commit fba5c5e4eeb5fab2255758e0c61d4fcfc4f73aa4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 11 01:42:13 2014 +0000
+
+    news
+
+commit 13594f1a995ec06ef2c41037c34e24eeda39e849
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 10 06:04:09 2014 +0000
+
+    news
+
+commit 8e9e41b49f7e77043e28be9d6006a718166214cf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 8 07:22:13 2014 +0000
+
+    .
+
+commit 3225e16e96ef66c41b77358ebf6452d6dec38789
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 8 07:19:25 2014 +0000
+
+    .
+
+commit 3e73a699885bf85443be2de3a94458f5380cb2d2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 7 11:03:28 2014 +0000
+
+    .
+
+commit 1fd39457978d9e8fbc6d0848210097c7c017d87e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 7 10:59:50 2014 +0000
+
+    added debug-steps/whonix_build_twice
+
+commit 94307a5fe386d902b58416d1846b06bf7fed80f8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 2 15:07:51 2014 +0000
+
+    news
+
+commit 8f41005c3ad5740f02a1d240773b5555d3c63a39
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 2 00:19:50 2014 +0000
+
+    .
+
+commit fe8a6a4c2e07512831379b495f336c62bff38aa2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 1 23:21:29 2014 +0000
+
+    imported from Whonix/Whonix
+
+commit 8ed9f2bd7edba6527f4dab2919cd5712564503bf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 1 16:26:53 2014 +0000
+
+    sanity tests
+
+commit d688f65be4672945482f1196b3851ad6d126be3b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 1 16:20:44 2014 +0000
+
+    added test to verify that Whonix's News File is always deterministic
+
+commit 87b102df2c73818e11491069ab424184eb1357eb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Feb 1 16:12:37 2014 +0000
+
+    news
+
+commit 71db2bff3cbbd7a1e3fdca818754c1f0ae363d3d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 31 14:48:05 2014 +0000
+
+    news
+
+commit 4905ef00228cf18998febced7adb672e9d1134cd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 31 02:50:15 2014 +0000
+
+    .
+
+commit 8c8767120bcdb553ec10d7d8b3c9b7add517a0b1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 31 02:45:21 2014 +0000
+
+    .
+
+commit 6624b855fab933117b15ff0c5eeeaa2f24e6413e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 31 02:44:32 2014 +0000
+
+    fix
+
+commit 148b0e4e403df78b6d8cca2365351b100b09eb70
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 31 02:17:51 2014 +0000
+
+    fix
+
+commit 516e1e9f57c043f7e54c920ddbc2512cde6a57be
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 27 19:26:39 2014 +0000
+
+    Whonix News V4
+
+commit fb7bfdead2f03d9b1bc2972b73207a668cc594eb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 27 18:30:45 2014 +0000
+
+    Whonix News V4
+
+commit 4b3c6f2e70a00803f02567a4d63f0f678c111625
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 27 18:30:20 2014 +0000
+
+    .
+
+commit fe9658829b6a781c8dbb584cbcd7cbb79e608cf7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 27 00:28:44 2014 +0000
+
+    .
+
+commit a350d7397ad8abe311588498dd28d386bddcb276
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 26 23:52:26 2014 +0000
+
+    .
+
+commit ecb3f9510dd54cf9fb4e2f9bab03bc33dda08383
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jan 25 17:08:11 2014 +0000
+
+    fix
+
+commit 71cb46c0b8385fa1df2003ea90551085960bfc6f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 23 01:29:26 2014 +0000
+
+    added diffp
+
+commit 36ac553a412de813e205764630058eefd53c050a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jan 22 13:46:38 2014 +0000
+
+    .
+
+commit 39954e7f07f05781abea22b0611abdbef85bf789
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 20 20:21:25 2014 +0000
+
+    debugging: added to output with which command line parameters scripts are run
+
+commit e2254d8c1df8533ba0d44da2a8900ce67cefa1aa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 22:25:53 2014 +0000
+
+    .
+
+commit 16dee044c76d8b6ae630b271e76369f2148df651
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 02:24:31 2014 +0000
+
+    fix
+
+commit ed48b679ac87622ba4dde3a1ae839a5d0ee15740
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 02:12:44 2014 +0000
+
+    fix
+
+commit b9628eab2b2fa29009cfa395cec1e37f0995df94
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 01:19:13 2014 +0000
+
+    CI
+
+commit e3bb58cf69028d1351c4ddbda944942727b7b7e5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:50:22 2014 +0000
+
+    moved debug-steps/copy-into-img to deprecated_code/copy-into-img
+
+commit 743671795fdc96c76012813894549d2fa9bc86bb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:47:25 2014 +0000
+
+    fix
+
+commit 5a8aec5410bf891e55a92674c26ef09d717b45c1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:26:31 2014 +0000
+
+    .
+
+commit 85834db14bdb2518004595f7af96d8da08d2e664
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:24:35 2014 +0000
+
+    renamed dangerous-scripts to dangerous_scripts
+
+commit b78d68a94c2941d8f8b61a608cfbecca3db6083e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:24:00 2014 +0000
+
+    renamed folder deprecated to deprecated_code
+
+commit 10a163dece524355f8891875b13fe78fa8696a0b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:23:26 2014 +0000
+
+    renamed folder development to package_documentation
+
+commit c51a12caabaa79a1e8e998b8146dff1fba68bcae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 19 00:19:53 2014 +0000
+
+    initial import from https://github.com/Whonix/Whonix
+
+commit fdfeb4d694ab4ae5c16e0bd6d6d9d75f167a19db
+Author: adrelanos <adrelanos@riseup.net>
+Date:   Sat Jan 18 11:24:00 2014 -0800
+
+    Initial commit
