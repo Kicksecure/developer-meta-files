@@ -230,11 +230,7 @@ pkg_packaging_copy() {
 pkg_packaging_files_diff() {
    diff "../CONTRIBUTING.md" "$item/"
    diff "../GPLv3" "$item/"
-   if [ -f "$item/setup.py" ]; then
-      diff "../Makefile" "$item/makefile_generic"
-   else
-      diff "../Makefile" "$item/"
-   fi
+   diff "../Makefile" "$item/"
    diff "../make-helper.bsh" "$item/"
 
    if [ ! -f "../COPYING" ]; then
@@ -245,29 +241,25 @@ pkg_packaging_files_diff() {
       error "$item/README.md does not exist."
    fi
 
-   if [ -f "$item/setup.py" ]; then
-      true
-   else
-      diff "../debian/source/format" "$item/debian/source/format"
-      diff "../debian/compat" "$item/debian/compat"
-      diff "../debian/gain-root-command" "$item/debian/gain-root-command"
-      diff "./$item/COPYING" "$item/debian/copyright"
+   diff "../debian/source/format" "$item/debian/source/format"
+   diff "../debian/compat" "$item/debian/compat"
+   diff "../debian/gain-root-command" "$item/debian/gain-root-command"
+   diff "./$item/COPYING" "$item/debian/copyright"
 
-      if [ ! -f "$item/debian/changelog" ]; then
-         error "$item/debian/changelog does not exist."
-      fi
-      if [ ! -f "$item/debian/control" ]; then
-         error "$item/debian/control does not exist."
-      fi
-      if [ ! -f "$item/debian/copyright" ]; then
-         error "$item/debian/copyright does not exist."
-      fi
-      if [ ! -f "$item/debian/rules" ]; then
-         error "$item/debian/rules does not exist."
-      fi
-      if [ ! -f "$item/debian/watch" ]; then
-         error "$item/debian/watch does not exist."
-      fi
+   if [ ! -f "$item/debian/changelog" ]; then
+      error "$item/debian/changelog does not exist."
+   fi
+   if [ ! -f "$item/debian/control" ]; then
+      error "$item/debian/control does not exist."
+   fi
+   if [ ! -f "$item/debian/copyright" ]; then
+      error "$item/debian/copyright does not exist."
+   fi
+   if [ ! -f "$item/debian/rules" ]; then
+      error "$item/debian/rules does not exist."
+   fi
+   if [ ! -f "$item/debian/watch" ]; then
+      error "$item/debian/watch does not exist."
    fi
 }
 
