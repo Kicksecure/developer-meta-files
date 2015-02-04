@@ -221,11 +221,7 @@ pkg_git_diff_branch_development() {
 pkg_packaging_copy() {
    cp "../CONTRIBUTING.md" "$item/"
    cp "../GPLv3" "$item/"
-   if [ -f "$item/setup.py" ]; then
-      cp "../Makefile" "$item/makefile_generic"
-   else
-      cp "../Makefile" "$item/"
-   fi
+   cp "../Makefile" "$item/"
    cp "../make-helper.bsh" "$item/"
 
    true
