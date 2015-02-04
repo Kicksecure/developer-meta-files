@@ -329,10 +329,10 @@ pkg_git_commit_changelog() {
 
 pkg_git_commit_packaging() {
    cd "$item"
-   #git add Makefile
-   #git add make-helper.bsh
-   git add -u
-   msg="Added creation of upstream changelog to debian/rules"
+   git add Makefile
+   git add make-helper.bsh
+   #git add -u
+   msg="updated makefile generic to version 1.3"
    git commit -m "$msg"
    git status
    cd ..
