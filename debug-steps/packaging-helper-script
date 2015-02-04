@@ -313,7 +313,8 @@ pkg_git_commmit_readme() {
 pkg_git_commit_changelog() {
    cd "$item"
    git add debian/changelog
-   msg='Updated debian/changelog.'
+   git add changelog.upstream
+   msg="bumped changelog version"
    git commit -m "$msg"
    git status
    cd ..
@@ -323,9 +324,10 @@ pkg_git_commit_packaging() {
    cd "$item"
    #git add Makefile
    #git add make-helper.bsh
-   git add changelog.upstream
+   #git add debian/changelog
+   #git add changelog.upstream
    #git add -u
-   msg="added changelog.upstream"
+   msg="packaging"
    git commit -m "$msg"
    git status
    cd ..
