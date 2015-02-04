@@ -275,10 +275,10 @@ pkg_packaging_files_diff() {
    fi
 }
 
-pkg_debian_changelog_bump() {
+pkg_upstream_and_debian_changelog_bump() {
    cd "$item"
 
-   make deb-chl-bumpup
+   make deb-uachl-bumpup
 
    cd ..
 
