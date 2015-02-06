@@ -453,6 +453,17 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
    cd ..
 }
 
+pkg_show_need_version_bump() {
+   cd "$item"
+   last_log_entry="$(git log --format=%s -1)"
+   if [ "$last_log_entry" = "bumped changelog version" ]; then
+      true
+   else
+      true "needs version bump: $item"
+   fi
+   cd ..
+}
+
 loop_helper() {
    for item in ./*; do
       if [ ! -d "$item" ]; then
