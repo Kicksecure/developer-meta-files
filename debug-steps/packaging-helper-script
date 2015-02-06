@@ -32,8 +32,8 @@ cd ..
 
 counter=0
 
-nothing_to_commit_msg="# On branch master
-nothing to commit (working directory clean)"
+nothing_to_commit_msg="On branch master
+nothing to commit, working directory clean"
 
 pkg_readme_creator() {
    if [ ! -f "$item/debian/control" ]; then
@@ -364,11 +364,12 @@ pkg_git_diff_and_commit() {
 
    #git add -A
    #git add -u
-   #git diff --cached
-   #git commit -a -m "bump version number"
-   #git status
+   git diff
+   git commit -a
+   git status
 
-   #git diff
+   true "press enter to continue"
+   read temp
 
    cd ..
 }
