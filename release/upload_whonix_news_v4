@@ -133,6 +133,9 @@ ls -la "$WHONIX_BINARY/news_v4/"
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with --dry-run.${reset}"
 read temp
 
+[ -n "$whonix_news_rsync_target_lines" ] || \
+   whonix_news_rsync_target_lines="adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
+
 true "${cyan}INFO $BASH_SOURCE: Running with --dry-run...${reset}"
 rsync \
    --dry-run \
@@ -140,7 +143,7 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
-   "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
+   "$whonix_news_rsync_target_lines"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to upload.${reset}"
 read temp
@@ -151,7 +154,7 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
-   "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/"
+   "$whonix_news_rsync_target_lines"
 
 benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
