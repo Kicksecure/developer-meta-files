@@ -228,22 +228,25 @@ pkg_packaging_copy() {
 }
 
 pkg_packaging_files_diff() {
-   diff "../CONTRIBUTING.md" "$item/"
-   diff "../GPLv3" "$item/"
-   diff "../Makefile" "$item/"
-   diff "../make-helper.bsh" "$item/"
+   local compare_with_path
+   compare_with_path=".."
 
-   if [ ! -f "../COPYING" ]; then
-      error "../COPYING does not exist."
+   diff "$compare_with_path/CONTRIBUTING.md" "$item/"
+   diff "$compare_with_path/GPLv3" "$item/"
+   diff "$compare_with_path/Makefile" "$item/"
+   diff "$compare_with_path/make-helper.bsh" "$item/"
+
+   if [ ! -f "$compare_with_path/COPYING" ]; then
+      error "$compare_with_path/COPYING does not exist."
    fi
 
    if [ ! -f "$item/README.md" ]; then
       error "$item/README.md does not exist."
    fi
 
-   diff "../debian/source/format" "$item/debian/source/format"
-   diff "../debian/compat" "$item/debian/compat"
-   diff "../debian/gain-root-command" "$item/debian/gain-root-command"
+   diff "$compare_with_path/debian/source/format" "$item/debian/source/format"
+   diff "$compare_with_path/debian/compat" "$item/debian/compat"
+   diff "$compare_with_path/debian/gain-root-command" "$item/debian/gain-root-command"
    diff "./$item/COPYING" "$item/debian/copyright"
 
    if [ ! -f "$item/debian/changelog" ]; then
