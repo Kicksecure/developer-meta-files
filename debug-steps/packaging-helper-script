@@ -230,8 +230,13 @@ pkg_packaging_copy() {
 pkg_packaging_files_diff() {
    local compare_with_path
    compare_with_path=".."
+   compare_with_path="./anon-apt-sources-list"
 
-   diff "$compare_with_path/CONTRIBUTING.md" "$item/"
+   if [ "$item" = "./qubes-whonix" ]; then
+      test -f "$item/CONTRIBUTING.md"
+   else
+      diff "$compare_with_path/CONTRIBUTING.md" "$item/"
+   fi
    diff "$compare_with_path/GPLv3" "$item/"
    diff "$compare_with_path/Makefile" "$item/"
    diff "$compare_with_path/make-helper.bsh" "$item/"
@@ -241,7 +246,9 @@ pkg_packaging_files_diff() {
    fi
 
    if [ ! -f "$item/README.md" ]; then
-      error "$item/README.md does not exist."
+      if [ ! -f "$item/README.mediawiki" ]; then
+         error "Neither $item/README.md nor $item/README.mediawiki exist."
+      fi
    fi
 
    diff "$compare_with_path/debian/source/format" "$item/debian/source/format"
