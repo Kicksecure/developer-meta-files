@@ -18,6 +18,11 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
+if [ "$(id -u)" = "0" ]; then
+   true "ERROR: Do not run this as root!"
+   exit 1
+fi
+
 #project="testprojectwh"
 #project="whonix"
 project="whonixdevelopermetafiles"
