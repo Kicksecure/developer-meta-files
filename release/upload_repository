@@ -66,7 +66,7 @@ rsync \
    --recursive \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-   adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
+   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
 read temp
@@ -78,8 +78,7 @@ rsync \
    --recursive \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-   adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
-
+   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
 read temp
@@ -90,7 +89,7 @@ rsync \
    --recursive \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-   adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/dists/
+   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
 
 true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
 rsync \
@@ -98,7 +97,7 @@ rsync \
    --recursive \
    --rsh ssh \
    "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-   adrelanos,"$project"@frs.sourceforge.net:/home/frs/project/"$project"/internal/pool/
+   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
 
 benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
