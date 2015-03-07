@@ -6,7 +6,6 @@
 
 set -x
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"
