@@ -135,6 +135,7 @@ read temp
 
 [ -n "$whonix_news_rsync_target_lines" ] || whonix_news_rsync_target_lines='
    adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/news_v4/
+   root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/news_v4/
 '
 
 true "${cyan}INFO $BASH_SOURCE: Running with --dry-run...${reset}"
