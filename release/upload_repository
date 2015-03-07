@@ -34,13 +34,13 @@ preparation() {
 show_dists() {
    true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
    set +x
-   for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
-      if [ -d "$file" ]; then
+   for file_name in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
+      if [ -d "$file_name" ]; then
          continue
       fi
-      echo "$file"
+      echo "$file_name"
    done
-   unset file
+   unset file_name
    set -x
 }
 
@@ -49,13 +49,13 @@ show_pool() {
    read temp
    true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
    set +x
-   for file in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
-      if [ -d "$file" ]; then
+   for file_name in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
+      if [ -d "$file_name" ]; then
          continue
       fi
-      echo "$file"
+      echo "$file_name"
    done
-   unset file
+   unset file_name
    set -x
 }
 
