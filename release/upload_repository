@@ -26,9 +26,6 @@ root_check_no() {
 }
 
 preparation() {
-   #project="testprojectwh"
-   #project="whonix"
-   project="whonixdevelopermetafiles"
    shopt -s globstar
 }
 
@@ -70,7 +67,7 @@ upload_dry_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
+      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/dists/"
 }
 
 upload_dry_pool() {
@@ -83,7 +80,7 @@ upload_dry_pool() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
+      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/pool/"
 }
 
 upload_real_ask() {
@@ -98,7 +95,7 @@ upload_real_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
+      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/dists/"
 }
 
 upload_real_pool() {
@@ -108,7 +105,7 @@ upload_real_pool() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
+      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/pool/"
 }
 
 main_upload_repository() {
