@@ -17,86 +17,111 @@ cd "$MYDIR"
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
-if [ "$(id -u)" = "0" ]; then
-   true "ERROR: Do not run this as root!"
-   exit 1
-fi
-
-#project="testprojectwh"
-#project="whonix"
-project="whonixdevelopermetafiles"
-
-shopt -s globstar
-
-true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
-
-set +x
-
-for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
-   if [ -d "$file" ]; then
-      continue
+root_check_no() {
+   if [ "$(id -u)" = "0" ]; then
+      true "ERROR: Do not run this as root!"
+      exit 1
    fi
-   echo "$file"
-done
-unset file
+}
 
-echo "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing pool.${reset}"
-read temp
+preparation() {
+   #project="testprojectwh"
+   #project="whonix"
+   project="whonixdevelopermetafiles"
+   shopt -s globstar
+}
 
-echo "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
+show_dists() {
+   true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
+   set +x
+   for file in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
+      if [ -d "$file" ]; then
+         continue
+      fi
+      echo "$file"
+   done
+   unset file
+   set -x
+}
 
-for file in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
-   if [ -d "$file" ]; then
-      continue
-   fi
-   echo "$file"
-done
-unset file
+show_pool() {
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing pool.${reset}"
+   read temp
+   true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
+   set +x
+   for file in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
+      if [ -d "$file" ]; then
+         continue
+      fi
+      echo "$file"
+   done
+   unset file
+   set -x
+}
 
-set -x
+upload_dry_dists() {
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
+   read temp
+   true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
+   rsync \
+      --dry-run \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
+      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
+}
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
-read temp
+upload_dry_pool() {
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
+   read temp
+   true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
+   rsync \
+      --dry-run \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
+      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
+}
 
-true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
-rsync \
-   --dry-run \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
+upload_real_ask() {
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
+   read temp
+}
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
-read temp
+upload_real_dists() {
+   true "${cyan}INFO $BASH_SOURCE: Uploading dists...${reset}"
+   rsync \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
+      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
+}
 
-true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
-rsync \
-   --dry-run \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
+upload_real_pool() {
+   true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
+   rsync \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
+      "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
+}
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
-read temp
+main_upload_repository() {
+   root_check_no
+   preparation
+   show_dists
+   show_pool
+   upload_dry_dists
+   upload_dry_pool
+   upload_real_ask
+   upload_real_dists
+   upload_real_pool
+}
 
-true "${cyan}INFO $BASH_SOURCE: Uploading dists...${reset}"
-rsync \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/dists/"
-
-true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
-rsync \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-   "adrelanos,$project@frs.sourceforge.net:/home/frs/project/$project/internal/pool/"
-
+main_upload_repository
 benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
 true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
