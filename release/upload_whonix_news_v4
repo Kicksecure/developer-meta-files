@@ -139,6 +139,9 @@ read temp
 true "${cyan}INFO $BASH_SOURCE: Running with --dry-run...${reset}"
 
 while read -r -d $'\n' rsync_target_line; do
+   if [ "$rsync_target_line" = "" ]; then
+      continue
+   fi
    rsync \
       --dry-run \
       $rsync_opts \
@@ -153,6 +156,9 @@ read temp
 
 true "${cyan}INFO $BASH_SOURCE: Uploading...${reset}"
 while read -r -d $'\n' rsync_target_line; do
+   if [ "$rsync_target_line" = "" ]; then
+      continue
+   fi
    rsync \
       $rsync_opts \
       --rsh ssh \
