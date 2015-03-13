@@ -16,6 +16,7 @@ export whonix_build_one_parsed="1"
 export VMNAME="internalrun"
 
 source ../../../help-steps/pre
+source ../../../help-steps/colors
 source ../../../help-steps/variables
 
 [ -n "$version" ] || version="$anon_dist_build_version"
