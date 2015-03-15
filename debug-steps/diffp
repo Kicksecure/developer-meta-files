@@ -1,4 +1,8 @@
 #!/bin/bash
+
+## source:
+## http://anonscm.debian.org/cgit/reproducible/misc.git/tree/diffp
+
 # diffp: compare two package builds
 # Copyright (C) 2013 Lunar <lunar@debian.org>
 # Licensed under WTFPL http://www.wtfpl.net/txt/copying/
