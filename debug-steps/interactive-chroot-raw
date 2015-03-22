@@ -90,7 +90,7 @@ interactive-chroot-raw() {
    sync
 
    ## Implemented in help-steps/pre.
-   apt_cache_disable
+   aptcachedisable
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting

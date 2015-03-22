@@ -178,7 +178,7 @@ locally-upgrade-whonix-debian-packages() {
    sync
 
    ## Implemented in help-steps/pre.
-   apt_cache_disable
+   aptcachedisable
 
    ## Remove lockfile for whonixcheck.
    rm --force "/var/run/package_manager_lock"
