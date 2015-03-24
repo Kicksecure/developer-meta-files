@@ -73,11 +73,6 @@ locally-upgrade-whonix-debian-packages() {
    ## Not using any important /etc/apt/apt.conf.d snippets at the moment.
    #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
 
-   if [ "$CI" = "true" ]; then
-      # export, so create-local-temp-apt-repo can read it
-      export whonix_build_no_upstream_sources_list="1"
-   fi
-
    ## Implemented in help-steps/pre.
    aptcachemaybeenable
 
