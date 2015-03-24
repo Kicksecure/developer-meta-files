@@ -332,12 +332,12 @@ pkg_git_commit_changelog() {
 
 pkg_git_commit_packaging() {
    cd "$item"
-   #git add Makefile
-   #git add make-helper.bsh
+   git add Makefile
+   git add make-helper.bsh
    #git add debian/changelog
    #git add changelog.upstream
    #git add -u
-   msg="packaging"
+   msg="updated makefile generic to version 1.4"
    git commit -m "$msg"
    git status
    cd ..
