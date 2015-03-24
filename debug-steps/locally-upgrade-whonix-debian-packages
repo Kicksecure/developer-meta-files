@@ -18,12 +18,6 @@ source ../../../help-steps/variables
 locally-upgrade-whonix-debian-packages() {
    trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
-   if [ "$WHONIX_BUILD_USE_AUTO_LOCAL_SIGNING_KEY" = "1" ]; then
-      if [ ! -f "$WHONIX_LOCAL_SIGNING_KEY_FOLDER/done" ]; then
-         error "${red}${bold}$BASH_SOURCE ERROR: $WHONIX_LOCAL_SIGNING_KEY_FOLDER/done does not exist. Most likely build-steps.d/1200_create-debian-packages has not been run yet.${reset}"
-      fi
-   fi
-
    ## Lockfile for whonixcheck.
    touch "/var/run/package_manager_lock"
 
