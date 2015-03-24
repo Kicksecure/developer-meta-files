@@ -286,25 +286,22 @@ pkg_upstream_and_debian_changelog_bump() {
 pkg_git_push_remotes() {
    cd "$item"
 
-   git push origin master &
-   git_pid="$!"
-   #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   reponame="$(basename "$item")"
 
    git push adre master &
    git_pid="$!"
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
-   #git push origin Whonix9 &
-   #git_pid="$!"
-   #wait "$git_pid"
-   #git_pid_list="$git_pid_list $git_pid"
+   if [ "$reponame" = "qubes-whonix" ]; then
+      true "skipping: $reponame"
+      continue
+   fi
 
-   #git push adre Whonix9 &
-   #git_pid="$!"
+   git push origin master &
+   git_pid="$!"
    #wait "$git_pid"
-   #git_pid_list="$git_pid_list $git_pid"
+   git_pid_list="$git_pid_list $git_pid"
 
    cd ..
 }
