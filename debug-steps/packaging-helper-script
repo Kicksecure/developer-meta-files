@@ -219,8 +219,8 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
-   cp "../CONTRIBUTING.md" "$item/"
-   cp "../GPLv3" "$item/"
+   #cp "../CONTRIBUTING.md" "$item/"
+   #cp "../GPLv3" "$item/"
    cp "../Makefile" "$item/"
    cp "../make-helper.bsh" "$item/"
 
