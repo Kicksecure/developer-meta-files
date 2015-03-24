@@ -160,8 +160,7 @@ locally-upgrade-whonix-debian-packages() {
          whonix-workstation-packages-recommended
    else
       local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
-      echo "$MSG"
-      bug "$MSG"
+      error "$MSG"
    fi
 
    ## Upgrade Whonix Debian Packages.
