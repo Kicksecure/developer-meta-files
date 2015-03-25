@@ -295,6 +295,7 @@ pkg_git_push_remotes() {
 
    if [ "$reponame" = "qubes-whonix" ]; then
       true "skipping: $reponame"
+      cd ..
       continue
    fi
 
