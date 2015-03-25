@@ -22,6 +22,7 @@ source ../../../help-steps/variables
 reprepro_wrapper() {
 
    reprepro \
+      $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
       $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
       ${1+"$@"}
 }
