@@ -20,11 +20,11 @@ source ../../../help-steps/colors
 source ../../../help-steps/variables
 
 reprepro_wrapper() {
-
    reprepro \
       $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
       $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
       ${1+"$@"}
+   true
 }
 
 true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
