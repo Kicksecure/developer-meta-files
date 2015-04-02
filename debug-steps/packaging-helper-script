@@ -380,8 +380,15 @@ pkg_git_diff_and_commit() {
    #git add -A
    #git add -u
    git diff
-   git commit -a
-   git status
+   #git add debian/control
+   git commit
+
+   returned="$(git status)"
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+      true "press enter to continue_not"
+      #read temp
+      return
+   fi
 
    true "press enter to continue"
    read temp
