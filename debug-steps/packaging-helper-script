@@ -41,7 +41,7 @@ pkg_readme_creator() {
       return
    fi
 
-   generic_readme="./whonix-developer-meta-files/README_generic.md"
+   generic_readme="../whonix-developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
    local readme_file line first_word matched
@@ -219,10 +219,18 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
-   #cp "../CONTRIBUTING.md" "$item/"
-   #cp "../GPLv3" "$item/"
-   cp "../Makefile" "$item/"
-   cp "../make-helper.bsh" "$item/"
+   reponame="$(basename "$item")"
+   if [ "$reponame" = "genmkfile" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
+   cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
+
+   git add "./Makefile"
+   git rm "./make-helper.bsh"
+
+   git commit -m "updated makefile generic to version 1.5"
 
    true
 }
@@ -464,8 +472,8 @@ loop_helper() {
       true
       true
 
-      #true "press enter to continue_did"
-      #read temp
+      true "press enter to continue_did"
+      read temp
    done
 }
 
