@@ -283,7 +283,23 @@ pkg_packaging_files_diff() {
 }
 
 pkg_upstream_and_debian_changelog_bump() {
+   reponame="$(basename "$item")"
+
+   if [ "$reponame" = "genmkfile" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+   if [ "$reponame" = "whonix-developer-meta-files" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
    make deb-uachl-bumpup
+
+   git add changelog.upstream
+   git add debian/changelog
+   git commit -m "bumped changelog version"
+
    true
 }
 
