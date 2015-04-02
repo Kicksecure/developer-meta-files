@@ -348,7 +348,7 @@ pkg_git_commit_packaging() {
    #git add debian/changelog
    #git add changelog.upstream
    #git add -u
-   msg="updated makefile generic to version 1.4"
+   msg="updated makefile generic to version 1.5"
    git commit -m "$msg"
    git status
    true
