@@ -26,7 +26,7 @@ cd "$MYDIR"
 cd ..
 
 ## Source make-helper.bsh to get function make_get_variables.
-source ./make-helper.bsh
+source ../genmkfile/usr/share/genmkfile/make-helper.bsh
 
 cd ..
 
