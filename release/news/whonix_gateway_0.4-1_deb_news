@@ -1,4 +1,0 @@
-Whonix-Gateway Debian Package News:
-If you see a KEYEXPIRED error during apt-get dist-upgrade,
-for fix and more info, see wiki:
-https://www.whonix.org/wiki/Download#KEYEXPIRED_Error

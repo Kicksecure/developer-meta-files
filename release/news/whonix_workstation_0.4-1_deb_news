@@ -1,9 +1,0 @@
-Whonix-Workstation Debian Package News:
-Until further notice, it is recommended against to use Tor Browser's Internal Updater for security reasons. Read more:
-https://www.whonix.org/wiki/Tor_Browser#Update_Tor_Browser
-
------
-
-If you see a KEYEXPIRED error during apt-get dist-upgrade,
-for fix and more info, see wiki:
-https://www.whonix.org/wiki/Download#KEYEXPIRED_Error
