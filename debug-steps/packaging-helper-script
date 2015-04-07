@@ -314,7 +314,17 @@ pkg_git_push_remotes() {
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
+   git push adre Whonix10 &
+   git_pid="$!"
+   #wait "$git_pid"
+   git_pid_list="$git_pid_list $git_pid"
+
    git push origin master &
+   git_pid="$!"
+   #wait "$git_pid"
+   git_pid_list="$git_pid_list $git_pid"
+
+   git push origin Whonix10 &
    git_pid="$!"
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
