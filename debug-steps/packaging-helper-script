@@ -171,7 +171,6 @@ pkg_twitter_to_github() {
 
 pkg_git_remotes_add() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git remote rm adre || true
    git remote rm troubadoour || true
    git remote rm origin || true
@@ -184,7 +183,6 @@ pkg_git_remotes_add() {
 
 pkg_git_branch_nine() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git checkout master
    git branch Whonix9
    true
@@ -192,28 +190,24 @@ pkg_git_branch_nine() {
 
 pkg_git_branch_checkout_nine() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git checkout Whonix9
    true
 }
 
 pkg_git_branch_checkout_master() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git checkout master
    true
 }
 
 pkg_git_diff_branch_master() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git diff master
    true
 }
 
 pkg_git_diff_branch_development() {
    reponame="$(basename "$item")"
-   cd "$reponame"
    git diff development || true
    true
 }
