@@ -181,10 +181,10 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_nine() {
+pkg_git_branch_ten() {
    reponame="$(basename "$item")"
    git checkout master
-   git branch Whonix9
+   git branch Whonix10
    true
 }
 
