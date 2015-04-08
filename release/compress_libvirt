@@ -31,9 +31,6 @@ fi
 if [ ! -r "$(basename "$libvirt_target_kvm_file")" ]; then
    error "$(basename "$libvirt_target_kvm_file") is not readable!"
 fi
-if [ ! -r "$(basename "$libvirt_target_qemu_newer_archs_file")" ]; then
-   error "$(basename "$libvirt_target_qemu_newer_archs_file") is not readable!"
-fi
 
 rm --force "$(basename $libvirt_target_xz_archive)"
 
@@ -60,7 +57,6 @@ tar \
    --directory="$WHONIX_BINARY" \
    --file "$(basename $libvirt_target_xz_archive)" \
    "$(basename "$libvirt_target_kvm_file")" \
-   "$(basename "$libvirt_target_qemu_newer_archs_file")" \
    $maybe_add_libvirt_network_xml_file
 
 sync
