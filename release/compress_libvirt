@@ -31,6 +31,9 @@ fi
 if [ ! -r "$(basename "$libvirt_target_kvm_file")" ]; then
    error "$(basename "$libvirt_target_kvm_file") is not readable!"
 fi
+if [ ! -r "$(basename "$binary_image_qcow2")" ]; then
+   error "$(basename "$binary_image_qcow2") is not readable!"
+fi
 
 rm --force "$(basename $libvirt_target_xz_archive)"
 
@@ -57,6 +60,7 @@ tar \
    --directory="$WHONIX_BINARY" \
    --file "$(basename $libvirt_target_xz_archive)" \
    "$(basename "$libvirt_target_kvm_file")" \
+   "$(basename "$binary_image_qcow2")" \
    $maybe_add_libvirt_network_xml_file
 
 sync
