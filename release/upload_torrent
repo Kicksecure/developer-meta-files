@@ -32,7 +32,7 @@ read temp
 rsync \
    --dry-run \
    $rsync_opts \
-   --rsh='ssh -p54485' \
+   --rsh='ssh' \
    ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@whonix.org:/home/adrelanos/download/$version/"
 
@@ -41,7 +41,7 @@ read temp
 
 rsync \
    $rsync_opts \
-   --rsh='ssh -p54485' \
+   --rsh='ssh' \
    ~/"whonix_binary/torrent-$version/"* \
    "adrelanos@whonix.org:/home/adrelanos/download/$version/"
 
