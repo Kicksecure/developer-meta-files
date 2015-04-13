@@ -30,13 +30,7 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-"$whonix_dev_meta_files_folder/release/compress_libvirt"
-
-"$whonix_dev_meta_files_folder/release/create_torrent"
-
-"$whonix_dev_meta_files_folder/release/create_hashes"
-
-"$whonix_dev_meta_files_folder/release/sign_images"
+"$whonix_dev_meta_files_folder/release/prepare_release"
 
 "$whonix_dev_meta_files_folder/release/upload_torrent"
 
