@@ -29,6 +29,12 @@ preparation() {
    shopt -s globstar
 }
 
+rsync_test() {
+   "$whonix_dev_meta_files_folder/release/rsync-test"
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing dists.${reset}"
+   read temp
+}
+
 show_dists() {
    true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
    set +x
@@ -137,6 +143,7 @@ upload_real_pool() {
 main_upload_repository() {
    root_check_no
    preparation
+   rsync_test
    show_dists
    show_pool
    upload_dry_dists
