@@ -21,4 +21,6 @@ source ../../../help-steps/variables
 
 trap "exithandler" EXIT
 
+true "${cyan}INFO: rsync test...${reset}"
 rsync --dry-run -rtv rsync://rsync.whonix.org/whonix
+true "${cyan}INFO: Done with rsync test.${reset}"
