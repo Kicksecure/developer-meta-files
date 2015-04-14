@@ -21,6 +21,8 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
+"$whonix_dev_meta_files_folder/release/rsync-test"
+
 [ -n "$version" ] || version="$anon_dist_build_version"
 
 ls -la ~/"whonix_binary/torrent-$version/"*
