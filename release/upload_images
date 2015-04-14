@@ -21,7 +21,15 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
+"$whonix_dev_meta_files_folder/release/rsync-test"
+
+true "${cyan}INFO: Press any enter to continue.${reset}"
+read temp
+
 [ -n "$version" ] || version="$anon_dist_build_version"
+
+true "${cyan}INFO: Press any enter to continue.${reset}"
+read temp
 
 #sf_user="adrelanos"
 #sf_project="testprojectwh"
