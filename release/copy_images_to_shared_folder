@@ -5,8 +5,9 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -50,6 +51,3 @@ sudo -u "$user_name" cat "md5sum"
 sudo -u "$user_name" cp "md5sum" "/mnt/shared/"
 
 sync
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

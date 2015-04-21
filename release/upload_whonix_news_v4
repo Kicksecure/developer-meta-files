@@ -14,6 +14,8 @@
 ## - Whonix 8.x
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 ## disable cmd line parser, since not needed
@@ -167,6 +169,3 @@ while read -r -d $'\n' rsync_target_line; do
       "$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
       "$rsync_target_line"
 done < <( echo "$whonix_news_rsync_target_lines" )
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

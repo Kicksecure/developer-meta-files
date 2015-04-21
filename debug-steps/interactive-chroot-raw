@@ -5,6 +5,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
 
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
@@ -41,7 +42,7 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
    exit 1
 }
 
-interactive-chroot-raw() {
+main() {
    trap "error_handler_interactive-chroot-raw" ERR INT TERM
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/mount-raw
@@ -102,6 +103,4 @@ interactive-chroot-raw() {
 }
 
 true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
-interactive-chroot-raw
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
+main ${1+"$@"}

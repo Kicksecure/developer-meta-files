@@ -5,8 +5,9 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -54,7 +55,3 @@ for mirror_ip in $mirror_ips; do
    echo "${red}FAILED${reset}: $mirror_ip"
 done
 set -x
-
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

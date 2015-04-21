@@ -5,8 +5,9 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"
@@ -26,8 +27,5 @@ source ../../../help-steps/variables
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export wheezy
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export developers
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
 
 true "${cyan}INFO: Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"

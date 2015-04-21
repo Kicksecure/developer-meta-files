@@ -5,8 +5,9 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"
@@ -38,6 +39,3 @@ for file_name in $whonix_build_files_list; do
 done
 
 sync
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

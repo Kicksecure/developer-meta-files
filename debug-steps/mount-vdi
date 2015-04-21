@@ -5,6 +5,16 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../../help-steps/pre
+source ../../../help-steps/colors
+source ../../../help-steps/variables
 
 error_handler_mount-vdi() {
    : echo "
@@ -13,13 +23,6 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 "
    exit 1
 }
-
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
-
-source ../../../help-steps/pre
-source ../../../help-steps/colors
-source ../../../help-steps/variables
 
 mount_vdi() {
    trap "error_handler_mount-vdi" ERR INT TERM
@@ -46,12 +49,14 @@ mount_vdi() {
    sync
 }
 
-if [ "$BARE_METAL" = "1" ]; then
-   true "${green}INFO: Skipping script, because BARE_METAL=1: $BASH_SOURCE${reset}"
-   exit 0
-else
-   true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
-   mount_vdi
-   benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-   true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
-fi
+main() {
+   if [ "$BARE_METAL" = "1" ]; then
+      true "${green}INFO: Skipping script, because BARE_METAL=1: $BASH_SOURCE${reset}"
+      exit 0
+   else
+      mount_vdi
+   fi
+}
+
+true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
+main ${1+"$@"}

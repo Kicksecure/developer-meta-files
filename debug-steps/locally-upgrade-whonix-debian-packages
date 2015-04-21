@@ -5,6 +5,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
 
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
@@ -15,7 +16,7 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-locally-upgrade-whonix-debian-packages() {
+main() {
    trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
    ## Lockfile for whonixcheck.
@@ -179,6 +180,4 @@ locally-upgrade-whonix-debian-packages() {
 }
 
 true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
-locally-upgrade-whonix-debian-packages
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
+main ${1+"$@"}

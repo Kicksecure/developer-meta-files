@@ -5,8 +5,9 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -o pipefail
-set -o errtrace
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 build_all_error_handler() {
    : echo "
@@ -523,7 +524,7 @@ loop_helper() {
    done
 }
 
-main_function() {
+main() {
    if [ "${1+"$@"}" = "" ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
@@ -533,4 +534,4 @@ main_function() {
    fi
 }
 
-main_function ${1+"$@"}
+main ${1+"$@"}

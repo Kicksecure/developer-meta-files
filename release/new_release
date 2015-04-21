@@ -11,8 +11,9 @@
 ## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
 
 set -x
+set -e
+
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
-set -o pipefail
 
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"
@@ -37,6 +38,3 @@ fi
 "$whonix_dev_meta_files_folder/release/upload_signatures"
 
 "$whonix_dev_meta_files_folder/release/upload_images"
-
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"

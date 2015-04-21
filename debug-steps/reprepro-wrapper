@@ -8,6 +8,9 @@
 ## ./debug-steps/reprepro-wrapper listmatched local "*"
 
 set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
 whonix_build_one_parsed="1"
 VMNAME="internalrun"
@@ -19,7 +22,7 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-reprepro_wrapper() {
+main() {
    reprepro \
       $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
       $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
@@ -28,6 +31,4 @@ reprepro_wrapper() {
 }
 
 true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
-reprepro_wrapper ${1+"$@"}
-benchmarktimeend ## sets benchmark_took_time (implemented in help-steps/pre)
-true "${bold}INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected. (benchmark: $benchmark_took_time)${reset}"
+main ${1+"$@"}
