@@ -102,5 +102,4 @@ main() {
    echo "${green}INFO: Terminated interactive chroot without any errors.${reset}"
 }
 
-true "${bold}INFO: Currently running script: $BASH_SOURCE ${1+"$@"}${reset}"
 main ${1+"$@"}
