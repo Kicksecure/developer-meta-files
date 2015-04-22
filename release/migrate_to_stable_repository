@@ -28,4 +28,4 @@ read temp
 
 ../debug-steps/reprepro-wrapper copymatched stable testers "*"
 
-true "${cyan}INFO: Done. Migrated developers repository to testers repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated testers repository to stable repository. Do not forget to upload it.${reset}"

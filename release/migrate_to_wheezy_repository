@@ -25,4 +25,4 @@ cd "$mydir_backup"
 
 ../debug-steps/reprepro-wrapper copymatched wheezy testers "*"
 
-true "${cyan}INFO: Done. Migrated developers repository to testers repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated testers repository to wheezy repository. Do not forget to upload it.${reset}"
