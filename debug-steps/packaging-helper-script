@@ -389,8 +389,8 @@ pkg_git_diff_and_commit() {
    #git add -A
    #git add -u
    git diff
-   #git add debian/control
-   git commit
+   git add debian/control
+   git commit -m "packaging, bumped Standards-Version from 3.9.4 to 3.9.6 for jessie support"
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
