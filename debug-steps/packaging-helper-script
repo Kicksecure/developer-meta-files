@@ -498,6 +498,13 @@ pkg_show_need_version_bump() {
    true
 }
 
+pkg_add_lintian_watch_gpg_override() {
+   mkdir --parents "./debian/source"
+   echo "\
+## https://phabricator.whonix.org/T277
+debian-watch-may-check-gpg-signature" > "./debian/source/lintian-overrides"
+}
+
 loop_helper() {
    for item in ./*; do
       if [ ! -d "$item" ]; then
