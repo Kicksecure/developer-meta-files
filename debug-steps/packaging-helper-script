@@ -6,6 +6,8 @@
 
 set -x
 set -e
+set -o pipefail
+set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
 
@@ -19,6 +21,7 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 }
 
 trap "build_all_error_handler" ERR
+set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
@@ -503,6 +506,15 @@ pkg_add_lintian_watch_gpg_override() {
    echo "\
 ## https://phabricator.whonix.org/T277
 debian-watch-may-check-gpg-signature" > "./debian/source/lintian-overrides"
+}
+
+pkg_git_commit_lintian_watch_gpg_override() {
+   git add "./debian/source/lintian-overrides"
+   local msg
+   msg="\
+added debian/source/lintian-overrides with debian-watch-may-check-gpg-signature to fix lintian warning - https://phabricator.whonix.org/T277"
+   git commit -m "$msg"
+   true
 }
 
 loop_helper() {
