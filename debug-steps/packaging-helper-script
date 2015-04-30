@@ -437,10 +437,6 @@ pkg_git_log_giant_make() {
 pkg_git_sign_and_push_tags() {
    reponame="$(basename "$item")"
 
-   if [ "$reponame" = "genmkfile" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
    if [ "$reponame" = "whonix-developer-meta-files" ]; then
       true "Skipping $reponame."
       return 0
@@ -450,15 +446,18 @@ pkg_git_sign_and_push_tags() {
       return 0
    fi
 
-   make_get_variables
-
-   version_and_revision="$make_pkg_version-$make_pkg_revision"
-
-   true "version_and_revision: $version_and_revision"
-
-   git tag -s "$version_and_revision" -m "."
-   git push origin "$version_and_revision" &
-   git push adre "$version_and_revision" &
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
+   make git-commit-verify
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
+   make git-tag-sign
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
+   make git-verify
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 TODO"
+   make git-tag-push
+   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 done"
 
    true
 }
