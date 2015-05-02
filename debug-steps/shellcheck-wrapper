@@ -23,7 +23,6 @@ opts="\
    --exclude SC2001 \
    "
 
-
 for file_name in $(find "$1" -type f -not -iwholename '*.git*'); do
    true "file_name: $file_name"
    if ! test -f "$file_name" ; then
