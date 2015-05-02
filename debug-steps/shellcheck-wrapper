@@ -5,7 +5,10 @@ set -e
 set -o pipefail
 set -o errtrace
 
-true "PWD: $PWD"
+if ! test -d "$1" && ! test -f "$1" ; then
+   true "ERROR: not a folder or file: $1"
+   exit 1
+fi
 
 opts="\
    --exclude SC2086 \
@@ -20,9 +23,8 @@ opts="\
    --exclude SC2001 \
    "
 
-shopt -s dotglob nullglob globstar
 
-for file_name in "$1"/**; do
+for file_name in $(find "$1" -type f -not -iwholename '*.git*'); do
    true "file_name: $file_name"
    if ! test -f "$file_name" ; then
       continue
@@ -31,9 +33,6 @@ for file_name in "$1"/**; do
       continue
    fi
    if shellcheck $opts "$file_name" ; then
-      continue
-   fi
-   if echo "$file_name" | grep -q .git ; then
       continue
    fi
    file_name_short="${file_name##*/}"
