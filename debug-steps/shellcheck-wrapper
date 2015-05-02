@@ -41,3 +41,5 @@ for file_name in $(find "$1" -type f -not -iwholename '*.git*' -not -iwholename 
       kate "$file_name" >/dev/null 2>&1
    fi
 done
+
+true "INFO: End."
