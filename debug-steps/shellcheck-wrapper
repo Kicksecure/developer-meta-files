@@ -1,8 +1,9 @@
 #!/bin/bash
 
 set -x
-#set -e
+set -e
 set -o pipefail
+set -o errtrace
 
 true "PWD: $PWD"
 
@@ -23,28 +24,22 @@ shopt -s dotglob nullglob globstar
 
 for file_name in "$1"/**; do
    true "file_name: $file_name"
-   if [ ! -f "$file_name" ]; then
+   if ! test -f "$file_name" ; then
       continue
    fi
-   grep '#!/bin/bash' "$file_name"
-   if [ ! "$?" = "0" ]; then
+   if ! grep '#!/bin/bash' "$file_name" ; then
       continue
    fi
-   shellcheck $opts "$file_name"
-   if [ "$?" = "0" ]; then
+   if shellcheck $opts "$file_name" ; then
       continue
    fi
-   echo "$file_name" | grep -q .git
-   if [ "$?" = "0" ]; then
+   if echo "$file_name" | grep -q .git ; then
       continue
    fi
    file_name_short="${file_name##*/}"
-   if [ "$file_name_short" = "make-helper.bsh" ]; then
-      continue
-   fi
    true "press y to open kate. enter to continue"
    read temp
-   if [ "$temp" = "y" ]; then
+   if test "$temp" = "y" ; then
       kate "$file_name" >/dev/null 2>&1
    fi
 done
