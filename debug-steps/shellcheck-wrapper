@@ -23,7 +23,7 @@ opts="\
    --exclude SC2001 \
    "
 
-for file_name in $(find "$1" -type f -not -iwholename '*.git*'); do
+for file_name in $(find "$1" -type f -not -iwholename '*.git*' -not -iwholename '*changelog.upstream*'); do
    true "file_name: $file_name"
    if ! test -f "$file_name" ; then
       continue
