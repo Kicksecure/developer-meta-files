@@ -104,6 +104,11 @@ pkg_links_echo() {
    #echo "https://github.com/adrelanos/$reponame"
 }
 
+pkg_echo_commits_adrelanos() {
+   reponame="$(basename "$item")"
+   echo "https://github.com/Whonix/$reponame/commits?author=adrelanos"
+}
+
 pkg_names_echo() {
    reponame="$(basename "$item")"
    echo "$reponame"
