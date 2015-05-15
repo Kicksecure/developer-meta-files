@@ -495,12 +495,13 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
    true
 }
 
+## debug-steps/packaging-helper-script pkg_show_need_version_bump 2>/dev/null
 pkg_show_need_version_bump() {
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
       true
    else
-      true "needs version bump: $item"
+      echo "needs version bump: $item"
    fi
    true
 }
