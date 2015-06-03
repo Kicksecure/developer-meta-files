@@ -190,10 +190,10 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_ten() {
+pkg_git_branch_Whonix11() {
    reponame="$(basename "$item")"
    git checkout master
-   git branch Whonix10
+   git branch Whonix11
    true
 }
 
@@ -323,7 +323,7 @@ pkg_git_push_remotes() {
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
-   git push adre Whonix10 &
+   git push adre Whonix11 &
    git_pid="$!"
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
@@ -333,7 +333,7 @@ pkg_git_push_remotes() {
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
-   git push origin Whonix10 &
+   git push origin Whonix11 &
    git_pid="$!"
    #wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
