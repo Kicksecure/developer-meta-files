@@ -102,6 +102,9 @@ python-mutagen
 ## mat: metadata anonymization toolkit for _massive_ image format support ## recommended
 libimage-exiftool-perl
 
+## mat: ## recommended
+gir1.2-gtk-3.0
+
 ## faketime ## recommended
 ## /usr/bin/uwtwrapper (config in /etc/whonix.d/) has a feature called
 ## time privacy, which depends on faketime, if time privacy is activated.
