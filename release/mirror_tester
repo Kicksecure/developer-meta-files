@@ -39,18 +39,24 @@ mirror_ips="
 
 set +x
 for mirror_ip in $mirror_ips; do
-   curl_cmd="curl.anondist-orig --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
+   curl_cmd="curl --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
    echo "$curl_cmd"
-   if [ "$old" = "" ]; then
-      old="$(eval $curl_cmd)"
-      echo "${green}FIRST  :${reset} $mirror_ip"
+
+   if [ "$curl_result_old" = "" ]; then
+      curl_result_old="$(eval $curl_cmd)"
+      hash_old="$(echo "$curl_result_old" | sha512sum)"
+      echo "${green}FIRST :${reset} $mirror_ip"
+      echo "${green}FIRST :${reset} $hash_old"
       continue
    fi
-   new="$(eval $curl_cmd)"
-   if [ "$old" = "$new" ]; then
+   curl_result_new="$(eval $curl_cmd)"
+   hash_new="$(echo "$curl_result_new" | sha512sum)"
+   if [ "$hash_old" = "$hash_new" ]; then
       echo "${green}OK     :${reset} $mirror_ip"
+      echo "${green}OK:    :${reset} $hash_new"
       continue
    fi
    echo "${red}FAILED${reset}: $mirror_ip"
+   echo "${red}FAILED${reset}: $hash_new"
 done
 set -x
