@@ -45,15 +45,18 @@ for mirror_ip in $mirror_ips; do
    if [ "$curl_result_old" = "" ]; then
       curl_result_old="$(eval $curl_cmd)"
       hash_old="$(echo "$curl_result_old" | sha512sum)"
+      #echo "$curl_result_old"
       echo "${green}FIRST :${reset} $mirror_ip"
       echo "${green}FIRST :${reset} $hash_old"
       continue
    fi
    curl_result_new="$(eval $curl_cmd)"
    hash_new="$(echo "$curl_result_new" | sha512sum)"
+   #echo "$curl_result_new"
+
    if [ "$hash_old" = "$hash_new" ]; then
       echo "${green}OK     :${reset} $mirror_ip"
-      echo "${green}OK:    :${reset} $hash_new"
+      echo "${green}OK     :${reset} $hash_new"
       continue
    fi
    echo "${red}FAILED${reset}: $mirror_ip"
