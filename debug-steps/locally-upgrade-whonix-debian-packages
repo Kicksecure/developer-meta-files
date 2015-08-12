@@ -55,9 +55,6 @@ main() {
    ## Not using any important /etc/apt/apt.conf.d snippets at the moment.
    #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
 
-   ## Implemented in help-steps/pre.
-   aptcachemaybeenable
-
    sync
 
    ## Upgrade from regular repository.
@@ -144,9 +141,6 @@ main() {
 
    $CHROOT sync
    sync
-
-   ## Implemented in help-steps/pre.
-   aptcachedisable
 
    ## Remove lockfile for whonixcheck.
    rm --force "/var/run/package_manager_lock"

@@ -69,9 +69,6 @@ main() {
    ## Debugging.
    $CHROOT apt-key finger  || true
 
-   ## Implemented in help-steps/pre.
-   aptcachemaybeenable
-
    sync
 
    ## Info.
@@ -89,9 +86,6 @@ main() {
 
    $CHROOT sync
    sync
-
-   ## Implemented in help-steps/pre.
-   aptcachedisable
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unchroot-raw
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER"/unprevent-daemons-from-starting
