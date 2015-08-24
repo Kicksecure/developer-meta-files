@@ -478,6 +478,11 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
+   if [ "$reponame" = "whonix-developer-meta-files" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
       return 0
@@ -488,6 +493,11 @@ pkg_need_version_bump_show() {
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
+   if [ "$reponame" = "whonix-developer-meta-files" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
       return 0
