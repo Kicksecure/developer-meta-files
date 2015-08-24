@@ -476,14 +476,30 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
    true
 }
 
-## debug-steps/packaging-helper-script pkg_show_need_version_bump 2>/dev/null
-pkg_show_need_version_bump() {
+## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
+pkg_need_version_bump_show() {
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
-      true
-   else
-      echo "needs version bump: $item"
+      return 0
    fi
+   echo "needs version bump: $item"
+   true
+}
+
+## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
+pkg_need_version_bump_do() {
+   last_log_entry="$(git log --format=%s -1)"
+   if [ "bumped changelog version" = "$last_log_entry" ]; then
+      return 0
+   fi
+   echo "needs version bump: $item"
+
+   make deb-uachl-bumpup
+
+   git add changelog.upstream
+   git add debian/changelog
+   git commit -m "bumped changelog version"
+
    true
 }
 
