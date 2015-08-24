@@ -449,11 +449,25 @@ pkg_git_sign_and_push_tags() {
 }
 
 pkg_verify_signed_commit() {
+   reponame="$(basename "$item")"
+
+   if [ "$reponame" = "whonix-developer-meta-files" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
    make git-commit-verify
    true
 }
 
 pkg_verify_signed_commit_and_tag() {
+   reponame="$(basename "$item")"
+
+   if [ "$reponame" = "whonix-developer-meta-files" ]; then
+      true "Skipping $reponame."
+      return 0
+   fi
+
    make git-verify
    true
 }
