@@ -436,10 +436,12 @@ pkg_git_sign_and_push_tags() {
    make git-commit-verify
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
-   make git-tag-sign
+   #make git-tag-sign
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
-   make git-verify
+   if ! make git-verify ; then
+      make git-tag-sign
+   fi
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 TODO"
    make git-tag-push
