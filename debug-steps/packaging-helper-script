@@ -39,6 +39,13 @@ counter=0
 nothing_to_commit_msg="On branch master
 nothing to commit, working directory clean"
 
+repo_skip() {
+   if [ "$reponame" = "$1" ]; then
+      true "Skipping $reponame."
+      return 1
+   fi
+}
+
 pkg_readme_creator() {
    if [ ! -f "$item/debian/control" ]; then
       true "No file"
@@ -99,18 +106,15 @@ pkg_readme_creator() {
 }
 
 pkg_links_echo() {
-   reponame="$(basename "$item")"
    echo "https://github.com/Whonix/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
 }
 
 pkg_echo_commits_adrelanos() {
-   reponame="$(basename "$item")"
    echo "https://github.com/Whonix/$reponame/commits?author=adrelanos"
 }
 
 pkg_names_echo() {
-   reponame="$(basename "$item")"
    echo "$reponame"
 }
 
@@ -119,7 +123,6 @@ pkg_links_open() {
 }
 
 pkg_twitter_to_github() {
-   reponame="$(basename "$item")"
 
 #   echo "\
 #{
@@ -179,7 +182,6 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
-   reponame="$(basename "$item")"
    git remote rm adre || true
    git remote rm troubadoour || true
    git remote rm origin || true
@@ -191,36 +193,28 @@ pkg_git_remotes_add() {
 }
 
 pkg_git_branch_Whonix12() {
-   reponame="$(basename "$item")"
    git checkout master
    git branch Whonix12
    true
 }
 
 pkg_git_branch_checkout_master() {
-   reponame="$(basename "$item")"
    git checkout master
    true
 }
 
 pkg_git_diff_branch_master() {
-   reponame="$(basename "$item")"
    git diff master
    true
 }
 
 pkg_git_diff_branch_development() {
-   reponame="$(basename "$item")"
    git diff development || true
    true
 }
 
 pkg_packaging_copy() {
-   reponame="$(basename "$item")"
-   if [ "$reponame" = "genmkfile" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "genmkfile" || return 0
 
    cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
 
@@ -280,16 +274,7 @@ pkg_packaging_files_diff() {
 }
 
 pkg_upstream_and_debian_changelog_bump() {
-   reponame="$(basename "$item")"
-
-   #if [ "$reponame" = "genmkfile" ]; then
-      #true "Skipping $reponame."
-      #return 0
-   #fi
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    make deb-uachl-bumpup
 
@@ -301,8 +286,6 @@ pkg_upstream_and_debian_changelog_bump() {
 }
 
 pkg_git_push_remotes() {
-   reponame="$(basename "$item")"
-
    git push adre master &
    git_pid="$!"
    #wait "$git_pid"
@@ -403,8 +386,6 @@ pkg_debian_control_open() {
 }
 
 pkg_git_submodule_file_writer() {
-   reponame="$(basename "$item")"
-
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$reponame
@@ -425,12 +406,7 @@ pkg_git_log_giant_make() {
 }
 
 pkg_git_sign_and_push_tags() {
-   reponame="$(basename "$item")"
-
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
    make git-commit-verify
@@ -451,24 +427,14 @@ pkg_git_sign_and_push_tags() {
 }
 
 pkg_verify_signed_commit() {
-   reponame="$(basename "$item")"
-
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    make git-commit-verify
    true
 }
 
 pkg_verify_signed_commit_and_tag() {
-   reponame="$(basename "$item")"
-
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    make git-verify
    true
@@ -476,8 +442,6 @@ pkg_verify_signed_commit_and_tag() {
 
 pkg_dput_cfg_writer() {
    make_get_variables
-
-   reponame="$(basename "$item")"
 
    launchpad_name="adrelanos"
 
@@ -494,10 +458,7 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
@@ -509,10 +470,7 @@ pkg_need_version_bump_show() {
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
-   if [ "$reponame" = "whonix-developer-meta-files" ]; then
-      true "Skipping $reponame."
-      return 0
-   fi
+   repo_skip "whonix-developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
@@ -555,6 +513,8 @@ loop_helper() {
 
       counter=$(( $counter + 1 ))
       true "item: $item | counter: $counter"
+
+      reponame="$(basename "$item")"
 
       cd "$item"
 
