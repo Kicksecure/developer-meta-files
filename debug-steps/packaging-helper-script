@@ -273,18 +273,6 @@ pkg_packaging_files_diff() {
    true
 }
 
-pkg_upstream_and_debian_changelog_bump() {
-   repo_skip "whonix-developer-meta-files" || return 0
-
-   make deb-uachl-bumpup
-
-   git add changelog.upstream
-   git add debian/changelog
-   git commit -m "bumped changelog version"
-
-   true
-}
-
 pkg_git_push_remotes() {
    git push adre master &
    git_pid="$!"
@@ -411,14 +399,16 @@ pkg_git_sign_and_push_tags() {
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
    make git-commit-verify
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
+
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
-   #make git-tag-sign
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
    if ! make git-verify ; then
+      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
+
+      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
       make git-tag-sign
+      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
    fi
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
+
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 TODO"
    make git-tag-push
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 done"
@@ -477,6 +467,14 @@ pkg_need_version_bump_do() {
       return 0
    fi
    echo "needs version bump: $item"
+
+   pkg_upstream_and_debian_changelog_bump
+
+   true
+}
+
+pkg_upstream_and_debian_changelog_bump() {
+   repo_skip "whonix-developer-meta-files" || return 0
 
    make deb-uachl-bumpup
 
