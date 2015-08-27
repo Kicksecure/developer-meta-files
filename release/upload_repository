@@ -31,6 +31,12 @@ preparation() {
    shopt -s globstar
 }
 
+mirror_test() {
+   "$whonix_dev_meta_files_folder/release/mirror_tester"
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to run rsync test.${reset}"
+   read temp
+}
+
 rsync_test() {
    "$whonix_dev_meta_files_folder/release/rsync-test"
    true "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing dists.${reset}"
@@ -145,6 +151,7 @@ upload_real_pool() {
 main() {
    root_check_no
    preparation
+   mirror_test
    rsync_test
    show_dists
    show_pool
