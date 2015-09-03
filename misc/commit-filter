@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+while read -r line; do
+   if echo "$line" | grep -q 'bumped changelog version' ; then
+      true "skip : $line"
+      continue
+   fi
+   true "write: $line"
+   echo "$line" >> ./b
+done < ./a
