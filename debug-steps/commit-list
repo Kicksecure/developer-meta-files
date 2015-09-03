@@ -7,7 +7,7 @@ set -o pipefail
 check() {
    if [ ! "$1" = "$(basename $(pwd))" ]; then
       ## git makes no new lines.
-      echo "" >&2
+      echo ""
       echo "ERROR!" >&2
       echo "$1 is not $(basename $(pwd))" >&2
       echo "ERROR!" >&2
@@ -30,6 +30,7 @@ doit() {
    package="$(basename $(pwd))"
    #git log --pretty=oneline --abbrev-commit --author=adrelanos --since="01.08.2015" --until="31.08.2015" | sed "s,^,https://github.com/adrelanos/$package/commit/,"
    git --no-pager log --author=adrelanos --since="01.08.2015" --until="31.08.2015" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s"
+   echo ""
 }
 
 ## Whonix/Whonix
@@ -37,15 +38,15 @@ cd ..
 cd ..
 check "Whonix"
 doit
-sleep 5
+#sleep 5
 
 ## Whonix/packages
 cd "packages"
 iterate "packages"
-sleep 5
+#sleep 5
 
 ## Qubes
 cd ~/"Qubes"
 iterate "Qubes"
 
-echo ""
+#echo ""
