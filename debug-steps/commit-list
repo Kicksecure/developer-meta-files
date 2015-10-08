@@ -29,8 +29,11 @@ iterate() {
 doit() {
    package="$(basename $(pwd))"
    #git log --pretty=oneline --abbrev-commit --author=adrelanos --since="01.08.2015" --until="31.08.2015" | sed "s,^,https://github.com/adrelanos/$package/commit/,"
-   git --no-pager log --author=adrelanos --since="01.09.2015" --until="31.09.2015" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s"
-   echo ""
+   output="$(git --no-pager log --author=adrelanos --since="01.09.2015" --until="31.09.2015" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s")"
+   if [ ! "$output" = "" ]; then
+      echo "$output"
+      echo ""
+   fi
 }
 
 ## Whonix/Whonix
