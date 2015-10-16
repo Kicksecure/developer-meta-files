@@ -29,22 +29,22 @@ rm --recursive --force "/home/$SUDO_USER/whonix_binary"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_first"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_second"
 
-./whonix_build --tor-gateway -- --clean --target virtualbox ${1+"$@"}
-./whonix_build --tor-workstation -- --clean --target virtualbox ${1+"$@"}
+./whonix_build --tor-gateway            -- --clean --target virtualbox ${1+"$@"}
+./whonix_build --tor-workstation        -- --clean --target virtualbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --clean --target virtualbox ${1+"$@"}
 
-./whonix_build --tor-gateway -- --build --report true --target virtualbox ${1+"$@"}
-./whonix_build --tor-workstation -- --build --report true --target virtualbox ${1+"$@"}
+./whonix_build --tor-gateway            -- --build --report true --target virtualbox ${1+"$@"}
+./whonix_build --tor-workstation        -- --build --report true --target virtualbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --build --report true --target virtualbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 
-./whonix_build --tor-gateway -- --clean --target virtualbox ${1+"$@"}
-./whonix_build --tor-workstation -- --clean --target virtualbox ${1+"$@"}
+./whonix_build --tor-gateway            -- --clean --target virtualbox ${1+"$@"}
+./whonix_build --tor-workstation        -- --clean --target virtualbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --clean --target virtualbox ${1+"$@"}
 
-./whonix_build --tor-gateway -- --build --report true --target virtualbox ${1+"$@"}
-./whonix_build --tor-workstation -- --build --report true --target virtualbox ${1+"$@"}
+./whonix_build --tor-gateway            -- --build --report true --target virtualbox ${1+"$@"}
+./whonix_build --tor-workstation        -- --build --report true --target virtualbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --build --report true --target virtualbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_second"
