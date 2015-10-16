@@ -33,9 +33,9 @@ rm --recursive --force "/home/$SUDO_USER/whonix_binary_second"
 ./whonix_build --tor-workstation -- --clean --vbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --clean --vbox ${1+"$@"}
 
-./whonix_build --tor-gateway -- --build --vbox ${1+"$@"}
-./whonix_build --tor-workstation -- --build --vbox ${1+"$@"}
-./whonix_build --tor-custom-workstation -- --build --vbox ${1+"$@"}
+./whonix_build --tor-gateway -- --build --report true --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --build --report true --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --build --report true --vbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 
@@ -43,9 +43,9 @@ mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 ./whonix_build --tor-workstation -- --clean --vbox ${1+"$@"}
 ./whonix_build --tor-custom-workstation -- --clean --vbox ${1+"$@"}
 
-./whonix_build --tor-gateway -- --build --vbox ${1+"$@"}
-./whonix_build --tor-workstation -- --build --vbox ${1+"$@"}
-./whonix_build --tor-custom-workstation -- --build --vbox ${1+"$@"}
+./whonix_build --tor-gateway -- --build --report true --vbox ${1+"$@"}
+./whonix_build --tor-workstation -- --build --report true --vbox ${1+"$@"}
+./whonix_build --tor-custom-workstation -- --build --report true --vbox ${1+"$@"}
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_second"
 
