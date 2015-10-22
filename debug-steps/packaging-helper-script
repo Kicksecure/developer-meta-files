@@ -417,6 +417,8 @@ pkg_git_sign_and_push_tags() {
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
    fi
 
+   make git-verify
+
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 TODO"
    make git-tag-push
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 done"
