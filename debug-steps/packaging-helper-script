@@ -194,7 +194,15 @@ pkg_git_remotes_add() {
 
 pkg_git_branch_Whonix12() {
    git checkout master
-   git branch Whonix12
+   git branch Whonix12 || true
+   true
+}
+
+pkg_git_update_branch_Whonix12() {
+   git checkout master
+   git checkout Whonix12
+   git merge --ff-only master
+   git checkout master
    true
 }
 
