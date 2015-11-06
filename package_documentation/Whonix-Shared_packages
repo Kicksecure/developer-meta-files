@@ -225,6 +225,9 @@ secure-delete
 ## installed by default
 openvpn
 
+## NTFS support (mounting USB devices)
+ntfs-3g
+
 ###################
 ## Desktop Basics #
 ###################
