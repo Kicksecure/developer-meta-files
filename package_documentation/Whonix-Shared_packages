@@ -256,6 +256,11 @@ xserver-xorg-video-qxl
 ## in /var/log/Xorg.0.log
 libgl1-mesa-dri
 
+## prevent warning when starting for example iceweasel or Tor Browser from terminal ## recommended
+## Gtk-WARNING **: Unable to locate theme engine in module_path: "pixmap",
+## https://github.com/QubesOS/qubes-issues/issues/1410
+gtk2-engines-pixbuf
+
 ## required for proxy support in kde applications ## recommended
 kde-baseapps-bin
 
