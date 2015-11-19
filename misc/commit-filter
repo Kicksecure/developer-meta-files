@@ -1,12 +1,50 @@
 #!/bin/bash
 
+#set -x
 set -e
 
-while read -r line; do
-   if echo "$line" | grep -q 'bumped changelog version' ; then
-      true "skip : $line"
-      continue
-   fi
-   true "write: $line"
-   echo "$line" >> ./b
-done < ./a
+rm -f ./b
+
+commit_filter() {
+   while read -r line; do
+      local skip=false
+      commit_msg="${line#*" "}"
+      for text in \
+         "bump version number" \
+         "bumped version number" \
+         "bumped changelog version" \
+         "packaging" \
+         "fix" \
+         "comment" \
+         "comments" \
+         "output" \
+         "news" \
+         "readme" \
+         "updated generic makefile" \
+         "bumped compat from 8 to 9" \
+         "Updated debian/changelog." \
+         "Fixed changelog date." \
+         "updated makefile generic to version 1.3" \
+         "updated makefile generic to version 1.4" \
+         "updated makefile generic to version 1.5" \
+         "added changelog.upstream" \
+         "quotes" \
+         "refactoring" \
+         "."
+         do
+
+         if [ "$text" = "$commit_msg" ]; then
+            true "skip : $line"
+            skip=true
+            continue
+         fi
+      done
+      if [ "$skip" = "true" ]; then
+         continue
+      fi
+      true "write: $line"
+      echo "$line" >> ./b
+   done
+}
+
+commit_filter
