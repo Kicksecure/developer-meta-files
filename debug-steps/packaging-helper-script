@@ -413,7 +413,7 @@ pkg_git_log_whonix11_whonix12() {
       rm -f "../../changes"
    fi
    echo "$reponame" >> "../../changes"
-   output="$(git --no-pager log --pretty="format:https://github.com/adrelanos/$reponame/commit/%h %s" Whonix11 Whonix12)"
+   output="$(git --no-pager log --pretty="format:https://github.com/Whonix/$reponame/commit/%h %s" Whonix11 Whonix12)"
    echo "$output" >> "../../changes"
    echo "" >> "../../changes"
 
