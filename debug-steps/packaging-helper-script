@@ -407,6 +407,19 @@ pkg_git_log_giant_make() {
    true
 }
 
+pkg_git_log_whonix11_whonix12() {
+   if [ ! "$deleteonce" = "1" ]; then
+      deleteonce="1"
+      rm -f "../../changes"
+   fi
+   echo "$reponame" >> "../../changes"
+   output="$(git --no-pager log --pretty="format:https://github.com/adrelanos/$reponame/commit/%h %s" Whonix11 Whonix12)"
+   echo "$output" >> "../../changes"
+   echo "" >> "../../changes"
+
+   true
+}
+
 pkg_git_sign_and_push_tags() {
    repo_skip "whonix-developer-meta-files" || return 0
 
