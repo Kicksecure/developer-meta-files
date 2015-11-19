@@ -198,6 +198,12 @@ pkg_git_branch_Whonix12() {
    true
 }
 
+pkg_git_diff_branch_Whonix12() {
+   git checkout master
+   git diff Whonix12 || true
+   true
+}
+
 pkg_git_update_branch_Whonix12() {
    git checkout master
    git checkout Whonix12
