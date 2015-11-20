@@ -30,6 +30,8 @@ commit_filter() {
          "added changelog.upstream" \
          "quotes" \
          "refactoring" \
+         "debugging" \
+         "lintian warning copyright fix" \
          "."
          do
 
