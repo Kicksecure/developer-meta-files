@@ -242,47 +242,51 @@ pkg_packaging_copy() {
 
 pkg_packaging_files_diff() {
    local compare_with_path
-   compare_with_path=".."
-   compare_with_path="./anon-apt-sources-list"
+   ## Some arbitrary package used as template for comparison.
+   compare_with_path="../anon-apt-sources-list"
+   compare_with_full_path="$(realpath "$compare_with_path")"
 
-   if [ "$item" = "./qubes-whonix" ]; then
-      test -f "$item/CONTRIBUTING.md"
+   if [ "$reponame" = "qubes-whonix" ]; then
+      test -f "$repo_full_path/CONTRIBUTING.md"
    else
-      diff "$compare_with_path/CONTRIBUTING.md" "$item/"
-   fi
-   diff "$compare_with_path/GPLv3" "$item/"
-   diff "$compare_with_path/Makefile" "$item/"
-   diff "$compare_with_path/make-helper.bsh" "$item/"
-
-   if [ ! -f "$compare_with_path/COPYING" ]; then
-      error "$compare_with_path/COPYING does not exist."
+      diff "$compare_with_full_path/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
    fi
 
-   if [ ! -f "$item/README.md" ]; then
-      if [ ! -f "$item/README.mediawiki" ]; then
-         error "Neither $item/README.md nor $item/README.mediawiki exist."
+   ## Could also use
+   ##     diff "$compare_with_full_path/GPLv3" "./"
+   ## but the impelentation below produces more comfortable output.
+   diff "$compare_with_full_path/GPLv3" "$repo_full_path/GPLv3"
+   diff "$compare_with_full_path/Makefile" "$repo_full_path/Makefile"
+
+   if [ ! -f "$compare_with_full_path/COPYING" ]; then
+      error "$compare_with_full_path/COPYING does not exist."
+   fi
+
+   if [ ! -f "$repo_full_path/README.md" ]; then
+      if [ ! -f "$repo_full_path/README.mediawiki" ]; then
+         error "Neither $repo_full_path/README.md nor $repo_full_path/README.mediawiki exist."
       fi
    fi
 
-   diff "$compare_with_path/debian/source/format" "$item/debian/source/format"
-   diff "$compare_with_path/debian/compat" "$item/debian/compat"
-   diff "$compare_with_path/debian/gain-root-command" "$item/debian/gain-root-command"
-   diff "./$item/COPYING" "$item/debian/copyright"
+   diff "$compare_with_full_path/debian/source/format" "$repo_full_path/debian/source/format"
+   diff "$compare_with_full_path/debian/compat" "$repo_full_path/debian/compat"
+   diff "$compare_with_full_path/debian/gain-root-command" "$repo_full_path/debian/gain-root-command"
+   diff "././COPYING" "$repo_full_path/"
 
-   if [ ! -f "$item/debian/changelog" ]; then
-      error "$item/debian/changelog does not exist."
+   if [ ! -f "$repo_full_path/debian/changelog" ]; then
+      error "$repo_full_path/debian/changelog does not exist."
    fi
-   if [ ! -f "$item/debian/control" ]; then
-      error "$item/debian/control does not exist."
+   if [ ! -f "$repo_full_path/debian/control" ]; then
+      error "$repo_full_path/debian/control does not exist."
    fi
-   if [ ! -f "$item/debian/copyright" ]; then
-      error "$item/debian/copyright does not exist."
+   if [ ! -f "$repo_full_path/debian/copyright" ]; then
+      error "$repo_full_path/debian/copyright does not exist."
    fi
-   if [ ! -f "$item/debian/rules" ]; then
-      error "$item/debian/rules does not exist."
+   if [ ! -f "$repo_full_path/debian/rules" ]; then
+      error "$repo_full_path/debian/rules does not exist."
    fi
-   if [ ! -f "$item/debian/watch" ]; then
-      error "$item/debian/watch does not exist."
+   if [ ! -f "$repo_full_path/debian/watch" ]; then
+      error "$repo_full_path/debian/watch does not exist."
    fi
    true
 }
@@ -542,6 +546,7 @@ loop_helper() {
       true "item: $item | counter: $counter"
 
       reponame="$(basename "$item")"
+      repo_full_path="$(realpath "$item")"
 
       cd "$item"
 
