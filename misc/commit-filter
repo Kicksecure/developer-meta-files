@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## cat a | ./misc/commit-filter > ./b
+
 #set -x
 set -e
 
@@ -42,6 +44,9 @@ commit_filter() {
          fi
       done
       if [ "$skip" = "true" ]; then
+         continue
+      fi
+      if [ "" = "$line" ]; then
          continue
       fi
       true "write: $line"
