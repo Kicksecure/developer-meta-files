@@ -50,7 +50,7 @@ for mirror_ip in $mirror_ips; do
       echo "${green}FIRST :${reset} $hash_old"
       continue
    fi
-   curl_result_new="$(eval $curl_cmd)"
+   curl_result_new="$($curl_cmd)"
    hash_new="$(echo "$curl_result_new" | sha512sum)"
    #echo "$curl_result_new"
 
