@@ -39,7 +39,7 @@ mirror_ips="
 
 set +x
 for mirror_ip in $mirror_ips; do
-   curl_cmd="curl --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
+   curl_cmd="curl --max-time 3 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
    echo "$curl_cmd"
 
    if [ "$curl_result_old" = "" ]; then
