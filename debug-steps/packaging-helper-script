@@ -47,7 +47,12 @@ repo_skip() {
 }
 
 pkg_readme_creator() {
-   if [ ! -f "$item/debian/control" ]; then
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   local control_file
+   control_file="debian/control"
+
+   if [ ! -f "$control_file" ]; then
       true "No file"
       return
    fi
@@ -57,13 +62,13 @@ pkg_readme_creator() {
 
    local readme_file line first_word matched
 
-   if [ -f "$item/README_generic.md" ]; then
+   if [ -f "README_generic.md" ]; then
       ## When there is a README_generic.md, this is a way to express
       ## "do not create a generic README.md for that package, because it
       ## already has a real readme."
-      readme_file="$item/README_generic.md"
+      readme_file="README_generic.md"
    else
-      readme_file="$item/README.md"
+      readme_file="README.md"
    fi
 
    rm --force "$readme_file"
@@ -74,32 +79,32 @@ pkg_readme_creator() {
       read -r first_word _ <<< "$line"
       if [ "$matched" = "true" ]; then
          if [ "$line" = "." ]; then
-            echo "" >> "$readme_file"
+            echo "" | tee -a "$readme_file" >/dev/null
          else
-            echo "$line" >> "$readme_file"
+            echo "$line" | tee -a "$readme_file" >/dev/null
          fi
       fi
       if [ "$first_word" = "Description:" ]; then
          matched="true"
          line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
-         echo "#$line_with_keyword #" >> "$readme_file"
-         echo "" >> "$readme_file"
+         echo "#$line_with_keyword #" | tee -a "$readme_file" >/dev/null
+         echo "" | tee -a "$readme_file" >/dev/null
       fi
-   done < "$item/debian/control"
+   done < "$control_file"
 
-   echo "" >> "$readme_file"
+   echo "" | tee -a "$readme_file" >/dev/null
    echo '(This package description has been [automatically](https://github.com/Whonix/whonix-developer-meta-files/blob/master/debug-steps/packaging-helper-script) extracted and mirrored from `debian/control`.)' >> "$readme_file"
-   echo "" >> "$readme_file"
+   echo "" | tee -a "$readme_file" >/dev/null
 
-   if [ -d "$item/man" ]; then
+   if [ -d "man" ]; then
       echo "# Manual Page #" >> "$readme_file"
-      echo "" >> "$readme_file"
+      echo "" | tee -a "$readme_file" >/dev/null
       echo 'See also `man` folder for more information.' >> "$readme_file"
-      echo "" >> "$readme_file"
+      echo "" | tee -a "$readme_file" >/dev/null
    fi
 
    while read -r line; do
-      echo "$line" >> "$readme_file"
+      echo "$line" | tee -a "$readme_file" >/dev/null
    done < "$generic_readme"
 
    true "Done: $readme_file"
