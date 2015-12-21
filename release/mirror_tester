@@ -27,8 +27,8 @@ cd "$WHONIX_BINARY"
 
 mirror_ips="
 192.34.63.51
-109.230.212.53
 151.80.190.129
+109.230.212.53
 109.230.212.54
 192.99.131.144
 86.59.119.84
@@ -39,20 +39,21 @@ mirror_ips="
 
 set +x
 for mirror_ip in $mirror_ips; do
-   curl_cmd="curl --max-time 3 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
-   echo "$curl_cmd"
+   curl_cmd=""
+   echo ""
 
-   if [ "$curl_result_old" = "" ]; then
-      curl_result_old="$(eval $curl_cmd)"
-      hash_old="$(echo "$curl_result_old" | sha512sum)"
-      #echo "$curl_result_old"
+   echo "curl --output /tmp/x --max-time 10 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
+   rm -f /tmp/x
+   curl --output /tmp/x --max-time 10 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc
+
+   if [ "$hash_old" = "" ]; then
+      hash_old="$(cat "/tmp/x" | sha512sum)"
       echo "${green}FIRST :${reset} $mirror_ip"
       echo "${green}FIRST :${reset} $hash_old"
       continue
    fi
-   curl_result_new="$($curl_cmd)"
-   hash_new="$(echo "$curl_result_new" | sha512sum)"
-   #echo "$curl_result_new"
+
+   hash_new="$(cat "/tmp/x" | sha512sum)"
 
    if [ "$hash_old" = "$hash_new" ]; then
       echo "${green}OK     :${reset} $mirror_ip"
