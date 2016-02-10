@@ -25,6 +25,10 @@ cd "$WHONIX_BINARY"
 
 [ -n "$version" ] || version="$anon_dist_build_version"
 
+## https://www.whonix.org/wiki/Dev/Mirrors
+
+## dig mirror.whonix.de ANY +noall +answer
+
 mirror_ips="
 192.34.63.51
 151.80.190.129
