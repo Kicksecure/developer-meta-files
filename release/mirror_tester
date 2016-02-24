@@ -47,7 +47,8 @@ for mirror_ip in $mirror_ips; do
 
    echo "curl --output /tmp/x --max-time 10 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc"
    rm -f /tmp/x
-   curl --output /tmp/x --max-time 10 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc
+   curl --output /tmp/x --max-time 10 --silent -H 'Host: mirror.whonix.de' -k http://$mirror_ip/whonixdevelopermetafiles/internal/news_v4/whonix_news.tar.xz.asc || true
+   touch /tmp/x
 
    if [ "$hash_old" = "" ]; then
       hash_old="$(cat "/tmp/x" | sha512sum)"
