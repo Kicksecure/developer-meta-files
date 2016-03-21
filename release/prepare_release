@@ -108,12 +108,12 @@ torrent_create() {
    #sudo -E -u "$user_name" mktorrent \
    #   --verbose \
    #   --announce="$TRACKERS" \
-   #   --web-seed "http://mirror.whonix.de/Whonix-Gateway-7.ova" \
-   #   --web-seed "http://mirror.whonix.de/Whonix-Workstation-7.ova" \
+   #   --web-seed "http://www.whonix.org/download/Whonix-Gateway-7.ova" \
+   #   --web-seed "http://www.whonix.org/download/Whonix-Workstation-7.ova" \
    #   ~/7
 
    ## CoralCDN:
-   ## .8008.nyud.net can no longer be appended to http://mirror.whonix.de,
+   ## .8008.nyud.net can no longer be appended to http://www.whonix.org/download,
    ## because CoralCDN appears to no longer support files greater than 50 MB.
 
    if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
@@ -122,7 +122,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.ova" \
+            --web-seed "http://www.whonix.org/download/$version/$VMNAME-$version.ova" \
             -o "$binary_image_ova_torrent" \
             "$binary_image_ova"
    fi
@@ -133,18 +133,18 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "http://mirror.whonix.de/$version/$VMNAME-$version.libvirt.xz" \
+            --web-seed "http://www.whonix.org/download/$version/$VMNAME-$version.libvirt.xz" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
 
    ## Working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://www.whonix.org/download/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://www.whonix.org/download/Whonix-Workstation-7.ova");' "$2")"
 
    ## Not working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://mirror.whonix.de/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://www.whonix.org/download/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("http://www.whonix.org/download/Whonix-Workstation-7.ova");' "$2")"
 }
 
 hashes_create_and_verify() {
