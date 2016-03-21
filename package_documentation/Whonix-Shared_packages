@@ -246,6 +246,11 @@ gtk2-engines-oxygen
 gtk3-engines-oxygen
 libnotify-bin
 
+## Functional X without functial VirtualBox guest additions.
+## https://forums.whonix.org/t/virtualbox-guest-additions-uninstalled-no-more-kde-desktop
+xserver-xorg-video-fbdev
+xserver-xorg-video-vesa
+
 ## Higher desktop resolution in KVM.
 xserver-xorg-video-qxl
 
