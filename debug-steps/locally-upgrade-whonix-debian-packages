@@ -86,12 +86,6 @@ main() {
    if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
       $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install \
          whonix-gateway-packages-dependencies-pre \
-         anon-shared-build-apt-sources-tpo \
-         anon-shared-build-upgrade-torsocks \
-         anon-shared-build-log-build-version \
-         anon-shared-build-remember-sources \
-         anon-shared-build-ban-nonfree \
-         anon-shared-build-sanity-checks \
          anon-shared-packages-dependencies \
          anon-shared-packages-recommended \
          anon-shared-desktop \
@@ -99,7 +93,6 @@ main() {
          anon-shared-kde-accessibility \
          whonix-shared-packages-dependencies \
          whonix-shared-packages-recommended \
-         anon-gw-build-upgrade-tor \
          anon-gateway-packages-dependencies \
          anon-gateway-packages-recommended \
          whonix-gateway-packages-dependencies \
@@ -107,12 +100,6 @@ main() {
    elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
       $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install \
          whonix-workstation-packages-dependencies-pre \
-         anon-shared-build-apt-sources-tpo \
-         anon-shared-build-upgrade-torsocks \
-         anon-shared-build-log-build-version \
-         anon-shared-build-remember-sources \
-         anon-shared-build-ban-nonfree \
-         anon-shared-build-sanity-checks \
          anon-shared-packages-dependencies \
          anon-shared-packages-recommended \
          anon-shared-desktop \
