@@ -1,0 +1,54 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../../help-steps/pre
+source ../../../help-steps/colors
+source ../../../help-steps/variables
+
+main() {
+   trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
+
+   ## Move existing /etc/apt/sources.list out of the way.
+   if ! test -e /etc/apt/sources.list.backup ; then
+      if test -e /etc/apt/sources.list ; then
+         mv /etc/apt/sources.list /etc/apt/sources.list.backup || true
+      fi
+   fi
+
+   ## This file doesn't include Whonix's APT repository.
+   cp "$WHONIX_SOURCE_FOLDER/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
+
+   ## Reading local repository containing Whonix's packages.
+   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts -o APT::Get::List-Cleanup="0" update
+
+   if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+      $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install whonix-gateway
+   elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
+      $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install whonix-workstation
+   else
+      local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
+      error "$MSG"
+   fi
+
+   #$CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts -f install
+
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
+
+   ## Forget about local repository containing Whonix's packages.
+   $CHROOT apt-get --no-download --list-cleanup update
+}
+
+main ${1+"$@"}
