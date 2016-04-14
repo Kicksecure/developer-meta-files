@@ -514,7 +514,7 @@ pkg_need_version_bump_do() {
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   make deb-uachl-bumpup
+   make deb-uachl-bumpup-major
 
    git add changelog.upstream
    git add debian/changelog
