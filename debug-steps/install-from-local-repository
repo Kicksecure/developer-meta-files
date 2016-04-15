@@ -4,6 +4,11 @@
 ## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
 ## See the file COPYING for copying conditions.
 
+## example usage:
+## Requires local repository already created.
+## cd ~/Whonix/packages/whonix-developer-meta-files
+## sudo ./debug-steps/install-from-local-repository --target root --flavor whonix-gateway --build
+
 set -x
 set -e
 
