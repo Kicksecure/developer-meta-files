@@ -153,7 +153,6 @@ ca-certificates
 curl
 
 ## required for graphical whonixcheck ## dependency
-## required for graphical timesync ## dependency
 zenity
 curl
 libnotify-bin
@@ -206,11 +205,11 @@ dialog
 x11-xserver-utils
 
 ## contains uname (required for whonixcheck, torbrowser-update) ## dependency
-## contains tty (required for whonixcheck, timesync, torbrowser-update)
+## contains tty (required for whonixcheck, torbrowser-update)
 ## (not in debian/control, otherwise lintian warning depends-on-essential-package-without-using-version)
 coreutils
 
-## contains tput (required for cli colors whonixcheck, timesync and torbrowser) ## dependency
+## contains tput (required for cli colors whonixcheck and torbrowser) ## dependency
 ## (not in debian/control, otherwise lintian warning depends-on-essential-package-without-using-version)
 ncurses-bin
 

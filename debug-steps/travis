@@ -140,10 +140,6 @@ true "INFO $BASH_SOURCE: Executing whonixcheck..."
 sudo -E -u travis bash -x whonixcheck || true
 true "INFO $BASH_SOURCE: Executed whonixcheck."
 
-true "INFO $BASH_SOURCE: Executing timesync..."
-sudo -E -u travis bash -x timesync || true
-true "INFO $BASH_SOURCE: Executed timesync."
-
 ## {{ Do not try to reboot Travis CI!
 
 ## Do not do this!!!
