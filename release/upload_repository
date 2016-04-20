@@ -151,7 +151,7 @@ upload_real_pool() {
 main() {
    root_check_no
    preparation
-   mirror_test
+   #mirror_test
    rsync_test
    show_dists
    show_pool
