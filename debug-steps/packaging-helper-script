@@ -511,6 +511,28 @@ pkg_need_version_bump_do() {
    true
 }
 
+pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   last_log_entry="$(git log --format=%s -1)"
+   if [ "bumped changelog version" = "$last_log_entry" ]; then
+      return 0
+   fi
+   echo "needs version bump: $item"
+
+   make git-commit-verify
+   pkg_upstream_and_debian_changelog_bump
+   git push adre master
+   git push origin master
+   pkg_git_sign_and_push_tags
+   export make_lintian=true
+   make deb-pkg
+   make reprepro-add
+   make deb-cleanup
+
+   true
+}
+
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "whonix-developer-meta-files" || return 0
 
