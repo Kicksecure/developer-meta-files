@@ -29,7 +29,7 @@ iterate() {
 doit() {
    package="$(basename $(pwd))"
    #git log --pretty=oneline --abbrev-commit --author=adrelanos --since="01.08.2015" --until="31.08.2015" | sed "s,^,https://github.com/adrelanos/$package/commit/,"
-   output="$(git --no-pager log --author=adrelanos --since="01.03.2016" --until="31.03.2016" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s %b")"
+   output="$(git --no-pager log --author=adrelanos --since="01.04.2016" --until="31.04.2016" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s %b")"
    if [ ! "$output" = "" ]; then
       echo "$output"
       echo ""
