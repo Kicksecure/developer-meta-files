@@ -24,6 +24,7 @@ source ../../../help-steps/variables
 "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export jessie
+"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export jessie-proposed-updates
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export developers
 
