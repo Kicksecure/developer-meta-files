@@ -38,8 +38,6 @@ fi
 
 ## Debugging.
 "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
-#"$whonix_dev_meta_files_folder/release/mirror_tester"
-"$whonix_dev_meta_files_folder/release/rsync-test"
 
 ## sanity tests
 required_tools="find sort tar rm mkdir basename touch sync gpg rsync sha512sum"
