@@ -260,6 +260,10 @@ xserver-xorg-video-qxl
 ## in /var/log/Xorg.0.log
 libgl1-mesa-dri
 
+## 1)
+## make dialogs look better, not like Windows 95
+## https://forums.whonix.org/t/qubes-whonix-13-0-0-0-7-testers-wanted/2432/8
+## 2)
 ## prevent warning when starting for example iceweasel or Tor Browser from terminal ## recommended
 ## Gtk-WARNING **: Unable to locate theme engine in module_path: "pixmap",
 ## https://github.com/QubesOS/qubes-issues/issues/1410
