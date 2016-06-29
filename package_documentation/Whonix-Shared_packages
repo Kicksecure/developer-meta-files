@@ -290,6 +290,12 @@ kwrite
 ## file manager ## recommended
 dolphin
 
+## dolphin search function fix
+## working around upstream bug of missing dependency
+## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=766426
+## http://forums.whonix.org/t/cant-search-files-getting-invalid-protocol-latest-whonix-v12
+baloo
+
 ## archiver ## recommended
 ark
 
