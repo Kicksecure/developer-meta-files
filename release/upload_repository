@@ -69,13 +69,6 @@ upload_dry_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/dists/"
-   rsync \
-      --dry-run \
-      $rsync_opts \
-      --recursive \
-      --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
       "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/dists/"
 }
 
@@ -83,13 +76,6 @@ upload_dry_pool() {
    true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
    read temp
    true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
-   rsync \
-      --dry-run \
-      $rsync_opts \
-      --recursive \
-      --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/pool/"
    rsync \
       --dry-run \
       $rsync_opts \
@@ -111,23 +97,11 @@ upload_real_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/dists/"
-   rsync \
-      $rsync_opts \
-      --recursive \
-      --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
       "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/dists/"
 }
 
 upload_real_pool() {
    true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
-   rsync \
-      $rsync_opts \
-      --recursive \
-      --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal/pool/"
    rsync \
       $rsync_opts \
       --recursive \
