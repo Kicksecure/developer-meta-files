@@ -22,15 +22,14 @@
 ## and enabled by default, it's a dependency.
 torsocks
 
-## required for whonixcheck ## dependency
+## required for anon-ws-disable-stacked-tor ## dependency
 ## Redirects requests to Tor's control port to Control Port Filter Proxy
 ## running on Whonix-Gateway.
 ## required for upstream TBB in Whonix ## recommended
-## Not sure if recommended or dependency.
 ## Not having this package will only prevent easy use of upstream TBB in Whonix and
 ## easy use of 127.0.0.1:9050 and 127.0.0.1:9150. People using Whonix-Workstation just
 ## as a server without desktop with no Tor Browser, will not need it.
-rinetd
+socat
 
 ## pdf reader ## recommended
 okular
