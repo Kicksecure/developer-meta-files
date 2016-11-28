@@ -35,7 +35,7 @@ socat
 okular
 
 ## sound ## recommended
-libasound2 alsa-base alsa-utils
+libasound2 alsa-base alsa-utils pulseaudio
 
 ## http- to socks proxy converter ## suggested
 #polipo
