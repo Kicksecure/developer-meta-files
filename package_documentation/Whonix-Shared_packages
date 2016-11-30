@@ -75,15 +75,6 @@ keyboard-configuration
 ## dependency
 sudo
 
-## dependency
-rungetty
-
-## dependency
-mingetty
-
-## dependency
-util-linux
-
 #debian-keyring
 
 ## dependency
