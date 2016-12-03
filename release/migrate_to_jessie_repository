@@ -23,6 +23,6 @@ source ../../../help-steps/variables
 
 cd "$mydir_backup"
 
-../debug-steps/reprepro-wrapper copymatched jessie testers "*"
+../debug-steps/reprepro-wrapper copymatched jessie jessie-proposed-updates "*"
 
-true "${cyan}INFO: Done. Migrated testers repository to jessie repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated jessie-proposed-updates repository to jessie repository. Do not forget to upload it.${reset}"
