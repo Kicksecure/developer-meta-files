@@ -25,4 +25,4 @@ cd "$mydir_backup"
 
 ../debug-steps/reprepro-wrapper copymatched jessie-proposed-updates testers "*"
 
-true "${cyan}INFO: Done. Migrated testers repository to jessie repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated testers repository to jessie-proposed-updates repository. Do not forget to upload it.${reset}"
