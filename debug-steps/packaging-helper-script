@@ -225,6 +225,11 @@ pkg_git_branch_checkout_master() {
    true
 }
 
+pkg_git_branch_checkout_Whonix13() {
+   git checkout Whonix13
+   true
+}
+
 pkg_git_diff_branch_master() {
    git diff master
    true
