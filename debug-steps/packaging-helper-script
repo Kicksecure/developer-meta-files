@@ -27,6 +27,9 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 
 cd "$MYDIR"
+
+source ../../../help-steps/colors
+
 cd ..
 
 ## Source make-helper.bsh to get function make_get_variables.
@@ -588,6 +591,8 @@ loop_helper() {
 
       reponame="$(basename "$item")"
       repo_full_path="$(realpath "$item")"
+
+      true "${cyan}INFO: reponame: $reponame${reset}"
 
       cd "$item"
 
