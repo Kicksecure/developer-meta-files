@@ -98,9 +98,6 @@ torrent_create() {
 
    [ -n "$TRACKERS" ] || TRACKERS="http://announce.torrentsmd.com:6969/announce"
 
-   sudo -E -u "$user_name" mkdir --parents "$WHONIX_BINARY/torrent-$version"
-   chown --recursive "$user_name:$user_name" "$WHONIX_BINARY/torrent-$version"
-
    ## Not well supported by BitTorrent clients.
    ## Multi file webseeds do not work
    ##     https://trac.transmissionbt.com/ticket/4437

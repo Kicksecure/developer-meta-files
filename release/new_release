@@ -33,8 +33,4 @@ fi
 
 "$whonix_dev_meta_files_folder/release/prepare_release"
 
-"$whonix_dev_meta_files_folder/release/upload_torrent"
-
-"$whonix_dev_meta_files_folder/release/upload_signatures"
-
 "$whonix_dev_meta_files_folder/release/upload_images"
