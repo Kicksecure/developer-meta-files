@@ -233,7 +233,7 @@ ksysguard
 plasma-widget-folderview
 gtk2-engines-oxygen
 gtk3-engines-oxygen
-kde-config-gtk-style 
+kde-config-gtk-style
 libnotify-bin
 
 ## Functional X without functial VirtualBox guest additions.
@@ -265,7 +265,9 @@ kde-baseapps-bin
 
 ## kde policy kit is important ## recommended
 ## otherwise problems with authentication
-polkit-kde-1
+## previous package name was polkit-kde-1
+## replacement should be the following
+polkit-kde-agent-1
 
 ## dependencies ## recommended
 ## required to prevent power management error message
@@ -285,7 +287,7 @@ dolphin
 ## working around upstream bug of missing dependency
 ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=766426
 ## http://forums.whonix.org/t/cant-search-files-getting-invalid-protocol-latest-whonix-v12
-baloo
+baloo-kf5
 
 ## archiver ## recommended
 ark
@@ -295,7 +297,7 @@ ark
 #galternatives
 
 ## help center ## LITE ## recommended
-khelpcenter4
+khelpcenter
 
 ## log viewer ## LITE ## recommended
 ksystemlog
