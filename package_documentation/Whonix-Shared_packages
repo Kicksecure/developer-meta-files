@@ -224,7 +224,6 @@ ntfs-3g
 
 ## default desktop ## recommended
 ## too big: plasma-desktop
-kde-workspace
 kdm
 xserver-xorg
 kdesudo
@@ -234,6 +233,7 @@ ksysguard
 plasma-widget-folderview
 gtk2-engines-oxygen
 gtk3-engines-oxygen
+kde-config-gtk-style 
 libnotify-bin
 
 ## Functional X without functial VirtualBox guest additions.
