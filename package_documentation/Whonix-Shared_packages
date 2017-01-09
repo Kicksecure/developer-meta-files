@@ -303,7 +303,7 @@ khelpcenter
 ksystemlog
 
 ## OpenVPN GUI
-plasma-widget-networkmanagement
+#plasma-nm
 
 ## accessibility: kdeaccessibility ## LITE ## recommended
 kdeaccessibility
