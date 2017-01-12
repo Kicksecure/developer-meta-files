@@ -223,8 +223,17 @@ ntfs-3g
 ###################
 
 ## default desktop ## recommended
-## too big: plasma-desktop
-kdm
+xddm
+plasma-desktop
+
+## missing dependency
+## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=824939
+kwin-x11
+
+## missing dependency
+## http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=851175
+plasma-desktop-data
+
 xserver-xorg
 kdesudo
 kdepasswd
@@ -232,7 +241,7 @@ kfind
 ksysguard
 plasma-widget-folderview
 gtk2-engines-oxygen
-gtk3-engines-oxygen
+#gtk3-engines-oxygen
 kde-config-gtk-style
 libnotify-bin
 
