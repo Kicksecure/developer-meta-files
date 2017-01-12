@@ -340,6 +340,11 @@ pkg_git_push_remotes() {
    ##wait "$git_pid"
    git_pid_list="$git_pid_list $git_pid"
 
+   make git-tag-push &
+   git_pid="$!"
+   ##wait "$git_pid"
+   git_pid_list="$git_pid_list $git_pid"
+
    true
 }
 
@@ -451,7 +456,7 @@ pkg_git_log_Whonix12_Whonix13() {
    true
 }
 
-pkg_git_sign_and_push_tags() {
+pkg_git_sign_tags() {
    repo_skip "whonix-developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
@@ -468,10 +473,6 @@ pkg_git_sign_and_push_tags() {
    fi
 
    make git-verify
-
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 TODO"
-   make git-tag-push
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 4/4 done"
 
    true
 }
@@ -544,9 +545,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    make git-commit-verify
    pkg_upstream_and_debian_changelog_bump
-   git push adre master
-   git push origin master
-   pkg_git_sign_and_push_tags
+   pkg_git_sign_tags
    export make_lintian=true
    make deb-pkg
    make reprepro-add
