@@ -239,11 +239,20 @@ kdesudo
 kdepasswd
 kfind
 ksysguard
-plasma-widget-folderview
-gtk2-engines-oxygen
-#gtk3-engines-oxygen
-kde-config-gtk-style
 libnotify-bin
+
+## recommended
+kde-config-gtk-style-preview
+kde-config-screenlocker
+kde-config-sddm
+gtk2-engines-oxygen
+kde-style-oxygen-qt5
+kmenuedit
+gtk3-engines-breeze
+
+## not adding
+## does not work inside VirtualBox VM
+#kgamma5
 
 ## Functional X without functial VirtualBox guest additions.
 ## https://forums.whonix.org/t/virtualbox-guest-additions-uninstalled-no-more-kde-desktop
