@@ -38,7 +38,7 @@ read temp
 #sf_project="whonixdevelopermetafiles"
 #server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$sf_project/$version/"
 
-server="root@rsync.whonix.org:/var/rsync/$version/"
+server="root@rsync.whonix.org:/var/rsync/linux/$version/"
 
 if [ "$server" = "" ]; then
    error "Variable server is empty."
