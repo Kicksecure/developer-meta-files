@@ -84,6 +84,8 @@ libvirt_compress() {
          "$(basename "$libvirt_target_network_file_external")" \
          $maybe_add_libvirt_network_xml_file
 
+      strip-nondeterminism "$libvirt_target_xz_archive"
+
       sync
 
       ## sanity test
