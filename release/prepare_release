@@ -70,9 +70,13 @@ libvirt_compress() {
 
       tar \
          --create \
+         --verbose \
+         --owner=root --group=root --numeric-owner \
+         --mode=go=rX,u+rw,a-s \
+         --sort=name \
          --sparse \
+         --mtime='2015-10-21 00:00Z' \
          --xz \
-         --mtime="2014-05-06 00:00:00" \
          --directory="$WHONIX_BINARY" \
          --file "$(basename $libvirt_target_xz_archive)" \
          "$(basename "$binary_image_qcow2")" \
