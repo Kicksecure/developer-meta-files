@@ -47,14 +47,19 @@ done
 unset tool
 
 compress_news() {
-   ## Deterministic.
-   find . -print0 \
-      | sort -z \
+   find \
+      "." \
+      -print0 \
          | tar \
+            --null \
             --no-recursion \
             --create \
-            --xz \
             --verbose \
+            --owner=root --group=root --numeric-owner \
+            --mode=go=rX,u+rw,a-s \
+            --sort=name \
+            --mtime='2015-10-21 00:00Z' \
+            --xz \
             --file="$WHONIX_BINARY/news_v4/whonix_news.tar.xz" \
             -T \
             -
