@@ -30,4 +30,5 @@ main() {
    true
 }
 
+set_WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS
 main ${1+"$@"}
