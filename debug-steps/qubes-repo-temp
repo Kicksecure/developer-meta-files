@@ -20,8 +20,21 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-target_vm="sys-whonix-dev"
+#target_vm="sys-whonix-dev"
 #target_vm="sys-whonix"
+
+#target_vm="anon-whonix-dev"
+#target_vm="anon-whonix"
+
+#target_vm="whonix-ws-dev"
+#target_vm="whonix-ws"
+
+#target_vm="whonix-gw-dev"
+#target_vm="whonix-gw"
+
+if [ "$target_vm" = "" ]; then
+   error_ "$target_vm must not be empty!"
+fi
 
 source_vm="$(qubesdb-read /name)"
 
