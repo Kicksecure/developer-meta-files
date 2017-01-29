@@ -1,0 +1,50 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+
+## disable cmd line parser, since not needed
+export whonix_build_one_parsed="1"
+export VMNAME="internalrun"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../../help-steps/pre
+source ../../../help-steps/colors
+source ../../../help-steps/variables
+
+target_vm="sys-whonix-dev"
+#target_vm="sys-whonix"
+
+source_vm="$(qubesdb-read /name)"
+
+## Get rid of huge .git folder.
+rm -r -f "$WHONIX_BINARY/aptrepo_temp_copy/"
+mkdir -p "$WHONIX_BINARY/aptrepo_temp_copy"
+cp -r "$WHONIX_BINARY/aptrepo_remote/dists" "$WHONIX_BINARY/aptrepo_temp_copy/dists"
+cp -r "$WHONIX_BINARY/aptrepo_remote/pool" "$WHONIX_BINARY/aptrepo_temp_copy/pool"
+
+echo "deb [trusted=yes] file:/tmp/aptrepo_temp_copy $WHONIX_BUILD_APT_CODENAME main" > "$WHONIX_BINARY/whonix_repo_temp.list"
+cat "$WHONIX_BINARY/whonix_repo_temp.list"
+
+qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
+qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list"
+qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/whonix_repo_temp.list"
+
+qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/whonix_repo_temp.list"
+qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/aptrepo_temp_copy/"
+
+qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list /etc/apt/sources.list.d/whonix_repo_temp.list"
+
+qvm-run "$target_vm" "sudo rm -r -f /tmp/aptrepo_temp_copy"
+qvm-run "$target_vm" "cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /tmp/aptrepo_temp_copy"
+qvm-run "$target_vm" "sudo chown -R _apt /tmp/aptrepo_temp_copy"
+
+qvm-run "$target_vm" "sudo apt-get update"
