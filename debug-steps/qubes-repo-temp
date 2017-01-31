@@ -44,7 +44,7 @@ mkdir -p "$WHONIX_BINARY/aptrepo_temp_copy"
 cp -r "$WHONIX_BINARY/aptrepo_remote/dists" "$WHONIX_BINARY/aptrepo_temp_copy/dists"
 cp -r "$WHONIX_BINARY/aptrepo_remote/pool" "$WHONIX_BINARY/aptrepo_temp_copy/pool"
 
-echo "deb [trusted=yes] file:/tmp/aptrepo_temp_copy $WHONIX_BUILD_APT_CODENAME main" > "$WHONIX_BINARY/whonix_repo_temp.list"
+echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $WHONIX_BUILD_APT_CODENAME main" > "$WHONIX_BINARY/whonix_repo_temp.list"
 cat "$WHONIX_BINARY/whonix_repo_temp.list"
 
 qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
@@ -56,8 +56,8 @@ qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/aptrepo_temp_copy/"
 
 qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list /etc/apt/sources.list.d/whonix_repo_temp.list"
 
-qvm-run "$target_vm" "sudo rm -r -f /tmp/aptrepo_temp_copy"
-qvm-run "$target_vm" "cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /tmp/aptrepo_temp_copy"
-qvm-run "$target_vm" "sudo chown -R _apt /tmp/aptrepo_temp_copy"
+qvm-run "$target_vm" "sudo rm -r -f /var/cache/aptrepo_temp_copy"
+qvm-run "$target_vm" "cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"
+qvm-run "$target_vm" "sudo chown -R _apt /var/cache/aptrepo_temp_copy"
 
 qvm-run "$target_vm" "sudo apt-get update"
