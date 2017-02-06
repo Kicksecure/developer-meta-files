@@ -57,7 +57,7 @@ qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/aptrepo_temp_copy/"
 qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list /etc/apt/sources.list.d/whonix_repo_temp.list"
 
 qvm-run "$target_vm" "sudo rm -r -f /var/cache/aptrepo_temp_copy"
-qvm-run "$target_vm" "cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"
+qvm-run "$target_vm" "sudo cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"
 qvm-run "$target_vm" "sudo chown -R _apt /var/cache/aptrepo_temp_copy"
 
 qvm-run "$target_vm" "sudo apt-get update"
