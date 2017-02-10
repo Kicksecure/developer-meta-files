@@ -40,13 +40,13 @@ main() {
    $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts -o APT::Get::List-Cleanup="0" update
 
    if [ "$pkg" = "" ]; then
-      if [ "$WHONIX_BUILD_GATEWAY" = "1" ]; then
+      if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
             pkg="qubes-whonix-gateway"
          else
             pkg="non-qubes-whonix-gateway"
          fi
-      elif [ "$WHONIX_BUILD_WORKSTATION" = "1" ]; then
+      elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
             pkg="qubes-whonix-workstation"
          else
