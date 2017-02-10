@@ -40,7 +40,7 @@ cd ..
 counter=0
 
 nothing_to_commit_msg="On branch master
-nothing to commit, working directory clean"
+nothing to commit, working tree clean"
 
 repo_skip() {
    if [ "$reponame" = "$1" ]; then
@@ -405,7 +405,7 @@ pkg_git_diff_and_commit() {
    #git add -u
    git diff
    git add debian/control
-   git commit -m "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support"
+   git commit -m "packaging simplification config-package-dev (>= 5.1) -> config-package-dev"
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
