@@ -320,34 +320,42 @@ pkg_packaging_files_diff() {
    true
 }
 
+internal_git_diff() {
+   if [ "$(git diff --stat "$1" "$2")" = "" ]; then
+      return 1
+   else
+      return 0
+   fi
+}
+
 pkg_git_push_remotes() {
-   if ! git diff --stat master adre/master ; then
+   if internal_git_diff master adre/master ; then
       git push adre master &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-   if ! git diff --stat Whonix13 adre/Whonix13 ; then
-      git push adre Whonix13 &
-      git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
-   fi
+#    if internal_git_diff Whonix13 adre/Whonix13 ; then
+#       git push adre Whonix13 &
+#       git_pid="$!"
+#       #wait "$git_pid"
+#       git_pid_list="$git_pid_list $git_pid"
+#    fi
 
-   if ! git diff --stat master origin/master ; then
+   if internal_git_diff master origin/master ; then
       git push origin master &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-   if ! git diff --stat Whonix13 origin/Whonix13 ; then
-      git push origin Whonix13 &
-      git_pid="$!"
-      ##wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
-   fi
+#    if internal_git_diff Whonix13 origin/Whonix13  ; then
+#       git push origin Whonix13 &
+#       git_pid="$!"
+#       ##wait "$git_pid"
+#       git_pid_list="$git_pid_list $git_pid"
+#    fi
 
 #    make git-tag-push &
 #    git_pid="$!"
