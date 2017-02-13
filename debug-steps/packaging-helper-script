@@ -321,30 +321,38 @@ pkg_packaging_files_diff() {
 }
 
 pkg_git_push_remotes() {
-   git push adre master &
-   git_pid="$!"
-   #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   if ! git diff --stat master adre/master ; then
+      git push adre master &
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
 
-   git push adre Whonix13 &
-   git_pid="$!"
-   #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   if ! git diff --stat Whonix13 adre/Whonix13 ; then
+      git push adre Whonix13 &
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
 
-   git push origin master &
-   git_pid="$!"
-   #wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   if ! git diff --stat master origin/master ; then
+      git push origin master &
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
 
-   git push origin Whonix13 &
-   git_pid="$!"
-   ##wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+   if ! git diff --stat Whonix13 origin/Whonix13 ; then
+      git push origin Whonix13 &
+      git_pid="$!"
+      ##wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
 
-   make git-tag-push &
-   git_pid="$!"
-   ##wait "$git_pid"
-   git_pid_list="$git_pid_list $git_pid"
+#    make git-tag-push &
+#    git_pid="$!"
+#    ##wait "$git_pid"
+#    git_pid_list="$git_pid_list $git_pid"
 
    true
 }
