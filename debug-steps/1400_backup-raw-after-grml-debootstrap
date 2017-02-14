@@ -8,12 +8,6 @@
 
 ## From Whonix main source code folder.
 
-## wheezy - tested
-#cd build-steps.d
-#ln -s ../packages/whonix-developer-meta-files/debug-steps/1400_backup-raw-after-grml-debootstrap ./
-#cd ..
-#./build-steps.d/1400_backup-raw-after-grml-debootstrap
-
 ## jessie - untested
 #ln -r -s ./packages/whonix-developer-meta-files/debug-steps/1400_backup-raw-after-grml-debootstrap ./build-steps.d/
 #./build-steps.d/1400_backup-raw-after-grml-debootstrap
