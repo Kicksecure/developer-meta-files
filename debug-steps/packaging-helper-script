@@ -417,11 +417,11 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   #git add -A
-   #git add -u
+   git add -A
+   git add -u
    git diff
-   git add debian/control
-   git commit -m "packaging simplification ruby-ronn (>= 0.7.3) -> ruby-ronn"
+   #git add debian/control
+   git commit -m '"$@"'
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
