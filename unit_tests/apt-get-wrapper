@@ -7,7 +7,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE $@"
 set -o pipefail
 
 ## disable cmd line parser, since not needed

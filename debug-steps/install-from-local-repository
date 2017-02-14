@@ -12,7 +12,7 @@
 set -x
 set -e
 
-true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE $@"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
@@ -68,4 +68,4 @@ main() {
    $CHROOT apt-get --no-download --list-cleanup update
 }
 
-main ${1+"$@"}
+main "$@"
