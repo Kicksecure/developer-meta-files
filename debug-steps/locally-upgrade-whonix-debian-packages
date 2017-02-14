@@ -61,8 +61,8 @@ main() {
    ## Out commented. Instructions leave that to the user. This is better,
    ## because this script would fail if some repository would not be reachable,
    ## such as torproject's Tor 0.2.4 apt repository.
-   #$CHROOT apt-get $apt_timeout_opts $apt_misc_opts update
-   #$CHROOT apt-get $apt_timeout_opts $apt_misc_opts --yes dist-upgrade
+   #$CHROOT apt-get "${APTGETOPT[@]}" update
+   #$CHROOT apt-get "${APTGETOPT[@]}" --yes dist-upgrade
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
 
@@ -81,10 +81,10 @@ main() {
    $CHROOT apt-key finger
 
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
-   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts -o APT::Get::List-Cleanup="0" update
+   $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
-      $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install \
+      $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install \
          whonix-gateway-packages-dependencies-pre \
          anon-shared-packages-dependencies \
          anon-shared-packages-recommended \
@@ -98,7 +98,7 @@ main() {
          whonix-gateway-packages-dependencies \
          whonix-gateway-packages-recommended
    elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation" ]; then
-      $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes install \
+      $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install \
          whonix-workstation-packages-dependencies-pre \
          anon-shared-packages-dependencies \
          anon-shared-packages-recommended \
@@ -117,9 +117,9 @@ main() {
    fi
 
    ## Upgrade Whonix Debian Packages.
-   $CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts --yes dist-upgrade
+   $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes dist-upgrade
 
-   #$CHROOT apt-get $apt_sourcelist_empty $apt_sourceparts $apt_timeout_opts $apt_verify_opts $apt_misc_opts -f install
+   #$CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
 
