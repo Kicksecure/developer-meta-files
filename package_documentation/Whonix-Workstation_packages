@@ -130,3 +130,6 @@ iceweasel
 
 ## password manager
 #fpm2
+
+## to simplify installation of ZeroNet
+python-msgpack
