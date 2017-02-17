@@ -22,6 +22,12 @@
 ## and enabled by default, it's a dependency.
 torsocks
 
+## dependency of uwt
+## allows to force change local listener IP
+## makes it possible to use onionshare, ricochet-im or similar applications
+## in a gateway / workstation split design
+bindp
+
 ## required for anon-ws-disable-stacked-tor ## dependency
 ## Redirects requests to Tor's control port to Control Port Filter Proxy
 ## running on Whonix-Gateway.
