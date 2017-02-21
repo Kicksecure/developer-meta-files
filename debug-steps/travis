@@ -130,11 +130,11 @@ true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
 /usr/lib/first_run_initializer_gui || true
 true "INFO $BASH_SOURCE: Executed First Run Initializer Gui."
 
-service timesanitycheck start || true
-service bootclockrandomization start || true
-service msgcollector start || true
-service sdwdate start || true
-service whonixcheckd start || true
+systemctl --no-pager timesanitycheck start || true
+systemctl --no-pager bootclockrandomization start || true
+systemctl --no-pager msgcollector start || true
+systemctl --no-pager sdwdate start || true
+systemctl --no-pager whonixcheckd start || true
 
 true "INFO $BASH_SOURCE: Executing whonixcheck..."
 sudo --non-interactive -E -u travis bash -x whonixcheck || true
