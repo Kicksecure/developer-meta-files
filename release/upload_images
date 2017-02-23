@@ -44,12 +44,22 @@ if [ "$server" = "" ]; then
    error "Variable server is empty."
 fi
 
-ls -la "$WHONIX_BINARY/"*".torrent"
-ls -la "$WHONIX_BINARY/"*".sha256sums"
-ls -la "$WHONIX_BINARY/"*".sha512sums"
-ls -la "$WHONIX_BINARY/"*".ova"
-ls -la "$WHONIX_BINARY/"*".libvirt.xz"
-ls -la "$WHONIX_BINARY/"*".asc"
+for extension in "torrent" "sha256sums" "sha512sums" "ova" "libvirt.xz" "asc" ; do
+   result="$(find "$WHONIX_BINARY" -maxdepth 1 -type f -name "*.$extension" -printf '%p\n')"
+   if [ "$result" == "" ]; then
+      continue
+   fi
+   if [ "$file_list" = "" ]; then
+      file_list="$result"
+   else
+      file_list="\
+$file_list
+$result"
+   fi
+done
+
+true "file_list:
+$file_list"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
 read temp
@@ -58,12 +68,7 @@ read temp
 rsync \
    --dry-run \
    $rsync_opts \
-   "$WHONIX_BINARY/"*".torrent" \
-   "$WHONIX_BINARY/"*".sha256sums" \
-   "$WHONIX_BINARY/"*".sha512sums" \
-   "$WHONIX_BINARY/"*".ova" \
-   "$WHONIX_BINARY/"*".libvirt.xz" \
-   "$WHONIX_BINARY/"*".asc" \
+   $file_list \
    "$server"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -78,12 +83,7 @@ while true; do
    rsync_exit_code="0"
    rsync \
       $rsync_opts \
-      "$WHONIX_BINARY/"*".torrent" \
-      "$WHONIX_BINARY/"*".sha256sums" \
-      "$WHONIX_BINARY/"*".sha512sums" \
-      "$WHONIX_BINARY/"*".ova" \
-      "$WHONIX_BINARY/"*".libvirt.xz" \
-      "$WHONIX_BINARY/"*".asc" \
+      $file_list \
       "$server" \
       || { rsync_exit_code="$?" ; true; };
 
