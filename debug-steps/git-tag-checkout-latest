@@ -1,0 +1,59 @@
+#!/bin/bash
+
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+set -o pipefail
+set -o errtrace
+
+true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+"
+   exit 1
+}
+
+trap "build_all_error_handler" ERR
+set +e
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+
+cd ../../
+
+if [ "$(id -u)" = "0" ]; then
+   error "Do not run this as root!"
+fi
+
+if [ ! "$(git status --porcelain)" = "" ]; then
+   error
+fi
+
+git fetch --jobs=200
+
+git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+
+git verify-tag "$git_tag_latest"
+
+git verify-commit "${git_tag_latest}^{commit}"
+
+git checkout "$git_tag_latest"
+
+if [ ! "$(git status --porcelain)" = "" ]; then
+   error
+fi
+
+git submodule sync --recursive >/dev/null
+
+git submodule update --init --recursive --jobs=200  >/dev/null
+
+if [ ! "$(git status --porcelain)" = "" ]; then
+   error
+fi
