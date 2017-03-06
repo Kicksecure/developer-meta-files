@@ -53,3 +53,5 @@ git submodule update --init --recursive --jobs=200  >/dev/null
 if [ ! "$(git status --porcelain)" = "" ]; then
    error
 fi
+
+git describe
