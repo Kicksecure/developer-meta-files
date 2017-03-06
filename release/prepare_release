@@ -109,7 +109,7 @@ torrent_create() {
    ## Multi file webseeds do not work
    ##     https://trac.transmissionbt.com/ticket/4437
    ## (fixed upstream, but takes a while to propagate to Debian stable)
-   #sudo -E -u "$user_name" mktorrent \
+   #sudo $SUDO_OPTS mktorrent \
    #   --verbose \
    #   --announce="$TRACKERS" \
    #   --web-seed "https://download.whonix.org/Whonix-Gateway-7.ova" \
@@ -122,7 +122,7 @@ torrent_create() {
 
    if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
       rm --force "$binary_image_ova_torrent"
-      sudo -E -u "$user_name" \
+      sudo $SUDO_OPTS \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
@@ -133,7 +133,7 @@ torrent_create() {
 
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
       rm --force "$libvirt_target_xz_archive_torrent"
-      sudo -E -u "$user_name" \
+      sudo $SUDO_OPTS \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
