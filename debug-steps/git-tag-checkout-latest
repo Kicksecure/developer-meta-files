@@ -46,10 +46,6 @@ git verify-commit "${git_tag_latest}^{commit}"
 
 git checkout "$git_tag_latest"
 
-if [ ! "$(git status --porcelain)" = "" ]; then
-   error
-fi
-
 git submodule sync --recursive >/dev/null
 
 git submodule update --init --recursive --jobs=200  >/dev/null
