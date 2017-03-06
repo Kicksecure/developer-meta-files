@@ -10,7 +10,7 @@
 set -x
 set -e
 
-true "INFO: Currently running script: $BASH_SOURCE ${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE $@"
 
 whonix_build_one_parsed="1"
 VMNAME="internalrun"
@@ -26,9 +26,9 @@ main() {
    reprepro \
       $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
       $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
-      ${1+"$@"}
+      "$@"
    true
 }
 
 set_WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS
-main ${1+"$@"}
+main "$@"

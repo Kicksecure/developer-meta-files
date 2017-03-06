@@ -6,7 +6,7 @@
 
 set -x
 set -e
-true "INFO: Currently running script: $BASH_SOURCE ${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## disable cmd line parser, since not needed
 export whonix_build_one_parsed="1"

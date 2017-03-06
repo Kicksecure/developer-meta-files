@@ -9,7 +9,7 @@ set -e
 set -o pipefail
 set -o errtrace
 
-true "INFO: Currently running script: $BASH_SOURCE ${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE $@"
 
 build_all_error_handler() {
    : echo "
@@ -623,7 +623,7 @@ loop_helper() {
 
       cd "$item"
 
-      ${1+"$@"}
+      "$@"
 
       cd ..
 
@@ -637,13 +637,13 @@ loop_helper() {
 }
 
 main() {
-   if [ "${1+"$@"}" = "" ]; then
+   if [ "$@" = "" ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
       true "INFO: syntax: ./$0 function-name"
    else
-      loop_helper ${1+"$@"}
+      loop_helper "$@"
    fi
 }
 
-main ${1+"$@"}
+main "$@"
