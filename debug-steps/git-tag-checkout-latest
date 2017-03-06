@@ -9,7 +9,7 @@ set -e
 set -o pipefail
 set -o errtrace
 
-true "INFO: Currently running script: $BASH_SOURCE${1+"$@"}"
+true "INFO: Currently running script: $BASH_SOURCE ${1+"$@"}"
 
 build_all_error_handler() {
    : echo "
