@@ -20,28 +20,28 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    mkdir --parents "$WHONIX_BINARY"
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    cp "$whonix_dev_meta_files_folder/release/readme/download_folder_README" "$WHONIX_BINARY/"
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    rm --force "$WHONIX_BINARY/download_folder_README.asc"
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    gpg --clearsign "$WHONIX_BINARY/download_folder_README"
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    cat "$WHONIX_BINARY/download_folder_README.asc"
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    gpg --verify "$WHONIX_BINARY/download_folder_README.asc"
 
 true "${cyan}INFO: Press enter to continue.${reset}"
 read temp
 
-sudo -u "$user_name" \
+sudo $SUDO_OPTS \
    rsync \
       $rsync_opts \
       --rsh ssh \
