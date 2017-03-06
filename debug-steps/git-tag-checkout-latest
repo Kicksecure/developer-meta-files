@@ -48,7 +48,7 @@ git checkout "$git_tag_latest"
 
 git submodule sync --recursive >/dev/null
 
-git submodule update --init --recursive --jobs=200  >/dev/null
+git submodule update --init --recursive --jobs=200 >/dev/null
 
 if [ ! "$(git status --porcelain)" = "" ]; then
    error
