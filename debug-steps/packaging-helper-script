@@ -637,12 +637,14 @@ loop_helper() {
 }
 
 main() {
-   if [ "$@" = "" ]; then
+   args="$@"
+   if [ "$args" = "" ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
       true "INFO: syntax: ./$0 function-name"
    else
       loop_helper "$@"
+      true
    fi
 }
 
