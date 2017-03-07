@@ -61,3 +61,5 @@ qvm-run "$target_vm" "sudo cp -r /home/user/QubesIncoming/$source_vm/aptrepo_tem
 qvm-run "$target_vm" "sudo chown -R _apt /var/cache/aptrepo_temp_copy"
 
 qvm-run "$target_vm" "sudo apt-get update"
+
+true "INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected."
