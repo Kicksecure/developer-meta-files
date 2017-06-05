@@ -194,10 +194,14 @@ pkg_git_remotes_add() {
    git remote rm troubadoour || true
    git remote rm origin || true
    git remote rm joysn || true
+   git remote rm jason || true
+
    git remote add adre git@github.com:adrelanos/$reponame.git
    git remote add troubadoour git@github.com:troubadoour/$reponame.git
-   git remote add joysn git@github.com:joysn/$reponame.git
    git remote add origin git@github.com:Whonix/$reponame.git
+   git remote add joysn git@github.com:joysn/$reponame.git
+   git remote add jason origin git@github.com:JasonJAyalaP/$reponame.git
+
    git remote -v
    true
 }
