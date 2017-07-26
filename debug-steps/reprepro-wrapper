@@ -23,11 +23,17 @@ source ../../../help-steps/colors
 source ../../../help-steps/variables
 
 main() {
-   reprepro \
+   reprepro_exit_code="0"
+   reprepro_output="$(reprepro \
       $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
       $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
-      "$@"
-   true
+      "$@" 2>&1)" || { reprepro_exit_code="$?" ; true; };
+
+   if echo "$reprepro_output" | grep "is already registered with different checksums!" ; then
+      return 0
+   fi
+
+   return "$reprepro_exit_code"
 }
 
 set_WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS

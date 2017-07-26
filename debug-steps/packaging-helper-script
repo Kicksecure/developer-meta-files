@@ -563,15 +563,18 @@ pkg_need_version_bump_do() {
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "whonix-developer-meta-files" || return 0
 
+   make git-commit-verify
+
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
-      return 0
+      true
+   else
+      echo "needs version bump: $item"
+      pkg_upstream_and_debian_changelog_bump
    fi
-   echo "needs version bump: $item"
 
-   make git-commit-verify
-   pkg_upstream_and_debian_changelog_bump
-   pkg_git_sign_tags
+   pkg_git_sign_tags ## Includes "make git-commit-verify".
+
    export make_lintian=true
    export make_use_cowbuilder=true
    make deb-pkg
