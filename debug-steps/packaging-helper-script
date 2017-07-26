@@ -325,11 +325,26 @@ pkg_packaging_files_diff() {
 }
 
 internal_git_diff() {
-   if [ "$(git diff --stat "$1" "$2")" = "" ]; then
-      return 1
-   else
-      return 0
+   git_exit_code="0"
+   git_diff_output="$(git diff --stat "$1" "$2")" || { git_exit_code="$?" ; true; };
+
+   if [ "$git_exit_code" = "128" ]; then
+      true "ERROR: Something is wrong. See above. Press enter to continue."
+      read error
    fi
+
+   if [ "$git_diff_output" = "" ]; then
+      if [ "$git_exit_code" = "0" ]; then
+         return 1
+      fi
+   fi
+
+   return 0
+}
+
+pkg_git_fetch_remotes() {
+   git fetch origin &
+   git fetch adre &
 }
 
 pkg_git_push_remotes() {
@@ -567,7 +582,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
-      true
+      return 0
    else
       echo "needs version bump: $item"
       pkg_upstream_and_debian_changelog_bump
