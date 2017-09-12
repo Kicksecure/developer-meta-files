@@ -588,7 +588,11 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       pkg_upstream_and_debian_changelog_bump
    fi
 
+   git push origin master
+
    pkg_git_sign_tags ## Includes "make git-commit-verify".
+
+   make git-tag-push
 
    export make_lintian=true
    export make_use_cowbuilder=true
