@@ -34,7 +34,10 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-[ -n "$whonix_news_gpg_sign_with_options" ] || whonix_news_gpg_sign_with_options="--sign-with 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA"
+## TODO
+## Wait for 'Addon: Split GPG using GPG v2.1 architecture #474' being implemented.
+## https://github.com/QubesOS/qubes-issues/issues/474
+#[ -n "$whonix_news_gpg_sign_with_options" ] || whonix_news_gpg_sign_with_options="--sign-with 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA"
 
 ## Debugging.
 "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
@@ -121,17 +124,27 @@ fi
 
 sync
 
-gpg \
+## TODO
+## Wait for 'Addon: Split GPG using GPG v2.1 architecture #474' being implemented.
+## https://github.com/QubesOS/qubes-issues/issues/474
+#   --set-notation "file@name"="$(basename "$WHONIX_BINARY/news_v4/whonix_news.tar.xz")" \
+
+$gpg_bin \
    $whonix_news_gpg_sign_with_options \
-   --set-notation "file@name"="$(basename "$WHONIX_BINARY/news_v4/whonix_news.tar.xz")" \
    --detach-sign \
    --armor \
    --yes \
+   --output "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" \
    "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
 sync
-gpg \
-   --verify-options show-notations \
-   --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc"
+
+## TODO
+## Wait for 'Addon: Split GPG using GPG v2.1 architecture #474' being implemented.
+## https://github.com/QubesOS/qubes-issues/issues/474
+#   --verify-options show-notations \
+
+$gpg_bin \
+   --verify "$WHONIX_BINARY/news_v4/whonix_news.tar.xz.asc" "$WHONIX_BINARY/news_v4/whonix_news.tar.xz"
 
 ls -la "$WHONIX_BINARY/news_v4/"
 
