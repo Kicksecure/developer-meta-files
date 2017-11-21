@@ -12,6 +12,7 @@
 ## Used by:
 ## - Whonix 7.x
 ## - Whonix 8.x
+## - Whonix 13.x
 
 set -x
 set -e
