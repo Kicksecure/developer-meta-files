@@ -30,13 +30,13 @@ sudo $SUDO_OPTS \
    rm --force "$WHONIX_BINARY/download_folder_README.asc"
 
 sudo $SUDO_OPTS \
-   gpg --clearsign "$WHONIX_BINARY/download_folder_README"
+   $gpg_bin --clearsign "$WHONIX_BINARY/download_folder_README"
 
 sudo $SUDO_OPTS \
    cat "$WHONIX_BINARY/download_folder_README.asc"
 
 sudo $SUDO_OPTS \
-   gpg --verify "$WHONIX_BINARY/download_folder_README.asc"
+   $gpg_bin --verify "$WHONIX_BINARY/download_folder_README.asc"
 
 true "${cyan}INFO: Press enter to continue.${reset}"
 read temp

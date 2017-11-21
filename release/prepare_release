@@ -190,11 +190,11 @@ sign_cmd() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   gpg --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 }
 
 verify_cmd() {
-   gpg --verify-options show-notations --verify "$1"
+   $gpg_bin --verify-options show-notations --verify "$1"
 }
 
 signatures_create() {
