@@ -31,7 +31,7 @@ console-data
 console-common
 
 ## dependency
-initramfs-tools
+dracut
 
 ## dependency
 grub-pc
