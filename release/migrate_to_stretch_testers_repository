@@ -23,6 +23,6 @@ source ../../../help-steps/variables
 
 cd "$mydir_backup"
 
-../debug-steps/reprepro-wrapper copymatched stretch-testers developers "*"
+../debug-steps/reprepro-wrapper copymatched stretch-testers stretch-developers "*"
 
-true "${cyan}INFO: Done. Migrated developers repository to stretch-testers repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated stretch-developers repository to stretch-testers repository. Do not forget to upload it.${reset}"
