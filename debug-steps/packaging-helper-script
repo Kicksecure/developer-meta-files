@@ -649,7 +649,7 @@ loop_helper() {
 
       cd "$item"
 
-      "$@"
+      $@ || true
 
       cd ..
 
