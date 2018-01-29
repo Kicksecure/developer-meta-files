@@ -397,7 +397,7 @@ pkg_git_push_remotes() {
 
 pkg_git_commmit_readme() {
    git add README.md
-   git diff --cached
+   #git diff --cached
    msg="readme"
    git commit -m "$msg"
    git status
