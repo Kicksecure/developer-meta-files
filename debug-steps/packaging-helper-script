@@ -260,6 +260,16 @@ pkg_packaging_copy() {
    true
 }
 
+pkg_copy_contributing_file() {
+   repo_skip "genmkfile" || return 0
+
+   cp "/home/user/Whonix/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
+   git add "$repo_full_path/CONTRIBUTING.md"
+   git commit -m "update copyright"
+
+   true
+}
+
 pkg_packaging_files_diff() {
    local compare_with_path
    ## Some arbitrary package used as template for comparison.
