@@ -48,6 +48,81 @@ repo_skip() {
    fi
 }
 
+## XXX
+giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
+giant_git_log_processed_file="/home/user/whonix_binary/giant_git_log_processed.txt"
+
+commit_filter() {
+   set +x
+   if [ "$giant_git_log_processed_delete_once" = "" ]; then
+      giant_git_log_processed_delete_once=done
+      rm -r -f "$giant_git_log_processed_file"
+   fi
+
+   while read -r line; do
+      local skip=false
+      commit_msg="${line#*" "}"#
+      commit_msg="$line"
+
+      if echo "$commit_msg" | grep -i -q "Merge remote-tracking branch" ; then
+         true "skip : $line"
+         skip=true
+         continue
+      fi
+      if echo "$commit_msg" | grep -i -q "Merge pull request" ; then
+         true "skip : $line"
+         skip=true
+         continue
+      fi
+
+      for text in \
+         "copyright" \
+         "update copyright" \
+         "Update Copyright" \
+         "remove faketime from Build-Depends:" \
+         "remove debian/gain-root-command workaround" \
+         "packaging simplification config-package-dev (>= 5.1) -> config-package-dev" \
+         "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support" \
+         "bump version number" \
+         "bumped version number" \
+         "bumped changelog version" \
+         "packaging" \
+         "fix" \
+         "comment" \
+         "comments" \
+         "output" \
+         "news" \
+         "readme" \
+         "updated generic makefile" \
+         "bumped compat from 8 to 9" \
+         "Updated debian/changelog." \
+         "Fixed changelog date." \
+         "updated makefile generic to version 1.3" \
+         "updated makefile generic to version 1.4" \
+         "updated makefile generic to version 1.5" \
+         "added changelog.upstream" \
+         "quotes" \
+         "refactoring" \
+         "debugging" \
+         "lintian warning copyright fix" \
+         "."
+         do
+            if [ "$text" = "$commit_msg" ]; then
+               true "skip : $line"
+               skip=true
+               continue
+            fi
+      done
+      if [ "$skip" = "true" ]; then
+         continue
+      fi
+      true "write: $line"
+      ## XXX
+      echo "$line" >> "$giant_git_log_processed_file"
+   done < "$giant_git_log_file"
+   set -x
+}
+
 pkg_readme_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
 
@@ -482,8 +557,6 @@ pkg_git_submodule_file_writer() {
 }
 
 pkg_git_log_giant_make() {
-   giant_git_log_file="$WHONIX_BINARY/giant_git_log.txt"
-
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
       rm -r -f "$giant_git_log_file"
