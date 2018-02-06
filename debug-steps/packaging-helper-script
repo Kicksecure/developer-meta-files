@@ -485,7 +485,8 @@ pkg_git_log_giant_make() {
    #git shortlog 8.2..8.6.3.0 > giant_git_log
 
    echo "$item" >> "../../giant_git_log"
-   git shortlog >> "../../giant_git_log"
+   git shortlog Whonix13..master >> "../../giant_git_log"
+   echo ""
 
    ## TODO
    #$(git describe)..master
