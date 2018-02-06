@@ -10,8 +10,28 @@ rm -f ./b
 commit_filter() {
    while read -r line; do
       local skip=false
-      commit_msg="${line#*" "}"
+      commit_msg="${line#*" "}"#
+      commit_msg="$line"
+
+      if echo "$commit_msg" | grep -i -q "Merge remote-tracking branch" ; then
+         true "skip : $line"
+         skip=true
+         continue
+      fi
+      if echo "$commit_msg" | grep -i -q "Merge pull request" ; then
+         true "skip : $line"
+         skip=true
+         continue
+      fi
+
       for text in \
+         "copyright" \
+         "update copyright" \
+         "Update Copyright" \
+         "remove faketime from Build-Depends:" \
+         "remove debian/gain-root-command workaround" \
+         "packaging simplification config-package-dev (>= 5.1) -> config-package-dev" \
+         "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support" \
          "bump version number" \
          "bumped version number" \
          "bumped changelog version" \
@@ -36,17 +56,13 @@ commit_filter() {
          "lintian warning copyright fix" \
          "."
          do
-
-         if [ "$text" = "$commit_msg" ]; then
-            true "skip : $line"
-            skip=true
-            continue
-         fi
+            if [ "$text" = "$commit_msg" ]; then
+               true "skip : $line"
+               skip=true
+               continue
+            fi
       done
       if [ "$skip" = "true" ]; then
-         continue
-      fi
-      if [ "" = "$line" ]; then
          continue
       fi
       true "write: $line"

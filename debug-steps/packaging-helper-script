@@ -482,11 +482,22 @@ pkg_git_submodule_file_writer() {
 }
 
 pkg_git_log_giant_make() {
-   #git shortlog 8.2..8.6.3.0 > giant_git_log
+   if [ "$giant_git_log_delete_once" = "" ]; then
+      giant_git_log_delete_once=done
+      rm -r -f "../../giant_git_log"
+   fi
 
-   echo "$item" >> "../../giant_git_log"
-   git shortlog Whonix13..master >> "../../giant_git_log"
-   echo ""
+   echo "" >> "../../giant_git_log"
+   echo "########################################" >> "../../giant_git_log"
+   echo "" >> "../../giant_git_log"
+   echo "https://github.com/Whonix/$reponame" >> "../../giant_git_log"
+
+   if ! git shortlog remotes/origin/Whonix13..master >> "../../giant_git_log" ; then
+      echo "# master branch #" >> "../../giant_git_log"
+      echo "" >> "../../giant_git_log"
+      git shortlog master >> "../../giant_git_log"
+   fi
+   echo "" >> "../../giant_git_log"
 
    ## TODO
    #$(git describe)..master
