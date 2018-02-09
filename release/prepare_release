@@ -77,7 +77,7 @@ libvirt_compress() {
          --mtime='2015-10-21 00:00Z' \
          --xz \
          --directory="$WHONIX_BINARY" \
-         --file "$(basename $libvirt_target_xz_archive)" \
+         --file "$(basename "$libvirt_target_xz_archive")" \
          "$(basename "$binary_image_qcow2")" \
          "$(basename "$libvirt_target_kvm_file")" \
          "$(basename "$libvirt_target_network_file_external")" \
@@ -125,7 +125,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/$version/$VMNAME-$version.ova" \
+            --web-seed "https://download.whonix.org/linux/$version/$(basename "$binary_image_ova")" \
             -o "$binary_image_ova_torrent" \
             "$binary_image_ova"
    fi
@@ -136,18 +136,18 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/$version/$VMNAME-$version.libvirt.xz" \
+            --web-seed "https://download.whonix.org/linux/$version/$(basename "$libvirt_target_xz_archive")" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
 
    ## Working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Workstation-7.ova");' "$2")"
 
    ## Not working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Workstation-7.ova");' "$2")"
 }
 
 hashes_create_and_verify() {
