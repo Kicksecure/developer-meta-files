@@ -705,6 +705,11 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    true
 }
 
+pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
+   pkg_need_version_bump_and_pkg_build_and_reprepro_add
+   pkg_git_push_remotes
+}
+
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "whonix-developer-meta-files" || return 0
 
