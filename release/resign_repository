@@ -26,6 +26,7 @@ source ../../../help-steps/variables
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export jessie-proposed-updates
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export testers
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch
+"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-proposed-updates
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-testers
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-developers
 
