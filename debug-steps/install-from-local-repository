@@ -36,7 +36,7 @@ main() {
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
 
    ## Reading local repository containing Whonix's packages.
-   $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
+   $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "$pkg" = "" ]; then
       if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
@@ -57,9 +57,9 @@ main() {
       fi
    fi
 
-   $CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
+   $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
 
-   #$CHROOT apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
+   #$CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
 
