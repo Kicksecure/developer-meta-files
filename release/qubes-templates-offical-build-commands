@@ -1,0 +1,60 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+## Whonix News v4
+## A deterministic tarball on
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz/download
+## and a detached armored OpenPGP signature on
+## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
+## Used by:
+## - Whonix 7.x
+## - Whonix 8.x
+## - Whonix 13.x
+
+set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+## disable cmd line parser, since not needed
+export whonix_build_one_parsed="1"
+export VMNAME="internalrun"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+source ../../../help-steps/pre
+source ../../../help-steps/colors
+source ../../../help-steps/variables
+
+if [ "$(id -u)" = "0" ]; then
+   echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
+   exit 1
+fi
+
+timestamp=$(date --utc +"%Y%m%d%H%M")
+
+mkdir --parents "$WHONIX_BINARY/qubes-build-commands"
+file_path="$WHONIX_BINARY/qubes-build-commands"
+
+echo "Build-template r3.2 whonix-gateway-14 $timestamp" > "$file_path/r3.2_whonix-gateway-14.txt"
+gpg --yes --clearsign "$file_path/r3.2_whonix-gateway-14.txt"
+rm -f "$file_path/r3.2_whonix-gateway-14.txt"
+gpg --verify "$file_path/r3.2_whonix-gateway-14.txt.asc"
+
+echo "Build-template r3.2 whonix-workstation-14 $timestamp" > "$file_path/r3.2_whonix-workstation-14.txt"
+gpg --yes --clearsign "$file_path/r3.2_whonix-workstation-14.txt"
+rm -f "$file_path/r3.2_whonix-workstation-14.txt"
+gpg --verify "$file_path/r3.2_whonix-workstation-14.txt.asc"
+
+echo "Build-template r4.0 whonix-gateway-14 $timestamp" > "$file_path/r4.0_whonix-gateway-14.txt"
+gpg --yes --clearsign "$file_path/r4.0_whonix-gateway-14.txt"
+rm -f "$file_path/r4.0_whonix-gateway-14.txt"
+gpg --verify "$file_path/r4.0_whonix-gateway-14.txt.asc"
+
+echo "Build-template r4.0 whonix-workstation-14 $timestamp" > "$file_path/r4.0_whonix-workstation-14.txt"
+gpg --yes --clearsign "$file_path/r4.0_whonix-workstation-14.txt"
+rm -f "$file_path/r4.0_whonix-workstation-14.txt"
+gpg --verify "$file_path/r4.0_whonix-workstation-14.txt.asc"
