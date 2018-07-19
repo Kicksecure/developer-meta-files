@@ -48,3 +48,24 @@ echo "Build-template r4.0 whonix-workstation-14 $timestamp" > "$file_path/r4.0_w
 gpg --yes --clearsign "$file_path/r4.0_whonix-workstation-14.txt"
 rm -f "$file_path/r4.0_whonix-workstation-14.txt"
 gpg --verify "$file_path/r4.0_whonix-workstation-14.txt.asc"
+
+true "Press any key to continue."
+read temp
+
+cat "$file_path/r3.2_whonix-gateway-14.txt.asc"
+true "Press any key to continue."
+read temp
+
+cat "$file_path/r3.2_whonix-workstation-14.txt.asc"
+true "Press any key to continue."
+read temp
+
+cat "$file_path/r4.0_whonix-gateway-14.txt.asc"
+true "Press any key to continue."
+read temp
+
+cat "$file_path/r4.0_whonix-workstation-14.txt.asc"
+true "Press any key to continue."
+read temp
+
+true END
