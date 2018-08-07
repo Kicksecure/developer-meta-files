@@ -2,9 +2,6 @@ This feature has been deprecated!
 #################################
 
 No news will be posted here.
-(Discussion:
- https://www.whonix.org/forum/index.php/topic,212.0.html
-)
 
 To stay up to date, use one of the many methods listed here:
-https://www.whonix.org/wiki/Download#Whonix_News_Blogs
+https://www.whonix.org/wiki/Stay_Tuned
