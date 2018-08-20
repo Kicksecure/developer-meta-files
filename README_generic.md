@@ -1,4 +1,4 @@
-## How to install using apt-get ##
+## How to install `package-name` using apt-get ##
 
 1\. Add [Whonix's Signing Key](https://www.whonix.org/wiki/Whonix_Signing_Key).
 
@@ -28,7 +28,7 @@ sudo apt-get install package-name
 
 See comments below and [instructions](https://www.whonix.org/wiki/Dev/Build_Documentation/apparmor-profile-torbrowser).
 
-* Replace `apparmor-profile-torbrowser` with the actual name of this package (equals the root source folder name of this package after you git cloned it).
+* Replace `apparmor-profile-torbrowser` with the actual name of this package with `package-name`.
 * We might later use a [documentation template](https://www.whonix.org/wiki/Template:Build_Documentation_Build_Package).
 
 ## Contact ##
