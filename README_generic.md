@@ -18,7 +18,7 @@ echo "deb http://deb.whonix.org stretch main" | sudo tee /etc/apt/sources.list.d
 sudo apt-get update
 ```
 
-5\. Install this package. Replace `package-name` with the actual name of this package.
+5\. Install `package-name`.
 
 ```
 sudo apt-get install package-name
