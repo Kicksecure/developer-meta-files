@@ -185,6 +185,7 @@ pkg_readme_creator() {
 #    fi
 
    while read -r line; do
+      line="${line/package-name/$reponame}"
       echo "$line" | tee -a "$readme_file" >/dev/null
    done < "$generic_readme"
 
@@ -760,8 +761,8 @@ loop_helper() {
       true
       true
 
-      #true "press enter to continue_did"
-      #read temp
+      true "press enter to continue_did"
+      read temp
    done
 }
 

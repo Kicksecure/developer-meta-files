@@ -26,10 +26,7 @@ sudo apt-get install package-name
 
 ## How to Build deb Package ##
 
-See comments below and [instructions](https://www.whonix.org/wiki/Dev/Build_Documentation/apparmor-profile-torbrowser).
-
-* Replace `apparmor-profile-torbrowser` with the actual name of this package with `package-name`.
-* We might later use a [documentation template](https://www.whonix.org/wiki/Template:Build_Documentation_Build_Package).
+Replace `apparmor-profile-torbrowser` with the actual name of this package with `package-name` and see [instructions](https://www.whonix.org/wiki/Dev/Build_Documentation/apparmor-profile-torbrowser).
 
 ## Contact ##
 
