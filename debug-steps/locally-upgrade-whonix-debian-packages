@@ -82,7 +82,7 @@ main() {
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
-   if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
+   if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-kde" ]; then
       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install \
          whonix-gateway-packages-dependencies-pre \
          anon-shared-packages-dependencies \
@@ -96,7 +96,7 @@ main() {
          anon-gateway-packages-recommended \
          whonix-gateway-packages-dependencies \
          whonix-gateway-packages-recommended
-   elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation" ]; then
+   elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation-kde" ]; then
       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install \
          whonix-workstation-packages-dependencies-pre \
          anon-shared-packages-dependencies \

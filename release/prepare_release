@@ -34,7 +34,7 @@ sanity_tests() {
 libvirt_compress() {
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
 
-      if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
+      if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
          maybe_add_libvirt_network_xml_file="$(basename "$libvirt_target_network_file_internal")"
          if [ ! -r "$maybe_add_libvirt_network_xml_file" ]; then
             error "$maybe_add_libvirt_network_xml_file not readable"

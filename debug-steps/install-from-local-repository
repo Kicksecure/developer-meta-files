@@ -39,17 +39,17 @@ main() {
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "$pkg" = "" ]; then
-      if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway" ]; then
+      if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-kde" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
-            pkg="qubes-whonix-gateway"
+            pkg="qubes-whonix-gateway-kde"
          else
             pkg="non-qubes-whonix-gateway"
          fi
-      elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation" ]; then
+      elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation-kde" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
             pkg="qubes-whonix-workstation"
          else
-            pkg="non-qubes-whonix-workstation"
+            pkg="non-qubes-whonix-workstation-kde"
          fi
       else
          local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
