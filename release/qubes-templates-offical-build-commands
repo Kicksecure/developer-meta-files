@@ -29,16 +29,6 @@ timestamp=$(date --utc +"%Y%m%d%H%M")
 mkdir --parents "$WHONIX_BINARY/qubes-build-commands"
 file_path="$WHONIX_BINARY/qubes-build-commands"
 
-echo "Build-template r3.2 whonix-gateway-14 $timestamp" > "$file_path/r3.2_whonix-gateway-14.txt"
-gpg --yes --clearsign "$file_path/r3.2_whonix-gateway-14.txt"
-rm -f "$file_path/r3.2_whonix-gateway-14.txt"
-gpg --verify "$file_path/r3.2_whonix-gateway-14.txt.asc"
-
-echo "Build-template r3.2 whonix-workstation-14 $timestamp" > "$file_path/r3.2_whonix-workstation-14.txt"
-gpg --yes --clearsign "$file_path/r3.2_whonix-workstation-14.txt"
-rm -f "$file_path/r3.2_whonix-workstation-14.txt"
-gpg --verify "$file_path/r3.2_whonix-workstation-14.txt.asc"
-
 echo "Build-template r4.0 whonix-gateway-14 $timestamp" > "$file_path/r4.0_whonix-gateway-14.txt"
 gpg --yes --clearsign "$file_path/r4.0_whonix-gateway-14.txt"
 rm -f "$file_path/r4.0_whonix-gateway-14.txt"
@@ -49,14 +39,6 @@ gpg --yes --clearsign "$file_path/r4.0_whonix-workstation-14.txt"
 rm -f "$file_path/r4.0_whonix-workstation-14.txt"
 gpg --verify "$file_path/r4.0_whonix-workstation-14.txt.asc"
 
-true "Press any key to continue."
-read temp
-
-cat "$file_path/r3.2_whonix-gateway-14.txt.asc"
-true "Press any key to continue."
-read temp
-
-cat "$file_path/r3.2_whonix-workstation-14.txt.asc"
 true "Press any key to continue."
 read temp
 
