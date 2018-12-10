@@ -21,27 +21,30 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-"$whonix_dev_meta_files_folder/release/rsync-test"
-
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+#"$whonix_dev_meta_files_folder/release/rsync-test"
+#true "${cyan}INFO: Press any enter to continue.${reset}"
+#read temp
 
 [ -n "$version" ] || version="$anon_dist_build_version"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
 read temp
 
-#sf_user="adrelanos"
-#sf_project="testprojectwh"
-#sf_project="whonix"
-#sf_project="whonixdevelopermetafiles"
-#server="$sf_user,$sf_project@frs.sourceforge.net:/home/frs/project/$sf_project/$version/"
+if [ "$version" = "" ]; then
+   error "Variable version is empty."
+fi
 
-server="root@rsync.whonix.org:/var/rsync/linux/$version/"
+if [ "$server" = "" ]; then
+   server="root@whonix.org:/var/rsync/linux"
+fi
+
+#server="root@whonix.org:/home/hulahoop/libvirt"
 
 if [ "$server" = "" ]; then
    error "Variable server is empty."
 fi
+
+server_with_version="$server/$version/"
 
 for extension in "torrent" "sha256sums" "sha512sums" "ova" "libvirt.xz" "asc" ; do
    result="$(find "$WHONIX_BINARY" -maxdepth 1 -type f -name "*.$extension" -printf '%p\n')"
@@ -68,7 +71,7 @@ rsync \
    --dry-run \
    $rsync_opts \
    $file_list \
-   "$server"
+   "$server_with_version"
 
 true "${cyan}INFO: Press any enter to continue.${reset}"
 read temp
@@ -83,7 +86,7 @@ while true; do
    rsync \
       $rsync_opts \
       $file_list \
-      "$server" \
+      "$server_with_version" \
       || { rsync_exit_code="$?" ; true; };
 
    if [ "$rsync_exit_code" = "0" ]; then
@@ -94,6 +97,7 @@ while true; do
       msg="${bold}${red}INFO: Upload failed.${reset}"
       true "$msg"
       error "$msg"
+      break
    fi
 
    sleep 10
