@@ -38,7 +38,7 @@ if [ "$server" = "" ]; then
    server="root@whonix.org:/var/rsync/linux"
 fi
 
-#server="root@whonix.org:/home/hulahoop/libvirt"
+#server="hulahoop@whonix.org:/home/hulahoop/libvirt"
 
 if [ "$server" = "" ]; then
    error "Variable server is empty."
