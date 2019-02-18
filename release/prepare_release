@@ -96,6 +96,93 @@ libvirt_compress() {
    fi
 }
 
+virtualbox_export() {
+   local vm_names_to_be_exported
+   local vm_multiple
+   vm_multiple=false
+
+   if [ ! "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
+      return 0
+   fi
+
+   if [ "$WHONIX_BUILD_TYPE" = "workstation" ]; then
+      vm_multiple=true
+      ## WHONIX_BUILD_DESKTOP could be KDE, CLI, XFCE, RPi or CUSTOM
+      vm_names_to_be_exported="Whonix-Gateway-${WHONIX_BUILD_DESKTOP} Whonix-Workstation-${WHONIX_BUILD_DESKTOP}"
+   fi
+   if [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
+      vm_names_to_be_exported="$VMNAME"
+   fi
+
+   ## Not yet using: --producturl
+   ## --vsys needs to precede --eulafile.
+
+   if [ "$vm_multiple" = "false" ]; then
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            export "$VMNAME" \
+            --vsys "0" \
+            --eulafile "$binary_image_text" \
+            --manifest \
+            --product "$VMNAME" \
+            --vendor "Whonix" \
+            --vendorurl "https://www.whonix.org" \
+            --version "$anon_dist_build_version" \
+            --output "$binary_image_ova"
+   else
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            export $vm_names_to_be_exported \
+            --output "$binary_image_ova" \
+            --vsys '0' \
+               --eulafile "$WHONIX_BINARY/GPLv3" \
+               --manifest \
+               --product "Whonix-Gateway" \
+               --vendor "Whonix" \
+               --vendorurl "https://www.whonix.org" \
+               --version "$anon_dist_build_version" \
+            --vsys '1' \
+               --eulafile "$binary_image_text" \
+               --manifest \
+               --product "Whonix-Workstation" \
+               --vendor "Whonix" \
+               --vendorurl "https://www.whonix.org" \
+               --version "$anon_dist_build_version"
+   fi
+
+   ## Only important for redistribution.
+   ## VirtualBox creates $binary_image_ova with u+r only, which is problematic
+   ## with respect to rsync.
+   chmod ugo+r "$binary_image_ova"
+
+   sync
+
+   ## Sanity test.
+   ## A different --vmname is required, because $VMNAME does already exist
+   ## in the list of imported VirtualBox machines.
+   if [ "$vm_multiple" = "false" ]; then
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            import "$binary_image_ova" \
+            --vsys "0" \
+            --eula accept \
+            --vmname "$VMNAME-$anon_dist_build_version" \
+            --dry-run
+   else
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            import "$binary_image_ova" \
+            --vsys "0" \
+               --eula accept \
+               --vmname "Whonix-Gateway-${anon_dist_build_version}" \
+               --dry-run
+            --vsys "1" \
+               --eula accept \
+               --vmname "Whonix-Workstation-${anon_dist_build_version}" \
+               --dry-run
+   fi
+}
+
 torrent_create() {
    ## Thanks to:
    ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
@@ -230,7 +317,16 @@ signatures_verify() {
 
 main() {
    sanity_tests
+
+   if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
+      if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
+            ## skip, to unify gateway with workstation ova
+            return 0
+      fi
+   fi
+
    libvirt_compress
+   virtualbox_export
    hashes_create_and_verify
    torrent_create
    signatures_create
