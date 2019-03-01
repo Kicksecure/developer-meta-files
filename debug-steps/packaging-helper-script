@@ -392,8 +392,8 @@ pkg_packaging_files_diff() {
    diff "$compare_with_full_path/Makefile" "$repo_full_path/Makefile"
 
    if [ "$reponame" = "corridor" ]; then
-      ## Corridor has no COPYING but a LICENSE file.
-      test -f "$repo_full_path/LICENSE"
+      ## Corridor has no COPYING but a LICENSE-ISC file.
+      test -f "$repo_full_path/LICENSE-ISC"
    else
       diff "././COPYING" "$repo_full_path/"
    fi
