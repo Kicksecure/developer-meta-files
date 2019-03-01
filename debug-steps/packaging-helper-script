@@ -397,6 +397,8 @@ pkg_packaging_files_diff() {
    else
       ## COPYING should always match debian/copyright.
       diff "$repo_full_path/COPYING" "$repo_full_path/debian/copyright"
+
+      diff "$compare_with_full_path/COPYING" "$repo_full_path/COPYING"
    fi
 
    if [ ! -f "$repo_full_path/debian/changelog" ]; then
