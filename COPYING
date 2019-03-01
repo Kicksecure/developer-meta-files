@@ -19,24 +19,3 @@ License: GPL-3+
  On Debian systems, the full text of the GNU General Public
  License version 3 can be found in the file
  `/usr/share/common-licenses/GPL-3'.
-
-*****************************************************************************
-* rawdog, style.css, template, item, featureblog.conf, importantblog.conf, config License
-*****************************************************************************
-
-    Downloaded from:
-        http://packages.debian.org/wheezy/rawdog
-    File:
-        /etc/whonixcheck_rawdog/style.css
-        /etc/whonixcheck_rawdog/template
-        /etc/whonixcheck_rawdog/item
-        /etc/whonixcheck_rawdog/featureblog.conf
-        /etc/whonixcheck_rawdog/importantblog.conf
-        /etc/whonixcheck_rawdog/config
-    License:
-        GPLv2+
-        http://ftp-master.metadata.debian.org/changelogs//main/r/rawdog/rawdog_2.13.dfsg.1-1_copyright
-
-*****************************************************************************
-* End of rawdog, style.css, template, item, featureblog.conf, importantblog.conf, config License
-*****************************************************************************
