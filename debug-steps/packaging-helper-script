@@ -398,7 +398,9 @@ pkg_packaging_files_diff() {
       ## COPYING should always match debian/copyright.
       diff "$repo_full_path/COPYING" "$repo_full_path/debian/copyright"
 
-      diff "$compare_with_full_path/COPYING" "$repo_full_path/COPYING"
+      ## Would show license files that are different.
+      ## This is useful to manually enable sometimes.
+      #diff "$compare_with_full_path/COPYING" "$repo_full_path/COPYING"
    fi
 
    if [ ! -f "$repo_full_path/debian/changelog" ]; then
