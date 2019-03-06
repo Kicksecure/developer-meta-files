@@ -26,67 +26,68 @@ sanity_tests() {
 }
 
 libvirt_compress() {
+   if [ ! "$WHONIX_BUILD_QCOW2" = "true" ]; then
+      return 0
+   fi
+
+   if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
+      maybe_add_libvirt_network_xml_file="$(basename "$libvirt_target_network_file_internal")"
+      if [ ! -r "$maybe_add_libvirt_network_xml_file" ]; then
+         error "$maybe_add_libvirt_network_xml_file not readable"
+      fi
+   else
+      maybe_add_libvirt_network_xml_file=""
+   fi
+
+   if [ ! -r "$(basename "$libvirt_target_kvm_file")" ]; then
+      error "$(basename "$libvirt_target_kvm_file") is not readable!"
+   fi
+   if [ ! -r "$(basename "$binary_image_qcow2")" ]; then
+      error "$(basename "$binary_image_qcow2") is not readable!"
+   fi
+
+   rm --force "$(basename $libvirt_target_xz_archive)"
+
+   ## Not using `gzip`, because it cannot handle sparse files:
+   ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
+   #pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.tar.gz"
+   #pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.tar.gz"
+
+   ## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
+   ## - will result in a deterministic archive. We do not have deterministic
+   ##   images yet in the first place (but at least verifiable ones), but
+   ##   hopefully some day. Does not hurt to already use tar options that do
+   ##   not add unnecessary non-deterministic contents.
+   ## Not using tar --verbose:
+   ## - slows down tar too much.
+
+   ## TODO: add progress meter (using `pv`?)
+
+   tar \
+      --create \
+      --verbose \
+      --owner=0 --group=0 --numeric-owner \
+      --mode=go=rX,u+rw,a-s \
+      --sort=name \
+      --sparse \
+      --mtime='2015-10-21 00:00Z' \
+      --xz \
+      --directory="$WHONIX_BINARY" \
+      --file "$(basename "$libvirt_target_xz_archive")" \
+      "$(basename "COPYING")" \
+      "$(basename "$binary_image_qcow2")" \
+      "$(basename "$libvirt_target_kvm_file")" \
+      "$(basename "$libvirt_target_network_file_external")" \
+      $maybe_add_libvirt_network_xml_file
+
+   strip-nondeterminism "$libvirt_target_xz_archive"
+
+   sync
+
+   ## sanity test
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-
-      if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
-         maybe_add_libvirt_network_xml_file="$(basename "$libvirt_target_network_file_internal")"
-         if [ ! -r "$maybe_add_libvirt_network_xml_file" ]; then
-            error "$maybe_add_libvirt_network_xml_file not readable"
-         fi
-      else
-         maybe_add_libvirt_network_xml_file=""
-      fi
-
-      if [ ! -r "$(basename "$libvirt_target_kvm_file")" ]; then
-         error "$(basename "$libvirt_target_kvm_file") is not readable!"
-      fi
-      if [ ! -r "$(basename "$binary_image_qcow2")" ]; then
-         error "$(basename "$binary_image_qcow2") is not readable!"
-      fi
-
-      rm --force "$(basename $libvirt_target_xz_archive)"
-
-      ## Not using `gzip`, because it cannot handle sparse files:
-      ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
-      #pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.tar.gz"
-      #pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.tar.gz"
-
-      ## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
-      ## - will result in a deterministic archive. We do not have deterministic
-      ##   images yet in the first place (but at least verifiable ones), but
-      ##   hopefully some day. Does not hurt to already use tar options that do
-      ##   not add unnecessary non-deterministic contents.
-      ## Not using tar --verbose:
-      ## - slows down tar too much.
-
-      ## TODO: add progress meter (using `pv`?)
-
-      tar \
-         --create \
-         --verbose \
-         --owner=0 --group=0 --numeric-owner \
-         --mode=go=rX,u+rw,a-s \
-         --sort=name \
-         --sparse \
-         --mtime='2015-10-21 00:00Z' \
-         --xz \
-         --directory="$WHONIX_BINARY" \
-         --file "$(basename "$libvirt_target_xz_archive")" \
-         "$(basename "COPYING")" \
-         "$(basename "$binary_image_qcow2")" \
-         "$(basename "$libvirt_target_kvm_file")" \
-         "$(basename "$libvirt_target_network_file_external")" \
-         $maybe_add_libvirt_network_xml_file
-
-      strip-nondeterminism "$libvirt_target_xz_archive"
-
-      sync
-
-      ## sanity test
-      if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         if [ ! -r "$libvirt_target_xz_archive" ]; then
-            error "$libvirt_target_xz_archive not readable!"
-         fi
+      if [ ! -r "$libvirt_target_xz_archive" ]; then
+         error "$libvirt_target_xz_archive not readable!"
       fi
    fi
 }
