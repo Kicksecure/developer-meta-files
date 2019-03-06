@@ -72,6 +72,7 @@ libvirt_compress() {
          --xz \
          --directory="$WHONIX_BINARY" \
          --file "$(basename "$libvirt_target_xz_archive")" \
+         "$(basename "COPYING")" \
          "$(basename "$binary_image_qcow2")" \
          "$(basename "$libvirt_target_kvm_file")" \
          "$(basename "$libvirt_target_network_file_external")" \
@@ -116,7 +117,7 @@ virtualbox_export() {
             export $vm_names_to_be_exported \
             --output "$binary_image_ova" \
             --vsys '0' \
-               --eulafile "$WHONIX_SOURCE_FOLDER/COPYING" \
+               --eulafile "$WHONIX_BINARY/COPYING" \
                --manifest \
                --product "Whonix-Gateway" \
                --vendor "Whonix" \
@@ -298,6 +299,9 @@ signatures_verify() {
 
 main() {
    sanity_tests
+
+   ## libvirt_compress uses --directory="$WHONIX_BINARY"
+   cp "$WHONIX_SOURCE_FOLDER/COPYING" "$WHONIX_BINARY/COPYING"
 
    if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
       if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
