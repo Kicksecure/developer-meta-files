@@ -91,21 +91,8 @@ libvirt_compress() {
 }
 
 virtualbox_export() {
-   local vm_names_to_be_exported
-   local vm_multiple
-   vm_multiple=false
-
    if [ ! "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
       return 0
-   fi
-
-   if [ "$WHONIX_BUILD_TYPE" = "workstation" ]; then
-      vm_multiple=true
-      ## WHONIX_BUILD_DESKTOP could be KDE, CLI, XFCE, RPi or CUSTOM
-      vm_names_to_be_exported="Whonix-Gateway-${WHONIX_BUILD_DESKTOP} Whonix-Workstation-${WHONIX_BUILD_DESKTOP}"
-   fi
-   if [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
-      vm_names_to_be_exported="$VMNAME"
    fi
 
    ## Not yet using: --producturl
@@ -314,9 +301,19 @@ main() {
 
    if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
       if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
-            ## skip, to unify gateway with workstation ova
+            ## skip, to unify gateway image with workstation image
             return 0
       fi
+   fi
+
+   vm_multiple=false
+   if [ "$WHONIX_BUILD_TYPE" = "workstation" ]; then
+      vm_multiple=true
+      ## WHONIX_BUILD_DESKTOP could be KDE, CLI, XFCE, RPi or CUSTOM
+      vm_names_to_be_exported="Whonix-Gateway-${WHONIX_BUILD_DESKTOP} Whonix-Workstation-${WHONIX_BUILD_DESKTOP}"
+   fi
+   if [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
+      vm_names_to_be_exported="$VMNAME"
    fi
 
    libvirt_compress
