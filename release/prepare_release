@@ -116,7 +116,7 @@ virtualbox_export() {
             export $vm_names_to_be_exported \
             --output "$binary_image_ova" \
             --vsys '0' \
-               --eulafile "$WHONIX_BINARY/GPLv3" \
+               --eulafile "$WHONIX_SOURCE_FOLDER/COPYING" \
                --manifest \
                --product "Whonix-Gateway" \
                --vendor "Whonix" \
