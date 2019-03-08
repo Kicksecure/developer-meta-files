@@ -36,8 +36,8 @@ libvirt_compress() {
    test -f "$WHONIX_BINARY/COPYING"
    test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
    test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
-   test -f "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.xml"
-   test -f "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.xml"
+   test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
+   test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
    test -f "$libvirt_target_network_file_external"
    test -f "$libvirt_target_network_file_internal"
    true "INFO: Ok, all files to be added to $libvirt_target_xz_archive exist."
@@ -72,8 +72,8 @@ libvirt_compress() {
          "$(basename "$WHONIX_BINARY/COPYING")" \
          "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
          "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.xml")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.xml")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
          "$(basename "$libvirt_target_network_file_external")" \
          "$(basename "$libvirt_target_network_file_internal")"
 
