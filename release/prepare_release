@@ -57,26 +57,27 @@ libvirt_compress() {
 
    ## TODO: add progress meter (using `pv`?)
 
-   tar \
-      --create \
-      --verbose \
-      --owner=0 --group=0 --numeric-owner \
-      --mode=go=rX,u+rw,a-s \
-      --sort=name \
-      --sparse \
-      --mtime='2015-10-21 00:00Z' \
-      --xz \
-      --directory="$WHONIX_BINARY" \
-      --file "$(basename "$libvirt_target_xz_archive")" \
-      "$(basename "$WHONIX_BINARY/COPYING")" \
-      "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-      "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-      "$(basename "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.xml")" \
-      "$(basename "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.xml")" \
-      "$(basename "$libvirt_target_network_file_external")" \
-      "$(basename "$libvirt_target_network_file_internal")"
+   sudo $SUDO_OPTS \
+      tar \
+         --create \
+         --verbose \
+         --owner=0 --group=0 --numeric-owner \
+         --mode=go=rX,u+rw,a-s \
+         --sort=name \
+         --sparse \
+         --mtime='2015-10-21 00:00Z' \
+         --xz \
+         --directory="$WHONIX_BINARY" \
+         --file "$(basename "$libvirt_target_xz_archive")" \
+         "$(basename "$WHONIX_BINARY/COPYING")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.xml")" \
+         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.xml")" \
+         "$(basename "$libvirt_target_network_file_external")" \
+         "$(basename "$libvirt_target_network_file_internal")"
 
-   strip-nondeterminism "$libvirt_target_xz_archive"
+   sudo $SUDO_OPTS strip-nondeterminism "$libvirt_target_xz_archive"
 
    sync
 
@@ -236,17 +237,17 @@ hashes_create_and_verify() {
       ## Using `basename` so we end up with relative paths in hash sums file.
 
       if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
-         $hash_sum "$(basename "$binary_image_ova")" >> "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_ova")" | sudo $SUDO_OPTS tee "$hash_file"
       fi
 
       if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         $hash_sum "$(basename "$libvirt_target_xz_archive")" >> "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_xz_archive")" | sudo $SUDO_OPTS tee "$hash_file"
       fi
 
       sync
 
       ## Sanity test.
-      $hash_sum --check "$hash_file"
+      sudo $SUDO_OPTS $hash_sum --check "$hash_file"
    done
 }
 
@@ -255,11 +256,11 @@ sign_cmd() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 }
 
 verify_cmd() {
-   $gpg_bin --verify-options show-notations --verify "$1"
+   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$1"
 }
 
 signatures_create() {
@@ -298,7 +299,7 @@ main() {
    sanity_tests
 
    ## libvirt_compress uses --directory="$WHONIX_BINARY"
-   cp "$WHONIX_SOURCE_FOLDER/COPYING" "$WHONIX_BINARY/COPYING"
+   sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/COPYING" "$WHONIX_BINARY/COPYING"
 
    if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
       if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
