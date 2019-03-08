@@ -303,11 +303,9 @@ main() {
    ## libvirt_compress uses --directory="$WHONIX_BINARY"
    sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/COPYING" "$WHONIX_BINARY/COPYING"
 
-   if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
-      if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
-            ## skip, to unify gateway image with workstation image
-            return 0
-      fi
+   if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
+      ## skip, to unify gateway image with workstation image
+      return 0
    fi
 
    vm_multiple=false
