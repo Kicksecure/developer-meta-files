@@ -94,6 +94,8 @@ virtualbox_export() {
       return 0
    fi
 
+   rm --force "$binary_image_ova"
+
    ## Not yet using: --producturl
    ## --vsys needs to precede --eulafile.
 
