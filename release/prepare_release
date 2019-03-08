@@ -30,17 +30,17 @@ libvirt_compress() {
       return 0
    fi
 
-   if [ ! -r "$maybe_add_libvirt_network_xml_file" ]; then
-      error "$maybe_add_libvirt_network_xml_file not readable"
-   fi
-   if [ ! -r "$(basename "$libvirt_target_kvm_file")" ]; then
-      error "$(basename "$libvirt_target_kvm_file") is not readable!"
-   fi
-   if [ ! -r "$(basename "$binary_image_qcow2")" ]; then
-      error "$(basename "$binary_image_qcow2") is not readable!"
-   fi
-
    rm --force "$(basename $libvirt_target_xz_archive)"
+
+   true "INFO: Checking if all files to be added to $libvirt_target_xz_archive exist..."
+   test -f "$WHONIX_BINARY/COPYING"
+   test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
+   test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
+   test -f "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.xml"
+   test -f "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.xml"
+   test -f "$libvirt_target_network_file_external"
+   test -f "$libvirt_target_network_file_internal"
+   true "INFO: Ok, all files to be added to $libvirt_target_xz_archive exist."
 
    ## Not using `gzip`, because it cannot handle sparse files:
    ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
