@@ -1,0 +1,42 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$MYDIR"
+
+## disable cmd line parser, since not needed
+export whonix_build_one_parsed="1"
+export VMNAME="internalrun"
+
+source ../../../help-steps/pre
+source ../../../help-steps/colors
+source ../../../help-steps/variables
+
+sign_cmd() {
+   ## GPG signatures do not authenticate filenames by default, therefore add
+   ## the name of the file as a OpenPGP notation so at least users that look
+   ## at OpenPGP notations have a chance to detect if file names have been
+   ## tampered with.
+   sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+}
+
+verify_cmd() {
+   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$1"
+}
+
+sudo $SUDO_OPTS cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$WHONIX_BINARY/canary.txt"
+
+sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1 | sudo $SUDO_OPTS tee -a "$WHONIX_BINARY/canary.txt"
+
+sudo $SUDO_OPTS cat "$WHONIX_BINARY/canary.txt"
+
+sign_cmd "$WHONIX_BINARY/canary.txt"
+
+verify_cmd "$WHONIX_BINARY/canary.txt.asc"
