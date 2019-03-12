@@ -38,4 +38,3 @@ References
 
 Proof of freshness
 -------------------
-(coming soon)
