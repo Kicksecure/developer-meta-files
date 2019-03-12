@@ -1,9 +1,9 @@
 #!/bin/bash
 
+set -e
 
 export PS4="\n$ "
 set -x
-set -e
 
 date -R -u
 
