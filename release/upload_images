@@ -27,8 +27,8 @@ source ../../../help-steps/variables
 
 [ -n "$version" ] || version="$anon_dist_build_version"
 
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+# true "${cyan}INFO: Press any enter to continue.${reset}"
+# read temp
 
 if [ "$version" = "" ]; then
    error "Variable version is empty."
@@ -63,8 +63,8 @@ done
 true "file_list:
 $file_list"
 
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+# true "${cyan}INFO: Press any enter to continue.${reset}"
+# read temp
 
 ## Test.
 rsync \
@@ -73,8 +73,8 @@ rsync \
    $file_list \
    "$server_with_version"
 
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+# true "${cyan}INFO: Press any enter to continue.${reset}"
+# read temp
 
 attempts_counter="0"
 attempts_max="10"
