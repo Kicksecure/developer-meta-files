@@ -68,7 +68,7 @@ upload_dry_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/dists/"
+      "${upload_location}/dists/"
 }
 
 upload_dry_pool() {
@@ -81,7 +81,7 @@ upload_dry_pool() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/pool/"
+      "${upload_location}/pool/"
 }
 
 upload_real_ask() {
@@ -96,7 +96,7 @@ upload_real_dists() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
-      "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/dists/"
+      "${upload_location}/dists/"
 }
 
 upload_real_pool() {
@@ -106,7 +106,7 @@ upload_real_pool() {
       --recursive \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
-      "root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal/pool/"
+      "${upload_location}/pool/"
 }
 
 main() {
@@ -120,5 +120,11 @@ main() {
    upload_real_dists
    upload_real_pool
 }
+
+upload_location="root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal"
+
+main "$@"
+
+upload_location="adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal"
 
 main "$@"
