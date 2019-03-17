@@ -36,11 +36,11 @@ fi
 
 if [ "$server" = "" ]; then
    #server="root@whonix.org:/var/rsync/linux"
-   server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/ova"
+   server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
 fi
 
 #server="hulahoop@whonix.org:/home/hulahoop/libvirt"
-#server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/whonix-kvm/libvirt"
+#server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
 
 if [ "$server" = "" ]; then
    error "Variable server is empty."
