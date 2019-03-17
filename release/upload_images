@@ -35,10 +35,12 @@ if [ "$version" = "" ]; then
 fi
 
 if [ "$server" = "" ]; then
-   server="root@whonix.org:/var/rsync/linux"
+   #server="root@whonix.org:/var/rsync/linux"
+   server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/ova"
 fi
 
 #server="hulahoop@whonix.org:/home/hulahoop/libvirt"
+#server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/whonix-kvm/libvirt"
 
 if [ "$server" = "" ]; then
    error "Variable server is empty."
@@ -63,8 +65,8 @@ done
 true "file_list:
 $file_list"
 
-# true "${cyan}INFO: Press any enter to continue.${reset}"
-# read temp
+true "${cyan}INFO: Press any enter to continue.${reset}"
+read temp
 
 ## Test.
 rsync \
@@ -73,8 +75,8 @@ rsync \
    $file_list \
    "$server_with_version"
 
-# true "${cyan}INFO: Press any enter to continue.${reset}"
-# read temp
+true "${cyan}INFO: Press any enter to continue.${reset}"
+read temp
 
 attempts_counter="0"
 attempts_max="10"
