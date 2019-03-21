@@ -42,8 +42,8 @@ libvirt_compress() {
 
    ## Not using `gzip`, because it cannot handle sparse files:
    ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
-   #pv "$WHONIX_BINARY/Whonix-Gateway-$anon_dist_build_version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$anon_dist_build_version.libvirt.tar.gz"
-   #pv "$WHONIX_BINARY/Whonix-Workstation-$anon_dist_build_version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$anon_dist_build_version.libvirt.tar.gz"
+   #pv "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-${anon_dist_build_version}.libvirt.tar.gz"
+   #pv "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-${anon_dist_build_version}.libvirt.tar.gz"
 
    ## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
    ## - will result in a deterministic archive. We do not have deterministic
@@ -107,7 +107,7 @@ virtualbox_export() {
             --product "$VMNAME" \
             --vendor "Whonix" \
             --vendorurl "https://www.whonix.org" \
-            --version "$anon_dist_build_version" \
+            --version "${anon_dist_build_version}" \
             --output "$binary_image_ova"
    else
       sudo $SUDO_OPTS \
@@ -120,14 +120,14 @@ virtualbox_export() {
                --product "Whonix-Gateway" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
-               --version "$anon_dist_build_version" \
+               --version "${anon_dist_build_version}" \
             --vsys '1' \
                --eulafile "$binary_image_text" \
                --manifest \
                --product "Whonix-Workstation" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
-               --version "$anon_dist_build_version"
+               --version "${anon_dist_build_version}"
    fi
 
    ## Only important for redistribution.
@@ -146,7 +146,7 @@ virtualbox_export() {
             import "$binary_image_ova" \
             --vsys "0" \
             --eula accept \
-            --vmname "$VMNAME-$anon_dist_build_version" \
+            --vmname "$VMNAME-${anon_dist_build_version}" \
             --dry-run
    else
       sudo $SUDO_OPTS \
@@ -192,7 +192,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/$anon_dist_build_version/$(basename "$binary_image_ova")" \
+            --web-seed "https://download.whonix.org/linux/${anon_dist_build_version}/$(basename "$binary_image_ova")" \
             -o "$binary_image_ova_torrent" \
             "$binary_image_ova"
    fi
@@ -203,7 +203,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/$anon_dist_build_version/$(basename "$libvirt_target_xz_archive")" \
+            --web-seed "https://download.whonix.org/linux/${anon_dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
