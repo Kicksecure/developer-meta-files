@@ -17,8 +17,6 @@ source ../../../help-steps/variables
 
 cd "$WHONIX_BINARY"
 
-[ -n "$version" ] || version="$anon_dist_build_version"
-
 sanity_tests() {
    command -v mktorrent >/dev/null
 
@@ -44,8 +42,8 @@ libvirt_compress() {
 
    ## Not using `gzip`, because it cannot handle sparse files:
    ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
-   #pv "$WHONIX_BINARY/Whonix-Gateway-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$version.libvirt.tar.gz"
-   #pv "$WHONIX_BINARY/Whonix-Workstation-$version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$version.libvirt.tar.gz"
+   #pv "$WHONIX_BINARY/Whonix-Gateway-$anon_dist_build_version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Gateway-$anon_dist_build_version.libvirt.tar.gz"
+   #pv "$WHONIX_BINARY/Whonix-Workstation-$anon_dist_build_version.qcow2" | gzip -n - > "$WHONIX_BINARY/Whonix-Workstation-$anon_dist_build_version.libvirt.tar.gz"
 
    ## Using `tar` with `--xz` and `--mtime="2014-05-06 00:00:00"`:
    ## - will result in a deterministic archive. We do not have deterministic
@@ -194,7 +192,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/$version/$(basename "$binary_image_ova")" \
+            --web-seed "https://download.whonix.org/linux/$anon_dist_build_version/$(basename "$binary_image_ova")" \
             -o "$binary_image_ova_torrent" \
             "$binary_image_ova"
    fi
@@ -205,7 +203,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/$version/$(basename "$libvirt_target_xz_archive")" \
+            --web-seed "https://download.whonix.org/linux/$anon_dist_build_version/$(basename "$libvirt_target_xz_archive")" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
