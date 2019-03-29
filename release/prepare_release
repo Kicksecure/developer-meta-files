@@ -32,6 +32,7 @@ libvirt_compress() {
 
    true "INFO: Checking if all files to be added to $libvirt_target_xz_archive exist..."
    test -f "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
+   test -f "$WHONIX_BINARY/WHONIX_DISCLAIMER"
    test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
    test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
    test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
@@ -68,6 +69,7 @@ libvirt_compress() {
          --directory="$WHONIX_BINARY" \
          --file "$(basename "$libvirt_target_xz_archive")" \
          "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
+         "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
          "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
          "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
          "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
@@ -300,6 +302,7 @@ main() {
 
    ## libvirt_compress uses --directory="$WHONIX_BINARY"
    sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
+   sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "$WHONIX_BINARY/WHONIX_DISCLAIMER"
 
    if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
       ## skip, to unify gateway image with workstation image
