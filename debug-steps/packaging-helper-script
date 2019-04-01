@@ -32,7 +32,7 @@ source ../../../help-steps/colors
 cd ..
 
 ## Source make-helper.bsh to get function make_get_variables.
-source ../genmkfile/usr/share/genmkfile/make-helper.bsh
+source ../genmkfile/usr/share/genmkfile/make-helper-one.bsh
 
 cd ..
 
