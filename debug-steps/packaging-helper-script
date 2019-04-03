@@ -494,6 +494,10 @@ pkg_git_push_remotes() {
    true
 }
 
+git_reset_readme() {
+   git checkout changelog.upstream
+}
+
 pkg_git_commmit_readme() {
    git add README.md
    #git diff --cached
