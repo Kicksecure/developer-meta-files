@@ -396,6 +396,13 @@ pkg_debhelper_bump() {
    one=", dh-systemd"
    two=""
    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+
+   git add "$repo_full_path/debian/control"
+   git add "$repo_full_path/debian/source/lintian-overrides"
+   git add "$repo_full_path/debian/copyright"
+   git add "$repo_full_path/COPYING"
+   git add "$repo_full_path/debian/compat"
+   git commit -m "port to debian buster"
 }
 
 pkg_packaging_files_diff() {
