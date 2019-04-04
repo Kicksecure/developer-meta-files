@@ -396,16 +396,16 @@ pkg_debhelper_bump() {
 #    one=", dh-systemd"
 #    two=""
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+#
+#    one='Priority: extra'
+#    two='Priority: optional'
+#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
 
-#    one='dh $@ --with=config-package --with systemd'
-#    two='dh $@ --with=config-package'
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/rules"
+   one='--with=config-package --with=systemd'
+   two='--with=config-package'
+   str_replace.pl "$one" "$two" "$repo_full_path/debian/rules"
 
-   one='Priority: extra'
-   two='Priority: optional'
-   str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
-
-   git add "$repo_full_path/debian/control"
+   git add "$repo_full_path/debian/rules"
    git commit -m "port to debian buster" || true
 }
 
