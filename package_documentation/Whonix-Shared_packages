@@ -234,7 +234,7 @@ kwin-x11
 plasma-desktop-data
 
 xserver-xorg
-kdesudo
+gksudo
 kdepasswd
 kfind
 ksysguard
