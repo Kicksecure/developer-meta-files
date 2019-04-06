@@ -125,6 +125,6 @@ upload_location="root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal"
 
 main "$@"
 
-upload_location="adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal"
-
-main "$@"
+# upload_location="adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal"
+#
+# main "$@"
