@@ -35,8 +35,8 @@ if [ "$version" = "" ]; then
 fi
 
 if [ "$server" = "" ]; then
-   #server="root@whonix.org:/var/rsync/linux"
-   server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
+   server="root@whonix.org:/var/rsync/linux"
+   #server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
 fi
 
 #server="hulahoop@whonix.org:/home/hulahoop/libvirt"
