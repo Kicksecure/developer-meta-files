@@ -66,6 +66,7 @@ upload_dry_dists() {
       --dry-run \
       $rsync_opts \
       --recursive \
+      --delete \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
       "${upload_location}/dists/"
@@ -79,6 +80,7 @@ upload_dry_pool() {
       --dry-run \
       $rsync_opts \
       --recursive \
+      --delete \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
       "${upload_location}/pool/"
@@ -94,6 +96,7 @@ upload_real_dists() {
    rsync \
       $rsync_opts \
       --recursive \
+      --delete \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/dists/"* \
       "${upload_location}/dists/"
@@ -104,6 +107,7 @@ upload_real_pool() {
    rsync \
       $rsync_opts \
       --recursive \
+      --delete \
       --rsh ssh \
       "$WHONIX_BINARY/aptrepo_remote/pool/"* \
       "${upload_location}/pool/"
