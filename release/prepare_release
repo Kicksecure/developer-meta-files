@@ -96,7 +96,6 @@ virtualbox_export() {
 
    rm --force "$binary_image_ova"
 
-   ## Not yet using: --producturl
    ## --vsys needs to precede --eulafile.
 
    if [ "$vm_multiple" = "false" ]; then
@@ -107,6 +106,7 @@ virtualbox_export() {
             --eulafile "$binary_image_text" \
             --manifest \
             --product "$VMNAME" \
+            --producturl "https://www.whonix.org/wiki/Other_Operating_Systems" \
             --vendor "Whonix" \
             --vendorurl "https://www.whonix.org" \
             --version "${anon_dist_build_version}" \
@@ -120,6 +120,7 @@ virtualbox_export() {
                --eulafile "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT" \
                --manifest \
                --product "Whonix-Gateway" \
+               --producturl "https://www.whonix.org/wiki/Main_Page" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
                --version "${anon_dist_build_version}" \
@@ -127,6 +128,7 @@ virtualbox_export() {
                --eulafile "$binary_image_text" \
                --manifest \
                --product "Whonix-Workstation" \
+               --producturl "https://www.whonix.org/wiki/Multiple_Whonix-Workstations" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
                --version "${anon_dist_build_version}"
