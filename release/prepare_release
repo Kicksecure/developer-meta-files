@@ -94,6 +94,18 @@ virtualbox_export() {
       return 0
    fi
 
+   local description
+   description="\
+Build Version [A]: ${anon_dist_build_version}
+
+Stay tuned! [B]
+
+Please donate! [C]
+
+[A] https://www.whonix.org/wiki/Whonix_Build_Version
+[B] https://www.whonix.org/wiki/Stay_Tuned
+[C] https://www.whonix.org/wiki/Donate"
+
    rm --force "$binary_image_ova"
 
    ## --vsys needs to precede --eulafile.
@@ -104,6 +116,7 @@ virtualbox_export() {
             export "$VMNAME" \
             --vsys "0" \
             --eulafile "$binary_image_text" \
+            --description "$description" \
             --manifest \
             --product "$VMNAME" \
             --producturl "https://www.whonix.org/wiki/Other_Operating_Systems" \
@@ -118,6 +131,7 @@ virtualbox_export() {
             --output "$binary_image_ova" \
             --vsys '0' \
                --eulafile "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT" \
+               --description "$description" \
                --manifest \
                --product "Whonix-Gateway" \
                --producturl "https://www.whonix.org/wiki/Main_Page" \
@@ -126,6 +140,7 @@ virtualbox_export() {
                --version "${anon_dist_build_version}" \
             --vsys '1' \
                --eulafile "$binary_image_text" \
+               --description "$description" \
                --manifest \
                --product "Whonix-Workstation" \
                --producturl "https://www.whonix.org/wiki/Multiple_Whonix-Workstations" \
