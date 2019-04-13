@@ -33,7 +33,7 @@ if [ "$anon_dist_build_version" = "" ]; then
 fi
 
 if [ "$server" = "" ]; then
-   server="root@whonix.org:/var/rsync/linux"
+   server="root@whonix.org:/var/rsync/ova"
    #server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
 fi
 
