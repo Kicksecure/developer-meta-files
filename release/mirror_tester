@@ -22,8 +22,6 @@ source ../../../help-steps/variables
 
 cd "$WHONIX_BINARY"
 
-[ -n "$version" ] || version="$anon_dist_build_version"
-
 ## https://www.whonix.org/wiki/Dev/Mirrors
 
 ## dig mirror.whonix.de ANY +noall +answer

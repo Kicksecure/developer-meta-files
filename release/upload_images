@@ -25,13 +25,11 @@ source ../../../help-steps/variables
 #true "${cyan}INFO: Press any enter to continue.${reset}"
 #read temp
 
-[ -n "$version" ] || version="$anon_dist_build_version"
-
 # true "${cyan}INFO: Press any enter to continue.${reset}"
 # read temp
 
-if [ "$version" = "" ]; then
-   error "Variable version is empty."
+if [ "$anon_dist_build_version" = "" ]; then
+   error "Variable anon_dist_build_version is empty."
 fi
 
 if [ "$server" = "" ]; then
@@ -46,7 +44,7 @@ if [ "$server" = "" ]; then
    error "Variable server is empty."
 fi
 
-server_with_version="$server/$version/"
+server_with_version="$server/$anon_dist_build_version/"
 
 for extension in "torrent" "sha256sums" "sha512sums" "ova" "libvirt.xz" "asc" ; do
    result="$(find "$WHONIX_BINARY" -maxdepth 1 -type f -name "*.$extension" -printf '%p\n')"
