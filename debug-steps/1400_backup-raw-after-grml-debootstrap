@@ -38,8 +38,7 @@ backup-raw-after-grml-debootstrap() {
       exit 0
    fi
 
-   cp "$binary_image_raw" "$WHONIX_BINARY/$VMNAME-$anon_dist_build_version-backup-after-grml-debootstrap.raw"
-   chown --recursive "$user_name:$user_name" "$WHONIX_BINARY"/
+   sudo $SUDO_OPTS cp "$binary_image_raw" "$WHONIX_BINARY/$VMNAME-$anon_dist_build_version-backup-after-grml-debootstrap.raw"
 }
 
 main() {
