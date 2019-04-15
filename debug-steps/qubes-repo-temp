@@ -39,9 +39,9 @@ source_vm="$(qubesdb-read /name)"
 
 ## Get rid of huge .git folder.
 rm -r -f "$WHONIX_BINARY/aptrepo_temp_copy/"
-mkdir -p "$WHONIX_BINARY/aptrepo_temp_copy"
-cp -r "$WHONIX_BINARY/aptrepo_remote/dists" "$WHONIX_BINARY/aptrepo_temp_copy/dists"
-cp -r "$WHONIX_BINARY/aptrepo_remote/pool" "$WHONIX_BINARY/aptrepo_temp_copy/pool"
+sudo $SUDO_OPTS mkdir -p "$WHONIX_BINARY/aptrepo_temp_copy"
+sudo $SUDO_OPTS cp -r "$WHONIX_BINARY/aptrepo_remote/dists" "$WHONIX_BINARY/aptrepo_temp_copy/dists"
+sudo $SUDO_OPTS cp -r "$WHONIX_BINARY/aptrepo_remote/pool" "$WHONIX_BINARY/aptrepo_temp_copy/pool"
 
 echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $WHONIX_BUILD_APT_CODENAME main" > "$WHONIX_BINARY/whonix_repo_temp.list"
 cat "$WHONIX_BINARY/whonix_repo_temp.list"
