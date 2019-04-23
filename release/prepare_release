@@ -164,10 +164,27 @@ Please donate! [C]
          VBoxManage \
             import "$binary_image_ova" \
             --vsys "0" \
+            --eula show \
+            --vmname "$VMNAME-${anon_dist_build_version}"
+
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            import "$binary_image_ova" \
+            --vsys "0" \
             --eula accept \
             --vmname "$VMNAME-${anon_dist_build_version}" \
             --dry-run
    else
+      sudo $SUDO_OPTS \
+         VBoxManage \
+            import "$binary_image_ova" \
+            --vsys "0" \
+               --eula show \
+               --vmname "Whonix-Gateway-${anon_dist_build_version}" \
+            --vsys "1" \
+               --eula show \
+               --vmname "Whonix-Workstation-${anon_dist_build_version}" \
+
       sudo $SUDO_OPTS \
          VBoxManage \
             import "$binary_image_ova" \
