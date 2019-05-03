@@ -345,11 +345,12 @@ pkg_packaging_copy() {
 }
 
 pkg_copy_contributing_file() {
-   repo_skip "genmkfile" || return 0
+   repo_skip "kloak" || return 0
+   repo_skip "corridor" || return 0
 
    cp "/home/user/Whonix/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
    git add "$repo_full_path/CONTRIBUTING.md"
-   git commit -m "update copyright"
+   git commit -m "update"
 
    true
 }
