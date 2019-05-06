@@ -239,7 +239,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/ova/${anon_dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
+            --web-seed "https://download.whonix.org/libvirt/${anon_dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
