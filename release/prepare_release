@@ -228,7 +228,7 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/${anon_dist_build_version}/$(basename "$binary_image_ova")" \
+            --web-seed "https://download.whonix.org/ova/${anon_dist_build_version}/$(basename "$binary_image_ova")" \
             -o "$binary_image_ova_torrent" \
             "$binary_image_ova"
    fi
@@ -239,18 +239,18 @@ torrent_create() {
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/linux/${anon_dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
+            --web-seed "https://download.whonix.org/ova/${anon_dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
             -o "$libvirt_target_xz_archive_torrent" \
             "$libvirt_target_xz_archive"
    fi
 
    ## Working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/ova/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/ova/Whonix-Workstation-7.ova");' "$2")"
 
    ## Not working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/linux/Whonix-Workstation-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/ova/Whonix-Gateway-7.ova");' "$2")"
+   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.whonix.org/ova/Whonix-Workstation-7.ova");' "$2")"
 }
 
 hashes_create_and_verify() {
