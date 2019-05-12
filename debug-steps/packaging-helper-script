@@ -623,13 +623,11 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="\
-update copyright"
+   commit_message="minor"
 
    git add -A
    git add -u
-   #git diff --cached
-   #git add debian/control
+   git diff --cached
    git commit -m "$commit_message"
 
    returned="$(git status)"
