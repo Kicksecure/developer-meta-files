@@ -592,6 +592,14 @@ pkg_git_commit_packaging() {
    true
 }
 
+pkg_git_commit_all_things() {
+   git add -A
+   msg="anon-shared-helper-scripts -> helper-scripts"
+   git commit -m "$msg" || true
+   git status
+   true
+}
+
 pkg_add_dh_changelogs_override_to_debian_rules() {
    echo "
 override_dh_installchangelogs:
