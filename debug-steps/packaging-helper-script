@@ -594,7 +594,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="update path to pre.bsh"
+   msg="minor"
    git commit -m "$msg" || true
    git status
    true
