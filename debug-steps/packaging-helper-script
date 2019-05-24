@@ -648,11 +648,16 @@ pkg_debian_control_open() {
 }
 
 pkg_git_submodule_file_writer() {
+   if [ ! "$git_submodule_file_deleted" = "true" ]; then
+      rm ../../".gitmodules"
+      git_submodule_file_deleted=true
+   fi
+
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$reponame
         url = https://github.com/Whonix/${reponame}.git
-" >> ../".gitmodules"
+" >> ../../".gitmodules"
 }
 
 pkg_git_log_giant_make() {
