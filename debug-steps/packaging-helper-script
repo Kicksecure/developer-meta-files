@@ -834,6 +834,29 @@ added debian/source/lintian-overrides with debian-watch-does-not-check-gpg-signa
    true
 }
 
+pkg_add_lintian_watch_gpg_override() {
+   mkdir --parents "./debian/source"
+   echo "\
+## https://phabricator.whonix.org/T277
+debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
+}
+
+debian_watch_file_create() {
+   echo "## Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+version=4
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/$reponame-\$1\.tar\.gz/ \\
+  https://github.com/Whonix/$reponame/tags .*/v?(\d\S+)\.tar\.gz" > "$repo_full_path/debian/watch"
+
+   git add "$repo_full_path/debian/watch"
+   local msg
+   msg="\
+fix debian/watch lintian warning debian-watch-contains-dh_make-template"
+   git commit -m "$msg"
+   true
+}
+
 loop_helper() {
    for item in ./*; do
       if [ ! -d "$item" ]; then
