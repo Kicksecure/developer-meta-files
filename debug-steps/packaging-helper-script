@@ -320,21 +320,21 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_Whonix13() {
+pkg_git_branch_Whonix14() {
    git checkout master
-   git branch Whonix13 || true
+   git branch Whonix14 || true
    true
 }
 
-pkg_git_diff_branch_Whonix13() {
+pkg_git_diff_branch_Whonix14() {
    git checkout master
-   git diff Whonix13 || true
+   git diff Whonix14 || true
    true
 }
 
-pkg_git_update_branch_Whonix13() {
+pkg_git_update_branch_Whonix14() {
    git checkout master
-   git checkout Whonix13
+   git checkout Whonix14
    git merge --ff-only master
    git checkout master
    true
@@ -345,8 +345,8 @@ pkg_git_branch_checkout_master() {
    true
 }
 
-pkg_git_branch_checkout_Whonix13() {
-   git checkout Whonix13
+pkg_git_branch_checkout_Whonix14() {
+   git checkout Whonix14
    true
 }
 
@@ -550,8 +550,8 @@ pkg_git_push_remotes() {
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-#    if internal_git_diff Whonix13 adre/Whonix13 ; then
-#       git push adre Whonix13 &
+#    if internal_git_diff Whonix14 adre/Whonix14 ; then
+#       git push adre Whonix14 &
 #       git_pid="$!"
 #       #wait "$git_pid"
 #       git_pid_list="$git_pid_list $git_pid"
@@ -564,8 +564,8 @@ pkg_git_push_remotes() {
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-#    if internal_git_diff Whonix13 origin/Whonix13  ; then
-#       git push origin Whonix13 &
+#    if internal_git_diff Whonix14 origin/Whonix14  ; then
+#       git push origin Whonix14 &
 #       git_pid="$!"
 #       ##wait "$git_pid"
 #       git_pid_list="$git_pid_list $git_pid"
@@ -699,11 +699,7 @@ pkg_git_log_giant_make() {
    echo "" >> "$giant_git_log_file"
    echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
 
-   if ! git --no-pager shortlog Whonix13..master >> "$giant_git_log_file" ; then
-      echo "# master branch #" >> "$giant_git_log_file"
-      echo "" >> "$giant_git_log_file"
-      git --no-pager shortlog master >> "$giant_git_log_file"
-   fi
+   git --no-pager shortlog Whonix14..master >> "$giant_git_log_file"
 
    ## TODO
    #$(git describe)..master
@@ -711,13 +707,13 @@ pkg_git_log_giant_make() {
    true
 }
 
-pkg_git_log_Whonix12_Whonix13() {
+pkg_git_log_Whonix13_Whonix14() {
    if [ ! "$deleteonce" = "1" ]; then
       deleteonce="1"
       rm -f "../../changes"
    fi
    echo "$reponame" >> "../../changes"
-   output="$(git --no-pager log --pretty="format:https://github.com/Whonix/$reponame/commit/%h %s" Whonix12 Whonix13)"
+   output="$(git --no-pager log --pretty="format:https://github.com/Whonix/$reponame/commit/%h %s" Whonix13 Whonix14)"
    echo "$output" >> "../../changes"
    echo "" >> "../../changes"
 
