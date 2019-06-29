@@ -609,6 +609,14 @@ pkg_git_commit_copyright() {
    true
 }
 
+pkg_git_commit_man() {
+   msg='man page'
+   git add man/* || true
+   git commit -m "$msg" || true
+   git status
+   true
+}
+
 pkg_git_commit_packaging() {
    git add Makefile
    git add make-helper.bsh
