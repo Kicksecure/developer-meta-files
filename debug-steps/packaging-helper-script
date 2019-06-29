@@ -699,7 +699,7 @@ pkg_git_log_giant_make() {
    echo "" >> "$giant_git_log_file"
    echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
 
-   if ! git --no-pager shortlog remotes/origin/Whonix13..master >> "$giant_git_log_file" ; then
+   if ! git --no-pager shortlog Whonix13..master >> "$giant_git_log_file" ; then
       echo "# master branch #" >> "$giant_git_log_file"
       echo "" >> "$giant_git_log_file"
       git --no-pager shortlog master >> "$giant_git_log_file"
