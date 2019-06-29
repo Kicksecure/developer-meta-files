@@ -78,8 +78,10 @@ commit_filter() {
       fi
 
       for text in \
+         "# On branch master nothing to commit (working directory clean)" \
          "copyright" \
          "fix lintian warnings" \
+         "fix lintian warning" \
          "fixed debian/changelog" \
          "fix path" \
          "remove trailing spaces" \
@@ -115,6 +117,32 @@ commit_filter() {
          "refactoring" \
          "debugging" \
          "lintian warning copyright fix" \
+         "https://www.whonix.org/wiki/Dev/Licensing" \
+         "port to debian buster" \
+         "surpress lintian warning" \
+         "update" \
+         "fix debian/watch lintian warning debian-watch-contains-dh_make-template" \
+         "code simplification" \
+         "simplification" \
+         "update path to pre.bsh" \
+         "sudo" \
+         "gksudo" \
+         "description" \
+         "buster" \
+         "cleanup" \
+         "license" \
+         "update path to pre.bsh" \
+         "anon-shared-helper-scripts -> helper-scripts" \
+         "enable debugging" \
+         "Update control" \
+         "fix output" \
+         "local" \
+         "man page" \
+         "coypright" \
+         "formatting" \
+         "style" \
+         "upgrade license from GPLv2+ to GPLv3+" \
+         "CI fix" \
          "."
          do
             if [ "$text" = "$commit_msg" ]; then
@@ -131,6 +159,7 @@ commit_filter() {
       echo "$line" >> "$giant_git_log_processed_file"
    done < "$giant_git_log_file"
    set -x
+   exit
 }
 
 pkg_readme_creator() {
