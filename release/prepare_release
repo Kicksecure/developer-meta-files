@@ -19,6 +19,9 @@ cd "$WHONIX_BINARY"
 
 sanity_tests() {
    command -v mktorrent >/dev/null
+   command -v signify-openbsd >/dev/null
+   test -f "$signify_public_key"
+   test -f "$signify_private_key"
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 }
@@ -293,10 +296,17 @@ sign_cmd() {
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
    sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+
+   ## https://forums.whonix.org/t/signify-openbsd/7842
+   sudo $SUDO_OPTS signify-openbsd -s "$signify_private_key" -m "$1" -x "${1}.sig"
+   ## Sanity test.
+   test -f "${1}.sig"
 }
 
 verify_cmd() {
    sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$1"
+
+   sudo $SUDO_OPTS signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}.sig"
 }
 
 signatures_create() {
