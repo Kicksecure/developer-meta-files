@@ -297,6 +297,12 @@ sign_cmd() {
    ## tampered with.
    sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 
+   ## To create a key for signify-openbsd:
+   ## as user "user"
+   ## mkdir -p ~/.signify
+   ## cd ~/.signify
+   ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
+
    ## https://forums.whonix.org/t/signify-openbsd/7842
    sudo $SUDO_OPTS signify-openbsd -s "$signify_private_key" -m "$1" -x "${1}.sig"
    ## Sanity test.
