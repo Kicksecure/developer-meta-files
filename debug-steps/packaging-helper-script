@@ -660,7 +660,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="minor"
+   commit_message="/var/run -> /run"
 
    git add -A
    git add -u
