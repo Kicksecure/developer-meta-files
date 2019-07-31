@@ -19,7 +19,7 @@ main() {
    trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
    ## Lockfile for whonixcheck.
-   touch "/var/run/package_manager_lock"
+   touch "/run/package_manager_lock"
 
    sync
 
@@ -129,7 +129,7 @@ main() {
    sync
 
    ## Remove lockfile for whonixcheck.
-   rm --force "/var/run/package_manager_lock"
+   rm --force "/run/package_manager_lock"
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unchroot-raw"
    #"$WHONIX_SOURCE_HELP_STEPS_FOLDER/unprevent-daemons-from-starting"
