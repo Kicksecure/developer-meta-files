@@ -176,7 +176,7 @@ pkg_readme_creator() {
    generic_readme="../whonix-developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
-   local readme_file line first_word matched
+   local line first_word matched
 
    if [ -f "README_generic.md" ]; then
       ## When there is a README_generic.md, this is a way to express
@@ -221,6 +221,15 @@ pkg_readme_creator() {
    done < "$generic_readme"
 
    true "Done: $readme_file"
+}
+
+pkg_readme_create_and_commit() {
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   pkg_readme_creator
+
+   git add "$readme_file"
+   git commit -m "readme" || true
 }
 
 pkg_links_echo() {
