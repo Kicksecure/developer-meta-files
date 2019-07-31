@@ -664,10 +664,10 @@ pkg_git_diff_and_commit() {
 
    git add -A
    git add -u
-   git diff --cached
+   #git diff --cached
 
-   true "press enter to continue"
-   read temp
+#    true "press enter to continue"
+#    read temp
 
    git commit -m "$commit_message"
 
