@@ -22,11 +22,6 @@ source ../../../help-steps/variables
 ## Debugging.
 "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-proposed-updates
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-testers
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export stretch-developers
-
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
