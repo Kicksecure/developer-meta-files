@@ -139,7 +139,21 @@ commit_filter() {
          "local" \
          "man page" \
          "coypright" \
-         "formatting" \
+         "formatting" 
+         "improve error handler" \
+         "cleanup" \
+         "fix lintian warning" \
+         "bump" \
+         "trailing spaces" \\
+         "coypright" \
+         "description" \
+         "shuffle" \
+         "use pre.bsh" \
+         "set -e" \
+         "Update control" \
+         "update control" \
+         "disable debugging" \
+         "set -o pipefail" \
          "style" \
          "upgrade license from GPLv2+ to GPLv3+" \
          "CI fix" \
@@ -159,7 +173,6 @@ commit_filter() {
       echo "$line" >> "$giant_git_log_processed_file"
    done < "$giant_git_log_file"
    set -x
-   exit
 }
 
 pkg_readme_creator() {
@@ -221,15 +234,6 @@ pkg_readme_creator() {
    done < "$generic_readme"
 
    true "Done: $readme_file"
-}
-
-pkg_readme_create_and_commit() {
-   repo_skip "whonix-developer-meta-files" || return 0
-
-   pkg_readme_creator
-
-   git add "$readme_file"
-   git commit -m "readme" || true
 }
 
 pkg_links_echo() {
@@ -717,7 +721,11 @@ pkg_git_log_giant_make() {
    echo "" >> "$giant_git_log_file"
    echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
 
-   git --no-pager shortlog Whonix15..master >> "$giant_git_log_file"
+   if ! git --no-pager shortlog ..master >> "$giant_git_log_file" ; then
+      echo "# master branch #" >> "$giant_git_log_file"
+      echo "" >> "$giant_git_log_file"
+      git --no-pager shortlog ..master >> "$giant_git_log_file"
+   fi
 
    ## TODO
    #$(git describe)..master
@@ -937,10 +945,16 @@ main() {
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
       true "INFO: syntax: ./$0 function-name"
-   else
-      loop_helper "$@"
-      true
+      exit 0
    fi
+
+   if [ "$@" = "commit_filter" ]; then
+      commit_filter
+      exit 0
+   fi
+
+   loop_helper "$@"
+   true
 }
 
 main "$@"
