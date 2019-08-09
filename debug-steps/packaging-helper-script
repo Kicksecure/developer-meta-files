@@ -236,6 +236,15 @@ pkg_readme_creator() {
    true "Done: $readme_file"
 }
 
+pkg_readme_create_and_commit() {
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   pkg_readme_creator
+
+   git add "$readme_file"
+   git commit -m "readme" || true
+}
+
 pkg_links_echo() {
    echo "https://github.com/Whonix/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
@@ -721,11 +730,7 @@ pkg_git_log_giant_make() {
    echo "" >> "$giant_git_log_file"
    echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
 
-   if ! git --no-pager shortlog ..master >> "$giant_git_log_file" ; then
-      echo "# master branch #" >> "$giant_git_log_file"
-      echo "" >> "$giant_git_log_file"
-      git --no-pager shortlog ..master >> "$giant_git_log_file"
-   fi
+   git --no-pager shortlog Whonix14..master >> "$giant_git_log_file"
 
    ## TODO
    #$(git describe)..master
