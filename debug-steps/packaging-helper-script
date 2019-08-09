@@ -139,12 +139,12 @@ commit_filter() {
          "local" \
          "man page" \
          "coypright" \
-         "formatting" 
+         "formatting" \
          "improve error handler" \
          "cleanup" \
          "fix lintian warning" \
          "bump" \
-         "trailing spaces" \\
+         "trailing spaces" \
          "coypright" \
          "description" \
          "shuffle" \
