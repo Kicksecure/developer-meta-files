@@ -682,7 +682,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="TODO"
+   commit_message="use properly override_dh_installman"
 
    git add -A
    git add -u
