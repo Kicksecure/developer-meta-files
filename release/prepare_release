@@ -34,14 +34,23 @@ libvirt_compress() {
    rm --force "$(basename $libvirt_target_xz_archive)"
 
    true "INFO: Checking if all files to be added to $libvirt_target_xz_archive exist..."
+
    test -f "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
    test -f "$WHONIX_BINARY/WHONIX_DISCLAIMER"
-   test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
-   test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
-   test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
-   test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
+
+   if [ "$vm_multiple" = "false" ]; then
+      test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
+      test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
+      test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
+      test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
+   else
+      test -f "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
+      test -f "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
+   fi
+
    test -f "$libvirt_target_network_file_external"
    test -f "$libvirt_target_network_file_internal"
+
    true "INFO: Ok, all files to be added to $libvirt_target_xz_archive exist."
 
    ## Not using `gzip`, because it cannot handle sparse files:
@@ -59,26 +68,46 @@ libvirt_compress() {
 
    ## TODO: add progress meter (using `pv`?)
 
-   sudo $SUDO_OPTS \
-      tar \
-         --create \
-         --verbose \
-         --owner=0 --group=0 --numeric-owner \
-         --mode=go=rX,u+rw,a-s \
-         --sort=name \
-         --sparse \
-         --mtime='2015-10-21 00:00Z' \
-         --xz \
-         --directory="$WHONIX_BINARY" \
-         --file "$(basename "$libvirt_target_xz_archive")" \
-         "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
-         "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
-         "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
-         "$(basename "$libvirt_target_network_file_external")" \
-         "$(basename "$libvirt_target_network_file_internal")"
+   if [ "$vm_multiple" = "false" ]; then
+      sudo $SUDO_OPTS \
+         tar \
+            --create \
+            --verbose \
+            --owner=0 --group=0 --numeric-owner \
+            --mode=go=rX,u+rw,a-s \
+            --sort=name \
+            --sparse \
+            --mtime='2015-10-21 00:00Z' \
+            --xz \
+            --directory="$WHONIX_BINARY" \
+            --file "$(basename "$libvirt_target_xz_archive")" \
+            "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
+            "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
+            "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
+            "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
+            "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
+            "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
+            "$(basename "$libvirt_target_network_file_external")" \
+            "$(basename "$libvirt_target_network_file_internal")"
+   else
+      sudo $SUDO_OPTS \
+         tar \
+            --create \
+            --verbose \
+            --owner=0 --group=0 --numeric-owner \
+            --mode=go=rX,u+rw,a-s \
+            --sort=name \
+            --sparse \
+            --mtime='2015-10-21 00:00Z' \
+            --xz \
+            --directory="$WHONIX_BINARY" \
+            --file "$(basename "$libvirt_target_xz_archive")" \
+            "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
+            "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
+            "$(basename "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
+            "$(basename "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
+            "$(basename "$libvirt_target_network_file_external")"
+   fi
 
    sudo $SUDO_OPTS strip-nondeterminism "$libvirt_target_xz_archive"
 
@@ -97,7 +126,25 @@ virtualbox_export() {
       return 0
    fi
 
-   local description
+   local producturl vendorurl vendor description
+   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+      producturl="https://www.whonix.org/wiki/Kicksecure"
+      vendorurl="https://www.whonix.org/wiki/Kicksecure"
+      vendor="Kicksecure"
+      description="\
+Build Version [A]: ${anon_dist_build_version}
+
+Stay tuned! [B]
+
+Please donate! [C]
+
+[A] https://www.whonix.org/wiki/Kicksecure_Build_Version
+[B] https://www.whonix.org/wiki/Kicksecure/Stay_Tuned
+[C] https://www.whonix.org/wiki/Kicksecure/Donate"
+   else
+      producturl="https://www.whonix.org/wiki/Other_Operating_Systems"
+      vendorurl="https://www.whonix.org"
+      vendor="Whonix"
    description="\
 Build Version [A]: ${anon_dist_build_version}
 
@@ -108,6 +155,7 @@ Please donate! [C]
 [A] https://www.whonix.org/wiki/Whonix_Build_Version
 [B] https://www.whonix.org/wiki/Stay_Tuned
 [C] https://www.whonix.org/wiki/Donate"
+   fi
 
    rm --force "$binary_image_ova"
 
@@ -122,9 +170,9 @@ Please donate! [C]
             --description "$description" \
             --manifest \
             --product "$VMNAME" \
-            --producturl "https://www.whonix.org/wiki/Other_Operating_Systems" \
-            --vendor "Whonix" \
-            --vendorurl "https://www.whonix.org" \
+            --producturl "$producturl" \
+            --vendor "$vendor" \
+            --vendorurl "$vendorurl" \
             --version "${anon_dist_build_version}" \
             --output "$binary_image_ova"
    else
@@ -394,6 +442,9 @@ main() {
       vm_names_to_be_exported="Whonix-Gateway-${WHONIX_BUILD_DESKTOP} Whonix-Workstation-${WHONIX_BUILD_DESKTOP}"
    fi
    if [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
+      vm_names_to_be_exported="$VMNAME"
+   fi
+   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
       vm_names_to_be_exported="$VMNAME"
    fi
 
