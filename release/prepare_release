@@ -35,8 +35,13 @@ libvirt_compress() {
 
    true "INFO: Checking if all files to be added to $libvirt_target_xz_archive exist..."
 
-   test -f "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
-   test -f "$WHONIX_BINARY/WHONIX_DISCLAIMER"
+   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+      test -f "$WHONIX_BINARY/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      test -f "$WHONIX_BINARY/KICKSECURE_DISCLAIMER"
+   else
+      test -f "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
+      test -f "$WHONIX_BINARY/WHONIX_DISCLAIMER"
+   fi
 
    if [ "$vm_multiple" = "false" ]; then
       test -f "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2"
@@ -67,20 +72,23 @@ libvirt_compress() {
    ## Not using tar --verbose:
    ## - slows down tar too much.
 
-   ## TODO: add progress meter (using `pv`?)
-
    local filelist
-   if [ "$vm_multiple" = "false" ]; then
+
+   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+      filelist+=" $(basename "$WHONIX_BINARY/KICKSECURE_BINARY_LICENSE_AGREEMENT") "
+      filelist+=" $(basename "$WHONIX_BINARY/KICKSECURE_DISCLAIMER") "
+   else
       filelist+=" $(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT") "
       filelist+=" $(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER") "
+   fi
+
+   if [ "$vm_multiple" = "false" ]; then
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2") "
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.xml") "
 
       ## TODO: required for Kicksecure?
       #filelist+=" $(basename "$libvirt_target_network_file_external") "
    else
-      filelist=" $(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT") "
-      filelist=" $(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER") "
       filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
       filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
       filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
@@ -91,6 +99,7 @@ libvirt_compress() {
 
    true "filelist: $filelist"
 
+   ## TODO: add progress meter (using `pv`?)
    sudo $SUDO_OPTS \
       tar \
          --create \
@@ -122,11 +131,12 @@ virtualbox_export() {
       return 0
    fi
 
-   local producturl vendorurl vendor description
+   local producturl vendorurl vendor eulafile description
    if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
       producturl="https://www.whonix.org/wiki/Kicksecure"
       vendorurl="https://www.whonix.org/wiki/Kicksecure"
       vendor="Kicksecure"
+      eulafile="$WHONIX_BINARY/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       description="\
 Build Version [A]: ${anon_dist_build_version}
 
@@ -141,6 +151,7 @@ Please donate! [C]
       producturl="https://www.whonix.org/wiki/Other_Operating_Systems"
       vendorurl="https://www.whonix.org"
       vendor="Whonix"
+      eulafile="$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
       description="\
 Build Version [A]: ${anon_dist_build_version}
 
@@ -162,7 +173,7 @@ Please donate! [C]
          VBoxManage \
             export "$VMNAME" \
             --vsys "0" \
-            --eulafile "$binary_image_text" \
+            --eulafile "$eulafile" \
             --description "$description" \
             --manifest \
             --product "$VMNAME" \
@@ -423,8 +434,13 @@ main() {
    sanity_tests
 
    ## libvirt_compress uses --directory="$WHONIX_BINARY"
-   sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
-   sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "$WHONIX_BINARY/WHONIX_DISCLAIMER"
+   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/kicksecure-base-files/usr/share/whonix/KICKSECURE_BINARY_LICENSE_AGREEMENT" "$WHONIX_BINARY/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/kicksecure-base-files/usr/share/whonix/KICKSECURE_DISCLAIMER" "$WHONIX_BINARY/KICKSECURE_DISCLAIMER"
+   else
+      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "$WHONIX_BINARY/WHONIX_DISCLAIMER"
+   fi
 
    if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
       ## skip, to unify gateway image with workstation image
