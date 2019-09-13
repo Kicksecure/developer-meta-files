@@ -141,7 +141,7 @@ Please donate! [C]
       producturl="https://www.whonix.org/wiki/Other_Operating_Systems"
       vendorurl="https://www.whonix.org"
       vendor="Whonix"
-   description="\
+      description="\
 Build Version [A]: ${anon_dist_build_version}
 
 Stay tuned! [B]
