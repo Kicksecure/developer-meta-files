@@ -39,17 +39,18 @@ libvirt_compress() {
    test -f "$WHONIX_BINARY/WHONIX_DISCLAIMER"
 
    if [ "$vm_multiple" = "false" ]; then
+      test -f "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2"
+      test -f "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.xml"
+   else
       test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
       test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
       test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
       test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
-   else
-      test -f "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2"
-      test -f "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
-   fi
 
-   test -f "$libvirt_target_network_file_external"
-   test -f "$libvirt_target_network_file_internal"
+      ## TODO: required for Kicksecure?
+      test -f "$libvirt_target_network_file_external"
+      test -f "$libvirt_target_network_file_internal"
+   fi
 
    true "INFO: Ok, all files to be added to $libvirt_target_xz_archive exist."
 
@@ -68,46 +69,41 @@ libvirt_compress() {
 
    ## TODO: add progress meter (using `pv`?)
 
+   local filelist
    if [ "$vm_multiple" = "false" ]; then
-      sudo $SUDO_OPTS \
-         tar \
-            --create \
-            --verbose \
-            --owner=0 --group=0 --numeric-owner \
-            --mode=go=rX,u+rw,a-s \
-            --sort=name \
-            --sparse \
-            --mtime='2015-10-21 00:00Z' \
-            --xz \
-            --directory="$WHONIX_BINARY" \
-            --file "$(basename "$libvirt_target_xz_archive")" \
-            "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
-            "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
-            "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-            "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-            "$(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
-            "$(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
-            "$(basename "$libvirt_target_network_file_external")" \
-            "$(basename "$libvirt_target_network_file_internal")"
+      filelist+=" $(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT") "
+      filelist+=" $(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER") "
+      filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2") "
+      filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.xml") "
+
+      ## TODO: required for Kicksecure?
+      #filelist+=" $(basename "$libvirt_target_network_file_external") "
    else
-      sudo $SUDO_OPTS \
-         tar \
-            --create \
-            --verbose \
-            --owner=0 --group=0 --numeric-owner \
-            --mode=go=rX,u+rw,a-s \
-            --sort=name \
-            --sparse \
-            --mtime='2015-10-21 00:00Z' \
-            --xz \
-            --directory="$WHONIX_BINARY" \
-            --file "$(basename "$libvirt_target_xz_archive")" \
-            "$(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT")" \
-            "$(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER")" \
-            "$(basename "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2")" \
-            "$(basename "$WHONIX_BINARY/${VMNAME}-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml")" \
-            "$(basename "$libvirt_target_network_file_external")"
+      filelist=" $(basename "$WHONIX_BINARY/WHONIX_BINARY_LICENSE_AGREEMENT") "
+      filelist=" $(basename "$WHONIX_BINARY/WHONIX_DISCLAIMER") "
+      filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
+      filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
+      filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
+      filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
+      filelist=" $(basename "$libvirt_target_network_file_external") "
+      filelist=" $(basename "$libvirt_target_network_file_internal") "
    fi
+
+   true "filelist: $filelist"
+
+   sudo $SUDO_OPTS \
+      tar \
+         --create \
+         --verbose \
+         --owner=0 --group=0 --numeric-owner \
+         --mode=go=rX,u+rw,a-s \
+         --sort=name \
+         --sparse \
+         --mtime='2015-10-21 00:00Z' \
+         --xz \
+         --directory="$WHONIX_BINARY" \
+         --file "$(basename "$libvirt_target_xz_archive")" \
+         $filelist
 
    sudo $SUDO_OPTS strip-nondeterminism "$libvirt_target_xz_archive"
 
