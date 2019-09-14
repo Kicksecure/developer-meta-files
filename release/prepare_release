@@ -52,7 +52,6 @@ libvirt_compress() {
       test -f "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
       test -f "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml"
 
-      ## TODO: required for Kicksecure?
       test -f "$libvirt_target_network_file_external"
       test -f "$libvirt_target_network_file_internal"
    fi
@@ -85,9 +84,6 @@ libvirt_compress() {
    if [ "$vm_multiple" = "false" ]; then
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2") "
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.xml") "
-
-      ## TODO: required for Kicksecure?
-      #filelist+=" $(basename "$libvirt_target_network_file_external") "
    else
       filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
       filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
