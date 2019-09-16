@@ -63,8 +63,10 @@ done
 true "file_list:
 $file_list"
 
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+if [ ! "build_upload_noninteractive" = "true" ]; then
+   true "${cyan}INFO: Press any enter to continue.${reset}"
+   read temp
+fi
 
 ## Test.
 rsync \
@@ -73,8 +75,10 @@ rsync \
    $file_list \
    "$server_with_version"
 
-true "${cyan}INFO: Press any enter to continue.${reset}"
-read temp
+if [ ! "build_upload_noninteractive" = "true" ]; then
+   true "${cyan}INFO: Press any enter to continue.${reset}"
+   read temp
+fi
 
 attempts_counter="0"
 attempts_max="10"

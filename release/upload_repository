@@ -44,8 +44,10 @@ show_dists() {
 }
 
 show_pool() {
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing pool.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue showing pool.${reset}"
+      read temp
+   fi
    true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
    set +x
    for file_name in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
@@ -59,8 +61,10 @@ show_pool() {
 }
 
 upload_dry_dists() {
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
+      read temp
+   fi
    true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
    rsync \
       --dry-run \
@@ -73,8 +77,10 @@ upload_dry_dists() {
 }
 
 upload_dry_pool() {
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
+      read temp
+   fi
    true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
    rsync \
       --dry-run \
@@ -87,8 +93,10 @@ upload_dry_pool() {
 }
 
 upload_real_ask() {
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
+      read temp
+   fi
 }
 
 upload_real_dists() {
