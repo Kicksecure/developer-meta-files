@@ -63,7 +63,7 @@ done
 true "file_list:
 $file_list"
 
-if [ ! "build_upload_noninteractive" = "true" ]; then
+if [ ! "$build_upload_noninteractive" = "true" ]; then
    true "${cyan}INFO: Press any enter to continue.${reset}"
    read temp
 fi
@@ -75,7 +75,7 @@ rsync \
    $file_list \
    "$server_with_version"
 
-if [ ! "build_upload_noninteractive" = "true" ]; then
+if [ ! "$build_upload_noninteractive" = "true" ]; then
    true "${cyan}INFO: Press any enter to continue.${reset}"
    read temp
 fi
