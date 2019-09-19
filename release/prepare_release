@@ -451,12 +451,12 @@ signatures_verify() {
    fi
 
    if [ "$WHONIX_BUILD_ISO" = "true" ]; then
-      verify_cmd_gpg "$binary_image_iso"
-      verify_cmd_gpg "$binary_image_iso_torrent"
+      verify_cmd_gpg "$binary_image_iso_signature"
+      verify_cmd_gpg "$binary_image_iso_torrent_signature"
 
       ## Too big.
-      #verify_cmd_signinfy "$binary_image_iso"
-      verify_cmd_signinfy "$binary_image_iso_torrent"
+      #verify_cmd_signinfy "$binary_image_iso_signature"
+      verify_cmd_signinfy "$binary_image_iso_torrent_signature"
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
