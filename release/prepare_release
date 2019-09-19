@@ -344,15 +344,15 @@ hashes_create_and_verify() {
       ## Using `basename` so we end up with relative paths in hash sums file.
 
       if [ "$WHONIX_BUILD_VIRTUALBOX" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_ova")" | sudo $SUDO_OPTS tee "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_ova")" | sudo $SUDO_OPTS tee --append "$hash_file"
       fi
 
       if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_xz_archive")" | sudo $SUDO_OPTS tee "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_xz_archive")" | sudo $SUDO_OPTS tee --append "$hash_file"
       fi
 
       if [ "$WHONIX_BUILD_ISO" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_iso")" | sudo $SUDO_OPTS tee "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_iso")" | sudo $SUDO_OPTS tee --append "$hash_file"
       fi
 
       sync
