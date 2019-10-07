@@ -236,6 +236,64 @@ pkg_readme_creator() {
    true "Done: $readme_file"
 }
 
+recurse() {
+   local file_name
+   for file_name in "$1"/*; do
+      if [ -d "$file_name" ]; then
+         #echo "dir: $i"
+         recurse "$file_name"
+       elif [ -f "$file_name" ]; then
+         echo "$file_name"
+       fi
+   done
+}
+
+pkg_descr_creator() {
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   local file_name file_name_without_leading_dot
+
+   local to_skip_list="
+changelog.upstream
+CONTRIBUTING.md
+COPYING
+GPLv3
+Makefile
+README.md
+"
+
+   for file_name in $(recurse .) ; do
+      file_name_without_leading_dot="$(echo "$file_name" | str_replace "./" "")"
+
+      file_name_to_open="~/Whonix/packages/$reponame/$file_name_without_leading_dot"
+
+      if echo "$file_name" | grep -q ./debian/ ; then
+         continue
+      fi
+
+      base_name="${file_name##*/}"
+
+      skip_file=false
+      for to_skip_file in $to_skip_list ; do
+         #echo "$to_skip_file $base_name"
+         if [ "$to_skip_file" = "$base_name" ]; then
+            skip_file=true
+            continue
+         fi
+      done
+
+      if [ "$skip_file" = "true" ]; then
+         continue
+      fi
+
+
+      echo "$reponame $file_name_to_open"
+   done
+
+   ## TODO
+   #exit
+}
+
 pkg_readme_create_and_commit() {
    repo_skip "whonix-developer-meta-files" || return 0
 
