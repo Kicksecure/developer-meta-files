@@ -276,6 +276,8 @@ README.md
 
       file_name_to_open="~/Whonix/packages/$file_name_without_leading_dot"
 
+      repo_web_link="https://github.com/Whonix/$reponame"
+      debian_control_web_link="https://github.com/Whonix/$reponame/blob/master/debian/control"
       web_link="https://github.com/Whonix/$reponame/blob/master${file_name_without_reponame}"
 
       if echo "$file_name" | grep -q ./debian/ ; then
@@ -404,7 +406,7 @@ README.md
             second_character_of_line="${line:1:1}"
             ## translate '#commented-out-command' to '* <code>#commented-out-command</code>'
             if [ "$first_character_of_line" = "#" ]; then
-               if [ ! "$second_character_of_line" "#" ]; then
+               if [ ! "$second_character_of_line" = "#" ]; then
                   line="$(echo "$line" | str_replace "#" "")"
                   line="<code>#$line</code>"
                   internal_descr_writer "$line"
@@ -437,6 +439,30 @@ internal_descr_writer() {
          if [ ! -f "$description_write_to_file" ]; then
             echo "== $reponame ==" >> "$description_write_to_file"
             echo "" >> "$description_write_to_file"
+
+            echo "* $repo_web_link" >> "$description_write_to_file"
+            echo "* [$debian_control_web_link debian/control]" >> "$description_write_to_file"
+
+            local control_file
+            control_file="$repo_full_path/debian/control"
+            test -f "$control_file"
+            local matched line first_word line_with_keyword
+            while read -r line; do
+               read -r first_word _ <<< "$line"
+               if [ "$matched" = "true" ]; then
+                  if [ "$line" = "." ]; then
+                     echo "" >> "$description_write_to_file"
+                  else
+                     echo "$line" >> "$description_write_to_file"
+                  fi
+               fi
+               if [ "$first_word" = "Description:" ]; then
+                  matched="true"
+                  line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
+                  echo "=== $line_with_keyword ===" >> "$description_write_to_file"
+                  echo "" >> "$description_write_to_file"
+               fi
+            done < "$control_file"
          fi
 
          if [ "$file_header_done" = "false" ]; then
@@ -1191,7 +1217,7 @@ main() {
 }
 
 ## TODO
-#item=whonix-gw-network-conf
+#item=uwt
 #reponame="$(basename "$item")"
 #repo_full_path="$(realpath "$item")"
 #pkg_descr_creator
