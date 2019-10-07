@@ -740,7 +740,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="use properly override_dh_installman"
+   commit_message="code documentation"
 
    git add -A
    git add -u
