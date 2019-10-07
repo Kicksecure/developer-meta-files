@@ -250,6 +250,7 @@ recurse() {
 
 pkg_descr_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "anon-icon-pack" || return 0
 
    local file_name file_name_without_leading_dot
 
@@ -262,10 +263,20 @@ Makefile
 README.md
 "
 
-   for file_name in $(recurse .) ; do
-      file_name_without_leading_dot="$(echo "$file_name" | str_replace "./" "")"
+   rm -f "${repo_full_path}/description_"*
 
-      file_name_to_open="~/Whonix/packages/$reponame/$file_name_without_leading_dot"
+   for file_name in $(recurse "$repo_full_path") ; do
+      true "file_name: $file_name"
+      temp="$file_name"
+      file_name_without_leading_dot="$(echo "$temp" | str_replace "/home/user/whonix_dot/Whonix/packages/" "")"
+      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | str_replace "/home/user/Whonix/packages/" "")"
+
+      file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
+      file_name_without_reponame="/${file_name_without_reponame}"
+
+      file_name_to_open="~/Whonix/packages/$file_name_without_leading_dot"
+
+      web_link="https://github.com/Whonix/$reponame/blob/master${file_name_without_reponame}"
 
       if echo "$file_name" | grep -q ./debian/ ; then
          continue
@@ -286,12 +297,171 @@ README.md
          continue
       fi
 
+      test -f "$file_name"
 
-      echo "$reponame $file_name_to_open"
+      ## TODO
+      if [ "$base_name" = "30_non-qubes-whonix" ]; then
+         echo "${red}XXXXXXXXXXXXXXXXXXX${reset}"
+         sleep 2
+      fi
+
+      meta_start=false
+      non_qubes_whonix_only=no
+      qubes_whonix_only=no
+      projects=""
+      categories=""
+      gateway_only=no
+      workstation_only=no
+      installed_by_default=yes
+      description=no
+      file_header_done=false
+      while read -r line; do
+         true "line: $line"
+         read -r first_word second_word third_word _ <<< "$line" || true
+
+         if [ "$first_word" = "####" ]; then
+            #echo "$web_link $file_name_to_open"
+
+            #file_name_editor="$(echo "$file_name_to_open" | str_replace "~" ~)"
+            #kate "$file_name_editor"
+            #break
+
+            true "second_word: '$second_word'"
+            if [ "$second_word" = "meta" ]; then
+               if [ "$third_word" = "start" ]; then
+                  meta_start=true
+                  echo "##################################################"
+                  echo "$file_name_to_open"
+                  continue
+               fi
+               if [ "$third_word" = "end" ]; then
+                  meta_start=false
+                  break
+               fi
+            fi
+            if [ "$second_word" = "project" ]; then
+               projects="$(echo "$line" | str_replace "#### project " "")"
+               projects="$(echo "$projects" | str_replace " and" "")"
+               echo "projects: $projects"
+               continue
+            fi
+            if [ "$second_word" = "non_qubes_whonix_only" ]; then
+               if [ "$third_word" = "yes" ]; then
+                  non_qubes_whonix_only=yes
+                  continue
+               fi
+            fi
+            if [ "$second_word" = "qubes_whonix_only" ]; then
+               if [ "$third_word" = "yes" ]; then
+                  qubes_whonix_only=yes
+                  continue
+               fi
+            fi
+            if [ "$second_word" = "gateway_only" ]; then
+               if [ "$third_word" = "yes" ]; then
+                  gateway_only=yes
+                  continue
+               fi
+            fi
+            if [ "$second_word" = "workstation_only" ]; then
+               if [ "$third_word" = "yes" ]; then
+                  workstation_only=yes
+                  continue
+               fi
+            fi
+            if [ "$second_word" = "installed_by_default" ]; then
+               if [ "$third_word" = "no" ]; then
+                  installed_by_default=no
+                  continue
+               fi
+            fi
+            if [ "$second_word" = "category" ]; then
+               categories="$(echo "$line" | str_replace "#### category " "")"
+               categories="$(echo "$categories" | str_replace " and" "")"
+               echo "categories: $categories"
+               continue
+            fi
+            if [ "$second_word" = "description" ]; then
+               description=yes
+               continue
+            fi
+         fi
+
+         if [ "$description" = "yes" ]; then
+            if [ "$line" = "" ]; then
+               internal_descr_writer ""
+               continue
+            fi
+
+            ## translate '##' to newline
+            if [ "$line" = "##" ]; then
+               line=""
+               internal_descr_writer ""
+               continue
+            fi
+
+            first_character_of_line="${line:0:1}"
+            second_character_of_line="${line:1:1}"
+            ## translate '#commented-out-command' to '* <code>#commented-out-command</code>'
+            if [ "$first_character_of_line" = "#" ]; then
+               if [ ! "$second_character_of_line" "#" ]; then
+                  line="$(echo "$line" | str_replace "#" "")"
+                  line="<code>#$line</code>"
+                  internal_descr_writer "$line"
+                  continue
+               fi
+            fi
+
+            if [ ! "$first_character_of_line" = "#" ]; then
+               line="* <code>$line</code>"
+               internal_descr_writer "$line"
+               continue
+            fi
+
+            line="$(echo "$line" | str_replace "## " "")"
+            internal_descr_writer "$line"
+         fi
+
+      done < "$file_name"
    done
 
    ## TODO
    #exit
+}
+
+internal_descr_writer() {
+   for project in $projects ; do
+      for category in $categories ; do
+         description_write_to_file="${repo_full_path}/description_${project}_${category}.mediawiki"
+
+         if [ ! -f "$description_write_to_file" ]; then
+            echo "== $reponame ==" >> "$description_write_to_file"
+            echo "" >> "$description_write_to_file"
+         fi
+
+         if [ "$file_header_done" = "false" ]; then
+            echo "=== $file_name_without_reponame ===" >> "$description_write_to_file"
+            echo "" >> "$description_write_to_file"
+            echo "* [$web_link $file_name_without_reponame]" >> "$description_write_to_file"
+            echo "* <code>$file_name_to_open</code>" >> "$description_write_to_file"
+            if [ "$gateway_only" = "yes" ]; then
+               echo "* gateway only" >> "$description_write_to_file"
+            fi
+            if [ "$workstation_only" = "yes" ]; then
+               echo "* workstation only" >> "$description_write_to_file"
+            fi
+            if [ "$non_qubes_whonix_only" = "yes" ]; then
+               echo "* Non-Qubes-Whonix only" >> "$description_write_to_file"
+            fi
+            if [ "$qubes_whonix_only" = "yes" ]; then
+               echo "* Qubes-Whonix only" >> "$description_write_to_file"
+            fi
+            echo "" >> "$description_write_to_file"
+            file_header_done=true
+         fi
+         echo "$@" >> "$description_write_to_file"
+      done
+   done
 }
 
 pkg_readme_create_and_commit() {
@@ -1019,5 +1189,12 @@ main() {
    loop_helper "$@"
    true
 }
+
+## TODO
+#item=whonix-gw-network-conf
+#reponame="$(basename "$item")"
+#repo_full_path="$(realpath "$item")"
+#pkg_descr_creator
+#exit
 
 main "$@"
