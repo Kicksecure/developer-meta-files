@@ -280,10 +280,6 @@ README.md
       debian_control_web_link="https://github.com/Whonix/$reponame/blob/master/debian/control"
       web_link="https://github.com/Whonix/$reponame/blob/master${file_name_without_reponame}"
 
-      if echo "$file_name" | grep -q ./debian/ ; then
-         continue
-      fi
-
       base_name="${file_name##*/}"
 
       skip_file=false
