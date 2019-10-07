@@ -423,13 +423,14 @@ README.md
             line="$(echo "$line" | str_replace "## " "")"
             internal_descr_writer "$line"
          fi
-
       done < "$file_name"
    done
 
    ## TODO
    #exit
 }
+
+declare -A -g file_header_done
 
 internal_descr_writer() {
    for project in $projects ; do
@@ -465,7 +466,7 @@ internal_descr_writer() {
             done < "$control_file"
          fi
 
-         if [ "$file_header_done" = "false" ]; then
+         if [ ! "${file_header_done["${file_name_without_leading_dot}_${project}_${category}"]}" = "true" ]; then
             echo "=== $file_name_without_reponame ===" >> "$description_write_to_file"
             echo "" >> "$description_write_to_file"
             echo "* [$web_link $file_name_without_reponame]" >> "$description_write_to_file"
@@ -483,7 +484,7 @@ internal_descr_writer() {
                echo "* Qubes-Whonix only" >> "$description_write_to_file"
             fi
             echo "" >> "$description_write_to_file"
-            file_header_done=true
+            file_header_done["${file_name_without_leading_dot}_${project}_${category}"]=true
          fi
          echo "$@" >> "$description_write_to_file"
       done
@@ -1217,10 +1218,10 @@ main() {
 }
 
 ## TODO
-#item=uwt
-#reponame="$(basename "$item")"
-#repo_full_path="$(realpath "$item")"
-#pkg_descr_creator
-#exit
+item=uwt
+reponame="$(basename "$item")"
+repo_full_path="$(realpath "$item")"
+pkg_descr_creator
+exit
 
 main "$@"
