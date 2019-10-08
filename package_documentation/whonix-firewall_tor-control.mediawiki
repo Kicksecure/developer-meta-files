@@ -1,0 +1,36 @@
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf</code>
+
+Start onion-grater
+
+Workaround:
+onion-grater fails if it cannot bind on the network interface.
+This is the case when networking did not come up, which is the case when
+whonix-firewall.service failed. To make onion-grater
+automatically start after lets says Whonix firewall config was fixed and the
+whonix-firewall.service was restarted.
+* <code>After=whonix-firewall.service</code>
+* <code>Requires=whonix-firewall.service</code>
+

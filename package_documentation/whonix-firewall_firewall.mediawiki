@@ -1,0 +1,198 @@
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: whonix-firewall
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile, ronn
+Homepage: https://github.com/Whonix/whonix-firewall
+Vcs-Browser: https://github.com/Whonix/whonix-firewall
+Vcs-Git: https://github.com/Whonix/whonix-firewall.git
+Standards-Version: 4.3.0
+
+Package: whonix-firewall
+Architecture: all
+Replaces: whonix-gw-firewall, whonix-ws-firewall
+Depends: systemd, iptables, sudo, helper-scripts, adduser,
+anon-gw-base-files | anon-ws-base-files, ${misc:Depends}
+Conflicts: ufw
+Description: Firewall for Whonix-Gateway and Whonix-Workstation
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /debian/whonix-firewall.postinst ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/whonix-firewall.postinst /debian/whonix-firewall.postinst]
+* <code>~/Whonix/packages/whonix-firewall/debian/whonix-firewall.postinst</code>
+
+Creates linux user accounts used by firewall script
+clearnet tunnel notunnel whonixcheck sdwdate updatesproxycheck.
+
+Creates empty /etc/whonix_firewall.d/50_user.conf which is not owned
+by any package if not existing.
+=== /etc/whonix_firewall.d/30_whonix_gateway_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_gateway_default.conf /etc/whonix_firewall.d/30_whonix_gateway_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_gateway_default.conf</code>
+* gateway only
+
+Whonix firewall configuration file
+=== /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_workstation_default.conf</code>
+* workstation only
+
+Whonix firewall configuration file
+=== /lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf /lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf</code>
+
+Fail Closed Mechanism.
+When the Whonix firewall systemd service failed, do not bring up the
+network.
+
+TODO: does not cover Qubes-Whonix since Qubes does not use networking.service.
+TODO: disabled, broken. Breaks networking on package upgrades.
+https://phabricator.whonix.org/T875
+
+<code>#[Unit]</code><br />
+<code>#After=whonix-firewall.service</code><br />
+<code>#Requires=whonix-firewall.service</code><br />
+
+=== /lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/onion-grater.service.d/30_whonix_cpfpy.conf</code>
+
+Start onion-grater
+
+Workaround:
+onion-grater fails if it cannot bind on the network interface.
+This is the case when networking did not come up, which is the case when
+whonix-firewall.service failed. To make onion-grater
+automatically start after lets says Whonix firewall config was fixed and the
+whonix-firewall.service was restarted.
+* <code>After=whonix-firewall.service</code>
+* <code>Requires=whonix-firewall.service</code>
+
+=== /lib/systemd/system/whonix-firewall-restarter.service ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/whonix-firewall-restarter.service /lib/systemd/system/whonix-firewall-restarter.service]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/whonix-firewall-restarter.service</code>
+
+Restarts whonix-firewall when /run/sdwdate/first_success status file was
+created, i.e. when sdwdate succeeded so Whonix firewall will move from
+timesync-fail-closed mode to full mode.
+
+Starts <code>/usr/lib/whonix-firewall/firewall-restarter</code>.
+=== /lib/systemd/system/whonix-firewall.service ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/whonix-firewall.service /lib/systemd/system/whonix-firewall.service]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/whonix-firewall.service</code>
+
+Runs <code>/usr/lib/whonix-firewall/enable-firewall</code>.
+
+On Whonix-Gateway or Whonix-Workstation (if
+<code>/usr/share/anon-gw-base-files/gateway</code> or
+<code>/usr/share/anon-ws-base-files/workstation</code> exists),
+loads Whonix Firewall.
+
+(Does nothing inside Qubes TemplateVMs.)
+
+If loading Whonix Firewall fails, creates
+<code>/run/anon-firewall/failed.status</code>.
+=== /usr/bin/whonix_firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix_firewall /usr/bin/whonix_firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix_firewall</code>
+
+firewall starter wrapper
+=== /usr/bin/whonix-gateway-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix-gateway-firewall /usr/bin/whonix-gateway-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix-gateway-firewall</code>
+
+firewall script
+=== /usr/bin/whonix-workstation-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix-workstation-firewall /usr/bin/whonix-workstation-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix-workstation-firewall</code>
+
+firewall script
+=== /usr/lib/whonix-firewall/enable-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/enable-firewall /usr/lib/whonix-firewall/enable-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/enable-firewall</code>
+
+Wrapper to start firewall and create failure status files on failure.
+=== /usr/lib/whonix-firewall/firewall30default ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall30default /usr/lib/whonix-firewall/firewall30default]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall30default</code>
+
+wrapper to open firewall examples
+=== /usr/lib/whonix-firewall/firewall50user ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall50user /usr/lib/whonix-firewall/firewall50user]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall50user</code>
+
+wrapper to open /etc/whonix_firewall.d/50_user.conf with sudoedit
+=== /usr/lib/whonix-firewall/firewall-restarter ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall-restarter /usr/lib/whonix-firewall/firewall-restarter]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall-restarter</code>
+
+restart firewall when sdwdate succeeded
+=== /usr/lib/whonix-firewall/reloadfirewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/reloadfirewall /usr/lib/whonix-firewall/reloadfirewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/reloadfirewall</code>
+
+wrapper to restart firewall
+=== /usr/share/applications/whonix-firewall30default.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-firewall30default.desktop /usr/share/applications/whonix-firewall30default.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-firewall30default.desktop</code>
+
+desktop entry
+firewall examples
+=== /usr/share/applications/whonix-firewall50user.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-firewall50user.desktop /usr/share/applications/whonix-firewall50user.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-firewall50user.desktop</code>
+
+desktop entry
+firewall settings
+=== /usr/share/applications/whonix-reloadfirewall.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-reloadfirewall.desktop /usr/share/applications/whonix-reloadfirewall.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-reloadfirewall.desktop</code>
+
+desktop entry
+reload firewall
+=== /usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test /usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test</code>
+
+stream isolation developer test script

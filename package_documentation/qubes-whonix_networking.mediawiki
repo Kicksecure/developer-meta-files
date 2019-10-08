@@ -1,0 +1,107 @@
+== qubes-whonix ==
+
+* https://github.com/Whonix/qubes-whonix
+* [https://github.com/Whonix/qubes-whonix/blob/master/debian/control debian/control]
+===  Qubes Configuration for Whonix-Gateway and Whonix-Workstation ===
+
+This package contains all the scripts and configuration options to be able
+to run Whonix-Gateway and Whonix-Workstation within a Qubes environment.
+
+Whonix-Gateway should run as a ProxyVM.
+
+Whonix-Workstation should run as an AppVM.
+
+Template updates over Tor.
+
+Package: qubes-whonix-shared-packages-recommended
+Architecture: all
+Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
+qubes-usb-proxy, qubes-input-proxy-sender,
+qubes-core-agent-thunar, qubes-core-agent-nautilus,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation ===
+
+A metapackage, which includes recommended packages to ensure, Qubes-Whonix
+standard tools are available and other useful recommended packages.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-gateway-packages-recommended
+Architecture: all
+Depends: tinyproxy,
+yum,
+yum-utils,
+qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway
+===  Recommended packages for Qubes-Whonix-Gateway ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Gateway.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-workstation-packages-recommended
+Architecture: all
+Depends: qubes-thunderbird,
+qubes-gpg-split,
+qubes-pdf-converter,
+qubes-img-converter,
+pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Workstation ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Workstation.
+
+Feel free to remove, if you know what you are doing.
+=== /etc/qubes/protected-files.d/qubes-whonix.conf ===
+
+* [https://github.com/Whonix/qubes-whonix/blob/master/etc/qubes/protected-files.d/qubes-whonix.conf /etc/qubes/protected-files.d/qubes-whonix.conf]
+* <code>~/Whonix/packages/qubes-whonix/etc/qubes/protected-files.d/qubes-whonix.conf</code>
+* Qubes-Whonix only
+
+Configure Qubes to not modify files shipped by Whonix:
+
+* <code>/etc/hostname</code>
+* <code>/etc/hosts</code>
+* <code>/etc/localtime</code>
+* <code>/etc/timezone</code>
+=== /etc/uwt.d/40_qubes.conf ===
+
+* [https://github.com/Whonix/qubes-whonix/blob/master/etc/uwt.d/40_qubes.conf /etc/uwt.d/40_qubes.conf]
+* <code>~/Whonix/packages/qubes-whonix/etc/uwt.d/40_qubes.conf</code>
+* Qubes-Whonix only
+
+uwt Qubes-Whonix Integration
+
+Runs only inside Qubes TemplateVM.
+
+This configuration snippets configures [[#uwt|uwt]] to wait before running
+<code>apt</code> until status file
+<code>/run/qubes-service/whonix-secure-proxy</code> or
+status file
+<code>/run/qubes-service/whonix-secure-proxy-check-done</code>
+exists. It will timeout after <code>120</code> seconds.
+
+This is to determine if torified Qubes updates proxy was detected.
+
+If torified Qubes updates proxy detection fails, it will prevent running
+<code>apt</code> and show the following warning.
+
+<blockquote>
+WARNING: Execution of apt prevented by @file_name@ because no torified Qubes updates proxy found.
+</blockquote>
+
+If torified Qubes updates proxy detection succeeds, it will
+disable apt uwtwrapper.
+In other words, run apt normally. Run apt without <code>torsocks</code>.
+Because <code>apt</code> config file.
+<code>/etc/apt/apt.conf.d/01qubes-proxy</code> will already have http proxy
+settings for TCP based Qubes Updates proxy
+<code>Acquire::http::Proxy "http://10.137.255.254:8082/";</code>
+or for qrexec based Qubes updates proxy.
+<code>Acquire::http::Proxy "http://127.0.0.1:8082/";</code>

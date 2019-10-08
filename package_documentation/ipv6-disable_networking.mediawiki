@@ -1,0 +1,17 @@
+== ipv6-disable ==
+
+* https://github.com/Whonix/ipv6-disable
+* [https://github.com/Whonix/ipv6-disable/blob/master/debian/control debian/control]
+===  Deactivates IPv6 using /etc/sysctl.d/ ===
+
+There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
+yet. Therefore deactivating it to prevent leaks.
+
+For better security.
+=== /etc/sysctl.d/ipv6-disable.conf ===
+
+* [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
+* <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
+* gateway only
+
+disable IPv6

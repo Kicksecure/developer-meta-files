@@ -1,0 +1,59 @@
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /usr/lib/whonix-firewall/firewall30default ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall30default /usr/lib/whonix-firewall/firewall30default]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall30default</code>
+
+wrapper to open firewall examples
+=== /usr/lib/whonix-firewall/firewall50user ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall50user /usr/lib/whonix-firewall/firewall50user]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall50user</code>
+
+wrapper to open /etc/whonix_firewall.d/50_user.conf with sudoedit
+=== /usr/lib/whonix-firewall/reloadfirewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/reloadfirewall /usr/lib/whonix-firewall/reloadfirewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/reloadfirewall</code>
+
+wrapper to restart firewall
+=== /usr/share/applications/whonix-firewall30default.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-firewall30default.desktop /usr/share/applications/whonix-firewall30default.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-firewall30default.desktop</code>
+
+desktop entry
+firewall examples
+=== /usr/share/applications/whonix-firewall50user.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-firewall50user.desktop /usr/share/applications/whonix-firewall50user.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-firewall50user.desktop</code>
+
+desktop entry
+firewall settings
+=== /usr/share/applications/whonix-reloadfirewall.desktop ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/applications/whonix-reloadfirewall.desktop /usr/share/applications/whonix-reloadfirewall.desktop]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/applications/whonix-reloadfirewall.desktop</code>
+
+desktop entry
+reload firewall

@@ -1,0 +1,285 @@
+== anon-gw-anonymizer-config ==
+
+* https://github.com/Whonix/anon-gw-anonymizer-config
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/control debian/control]
+===  Tor Configuration and Tweaks for Anonymity Distributions ===
+
+Tor config file with distribution defaults (for stream isolation, etc.),
+example user configurations and other tweaks required. The Tor binary
+itself does not get modified.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /debian/anon-gw-anonymizer-config.displace ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/anon-gw-anonymizer-config.displace /debian/anon-gw-anonymizer-config.displace]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/debian/anon-gw-anonymizer-config.displace</code>
+* gateway only
+
+Replace configuration files shipped by the Debian <code>tor</code>
+package with configuration files by this package.
+
+* <code>/etc/tor/torrc.anondist</code>
+* <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>
+* <code>/etc/default/tor.anondist</code>
+* <code>/etc/apparmor.d/local/system_tor.anondist</code>
+* <code>/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
+
+=== /debian/anon-gw-anonymizer-config.postinst ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/anon-gw-anonymizer-config.postinst /debian/anon-gw-anonymizer-config.postinst]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/debian/anon-gw-anonymizer-config.postinst</code>
+* gateway only
+
+Add user "user" to the group "debian-tor", so user "user" can access Tor's control port.
+User "user" already exists thanks to the anon-base-files package.
+=== /etc/apparmor.d/local/system_tor.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/system_tor.anondist</code>
+* gateway only
+
+Local AppArmor Profile for Anonymity Distributions
+
+AUDIT desired.
+=== /etc/apparmor.d/local/usr.bin.obfsproxy.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/usr.bin.obfsproxy.anondist /etc/apparmor.d/local/usr.bin.obfsproxy.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
+* gateway only
+
+apparmor relaxations for obfsproxy
+=== /etc/audit/rules.d/30_anon-gw-anonymizer-config.rules ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/audit/rules.d/30_anon-gw-anonymizer-config.rules /etc/audit/rules.d/30_anon-gw-anonymizer-config.rules]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/audit/rules.d/30_anon-gw-anonymizer-config.rules</code>
+* gateway only
+
+monitor <code>/var/lib/tor/lock</code> using access rights modifications
+
+https://phabricator.whonix.org/T53
+
+* <code>-w /var/lib/tor/lock -p wxa</code>
+
+=== /etc/sudoers.d/anonymizer-config-gateway ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/sudoers.d/anonymizer-config-gateway /etc/sudoers.d/anonymizer-config-gateway]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/sudoers.d/anonymizer-config-gateway</code>
+* gateway only
+
+Allow members of the group <code>sudo</code> to restart Tor without a
+password.
+
+Tor config check using <code>anon-verify</code> without a password.
+=== /etc/sysctl.d/anonymizer-config-gateway.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/sysctl.d/anonymizer-config-gateway.conf /etc/sysctl.d/anonymizer-config-gateway.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/sysctl.d/anonymizer-config-gateway.conf</code>
+* gateway only
+
+Raising fs.file-max to 100000 as suggested by /etc/init.d/tor.
+* <code>fs.file-max=100000</code>
+=== /etc/torrc.d/95_whonix.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/95_whonix.conf /etc/torrc.d/95_whonix.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/95_whonix.conf</code>
+* gateway only
+
+
+* <code>%include /usr/local/etc/torrc.d/40_tor_control_panel.conf</code>
+* <code>%include /usr/local/etc/torrc.d/50_user.conf</code>
+
+=== /lib/systemd/system/anon-gw-anonymizer-config.service ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/lib/systemd/system/anon-gw-anonymizer-config.service /lib/systemd/system/anon-gw-anonymizer-config.service]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/lib/systemd/system/anon-gw-anonymizer-config.service</code>
+* gateway only
+
+Runs <code>/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist</code>
+to Make Sure Torrc Files Exist. Runs Before=tor.service and
+Before=tor@default.service.
+=== /lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf /lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf</code>
+* gateway only
+
+
+The hardening option NoNewPrvileges=Yes in the Debian tor@default.service file breaks loading of obfs4proxy in combination with Debian's apparmor profile which uses PUx. (ix execution permissions work with NoNewPrivileges=No)
+https://phabricator.whonix.org/T676
+* <code>[Service]</code>
+* <code>NoNewPrivileges=no</code>
+
+=== /lib/systemd/system/tor@default.service.d/50_controlsocket-workaround.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/lib/systemd/system/tor@default.service.d/50_controlsocket-workaround.conf /lib/systemd/system/tor@default.service.d/50_controlsocket-workaround.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/lib/systemd/system/tor@default.service.d/50_controlsocket-workaround.conf</code>
+* gateway only
+
+When both User option and DisableNetwork 1 are set as part of the Tor configurations, the Tor control socket will not be opened unless reloading Tor.
+https://lists.torproject.org/pipermail/tor-dev/2018-February/012887.html
+* <code>[Service]</code>
+* <code>ExecStartPost=/bin/kill -HUP ${MAINPID}</code>
+
+=== /usr/bin/anon-info ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-info /usr/bin/anon-info]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-info</code>
+* gateway only
+
+Tor apt sources and version info command line tool.
+=== /usr/bin/anon-verify ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-verify /usr/bin/anon-verify]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-verify</code>
+* gateway only
+
+Tor configuration check command line utility.
+=== /usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist /usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist</code>
+* gateway only
+
+helper script to create folders <code>/usr/local/etc/torrc.d</code> and files
+* <code>/usr/local/etc/torrc.d/40_tor_control_panel.conf</code>, and
+* <code>/usr/share/anon-gw-anonymizer-config/user_torrc_template.conf /usr/local/etc/torrc.d/50_user.conf</code> with correct access rights from template folder <code>/usr/share/anon-gw-anonymizer-config</code>.
+=== /usr/lib/anon-gw-anonymizer-config/torrc-parser ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/torrc-parser /usr/lib/anon-gw-anonymizer-config/torrc-parser]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/anon-gw-anonymizer-config/torrc-parser</code>
+* gateway only
+
+helper script for <code>anon-verify</code>
+=== /usr/lib/gateway-shortcuts/nyx ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/nyx /usr/lib/gateway-shortcuts/nyx]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/nyx</code>
+* gateway only
+
+wrapper to start nxy
+=== /usr/lib/gateway-shortcuts/reloadtor ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/reloadtor /usr/lib/gateway-shortcuts/reloadtor]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/reloadtor</code>
+* gateway only
+
+wrapper to reload Tor
+=== /usr/lib/gateway-shortcuts/restarttor ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/restarttor /usr/lib/gateway-shortcuts/restarttor]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/restarttor</code>
+* gateway only
+
+wrapper to restart Tor
+=== /usr/lib/gateway-shortcuts/stoptor ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/stoptor /usr/lib/gateway-shortcuts/stoptor]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/stoptor</code>
+* gateway only
+
+wrapper to stop Tor
+=== /usr/lib/gateway-shortcuts/tordata ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/tordata /usr/lib/gateway-shortcuts/tordata]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/tordata</code>
+* gateway only
+
+wrapper to open folder <code>/var/lib/tor</code> in default file manager
+using graphical sudo.
+=== /usr/lib/gateway-shortcuts/torrc ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/torrc /usr/lib/gateway-shortcuts/torrc]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/torrc</code>
+* gateway only
+
+
+https://bugzilla.xfce.org/show_bug.cgi?id=15282
+https://github.com/lxqt/lxqt-sudo/issues/114
+* <code>sudoedit /usr/local/etc/torrc.d/50_user.conf</code>
+
+=== /usr/lib/gateway-shortcuts/torrcexamples ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/torrcexamples /usr/lib/gateway-shortcuts/torrcexamples]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/torrcexamples</code>
+* gateway only
+
+wrapper to show Tor configuration examples
+=== /usr/share/anon-gw-anonymizer-config/torrc.examples ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/anon-gw-anonymizer-config/torrc.examples /usr/share/anon-gw-anonymizer-config/torrc.examples]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/anon-gw-anonymizer-config/torrc.examples</code>
+* gateway only
+
+documentation only
+=== /usr/share/applications/gateway-arm.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-arm.desktop /usr/share/applications/gateway-arm.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-arm.desktop</code>
+* gateway only
+
+Nyx - Status Monitor for Tor - desktop file for start menu
+=== /usr/share/applications/gateway-reloadtor.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-reloadtor.desktop /usr/share/applications/gateway-reloadtor.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-reloadtor.desktop</code>
+* gateway only
+
+desktop file
+reload Tor
+=== /usr/share/applications/gateway-stoptor.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-stoptor.desktop /usr/share/applications/gateway-stoptor.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-stoptor.desktop</code>
+* gateway only
+
+desktop file
+stop tor
+=== /usr/share/applications/gateway-tordata.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-tordata.desktop /usr/share/applications/gateway-tordata.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-tordata.desktop</code>
+* gateway only
+
+desktop file
+Tor Data - Open /var/lib/tor folder in file manager
+<code>/usr/lib/gateway-shortcuts/tordata</code>
+=== /usr/share/applications/gateway-torrc.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-torrc.desktop /usr/share/applications/gateway-torrc.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-torrc.desktop</code>
+* gateway only
+
+desktop file
+Open /usr/local/etc/torrc.d/50_user.conf configuration file in editor
+=== /usr/share/applications/gateway-torrcexamples.desktop ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-torrcexamples.desktop /usr/share/applications/gateway-torrcexamples.desktop]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-torrcexamples.desktop</code>
+* gateway only
+
+desktop file
+Tor Configuration Examples
+=== /usr/share/tor/tor-service-defaults-torrc.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/tor/tor-service-defaults-torrc.anondist /usr/share/tor/tor-service-defaults-torrc.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/tor/tor-service-defaults-torrc.anondist</code>
+* gateway only
+
+Whonix Tor configuration
+
+https://www.whonix.org/wiki/Stream_Isolation
+
+* <code>ControlSocket</code>
+* <code>SocksPort</code>
+* <code>HTTPTunnelPort</code>
+* <code>TransPort</code>
+* <code>DnsPort</code>
+* Upstream Defaults File
+* Enable / Disable Tor
+* Leak Tests
+* General Settings
+* Workstation Trans/Dns-Port
+* Workstation SocksPorts
+* Gateway Trans/Dns-Port
+* Gateway SocksPorts

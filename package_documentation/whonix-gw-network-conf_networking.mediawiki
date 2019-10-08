@@ -1,0 +1,72 @@
+== whonix-gw-network-conf ==
+
+* https://github.com/Whonix/whonix-gw-network-conf
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/debian/control debian/control]
+===  Network Configuration for Whonix-Gateway ===
+
+Includes etc/network/interfaces.d/30_non-qubes-whonix for
+Non-Qubes-Whonix-Gateway.
+
+Sets up two network interfaces, an external one eth0 and an internal one eth1.
+
+Provides /usr/share/whonix-gw-network-conf/network_internal_ip.txt.
+=== /debian/whonix-gw-network-conf.links ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/debian/whonix-gw-network-conf.links /debian/whonix-gw-network-conf.links]
+* <code>~/Whonix/packages/whonix-gw-network-conf/debian/whonix-gw-network-conf.links</code>
+* gateway only
+* Non-Qubes-Whonix only
+
+
+Disable Predictable Network Interface Names as these are problematic.
+https://forums.whonix.org/t/whonix-14-0-0-0-7-developers-only/3449/4
+Disabling them as per
+'zless /usr/share/doc/udev/README.Debian.gz'.
+* <code>/dev/null /etc/systemd/network/99-default.link</code>
+
+=== /debian/whonix-gw-network-conf.triggers ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/debian/whonix-gw-network-conf.triggers /debian/whonix-gw-network-conf.triggers]
+* <code>~/Whonix/packages/whonix-gw-network-conf/debian/whonix-gw-network-conf.triggers</code>
+* gateway only
+* Non-Qubes-Whonix only
+
+
+Required for /etc/systemd/network/99-default.link to take effect as per
+'zless /usr/share/doc/udev/README.Debian.gz'.
+* <code>activate-noawait update-initramfs</code>
+
+=== /etc/network/interfaces.d/30_non-qubes-whonix ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix /etc/network/interfaces.d/30_non-qubes-whonix]
+* <code>~/Whonix/packages/whonix-gw-network-conf/etc/network/interfaces.d/30_non-qubes-whonix</code>
+* gateway only
+* Non-Qubes-Whonix only
+
+network interfaces configuration eth0 (external network interface) and eth1 (internal network interface)
+
+static network configuration
+
+eth0
+<code>#address 10.0.2.15</code><br />
+<code>#netmask 255.255.255.0</code><br />
+<code>#gateway 10.0.2.2</code><br />
+
+eth1
+<code>#address 10.152.152.10</code><br />
+<code>#netmask 255.255.192.0</code><br />
+=== /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf]
+* <code>~/Whonix/packages/whonix-gw-network-conf/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf</code>
+* gateway only
+* Non-Qubes-Whonix only
+
+onion-grater systemd unit file extension
+
+Run <code>/usr/lib/onion-grater-merger</code> as root to avoid permission
+conflicts.
+<code>ExecStartPre=+/usr/lib/onion-grater-merger</code>
+
+Reconfigure <code>onion-grater</code> to listen on network interface
+code>eth1</code>.

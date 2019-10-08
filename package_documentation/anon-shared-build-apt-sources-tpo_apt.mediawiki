@@ -1,0 +1,35 @@
+== anon-shared-build-apt-sources-tpo ==
+
+* https://github.com/Whonix/anon-shared-build-apt-sources-tpo
+* [https://github.com/Whonix/anon-shared-build-apt-sources-tpo/blob/master/debian/control debian/control]
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: anon-shared-build-apt-sources-tpo
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile
+Homepage: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
+Vcs-Browser: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
+Vcs-Git: https://github.com/Whonix/anon-shared-build-apt-sources-tpo.git
+Standards-Version: 4.3.0
+
+Package: anon-shared-build-apt-sources-tpo
+Architecture: all
+Depends: gnupg, ${misc:Depends}
+Recommends: deb.torproject.org-keyring
+Description: Adds TPO's APT repository to Anonymity Linux Distributions
+===  Adds TPO's APT repository to Anonymity Linux Distributions ===
+
+Comes with "deb http://deb.torproject.org/torproject.org stable main", The Tor
+Project's APT signing key.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /etc/apt/sources.list.d/torproject.list ===
+
+* [https://github.com/Whonix/anon-shared-build-apt-sources-tpo/blob/master/etc/apt/sources.list.d/torproject.list /etc/apt/sources.list.d/torproject.list]
+* <code>~/Whonix/packages/anon-shared-build-apt-sources-tpo/etc/apt/sources.list.d/torproject.list</code>
+
+Tor Project APT repository sources.list

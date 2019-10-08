@@ -1,0 +1,35 @@
+== anon-gw-anonymizer-config ==
+
+* https://github.com/Whonix/anon-gw-anonymizer-config
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/control debian/control]
+===  Tor Configuration and Tweaks for Anonymity Distributions ===
+
+Tor config file with distribution defaults (for stream isolation, etc.),
+example user configurations and other tweaks required. The Tor binary
+itself does not get modified.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /usr/share/tor/tor-service-defaults-torrc.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/tor/tor-service-defaults-torrc.anondist /usr/share/tor/tor-service-defaults-torrc.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/tor/tor-service-defaults-torrc.anondist</code>
+* gateway only
+
+Whonix Tor configuration
+
+https://www.whonix.org/wiki/Stream_Isolation
+
+* <code>ControlSocket</code>
+* <code>SocksPort</code>
+* <code>HTTPTunnelPort</code>
+* <code>TransPort</code>
+* <code>DnsPort</code>
+* Upstream Defaults File
+* Enable / Disable Tor
+* Leak Tests
+* General Settings
+* Workstation Trans/Dns-Port
+* Workstation SocksPorts
+* Gateway Trans/Dns-Port
+* Gateway SocksPorts

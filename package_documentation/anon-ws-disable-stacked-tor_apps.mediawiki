@@ -1,0 +1,191 @@
+== anon-ws-disable-stacked-tor ==
+
+* https://github.com/Whonix/anon-ws-disable-stacked-tor
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/debian/control debian/control]
+===  Prevents Tor over Tor in Anonymity Distribution Workstations ===
+
+Supposed to be installed on Workstations, which prevents installing the real
+Tor package from upstream (ex: Debian, The Tor Project) APT repositories. Its
+purpose is to prevent, running Tor over Tor.
+
+It allows installation of packages, which depend on Tor, such as TorChat,
+parcimonie and torbrowser-launcher.
+
+This package uses the "Provides: tor" field[1], which should avoid any kinds of
+conflicts, in case upstream releases a higher version of Tor. This won't work
+for packages, which depend on an explicit version of Tor (such as TorChat).
+This is non-ideal, since for example the torchat package will install Tor, but
+still acceptable, because of the following additional implementations.
+
+Binaries eventually installed (by the tor Debian package) /usr/bin/tor as well
+as /usr/sbin/tor are replaced with a dummy wrapper that does nothing
+(dpkg-diverted using config-package-dev).
+
+systemd-socket-proxyd listens on Tor's default ports. system Tor's
+127.0.0.1:9050, 127.0.0.1:9051 and TBB's 127.0.0.1:9150, 127.0.0.1:9051,
+which prevents the
+default Tor Browser Bundle or Tor package by The Tor Project from opening
+these default ports, which will result in Tor failing to open its listening
+port and therefore exiting, thus preventing Tor over Tor.
+
+See also:
+
+* https://www.whonix.org/wiki/Dev/anon-ws-disable-stacked-tor
+* https://tor.stackexchange.com/questions/427/is-running-tor-over-tor-dangerous
+
+[1] See "7.5 Virtual packages - Provides" on
+http://www.debian.org/doc/debian-policy/ch-relationships.html
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /lib/systemd/system/anon-ws-disable-stacked-tor.service ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/anon-ws-disable-stacked-tor.service /lib/systemd/system/anon-ws-disable-stacked-tor.service]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/anon-ws-disable-stacked-tor.service</code>
+* workstation only
+
+Runs <code>/usr/lib/anon-ws-disable-stacked-tor/state-files</code> and
+<code>/usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets</code>.
+=== /lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf</code>
+* workstation only
+
+Qubes-Whonix:
+
+Clear 'ConditionPathExists=/run/qubes-service/whonix-gateway' set by
+the qubes-whonix package, which is useful on the gateway but not on the
+workstation.
+
+In effect the dummy Tor service will run on Whonix-Workstation.
+
+* <code>ConditionPathExists=</code>
+
+=== /lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf</code>
+* workstation only
+
+Compatibility with system Tor package.
+
+Overrides systemd unit file by system Tor package for compatibility so
+the dummy Tor binary <code>/usr/bin/tor</code> gets load instead.
+
+Makes all <code>systemctl</code> <code>restart</code> <code>reload</code>
+<code>status</code> commands compatible with dummy Tor.
+=== /lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf</code>
+* workstation only
+
+Make 'sudo service tor status' exit '0' for better compatibility.
+* <code>RemainAfterExit=yes</code>
+=== /usr/bin/tor.anondist ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/bin/tor.anondist /usr/bin/tor.anondist]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/bin/tor.anondist</code>
+* workstation only
+
+dummy Tor wrapper doing nothing but wait forever and
+
+OnionShare support for configuration option "bundled Tor".
+=== /usr/lib/anon-ws-disable-stacked-tor/state-files ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/state-files /usr/lib/anon-ws-disable-stacked-tor/state-files]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/state-files</code>
+* workstation only
+
+Emulates Tor by copying and chmodding the correct state files such as
+<code>/run/tor/control.authcookie</code>.
+=== /usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator /usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator</code>
+* workstation only
+
+Generates systemd unit files in
+<code>/lib/systemd/system/anon-ws-disable-stacked-tor_autogen_*</code> which
+listen on common local ports used by popular Tor applications such as Tor
+Browser.
+
+Redirect Whonix-Workstation port <code>9050</code> to Whonix-Gateway port
+<code>9050</code> and so forth.
+
+Create a unix domain socket files such as
+/run/anon-ws-disable-stacked-tor/127.0.0.1_9050.sock and forward those
+to $GATEWAY_IP:9150 etc. See also:
+https://phabricator.whonix.org/T192
+
+system Tor default SocksSocket is /run/tor/socks
+redirect Whonix-Workstation unix domain socket file /run/tor/socks to Whonix-Gateway port 9050
+
+Debian /usr/share/tor/tor-service-defaults-torrc uses '/run/tor/control' Tor ControlSocket
+Redirect Whonix-Workstation unix domain socket file /run/tor/control to Whonix-Gateway port 9051
+=== /usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh ===
+
+* [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh /usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh]
+* <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
+* workstation only
+
+Environment variables for Tor Browser integration.
+
+Prevents Tor over Tor.
+
+Deactivate tor-launcher,
+a Vidalia replacement as browser extension,
+to prevent running Tor over Tor.
+https://trac.torproject.org/projects/tor/ticket/6009
+https://gitweb.torproject.org/tor-launcher.git
+* <code>export TOR_SKIP_LAUNCH=1</code>
+
+The following TOR_SOCKS_HOST and TOR_SOCKS_PORT variables
+do not work flawlessly, due to an upstream bug in Tor Button:
+   "TOR_SOCKS_HOST, TOR_SOCKS_PORT regression"
+   https://trac.torproject.org/projects/tor/ticket/8336
+(As an alternative,
+   /home/user/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js
+could be used.)
+Fortunately, this is not required for Whonix by default anymore,
+because systemd-socket-proxyd is configured to redirect
+Whonix-Workstation ports
+127.0.0.1:9050 to Whonix-Gateway 10.152.152.10:9050
+127.0.0.1:9051 to Whonix-Gateway 10.152.152.10:9051
+127.0.0.1:9150 to Whonix-Gateway 10.152.152.10:9150
+127.0.0.1:9151 to Whonix-Gateway 10.152.152.10:9151
+<code>#export TOR_SOCKS_HOST="10.152.152.10"</code><br />
+<code>#export TOR_SOCKS_PORT="9150"</code><br />
+<code>#export TOR_CONTROL_HOST="127.0.0.1"</code><br />
+<code>#export TOR_CONTROL_PORT="9151"</code><br />
+this is to satisfy Tor Button just filled up with anything
+<code>#export TOR_CONTROL_PASSWD='"password"'</code><br />
+
+We are not using TOR_TRANSPROXY=1 because that would break Tor Browser's
+per tab stream isolation. (Tor Browser talks to a Tor SocksPort and sets a
+socks user name and Tor is using IsolateSOCKSAuth by Tor default.)
+<code>#export TOR_TRANSPROXY=1</code><br />
+
+Environment variable to configure Tor Browser to use a pre existing unix
+domain socket file instead of creating its own one to avoid Tor over Tor and
+to keep it being able to connect.
+systemd-socket-proxyd is being used for creation of unix domain socket file
+/run/anon-ws-disable-stacked-tor/127.0.0.1_9150.sock and forwarding it to
+to Whonix-Gateway port 9150.
+https://phabricator.whonix.org/T192
+https://trac.torproject.org/projects/tor/ticket/20111#comment:5
+* <code>export TOR_SOCKS_IPC_PATH="/run/anon-ws-disable-stacked-tor/127.0.0.1_9150.sock"</code>
+* <code>export TOR_CONTROL_IPC_PATH="/run/anon-ws-disable-stacked-tor/127.0.0.1_9151.sock"</code>
+
+environment variable to skip TorButton control port verification
+https://trac.torproject.org/projects/tor/ticket/13079
+* <code>export TOR_SKIP_CONTROLPORTTEST=1</code>
+
+Environment variable to disable the "TorButton" ->
+"Open Network Settings..." menu item. It is not useful and confusing to have
+on a workstation, because Tor must be configured on the Whonix-Gateway, which is
+for security reasons forbidden from the Whonix-Gateway.
+https://trac.torproject.org/projects/tor/ticket/14100
+* <code>export TOR_NO_DISPLAY_NETWORK_SETTINGS=1</code>
+

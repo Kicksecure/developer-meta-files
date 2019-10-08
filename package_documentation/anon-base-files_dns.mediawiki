@@ -1,0 +1,56 @@
+== anon-base-files ==
+
+* https://github.com/Whonix/anon-base-files
+* [https://github.com/Whonix/anon-base-files/blob/master/debian/control debian/control]
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: anon-base-files
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile, config-package-dev
+Homepage: https://github.com/Whonix/anon-base-files
+Vcs-Browser: https://github.com/Whonix/anon-base-files
+Vcs-Git: https://github.com/Whonix/anon-base-files.git
+Standards-Version: 4.3.0
+
+Package: anon-base-files
+Architecture: all
+Depends: sudo, dpkg-dev, helper-scripts, adduser, ${misc:Depends}
+Provides: ${diverted-files}
+Conflicts: ${diverted-files}
+Description: base files for Anonymity Distributions
+===  base files for Anonymity Distributions ===
+
+Creates user "user" with password "changeme" (not in Qubes).
+That is if user "user" is not existing yet.
+And if it does create "user" user it also locks the root account.
+Therefore root account locking effectively only happens in new
+builds not having user "user" already created.
+
+Adds user "user" to groups "cdrom,audio,dip,sudo,plugdev".
+
+Creates version file /var/lib/anon-dist/build_version.
+
+Anonymized operating system user name "user", /etc/hostname, /etc/hosts,
+/etc/machine-id, /var/lib/dbus/machine-id, which should be shared among all
+anonymity distributions. See also:
+
+* https://mailman.boum.org/pipermail/tails-dev/2013-January/002457.html
+* https://labs.riseup.net/code/issues/5655
+* http://lists.autistici.org/message/20140627.215105.24023267.en.html
+
+Ships a systemd unit file anon-base-files-skel-first-boot.service
+which runs /usr/lib/helper-scripts/first-boot-skel (part of helper-scripts)
+package.
+
+This package gets installed by default in both, Kicksecure and Whonix.
+=== /etc/hosts.anondist ===
+
+* [https://github.com/Whonix/anon-base-files/blob/master/etc/hosts.anondist /etc/hosts.anondist]
+* <code>~/Whonix/packages/anon-base-files/etc/hosts.anondist</code>
+
+Debian default /etc/hosts + Anonymity Distribution specific additions.
+
+Currently only <code>127.0.0.1 host.localdomain host</code> gets added.

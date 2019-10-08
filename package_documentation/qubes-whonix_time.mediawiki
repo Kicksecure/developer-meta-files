@@ -1,0 +1,110 @@
+== qubes-whonix ==
+
+* https://github.com/Whonix/qubes-whonix
+* [https://github.com/Whonix/qubes-whonix/blob/master/debian/control debian/control]
+## This file is part of Whonix
+## -- and --
+## The Qubes OS Project, http://www.qubes-os.org
+##
+## Copyright (C) 2014 - 2015 Jason Mehring <nrgaway@gmail.com>
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: qubes-whonix
+Section: admin
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile, python, dh-python, config-package-dev
+Homepage: https://github.com/Whonix/qubes-whonix
+Vcs-Browser: https://github.com/Whonix/qubes-whonix
+Vcs-Git: https://github.com/Whonix/qubes-whonix.git
+Standards-Version: 4.3.0
+
+Package: qubes-whonix
+Architecture: all
+Depends: adduser,
+qubes-core-agent,
+qubesdb-vm,
+ethtool,
+net-tools,
+sudo,
+systemd,
+rsync,
+whonix-firewall,
+curl,
+qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-networking,
+python3,
+python3-pyqt5,
+${python:Depends},
+${misc:Depends}
+Provides: ${diverted-files}
+Conflicts: ${diverted-files}
+Description: Qubes Configuration for Whonix-Gateway and Whonix-Workstation
+===  Qubes Configuration for Whonix-Gateway and Whonix-Workstation ===
+
+This package contains all the scripts and configuration options to be able
+to run Whonix-Gateway and Whonix-Workstation within a Qubes environment.
+
+Whonix-Gateway should run as a ProxyVM.
+
+Whonix-Workstation should run as an AppVM.
+
+Template updates over Tor.
+
+Package: qubes-whonix-shared-packages-recommended
+Architecture: all
+Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
+qubes-usb-proxy, qubes-input-proxy-sender,
+qubes-core-agent-thunar, qubes-core-agent-nautilus,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation ===
+
+A metapackage, which includes recommended packages to ensure, Qubes-Whonix
+standard tools are available and other useful recommended packages.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-gateway-packages-recommended
+Architecture: all
+Depends: tinyproxy,
+yum,
+yum-utils,
+qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway
+===  Recommended packages for Qubes-Whonix-Gateway ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Gateway.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-workstation-packages-recommended
+Architecture: all
+Depends: qubes-thunderbird,
+qubes-gpg-split,
+qubes-pdf-converter,
+qubes-img-converter,
+pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Workstation ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Workstation.
+
+Feel free to remove, if you know what you are doing.
+=== /etc/qubes/protected-files.d/qubes-whonix.conf ===
+
+* [https://github.com/Whonix/qubes-whonix/blob/master/etc/qubes/protected-files.d/qubes-whonix.conf /etc/qubes/protected-files.d/qubes-whonix.conf]
+* <code>~/Whonix/packages/qubes-whonix/etc/qubes/protected-files.d/qubes-whonix.conf</code>
+* Qubes-Whonix only
+
+Configure Qubes to not modify files shipped by Whonix:
+
+* <code>/etc/hostname</code>
+* <code>/etc/hosts</code>
+* <code>/etc/localtime</code>
+* <code>/etc/timezone</code>

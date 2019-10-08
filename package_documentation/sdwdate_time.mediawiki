@@ -1,0 +1,56 @@
+== sdwdate ==
+
+* https://github.com/Whonix/sdwdate
+* [https://github.com/Whonix/sdwdate/blob/master/debian/control debian/control]
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: sdwdate
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile, ronn,
+dh-apparmor
+Homepage: https://github.com/Whonix/sdwdate
+Vcs-Browser: https://github.com/Whonix/sdwdate
+Vcs-Git: https://github.com/Whonix/sdwdate.git
+Standards-Version: 4.3.0
+
+Package: sdwdate
+Architecture: all
+Depends: sudo, logrotate, bc, helper-scripts, adduser,
+gcc, libc6-dev, python3-stem, python3-dateutil, python3-gevent,
+python3-socks, python3-guimessages, python3-sdnotify, python3, tor,
+${misc:Depends}
+Recommends: vbox-disable-timesync, timesanitycheck, bootclockrandomization,
+sdwdate-gui
+Replaces: apparmor-profile-sdwdate
+Description: Secure Distributed Network Time Synchronization
+===  Secure Distributed Network Time Synchronization ===
+
+Time keeping is crucial for security, privacy, and anonymity. Sdwdate is a Tor
+friendly replacement for rdate and ntpdate that sets the system's clock by
+communicating via onion encrypted TCP with Tor onion webservers.
+
+At randomized intervals, sdwdate connects to a variety of webservers and
+extracts the time stamps from http headers (RFC 2616).
+Using sclockadj option, time is gradually adjusted preventing bigger clock
+jumps that could confuse logs, servers, Tor, i2p, etc.
+
+This package contains the sdwdate time fetcher and daemon. No
+installation on remote servers required. To avoid conflicts, this daemon
+should not be enabled together with ntp or tlsdated.
+=== /etc/qubes/suspend-post.d/30_sdwdate.sh ===
+
+* [https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-post.d/30_sdwdate.sh /etc/qubes/suspend-post.d/30_sdwdate.sh]
+* <code>~/Whonix/packages/sdwdate/etc/qubes/suspend-post.d/30_sdwdate.sh</code>
+
+hook to run <code>/usr/lib/sdwdate/suspend-post</code>
+in Qubes-Whonix.
+=== /etc/qubes/suspend-pre.d/30_sdwdate.sh ===
+
+* [https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-pre.d/30_sdwdate.sh /etc/qubes/suspend-pre.d/30_sdwdate.sh]
+* <code>~/Whonix/packages/sdwdate/etc/qubes/suspend-pre.d/30_sdwdate.sh</code>
+
+hook to run <code>/usr/lib/sdwdate/suspend-pre</code>
+in Qubes-Whonix.

@@ -1,0 +1,316 @@
+== uwt ==
+
+* https://github.com/Whonix/uwt
+* [https://github.com/Whonix/uwt/blob/master/debian/control debian/control]
+===  Use Applications over Tor with Stream Isolation and Time Privacy ===
+
+Can add "torsocks" and/or "timeprivacy" before invocation of applications when
+configured to do so. For example, when simply typing "apt-get" instead of
+"torsocks apt-get", "apt-get" can still be routed over Tor.
+
+The uwt package comes with the following applications pre-configured to use
+uwtwrapper, Tor and stream isolation:
+- apt
+- apt-file
+- apt-get
+- aptitude-curses
+- curl
+- git
+- gpg
+- gpg2
+- mixmaster-update
+- rawdog
+- ssh
+- wget
+- yum
+- yumdownloader
+- wormhole
+
+To circumvent a uwt wrapper on a by case base, you append ".anondist-real" to
+the command, for example "apt-get.anondist-real". You can also deactivate
+specific or all uwt wrappers by using the stackable .d-style configuration
+folder /etc/uwt.d.
+
+Uwt can only work only as good as torsocks. If torsocks is unable to route all
+of an application's traffic over Tor, ex. if there is an leak, there will
+also be one when using uwt. For that reason, it is recommended to use
+Anonymity Distributions, that prevent such leaks.
+
+If an applications has native support for socks proxy settings, those should
+be preferred over uwt. Also refer to the TorifyHOWTO and your distribution's
+documentation.
+
+Timeprivacy can keep your time private. You can create wrappers for
+applications and timeprivacy will feed those applications with a fake time,
+which obfuscates at which time you really used that applications (such as when
+you made the git commit or when you signed that document). It does NOT set
+your time zone to UTC. (You could manually set your timezone to UTC or install
+the timezone-utc package.)
+
+This package is probably most useful for Anonymity Distributions.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /debian/uwt.displace ===
+
+* [https://github.com/Whonix/uwt/blob/master/debian/uwt.displace /debian/uwt.displace]
+* <code>~/Whonix/packages/uwt/debian/uwt.displace</code>
+
+replace the following files with the <code>uwt</code> version
+
+Using <code>config-package-dev</code> <code>displace</code>.
+
+<code>/etc/tor/torsocks</code> configuration file
+* <code>/etc/tor/torsocks.conf.anondist</code>
+
+Replace <code>apt</code>, <code>wget</code>, <code>curl</code>,
+<code>ssh</code>, <code>onionshare</code>, <code>ricochet</code>,
+<code>wormhole</code> with <code>uwt</code> wrapper which then calls
+<code>/usr/lib/uwtwrapper</code>.
+* <code>/usr/bin/apt.anondist</code>
+* <code>/usr/bin/apt-file.anondist</code>
+* <code>/usr/bin/apt-get.anondist</code>
+* <code>/usr/bin/aptitude-curses.anondist</code>
+* <code>/usr/bin/curl.anondist</code>
+* <code>/usr/bin/git.anondist</code>
+* <code>/usr/bin/gpg.anondist</code>
+* <code>/usr/bin/gpg2.anondist</code>
+* <code>/usr/bin/mixmaster-update.anondist</code>
+* <code>/usr/bin/rawdog.anondist</code>
+* <code>/usr/bin/ssh.anondist</code>
+* <code>/usr/bin/wget.anondist</code>
+* <code>/usr/bin/yum.anondist</code>
+* <code>/usr/bin/yumdownloader.anondist</code>
+* <code>/usr/bin/onionshare.anondist</code>
+* <code>/usr/bin/onionshare-gui.anondist</code>
+* <code>/usr/bin/ricochet.anondist</code>
+* <code>/usr/bin/wormhole.anondist</code>
+
+=== /etc/profile.d/20_uwt.sh ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/profile.d/20_uwt.sh /etc/profile.d/20_uwt.sh]
+* <code>~/Whonix/packages/uwt/etc/profile.d/20_uwt.sh</code>
+
+<code>/etc/profile.d</code> hook to source <code>/usr/lib/uwt/uwt.sh</code>
+=== /etc/sudoers.d/uwt ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/sudoers.d/uwt /etc/sudoers.d/uwt]
+* <code>~/Whonix/packages/uwt/etc/sudoers.d/uwt</code>
+
+Disable torsocks warning spam such as.
+[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)
+https://phabricator.whonix.org/T317
+* <code>Defaults:ALL env_keep += "TORSOCKS_LOG_LEVEL"</code>
+=== /etc/tor/torsocks.conf.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/tor/torsocks.conf.anondist /etc/tor/torsocks.conf.anondist]
+* <code>~/Whonix/packages/uwt/etc/tor/torsocks.conf.anondist</code>
+
+<code>torsocks</code> configuration
+* <code>AllowInbound 1</code>
+* <code>AllowOutboundLocalhost 1</code>
+* <code>IsolatePID 1</code>
+=== /etc/uwt.d/30_uwt_default.conf ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/uwt.d/30_uwt_default.conf /etc/uwt.d/30_uwt_default.conf]
+* <code>~/Whonix/packages/uwt/etc/uwt.d/30_uwt_default.conf</code>
+
+<code>uwt</code> configuration
+=== /etc/X11/Xsession.d/20uwt ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/X11/Xsession.d/20uwt /etc/X11/Xsession.d/20uwt]
+* <code>~/Whonix/packages/uwt/etc/X11/Xsession.d/20uwt</code>
+
+<code>/etc/X11/Xsession.d</code> hook to source <code>/usr/lib/uwt/uwt.sh</code>
+=== /usr/bin/apt.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt.anondist /usr/bin/apt.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt.anondist</code>
+
+uwt wrapped application
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+
+=== /usr/bin/apt-file.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt-file.anondist /usr/bin/apt-file.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt-file.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/apt-get.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt-get.anondist /usr/bin/apt-get.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt-get.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/aptitude-curses.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/aptitude-curses.anondist /usr/bin/aptitude-curses.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/aptitude-curses.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/curl.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/curl.anondist /usr/bin/curl.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/curl.anondist</code>
+
+uwt wrapped application
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+
+=== /usr/bin/git.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/git.anondist /usr/bin/git.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/git.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/gpg2.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/gpg2.anondist /usr/bin/gpg2.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/gpg2.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/mixmaster-update.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/mixmaster-update.anondist /usr/bin/mixmaster-update.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/mixmaster-update.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/onionshare-gui.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/onionshare-gui.anondist /usr/bin/onionshare-gui.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/onionshare-gui.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/rawdog.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/rawdog.anondist /usr/bin/rawdog.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/rawdog.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/ricochet.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/ricochet.anondist /usr/bin/ricochet.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/ricochet.anondist</code>
+
+uwt wrapped application
+
+ricochet does not have unix domain socket file support, therefore it depends
+on the TOR_CONTROL_HOST and TOR_CONTROL_PORT environment variables being
+set. Otherwise it would try to start its own Tor instance.
+https://phabricator.whonix.org/T444
+* <code>TOR_CONTROL_HOST="127.0.0.1"</code>
+* <code>TOR_CONTROL_PORT="9151"</code>
+* <code>export TOR_CONTROL_HOST</code>
+* <code>export TOR_CONTROL_PORT</code>
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+=== /usr/bin/ssh.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/ssh.anondist /usr/bin/ssh.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/ssh.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/time_privacy ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/time_privacy /usr/bin/time_privacy]
+* <code>~/Whonix/packages/uwt/usr/bin/time_privacy</code>
+
+undocumented
+=== /usr/bin/wget.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/wget.anondist /usr/bin/wget.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/wget.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/wormhole.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/wormhole.anondist /usr/bin/wormhole.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/wormhole.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/yum.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/yum.anondist /usr/bin/yum.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/yum.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/yumdownloader.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/yumdownloader.anondist /usr/bin/yumdownloader.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/yumdownloader.anondist</code>
+
+uwt wrapped application
+=== /usr/lib/uwt/uwt.sh ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwt/uwt.sh /usr/lib/uwt/uwt.sh]
+* <code>~/Whonix/packages/uwt/usr/lib/uwt/uwt.sh</code>
+
+
+Disable torsocks warning spam such as.
+[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)
+https://phabricator.whonix.org/T317
+* <code>export TORSOCKS_LOG_LEVEL=1</code>
+
+=== /usr/lib/uwtexec ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtexec /usr/lib/uwtexec]
+* <code>~/Whonix/packages/uwt/usr/lib/uwtexec</code>
+
+
+This script is used by uwtwrapper as a workaround to preserve the zeroth
+argument when executing programs with other wrappers like faketime or torsocks.
+
+=== /usr/lib/uwt_settings_show ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwt_settings_show /usr/lib/uwt_settings_show]
+* <code>~/Whonix/packages/uwt/usr/lib/uwt_settings_show</code>
+
+
+* <code>echo "uwt INFO: Stream isolation for some applications enabled. uwt / torsocks will be automatically prepended to some commands. What is that? See:"</code>
+* <code>echo "uwt INFO: https://www.whonix.org/wiki/Stream_Isolation/Easy"</code>
+
+=== /usr/lib/uwtwrapper ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtwrapper /usr/lib/uwtwrapper]
+* <code>~/Whonix/packages/uwt/usr/lib/uwtwrapper</code>
+
+When running uwt wrapped applications (such as <code>apt</code>,
+<code>wget</code>, <code>curl</code>, <code>onionshare</code> or others)
+automatically prepend <code>torsocks</code> or <code>bindp</code>. I.e.
+
+When for example <code>apt</code> or <code>curl</code> is executed, what
+really happens is running <code>torsocks apt</code> or
+<code>torsocks curl</code>.
+
+uwtwrappers and <code>/usr/lib/uwtwrapper</code> are hacks to socksify applications
+that do
+not support native socks proxy settings. Used to implement Stream Isolation.
+https://www.whonix.org/wiki/Stream_Isolation
+
+In essence, uwtwrappers are installed so users can type commands like
+apt-get normally while transparently injecting torsocks, thereby stream
+isolating them.
+
+To understand better how uwt wrappers function, you could for example open
+/usr/bin/apt-get.anondist in an editor.
+
+Also useful to run:
+ls -la /usr/bin/apt-get*
+
+You will see, that /usr/bin/apt-get has been replaced with a symlink to
+/usr/bin/apt-get.anondist. (This was done using config-package-dev.)
+
+/usr/bin/apt-get.anondist is a uwt wrapper.
+
+/usr/bin/apt-get.anondist-orig is the original apt-get binary.
+
+<code>bindp</code> is used to make applications which listen on the internal
+IP by default such as <code>onionshare</code> (which is the right thing to
+outside of Whonix) listen on the external IP instead. See also:
+
+* https://github.com/Whonix/bindp
+* https://phabricator.whonix.org/T561

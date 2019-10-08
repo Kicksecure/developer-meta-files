@@ -1,0 +1,36 @@
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /lib/systemd/system/whonix-firewall-restarter.service ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/whonix-firewall-restarter.service /lib/systemd/system/whonix-firewall-restarter.service]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/whonix-firewall-restarter.service</code>
+
+Restarts whonix-firewall when /run/sdwdate/first_success status file was
+created, i.e. when sdwdate succeeded so Whonix firewall will move from
+timesync-fail-closed mode to full mode.
+
+Starts <code>/usr/lib/whonix-firewall/firewall-restarter</code>.
+=== /usr/lib/whonix-firewall/firewall-restarter ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/firewall-restarter /usr/lib/whonix-firewall/firewall-restarter]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/firewall-restarter</code>
+
+restart firewall when sdwdate succeeded

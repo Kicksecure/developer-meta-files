@@ -1,0 +1,28 @@
+== anon-gw-anonymizer-config ==
+
+* https://github.com/Whonix/anon-gw-anonymizer-config
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/control debian/control]
+===  Tor Configuration and Tweaks for Anonymity Distributions ===
+
+Tor config file with distribution defaults (for stream isolation, etc.),
+example user configurations and other tweaks required. The Tor binary
+itself does not get modified.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /etc/apparmor.d/local/system_tor.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/system_tor.anondist</code>
+* gateway only
+
+Local AppArmor Profile for Anonymity Distributions
+
+AUDIT desired.
+=== /etc/apparmor.d/local/usr.bin.obfsproxy.anondist ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/usr.bin.obfsproxy.anondist /etc/apparmor.d/local/usr.bin.obfsproxy.anondist]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
+* gateway only
+
+apparmor relaxations for obfsproxy

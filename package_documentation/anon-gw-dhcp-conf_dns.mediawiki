@@ -1,0 +1,45 @@
+== anon-gw-dhcp-conf ==
+
+* https://github.com/Whonix/anon-gw-dhcp-conf
+* [https://github.com/Whonix/anon-gw-dhcp-conf/blob/master/debian/control debian/control]
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: anon-gw-dhcp-conf
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 12), genmkfile
+Homepage: https://github.com/Whonix/anon-gw-dhcp-conf
+Vcs-Browser: https://github.com/Whonix/anon-gw-dhcp-conf
+Vcs-Git: https://github.com/Whonix/anon-gw-dhcp-conf.git
+Standards-Version: 4.3.0
+
+Package: anon-gw-dhcp-conf
+Architecture: all
+Depends: ${misc:Depends}
+Description: DHCP config for Anonymity Distribution Gateways
+===  DHCP config for Anonymity Distribution Gateways ===
+
+Prevents DHCP from modifications of /etc/resolv.conf by shipping a
+configuration file.
+
+In context of Anonymity Distribution Gateways, it is useful to obtain network
+configuration for the interface to connect to the internet from a virtual
+machine or hardware router to avoid usability issues with manual static
+network configuration. At the same time, Anonymity Distribution Gateways
+usually do not need a functional system DNS resolver (/etc/resolv.conf),
+pointing to a clearnet DNS resolver, because ideally all the Gateway's traffic
+including its own DNS is routed through the anonymity network as well.
+
+Usually the Gateway's firewall should ensure, that the Gateway will not leak
+it's own DNS requests. However, preventing DHCP from setting /etc/resolv.conf
+to a functional clearnet DNS resolver is useful as defense in depth. Also in
+case the Gateways system DNS resolver points to the anonymizer, it is crucial,
+that it does not get modified by DHCP.
+=== /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate ===
+
+* [https://github.com/Whonix/anon-gw-dhcp-conf/blob/master/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate]
+* <code>~/Whonix/packages/anon-gw-dhcp-conf/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate</code>
+
+prevent resolvconf from modifying <code>/etc/resolv.conf</code>

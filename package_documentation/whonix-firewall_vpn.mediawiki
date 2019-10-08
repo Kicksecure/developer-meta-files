@@ -1,0 +1,34 @@
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /etc/whonix_firewall.d/30_whonix_gateway_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_gateway_default.conf /etc/whonix_firewall.d/30_whonix_gateway_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_gateway_default.conf</code>
+* gateway only
+
+Whonix firewall configuration file
+=== /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_workstation_default.conf</code>
+* workstation only
+
+Whonix firewall configuration file
