@@ -1214,10 +1214,10 @@ main() {
 }
 
 ## TODO
-item=uwt
-reponame="$(basename "$item")"
-repo_full_path="$(realpath "$item")"
-pkg_descr_creator
-exit
+# item=uwt
+# reponame="$(basename "$item")"
+# repo_full_path="$(realpath "$item")"
+# pkg_descr_creator
+# exit
 
 main "$@"
