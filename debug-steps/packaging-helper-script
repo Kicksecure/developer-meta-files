@@ -432,7 +432,7 @@ declare -A -g file_header_done
 internal_descr_writer() {
    #for project in $projects ; do
       for category in $categories ; do
-         description_write_to_file="${repo_full_path}/${reponame}_${category}.mediawiki"
+         description_write_to_file="$whonix_dev_meta_files_folder/package_documentation/${reponame}_${category}.mediawiki"
 
          if [ ! -f "$description_write_to_file" ]; then
             echo "== $reponame ==" >> "$description_write_to_file"
