@@ -251,6 +251,7 @@ recurse() {
 pkg_descr_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
    repo_skip "anon-icon-pack" || return 0
+   repo_skip "whonix-host-firewall" || return 0
 
    local file_name file_name_without_leading_dot
 
@@ -431,7 +432,7 @@ declare -A -g file_header_done
 internal_descr_writer() {
    for project in $projects ; do
       for category in $categories ; do
-         description_write_to_file="${repo_full_path}/description_${project}_${category}.mediawiki"
+         description_write_to_file="${repo_full_path}/${reponame}_${category}.mediawiki"
 
          if [ ! -f "$description_write_to_file" ]; then
             echo "== $reponame ==" >> "$description_write_to_file"
