@@ -11,16 +11,18 @@ set -o errtrace
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 build_all_error_handler() {
-   : echo "
+   echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
-"
-   echo "Press enter to continue or ctrl +c to break or enter to continue."
+" >&2
+   echo "Press enter to continue or ctrl +c to break or enter to continue." >&2
+   sleep 2
    read temp
+   exit
 }
 
-trap "build_all_error_handler" ERR
-set +e
+#trap "build_all_error_handler" ERR
+#set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
@@ -264,9 +266,17 @@ Makefile
 README.md
 "
 
-   rm -f "${repo_full_path}/description_"*
+   if [ "$deleted_yet" = "true" ]; then
+      rm -f "$MYDIR"/../package_documentation/*.mediawiki
+      deleted_yet=true
+   fi
 
    for file_name in $(recurse "$repo_full_path") ; do
+      ## Skip binary files for better performance.
+      if ! isutf8 -q "$file_name" ; then
+         continue
+      fi
+
       true "file_name: $file_name"
       temp="$file_name"
       file_name_without_leading_dot="$(echo "$temp" | str_replace "/home/user/whonix_dot/Whonix/packages/" "")"
@@ -274,6 +284,10 @@ README.md
 
       file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
       file_name_without_reponame="/${file_name_without_reponame}"
+
+      if ! isutf8 -q "$file_name" ; then
+         continue
+      fi
 
       file_name_to_open="~/Whonix/packages/$file_name_without_leading_dot"
 
@@ -401,11 +415,11 @@ README.md
 
             first_character_of_line="${line:0:1}"
             second_character_of_line="${line:1:1}"
-            ## translate '#commented-out-command' to '* <code>#commented-out-command</code>'
+            ## translate '#commented-out-command' to '* <code>#commented-out-command</code><br />'
             if [ "$first_character_of_line" = "#" ]; then
                if [ ! "$second_character_of_line" = "#" ]; then
                   line="$(echo "$line" | str_replace "#" "")"
-                  line="<code>#$line</code>"
+                  line="<code>#$line</code><br />"
                   internal_descr_writer "$line"
                   continue
                fi
@@ -432,9 +446,11 @@ declare -A -g file_header_done
 internal_descr_writer() {
    #for project in $projects ; do
       for category in $categories ; do
-         description_write_to_file="$whonix_dev_meta_files_folder/package_documentation/${reponame}_${category}.mediawiki"
+         description_write_to_file="$MYDIR/../package_documentation/${reponame}_${category}.mediawiki"
 
          if [ ! -f "$description_write_to_file" ]; then
+            touch "$description_write_to_file"
+
             echo "== $reponame ==" >> "$description_write_to_file"
             echo "" >> "$description_write_to_file"
 
