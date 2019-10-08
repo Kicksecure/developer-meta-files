@@ -69,4 +69,4 @@ conflicts.
 <code>ExecStartPre=+/usr/lib/onion-grater-merger</code>
 
 Reconfigure <code>onion-grater</code> to listen on network interface
-code>eth1</code>.
+<code>eth1</code>.

@@ -16,11 +16,12 @@ Transparent DNS Proxy) or not is up to the Gateway's firewall as well.
 * [https://github.com/Whonix/anon-gw-dns-conf/blob/master/etc/resolv.conf.anondist /etc/resolv.conf.anondist]
 * <code>~/Whonix/packages/anon-gw-dns-conf/etc/resolv.conf.anondist</code>
 * gateway only
+* Not installed by default.
 
 Configure to use torified DNS server for traffic originating from
 Whonix-Gateway.
 
-Set <code>/etc/resolv.conf> to <code>nameserver 127.0.0.1</code>
+Set <code>/etc/resolv.conf</code> to <code>nameserver 127.0.0.1</code>
 and comments.
 === /lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf ===
 

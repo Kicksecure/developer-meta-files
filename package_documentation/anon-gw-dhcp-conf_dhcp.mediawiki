@@ -41,5 +41,7 @@ that it does not get modified by DHCP.
 
 * [https://github.com/Whonix/anon-gw-dhcp-conf/blob/master/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate]
 * <code>~/Whonix/packages/anon-gw-dhcp-conf/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate</code>
+* gateway only
+* Not installed by default.
 
 prevent resolvconf from modifying <code>/etc/resolv.conf</code>

@@ -31,5 +31,6 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-shared-build-apt-sources-tpo/blob/master/etc/apt/sources.list.d/torproject.list /etc/apt/sources.list.d/torproject.list]
 * <code>~/Whonix/packages/anon-shared-build-apt-sources-tpo/etc/apt/sources.list.d/torproject.list</code>
+* Not installed by default.
 
 Tor Project APT repository sources.list
