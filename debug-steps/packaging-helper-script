@@ -430,7 +430,7 @@ README.md
 declare -A -g file_header_done
 
 internal_descr_writer() {
-   for project in $projects ; do
+   #for project in $projects ; do
       for category in $categories ; do
          description_write_to_file="${repo_full_path}/${reponame}_${category}.mediawiki"
 
@@ -485,7 +485,7 @@ internal_descr_writer() {
          fi
          echo "$@" >> "$description_write_to_file"
       done
-   done
+   #done
 }
 
 pkg_readme_create_and_commit() {
