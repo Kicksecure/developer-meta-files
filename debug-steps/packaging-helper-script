@@ -266,9 +266,10 @@ Makefile
 README.md
 "
 
-   if [ "$deleted_yet" = "true" ]; then
+   if [ ! "$deleted_yet" = "true" ]; then
       rm -f "$MYDIR"/../package_documentation/*.mediawiki
       deleted_yet=true
+      exit
    fi
 
    for file_name in $(recurse "$repo_full_path") ; do
