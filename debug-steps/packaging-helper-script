@@ -496,12 +496,31 @@ internal_descr_writer() {
             if [ "$qubes_whonix_only" = "yes" ]; then
                echo "* Qubes-Whonix only" >> "$description_write_to_file"
             fi
+            if [ "$installed_by_default" = "no" ]; then
+               echo "* Not installed by default." >> "$description_write_to_file"
+            fi
+
             echo "" >> "$description_write_to_file"
             file_header_done["${file_name_without_leading_dot}_${project}_${category}"]=true
          fi
          echo "$@" >> "$description_write_to_file"
       done
    #done
+}
+
+pkg_descr_merger() {
+   category=networking
+
+   local file_name
+
+   package_documentation_merged_file="$MYDIR/../package_documentation/networking.mediawiki"
+   rm -f "$package_documentation_merged_file"
+
+   for file_name in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
+      cat "$file_name" >> "$package_documentation_merged_file"
+   done
+
+   exit
 }
 
 pkg_readme_create_and_commit() {
