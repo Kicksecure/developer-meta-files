@@ -1,0 +1,981 @@
+== anon-apt-sources-list ==
+
+* https://github.com/Whonix/anon-apt-sources-list
+* [https://github.com/Whonix/anon-apt-sources-list/blob/master/debian/control debian/control]
+===  /etc/apt/sources.list.d/debian.list for Anonymity Linux Distributions ===
+
+A question of distribution maintenance strategies. The more standard
+way would indeed be populating /etc/apt/sources.list at install or build time
+and leaving /etc/apt/sources.list.d alone. The idea of managing
+/etc/apt/sources.list.d/debian.list for the user is, the anonymity
+distribution maintainers can decide when it is a better "change stable to
+oldstable", "keep wheezy as long as needed to work out [eventual!] issues
+that would break during upgrade to jessie" and such.
+=== /etc/apt/sources.list.d/debian.list ===
+
+* [https://github.com/Whonix/anon-apt-sources-list/blob/master/etc/apt/sources.list.d/debian.list /etc/apt/sources.list.d/debian.list]
+* <code>~/Whonix/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list</code>
+
+Debian APT repository sources.list
+
+Configured to use <code>tor+https</code>.
+
+Technical notes:
+- Why is buster-updates disabled by default?
+  See: https://wiki.debian.org/StableUpdates
+- Why are sources (deb-src) disabled by default?
+  Because those are not required by most users, to save time while
+  running <code>sudo apt update</code>.
+- See also: https://www.debian.org/security/
+- See also: <code>/etc/apt/sources.list.d/</code>
+== anon-base-files ==
+
+* https://github.com/Whonix/anon-base-files
+* [https://github.com/Whonix/anon-base-files/blob/master/debian/control debian/control]
+===  base files for Anonymity Distributions ===
+
+Creates user "user" with password "changeme" (not in Qubes).
+That is if user "user" is not existing yet.
+And if it does create "user" user it also locks the root account.
+Therefore root account locking effectively only happens in new
+builds not having user "user" already created.
+
+Adds user "user" to groups "cdrom,audio,dip,sudo,plugdev".
+
+Creates version file /var/lib/anon-dist/build_version.
+
+Anonymized operating system user name "user", /etc/hostname, /etc/hosts,
+/etc/machine-id, /var/lib/dbus/machine-id, which should be shared among all
+anonymity distributions. See also:
+
+* https://mailman.boum.org/pipermail/tails-dev/2013-January/002457.html
+* https://labs.riseup.net/code/issues/5655
+* http://lists.autistici.org/message/20140627.215105.24023267.en.html
+
+Ships a systemd unit file anon-base-files-skel-first-boot.service
+which runs /usr/lib/helper-scripts/first-boot-skel (part of helper-scripts)
+package.
+
+This package gets installed by default in both, Kicksecure and Whonix.
+=== /etc/hosts.anondist ===
+
+* [https://github.com/Whonix/anon-base-files/blob/master/etc/hosts.anondist /etc/hosts.anondist]
+* <code>~/Whonix/packages/anon-base-files/etc/hosts.anondist</code>
+
+Debian default /etc/hosts + Anonymity Distribution specific additions.
+
+Currently only <code>127.0.0.1 host.localdomain host</code> gets added.
+== anon-shared-build-apt-sources-tpo ==
+
+* https://github.com/Whonix/anon-shared-build-apt-sources-tpo
+* [https://github.com/Whonix/anon-shared-build-apt-sources-tpo/blob/master/debian/control debian/control]
+===  Adds TPO's APT repository to Anonymity Linux Distributions ===
+
+Comes with "deb http://deb.torproject.org/torproject.org stable main", The Tor
+Project's APT signing key.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /etc/apt/sources.list.d/torproject.list ===
+
+* [https://github.com/Whonix/anon-shared-build-apt-sources-tpo/blob/master/etc/apt/sources.list.d/torproject.list /etc/apt/sources.list.d/torproject.list]
+* <code>~/Whonix/packages/anon-shared-build-apt-sources-tpo/etc/apt/sources.list.d/torproject.list</code>
+* Not installed by default.
+
+Tor Project APT repository sources.list
+== ipv6-disable ==
+
+* https://github.com/Whonix/ipv6-disable
+* [https://github.com/Whonix/ipv6-disable/blob/master/debian/control debian/control]
+===  Deactivates IPv6 using /etc/sysctl.d/ ===
+
+There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
+yet. Therefore deactivating it to prevent leaks.
+
+For better security.
+=== /etc/sysctl.d/ipv6-disable.conf ===
+
+* [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
+* <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
+* gateway only<!--gateway-only-->
+
+disable IPv6
+== kicksecure-network-conf ==
+
+* https://github.com/Whonix/kicksecure-network-conf
+* [https://github.com/Whonix/kicksecure-network-conf/blob/master/debian/control debian/control]
+===  Network Configuration for Kicksecure ===
+
+Sets up external network interfaces eth0 by shipping a configuration file
+/etc/network/interfaces.d/30_kicksecure for Kicksecure.
+
+Disables systemd Predictable Network Interface Names.
+
+Configures DNS by shipping a configuration file /etc/resolv.conf for
+Kicksecure.
+
+Enables DNSCrypt.
+=== /etc/dnscrypt-proxy/kicksecure.toml ===
+
+* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/dnscrypt-proxy/kicksecure.toml /etc/dnscrypt-proxy/kicksecure.toml]
+* <code>~/Whonix/packages/kicksecure-network-conf/etc/dnscrypt-proxy/kicksecure.toml</code>
+
+DNSCrypt configuration
+=== /etc/network/interfaces.d/30_kicksecure ===
+
+* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/network/interfaces.d/30_kicksecure /etc/network/interfaces.d/30_kicksecure]
+* <code>~/Whonix/packages/kicksecure-network-conf/etc/network/interfaces.d/30_kicksecure</code>
+
+network interfaces configuration eth0
+=== /etc/resolv.conf.kicksecure ===
+
+* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/resolv.conf.kicksecure /etc/resolv.conf.kicksecure]
+* <code>~/Whonix/packages/kicksecure-network-conf/etc/resolv.conf.kicksecure</code>
+
+DNSCrypt configuration
+=== /lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf ===
+
+* [https://github.com/Whonix/kicksecure-network-conf/blob/master/lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf /lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf]
+* <code>~/Whonix/packages/kicksecure-network-conf/lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf</code>
+
+Reconfigure DNSCrypt to use configuration file
+<code>/etc/dnscrypt-proxy/kicksecure.toml</code> instead of the default
+<code>/etc/dnscrypt-proxy/dnscrypt-proxy.toml</code>.
+
+This has the advantage
+that no <code>config-package-dev</code> <code>displace</code> is required
+and that changes to upstream config file do not conflict with Kicksecure
+config file.
+== qubes-whonix ==
+
+* https://github.com/Whonix/qubes-whonix
+* [https://github.com/Whonix/qubes-whonix/blob/master/debian/control debian/control]
+===  Qubes Configuration for Whonix-Gateway and Whonix-Workstation ===
+
+This package contains all the scripts and configuration options to be able
+to run Whonix-Gateway and Whonix-Workstation within a Qubes environment.
+
+Whonix-Gateway should run as a ProxyVM.
+
+Whonix-Workstation should run as an AppVM.
+
+Template updates over Tor.
+
+Package: qubes-whonix-shared-packages-recommended
+Architecture: all
+Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
+qubes-usb-proxy, qubes-input-proxy-sender,
+qubes-core-agent-thunar, qubes-core-agent-nautilus,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Gateway and Qubes-Whonix-Workstation ===
+
+A metapackage, which includes recommended packages to ensure, Qubes-Whonix
+standard tools are available and other useful recommended packages.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-gateway-packages-recommended
+Architecture: all
+Depends: tinyproxy,
+yum,
+yum-utils,
+qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Gateway
+===  Recommended packages for Qubes-Whonix-Gateway ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Gateway.
+
+Safe to remove, if you know what you are doing.
+
+Package: qubes-whonix-workstation-packages-recommended
+Architecture: all
+Depends: qubes-thunderbird,
+qubes-gpg-split,
+qubes-pdf-converter,
+qubes-img-converter,
+pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+${misc:Depends}
+Description: Recommended packages for Qubes-Whonix-Workstation
+===  Recommended packages for Qubes-Whonix-Workstation ===
+
+A metapackage, which installs packages, which are recommended for
+Qubes-Whonix-Workstation.
+
+Feel free to remove, if you know what you are doing.
+=== /etc/qubes/protected-files.d/qubes-whonix.conf ===
+
+* [https://github.com/Whonix/qubes-whonix/blob/master/etc/qubes/protected-files.d/qubes-whonix.conf /etc/qubes/protected-files.d/qubes-whonix.conf]
+* <code>~/Whonix/packages/qubes-whonix/etc/qubes/protected-files.d/qubes-whonix.conf</code>
+* Qubes-Whonix only
+
+Configure Qubes to not modify files shipped by Whonix:
+
+* <code>/etc/hostname</code>
+* <code>/etc/hosts</code>
+* <code>/etc/localtime</code>
+* <code>/etc/timezone</code>
+=== /etc/uwt.d/40_qubes.conf ===
+
+* [https://github.com/Whonix/qubes-whonix/blob/master/etc/uwt.d/40_qubes.conf /etc/uwt.d/40_qubes.conf]
+* <code>~/Whonix/packages/qubes-whonix/etc/uwt.d/40_qubes.conf</code>
+* Qubes-Whonix only
+
+uwt Qubes-Whonix Integration
+
+Runs only inside Qubes TemplateVM.
+
+This configuration snippets configures [[#uwt|uwt]] to wait before running
+<code>apt</code> until status file
+<code>/run/qubes-service/whonix-secure-proxy</code> or
+status file
+<code>/run/qubes-service/whonix-secure-proxy-check-done</code>
+exists. It will timeout after <code>120</code> seconds.
+
+This is to determine if torified Qubes updates proxy was detected.
+
+If torified Qubes updates proxy detection fails, it will prevent running
+<code>apt</code> and show the following warning.
+
+<blockquote>
+WARNING: Execution of apt prevented by @file_name@ because no torified Qubes updates proxy found.
+</blockquote>
+
+If torified Qubes updates proxy detection succeeds, it will
+disable apt uwtwrapper.
+In other words, run apt normally. Run apt without <code>torsocks</code>.
+Because <code>apt</code> config file.
+<code>/etc/apt/apt.conf.d/01qubes-proxy</code> will already have http proxy
+settings for TCP based Qubes Updates proxy
+<code>Acquire::http::Proxy "http://10.137.255.254:8082/";</code>
+or for qrexec based Qubes updates proxy.
+<code>Acquire::http::Proxy "http://127.0.0.1:8082/";</code>
+== sdwdate ==
+
+* https://github.com/Whonix/sdwdate
+* [https://github.com/Whonix/sdwdate/blob/master/debian/control debian/control]
+===  Secure Distributed Network Time Synchronization ===
+
+Time keeping is crucial for security, privacy, and anonymity. Sdwdate is a Tor
+friendly replacement for rdate and ntpdate that sets the system's clock by
+communicating via onion encrypted TCP with Tor onion webservers.
+
+At randomized intervals, sdwdate connects to a variety of webservers and
+extracts the time stamps from http headers (RFC 2616).
+Using sclockadj option, time is gradually adjusted preventing bigger clock
+jumps that could confuse logs, servers, Tor, i2p, etc.
+
+This package contains the sdwdate time fetcher and daemon. No
+installation on remote servers required. To avoid conflicts, this daemon
+should not be enabled together with ntp or tlsdated.
+=== /etc/qubes/suspend-post.d/30_sdwdate.sh ===
+
+* [https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-post.d/30_sdwdate.sh /etc/qubes/suspend-post.d/30_sdwdate.sh]
+* <code>~/Whonix/packages/sdwdate/etc/qubes/suspend-post.d/30_sdwdate.sh</code>
+
+hook to run <code>/usr/lib/sdwdate/suspend-post</code>
+in Qubes-Whonix.
+=== /etc/qubes/suspend-pre.d/30_sdwdate.sh ===
+
+* [https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-pre.d/30_sdwdate.sh /etc/qubes/suspend-pre.d/30_sdwdate.sh]
+* <code>~/Whonix/packages/sdwdate/etc/qubes/suspend-pre.d/30_sdwdate.sh</code>
+
+hook to run <code>/usr/lib/sdwdate/suspend-pre</code>
+in Qubes-Whonix.
+== security-misc ==
+
+* https://github.com/Whonix/security-misc
+* [https://github.com/Whonix/security-misc/blob/master/debian/control debian/control]
+===  enhances misc security settings ===
+
+Inspired by Kernel Self Protection Project (KSPP)
+
+* Implements most if not all recommended Linux kernel settings (sysctl) and
+kernel parameters by KSPP.
+
+* https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project
+
+kernel hardening:
+
+* deactivates Netfilter's connection tracking helper
+Netfilter's connection tracking helper module increases kernel attack
+surface by enabling superfluous functionality such as IRC parsing in
+the kernel. (!) Hence, this package disables this feature by shipping the
+/etc/modprobe.d/30_nf_conntrack_helper_disable.conf configuration file.
+
+* Kernel symbols in various files in /proc are hidden as they can be
+very useful for kernel exploits.
+
+* Kexec is disabled as it can be used to load a malicious kernel.
+/etc/sysctl.d/kexec.conf
+
+* ASLR effectiveness for mmap is increased.
+
+* The TCP/IP stack is hardened by disabling ICMP redirect acceptance,
+ICMP redirect sending and source routing to prevent man-in-the-middle attacks,
+ignoring all ICMP requests, enabling TCP syncookies to prevent SYN flood
+attacks and enabling RFC1337 to protect against time-wait assassination
+attacks.
+
+* Some data spoofing attacks are made harder.
+
+* SACK can be disabled as it is commonly exploited and is rarely used by
+uncommenting settings in file /etc/sysctl.d/tcp_sack.conf.
+
+* Slab merging is disabled as sometimes a slab can be used in a vulnerable
+way which an attacker can exploit.
+
+* Sanity checks, redzoning, and memory poisoning are enabled.
+
+* Machine checks (MCE) are disabled which makes the kernel panic
+on uncorrectable errors in ECC memory that could be exploited.
+
+* Kernel Page Table Isolation is enabled to mitigate Meltdown and increase
+KASLR effectiveness.
+
+* SMT is disabled as it can be used to exploit the MDS and other
+vulnerabilities.
+
+* All mitigations for the MDS vulnerability are enabled.
+
+* A systemd service clears System.map on boot as these contain kernel symbols
+that could be useful to an attacker.
+/etc/kernel/postinst.d/30_remove-system-map
+/lib/systemd/system/remove-system-map.service
+/usr/lib/security-misc/remove-system.map
+
+* Coredumps are disabled as they may contain important information such as
+encryption keys or passwords.
+/etc/security/limits.d/disable-coredumps.conf
+/etc/sysctl.d/coredumps.conf
+/lib/systemd/coredump.conf.d/disable-coredumps.conf
+
+* The thunderbolt and firewire kernel modules are blacklisted as they can be
+used for DMA (Direct Memory Access) attacks.
+
+* IOMMU is enabled with a boot parameter to prevent DMA attacks.
+
+* The kernel now panics on oopses to prevent it from continuing running a
+flawed process.
+
+* Bluetooth is blacklisted to reduce attack surface. Bluetooth also has
+a history of security concerns.
+https://en.wikipedia.org/wiki/Bluetooth#History_of_security_concerns
+
+* A systemd service restricts /proc/cpuinfo, /proc/bus, /proc/scsi and
+/sys to the root user only. This hides a lot of hardware identifiers from
+unprivileged users and increases security as /sys exposes a lot of information
+that shouldn't be accessible to unprivileged users. As this will break many
+things, it is disabled by default and can optionally be enabled by running
+`systemctl enable hide-hardware-info.service` as root.
+
+Uncommon network protocols are blacklisted:
+These are rarely used and may have unknown vulnerabilities.
+/etc/modprobe.d/uncommon-network-protocols.conf
+The network protocols that are blacklisted are:
+
+* DCCP - Datagram Congestion Control Protocol
+* SCTP - Stream Control Transmission Protocol
+* RDS - Reliable Datagram Sockets
+* TIPC - Transparent Inter-process Communication
+* HDLC - High-Level Data Link Control
+* AX25 - Amateur X.25
+* NetRom
+* X25
+* ROSE
+* DECnet
+* Econet
+* af_802154 - IEEE 802.15.4
+* IPX - Internetwork Packet Exchange
+* AppleTalk
+* PSNAP - Subnetwork Access Protocol
+* p8023 - Novell raw IEEE 802.3
+* p8022 - IEEE 802.2
+
+user restrictions:
+
+* A systemd service mounts /proc with hidepid=2 at boot to prevent users from
+seeing each other's processes.
+
+* The kernel logs are restricted to root only.
+
+* The BPF JIT compiler is restricted to the root user and is hardened.
+
+* The ptrace system call is restricted to the root user only.
+
+restricts access to the root account:
+
+* `su` is restricted to only users within the group `sudo` which prevents
+users from using `su` to gain root access or to switch user accounts.
+/usr/share/pam-configs/wheel-security-misc
+(Which results in a change in file `/etc/pam.d/common-auth`.)
+
+* Add user `root` to group `sudo`. This is required to make above work so
+login as a user in a virtual console is still possible.
+debian/security-misc.postinst
+
+* Abort login for users with locked passwords.
+/usr/lib/security-misc/pam-abort-on-locked-password
+
+* Lock user accounts after 100 failed login attempts using pam_tally2.
+/usr/share/pam-configs/tally2-security-misc
+
+* Logging into the root account from a virtual, serial, whatnot console is
+prevented by shipping an existing and empty /etc/securetty.
+(Deletion of /etc/securetty has a different effect.)
+/etc/securetty.security-misc
+
+informational output during Linux PAM:
+
+* Show failed and remaining password attempts.
+* Document unlock procedure if Linux user account got locked.
+* Point out, that there is no password feedback for `su`.
+* Explain locked (root) account if locked.
+* /usr/share/pam-configs/tally2-security-misc
+* /usr/lib/security-misc/pam_tally2-info
+* /usr/lib/security-misc/pam-abort-on-locked-password
+
+access rights restrictions:
+
+* Removes read, write and execute access for others for all users who have
+home folders under folder /home by running for example
+"chmod o-rwx /home/user"
+during package installation, upgrade or pam. This will be done only once per
+folder in folder /home so users who wish to relax file permissions are free to
+do so. This is to protect previously created files in user home folder which
+were previously created with lax file permissions prior installation of this
+package.
+debian/security-misc.postinst
+/usr/share/pam-configs/permission-lockdown-security-misc
+/usr/lib/security-misc/permission-lockdown
+
+access rights relaxations:
+
+This package does (not yet) automatically lock the root account password.
+It is not clear that would be sane in such a package.
+It is recommended to lock and expire the root account.
+In new Whonix builds, root account will be locked by package
+anon-base-files.
+https://www.whonix.org/wiki/Root
+https://www.whonix.org/wiki/Dev/Permissions
+https://forums.whonix.org/t/restrict-root-access/7658
+However, a locked root password will break rescue and emergency shell.
+Therefore this package enables passwordless resuce and emergency shell.
+This is the same solution that Debian will likely addapt for Debian
+installer.
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=802211
+Adverse security effects can be prevented by setting up BIOS password
+protection, grub password protection and/or full disk encryption.
+/etc/systemd/system/emergency.service.d/override.conf
+/etc/systemd/system/rescue.service.d/override.conf
+
+Disables TCP Time Stamps:
+
+TCP time stamps (RFC 1323) allow for tracking clock
+information with millisecond resolution. This may or may not allow an
+attacker to learn information about the system clock at such
+a resolution, depending on various issues such as network lag.
+This information is available to anyone who monitors the network
+somewhere between the attacked system and the destination server.
+It may allow an attacker to find out how long a given
+system has been running, and to distinguish several
+systems running behind NAT and using the same IP address. It might
+also allow one to look for clocks that match an expected value to find the
+public IP used by a user.
+
+Hence, this package disables this feature by shipping the
+/etc/sysctl.d/tcp_timestamps.conf configuration file.
+
+Note that TCP time stamps normally have some usefulness. They are
+needed for:
+
+* the TCP protection against wrapped sequence numbers; however, to
+trigger a wrap, one needs to send roughly 2^32 packets in one
+minute:  as said in RFC 1700, "The current recommended default
+time to live (TTL) for the Internet Protocol (IP) [45,105] is 64".
+So, this probably won't be a practical problem in the context
+of Anonymity Distributions.
+* "Round-Trip Time Measurement", which is only useful when the user
+manages to saturate their connection. When using Anonymity Distributions,
+probably the limiting factor for transmission speed is rarely the capacity
+of the user connection.
+
+Application specific hardening:
+
+* Enables APT seccomp-BPF sandboxing. /etc/apt/apt.conf.d/40sandbox
+* Deactivates previews in Dolphin.
+* Deactivates previews in Nautilus.
+* Deactivates thumbnails in Thunar.
+
+Discussion:
+
+Happening primarily in Whonix forums.
+https://forums.whonix.org/t/kernel-hardening/7296
+=== /etc/sysctl.d/tcp_hardening.conf ===
+
+* [https://github.com/Whonix/security-misc/blob/master/etc/sysctl.d/tcp_hardening.conf /etc/sysctl.d/tcp_hardening.conf]
+* <code>~/Whonix/packages/security-misc/etc/sysctl.d/tcp_hardening.conf</code>
+
+TCP/IP stack hardening
+
+Protects against time-wait assassination.
+It drops RST packets for sockets in the time-wait state.
+* <code>net.ipv4.tcp_rfc1337=1</code>
+
+Disables ICMP redirect acceptance.
+* <code>net.ipv4.conf.all.accept_redirects=0</code>
+* <code>net.ipv4.conf.default.accept_redirects=0</code>
+* <code>net.ipv4.conf.all.secure_redirects=0</code>
+* <code>net.ipv4.conf.default.secure_redirects=0</code>
+* <code>net.ipv6.conf.all.accept_redirects=0</code>
+* <code>net.ipv6.conf.default.accept_redirects=0</code>
+
+Disables ICMP redirect sending.
+* <code>net.ipv4.conf.all.send_redirects=0</code>
+* <code>net.ipv4.conf.default.send_redirects=0</code>
+
+Ignores ICMP requests.
+* <code>net.ipv4.icmp_echo_ignore_all=1</code>
+
+Enables TCP syncookies.
+* <code>net.ipv4.tcp_syncookies=1</code>
+
+Disable source routing.
+* <code>net.ipv4.conf.all.accept_source_route=0</code>
+* <code>net.ipv4.conf.default.accept_source_route=0</code>
+
+=== /etc/sysctl.d/tcp_timestamps.conf ===
+
+* [https://github.com/Whonix/security-misc/blob/master/etc/sysctl.d/tcp_timestamps.conf /etc/sysctl.d/tcp_timestamps.conf]
+* <code>~/Whonix/packages/security-misc/etc/sysctl.d/tcp_timestamps.conf</code>
+
+disable IPv4 TCP Timestamps
+
+* <code>net.ipv4.tcp_timestamps=0</code>
+
+== uwt ==
+
+* https://github.com/Whonix/uwt
+* [https://github.com/Whonix/uwt/blob/master/debian/control debian/control]
+===  Use Applications over Tor with Stream Isolation and Time Privacy ===
+
+Can add "torsocks" and/or "timeprivacy" before invocation of applications when
+configured to do so. For example, when simply typing "apt-get" instead of
+"torsocks apt-get", "apt-get" can still be routed over Tor.
+
+The uwt package comes with the following applications pre-configured to use
+uwtwrapper, Tor and stream isolation:
+- apt
+- apt-file
+- apt-get
+- aptitude-curses
+- curl
+- git
+- gpg
+- gpg2
+- mixmaster-update
+- rawdog
+- ssh
+- wget
+- yum
+- yumdownloader
+- wormhole
+
+To circumvent a uwt wrapper on a by case base, you append ".anondist-real" to
+the command, for example "apt-get.anondist-real". You can also deactivate
+specific or all uwt wrappers by using the stackable .d-style configuration
+folder /etc/uwt.d.
+
+Uwt can only work only as good as torsocks. If torsocks is unable to route all
+of an application's traffic over Tor, ex. if there is an leak, there will
+also be one when using uwt. For that reason, it is recommended to use
+Anonymity Distributions, that prevent such leaks.
+
+If an applications has native support for socks proxy settings, those should
+be preferred over uwt. Also refer to the TorifyHOWTO and your distribution's
+documentation.
+
+Timeprivacy can keep your time private. You can create wrappers for
+applications and timeprivacy will feed those applications with a fake time,
+which obfuscates at which time you really used that applications (such as when
+you made the git commit or when you signed that document). It does NOT set
+your time zone to UTC. (You could manually set your timezone to UTC or install
+the timezone-utc package.)
+
+This package is probably most useful for Anonymity Distributions.
+
+This package is produced independently of, and carries no guarantee from,
+The Tor Project.
+=== /debian/uwt.displace ===
+
+* [https://github.com/Whonix/uwt/blob/master/debian/uwt.displace /debian/uwt.displace]
+* <code>~/Whonix/packages/uwt/debian/uwt.displace</code>
+
+replace the following files with the <code>uwt</code> version
+
+Using <code>config-package-dev</code> <code>displace</code>.
+
+<code>/etc/tor/torsocks</code> configuration file
+* <code>/etc/tor/torsocks.conf.anondist</code>
+
+Replace <code>apt</code>, <code>wget</code>, <code>curl</code>,
+<code>ssh</code>, <code>onionshare</code>, <code>ricochet</code>,
+<code>wormhole</code> with <code>uwt</code> wrapper which then calls
+<code>/usr/lib/uwtwrapper</code>.
+* <code>/usr/bin/apt.anondist</code>
+* <code>/usr/bin/apt-file.anondist</code>
+* <code>/usr/bin/apt-get.anondist</code>
+* <code>/usr/bin/aptitude-curses.anondist</code>
+* <code>/usr/bin/curl.anondist</code>
+* <code>/usr/bin/git.anondist</code>
+* <code>/usr/bin/gpg.anondist</code>
+* <code>/usr/bin/gpg2.anondist</code>
+* <code>/usr/bin/mixmaster-update.anondist</code>
+* <code>/usr/bin/rawdog.anondist</code>
+* <code>/usr/bin/ssh.anondist</code>
+* <code>/usr/bin/wget.anondist</code>
+* <code>/usr/bin/yum.anondist</code>
+* <code>/usr/bin/yumdownloader.anondist</code>
+* <code>/usr/bin/onionshare.anondist</code>
+* <code>/usr/bin/onionshare-gui.anondist</code>
+* <code>/usr/bin/ricochet.anondist</code>
+* <code>/usr/bin/wormhole.anondist</code>
+
+=== /etc/profile.d/20_uwt.sh ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/profile.d/20_uwt.sh /etc/profile.d/20_uwt.sh]
+* <code>~/Whonix/packages/uwt/etc/profile.d/20_uwt.sh</code>
+
+<code>/etc/profile.d</code> hook to source <code>/usr/lib/uwt/uwt.sh</code>
+=== /etc/sudoers.d/uwt ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/sudoers.d/uwt /etc/sudoers.d/uwt]
+* <code>~/Whonix/packages/uwt/etc/sudoers.d/uwt</code>
+
+Disable torsocks warning spam such as.
+[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)
+https://phabricator.whonix.org/T317
+* <code>Defaults:ALL env_keep += "TORSOCKS_LOG_LEVEL"</code>
+=== /etc/tor/torsocks.conf.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/tor/torsocks.conf.anondist /etc/tor/torsocks.conf.anondist]
+* <code>~/Whonix/packages/uwt/etc/tor/torsocks.conf.anondist</code>
+
+<code>torsocks</code> configuration
+* <code>AllowInbound 1</code>
+* <code>AllowOutboundLocalhost 1</code>
+* <code>IsolatePID 1</code>
+=== /etc/uwt.d/30_uwt_default.conf ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/uwt.d/30_uwt_default.conf /etc/uwt.d/30_uwt_default.conf]
+* <code>~/Whonix/packages/uwt/etc/uwt.d/30_uwt_default.conf</code>
+
+<code>uwt</code> configuration
+=== /etc/X11/Xsession.d/20uwt ===
+
+* [https://github.com/Whonix/uwt/blob/master/etc/X11/Xsession.d/20uwt /etc/X11/Xsession.d/20uwt]
+* <code>~/Whonix/packages/uwt/etc/X11/Xsession.d/20uwt</code>
+
+<code>/etc/X11/Xsession.d</code> hook to source <code>/usr/lib/uwt/uwt.sh</code>
+=== /usr/bin/apt.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt.anondist /usr/bin/apt.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt.anondist</code>
+
+uwt wrapped application
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+
+=== /usr/bin/apt-file.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt-file.anondist /usr/bin/apt-file.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt-file.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/apt-get.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/apt-get.anondist /usr/bin/apt-get.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/apt-get.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/aptitude-curses.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/aptitude-curses.anondist /usr/bin/aptitude-curses.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/aptitude-curses.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/curl.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/curl.anondist /usr/bin/curl.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/curl.anondist</code>
+
+uwt wrapped application
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+
+=== /usr/bin/git.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/git.anondist /usr/bin/git.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/git.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/gpg2.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/gpg2.anondist /usr/bin/gpg2.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/gpg2.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/mixmaster-update.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/mixmaster-update.anondist /usr/bin/mixmaster-update.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/mixmaster-update.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/onionshare-gui.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/onionshare-gui.anondist /usr/bin/onionshare-gui.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/onionshare-gui.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/rawdog.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/rawdog.anondist /usr/bin/rawdog.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/rawdog.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/ricochet.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/ricochet.anondist /usr/bin/ricochet.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/ricochet.anondist</code>
+
+uwt wrapped application
+
+ricochet does not have unix domain socket file support, therefore it depends
+on the TOR_CONTROL_HOST and TOR_CONTROL_PORT environment variables being
+set. Otherwise it would try to start its own Tor instance.
+https://phabricator.whonix.org/T444
+* <code>TOR_CONTROL_HOST="127.0.0.1"</code>
+* <code>TOR_CONTROL_PORT="9151"</code>
+* <code>export TOR_CONTROL_HOST</code>
+* <code>export TOR_CONTROL_PORT</code>
+
+* <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
+* <code>exec /usr/lib/uwtwrapper "$@"</code>
+=== /usr/bin/ssh.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/ssh.anondist /usr/bin/ssh.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/ssh.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/time_privacy ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/time_privacy /usr/bin/time_privacy]
+* <code>~/Whonix/packages/uwt/usr/bin/time_privacy</code>
+
+undocumented
+=== /usr/bin/wget.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/wget.anondist /usr/bin/wget.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/wget.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/wormhole.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/wormhole.anondist /usr/bin/wormhole.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/wormhole.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/yum.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/yum.anondist /usr/bin/yum.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/yum.anondist</code>
+
+uwt wrapped application
+=== /usr/bin/yumdownloader.anondist ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/bin/yumdownloader.anondist /usr/bin/yumdownloader.anondist]
+* <code>~/Whonix/packages/uwt/usr/bin/yumdownloader.anondist</code>
+
+uwt wrapped application
+=== /usr/lib/uwt/uwt.sh ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwt/uwt.sh /usr/lib/uwt/uwt.sh]
+* <code>~/Whonix/packages/uwt/usr/lib/uwt/uwt.sh</code>
+
+
+Disable torsocks warning spam such as.
+[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)
+https://phabricator.whonix.org/T317
+* <code>export TORSOCKS_LOG_LEVEL=1</code>
+
+=== /usr/lib/uwtexec ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtexec /usr/lib/uwtexec]
+* <code>~/Whonix/packages/uwt/usr/lib/uwtexec</code>
+
+
+This script is used by uwtwrapper as a workaround to preserve the zeroth
+argument when executing programs with other wrappers like faketime or torsocks.
+
+=== /usr/lib/uwt_settings_show ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwt_settings_show /usr/lib/uwt_settings_show]
+* <code>~/Whonix/packages/uwt/usr/lib/uwt_settings_show</code>
+
+
+* <code>echo "uwt INFO: Stream isolation for some applications enabled. uwt / torsocks will be automatically prepended to some commands. What is that? See:"</code>
+* <code>echo "uwt INFO: https://www.whonix.org/wiki/Stream_Isolation/Easy"</code>
+
+=== /usr/lib/uwtwrapper ===
+
+* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtwrapper /usr/lib/uwtwrapper]
+* <code>~/Whonix/packages/uwt/usr/lib/uwtwrapper</code>
+
+When running uwt wrapped applications (such as <code>apt</code>,
+<code>wget</code>, <code>curl</code>, <code>onionshare</code> or others)
+automatically prepend <code>torsocks</code> or <code>bindp</code>. I.e.
+
+When for example <code>apt</code> or <code>curl</code> is executed, what
+really happens is running <code>torsocks apt</code> or
+<code>torsocks curl</code>.
+
+uwtwrappers and <code>/usr/lib/uwtwrapper</code> are hacks to socksify applications
+that do
+not support native socks proxy settings. Used to implement Stream Isolation.
+https://www.whonix.org/wiki/Stream_Isolation
+
+In essence, uwtwrappers are installed so users can type commands like
+apt-get normally while transparently injecting torsocks, thereby stream
+isolating them.
+
+To understand better how uwt wrappers function, you could for example open
+/usr/bin/apt-get.anondist in an editor.
+
+Also useful to run:
+ls -la /usr/bin/apt-get*
+
+You will see, that /usr/bin/apt-get has been replaced with a symlink to
+/usr/bin/apt-get.anondist. (This was done using config-package-dev.)
+
+/usr/bin/apt-get.anondist is a uwt wrapper.
+
+/usr/bin/apt-get.anondist-orig is the original apt-get binary.
+
+<code>bindp</code> is used to make applications which listen on the internal
+IP by default such as <code>onionshare</code> (which is the right thing to
+outside of Whonix) listen on the external IP instead. See also:
+
+* https://github.com/Whonix/bindp
+* https://phabricator.whonix.org/T561
+== whonix-firewall ==
+
+* https://github.com/Whonix/whonix-firewall
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/control debian/control]
+===  Firewall for Whonix-Gateway and Whonix-Workstation ===
+
+iptables rules script and firewall configuration file for Whonix-Gateway and
+Whonix-Workstation.
+
+Whonix-Gateway Firewall Features:
+- transparent proxying
+- stream isolation
+- reject invalid packages
+- fail closed mechanism
+- optional VPN-Firewall
+- optional isolating proxy
+- optional incoming flash proxy
+- optional Tor relay
+
+Do not remove, unless you no longer wish to use Whonix.
+=== /debian/whonix-firewall.postinst ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/debian/whonix-firewall.postinst /debian/whonix-firewall.postinst]
+* <code>~/Whonix/packages/whonix-firewall/debian/whonix-firewall.postinst</code>
+
+Creates linux user accounts used by firewall script
+clearnet tunnel notunnel whonixcheck sdwdate updatesproxycheck.
+
+Creates empty /etc/whonix_firewall.d/50_user.conf which is not owned
+by any package if not existing.
+=== /etc/whonix_firewall.d/30_whonix_gateway_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_gateway_default.conf /etc/whonix_firewall.d/30_whonix_gateway_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_gateway_default.conf</code>
+* gateway only<!--gateway-only-->
+
+Whonix firewall configuration file
+=== /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_workstation_default.conf</code>
+* workstation only<!--workstation-only-->
+
+Whonix firewall configuration file
+=== /lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf /lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf</code>
+
+Fail Closed Mechanism.
+When the Whonix firewall systemd service failed, do not bring up the
+network.
+
+TODO: does not cover Qubes-Whonix since Qubes does not use networking.service.
+TODO: disabled, broken. Breaks networking on package upgrades.
+https://phabricator.whonix.org/T875
+
+<code>#[Unit]</code><br />
+<code>#After=whonix-firewall.service</code><br />
+<code>#Requires=whonix-firewall.service</code><br />
+
+=== /lib/systemd/system/whonix-firewall.service ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/lib/systemd/system/whonix-firewall.service /lib/systemd/system/whonix-firewall.service]
+* <code>~/Whonix/packages/whonix-firewall/lib/systemd/system/whonix-firewall.service</code>
+
+Runs <code>/usr/lib/whonix-firewall/enable-firewall</code>.
+
+On Whonix-Gateway or Whonix-Workstation (if
+<code>/usr/share/anon-gw-base-files/gateway</code> or
+<code>/usr/share/anon-ws-base-files/workstation</code> exists),
+loads Whonix Firewall.
+
+(Does nothing inside Qubes TemplateVMs.)
+
+If loading Whonix Firewall fails, creates
+<code>/run/anon-firewall/failed.status</code>.
+=== /usr/bin/whonix_firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix_firewall /usr/bin/whonix_firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix_firewall</code>
+
+firewall starter wrapper
+=== /usr/bin/whonix-gateway-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix-gateway-firewall /usr/bin/whonix-gateway-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix-gateway-firewall</code>
+
+firewall script
+=== /usr/bin/whonix-workstation-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/bin/whonix-workstation-firewall /usr/bin/whonix-workstation-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/bin/whonix-workstation-firewall</code>
+
+firewall script
+=== /usr/lib/whonix-firewall/enable-firewall ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/lib/whonix-firewall/enable-firewall /usr/lib/whonix-firewall/enable-firewall]
+* <code>~/Whonix/packages/whonix-firewall/usr/lib/whonix-firewall/enable-firewall</code>
+
+Wrapper to start firewall and create failure status files on failure.
+=== /usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test /usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test]
+* <code>~/Whonix/packages/whonix-firewall/usr/share/whonix-ws-firewall/unit_tests/stream_isolation_test</code>
+
+stream isolation developer test script
