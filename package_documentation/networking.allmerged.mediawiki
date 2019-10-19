@@ -113,6 +113,23 @@ For better security.
 * <code>~/Whonix/packages/ipv4-forward-disable/etc/sysctl.d/ipv4-forward-disable.conf</code>
 
 Disable ipv4 Forwarding as per https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxy
+== ipv6-disable ==
+
+* https://github.com/Whonix/ipv6-disable
+* [https://github.com/Whonix/ipv6-disable/blob/master/debian/control debian/control]
+===  Deactivates IPv6 using /etc/sysctl.d/ ===
+
+There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
+yet. Therefore deactivating it to prevent leaks.
+
+For better security.
+=== /etc/sysctl.d/ipv6-disable.conf ===
+
+* [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
+* <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
+* gateway only<!--gateway-only-->
+
+disable IPv6
 == whonix-gw-network-conf ==
 
 * https://github.com/Whonix/whonix-gw-network-conf
@@ -770,23 +787,6 @@ The Tor Project.
 * Not installed by default.
 
 Tor Project APT repository sources.list
-== ipv6-disable ==
-
-* https://github.com/Whonix/ipv6-disable
-* [https://github.com/Whonix/ipv6-disable/blob/master/debian/control debian/control]
-===  Deactivates IPv6 using /etc/sysctl.d/ ===
-
-There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
-yet. Therefore deactivating it to prevent leaks.
-
-For better security.
-=== /etc/sysctl.d/ipv6-disable.conf ===
-
-* [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
-* <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
-* gateway only<!--gateway-only-->
-
-disable IPv6
 == kicksecure-network-conf ==
 
 * https://github.com/Whonix/kicksecure-network-conf
