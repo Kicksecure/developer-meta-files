@@ -506,7 +506,11 @@ internal_descr_writer() {
 }
 
 pkg_descr_merger() {
+   ## TODO
    category=networking
+
+   package_documentation_all_merged_file="$MYDIR/../package_documentation/${category}.allmerged.mediawiki"
+   rm -f "$package_documentation_all_merged_file"
 
    local file_name_full_path file_name_only package_name machine
 
@@ -539,7 +543,7 @@ pkg_descr_merger() {
          machine=gateway
       fi
 
-      package_documentation_merged_file="$MYDIR/../package_documentation/${machine}_${category}.mediawiki"
+      package_documentation_merged_file="$MYDIR/../package_documentation/${machine}_${category}.merged.mediawiki"
 
       if [ ! "${file_deleted_already["${package_documentation_merged_file}"]}" = "true" ]; then
          rm -f "$package_documentation_merged_file"
@@ -548,20 +552,32 @@ pkg_descr_merger() {
 
       cat "$file_name_full_path" >> "$package_documentation_merged_file"
    done
-
-
 }
 
 pkg_descr_merge_all() {
+   ## TODO
+   category=networking
+
    pkg_descr_merger
 
-   local machine_list machine file_name_full_path package_documentation_all_merged_file
-   package_documentation_all_merged_file="$MYDIR/../package_documentation/all_${category}.mediawiki"
-   rm -f "$package_documentation_all_merged_file"
+   local machine_list machine file_name_full_path
    machine_list="gateway workstation shared"
 
    for machine in $machine_list ; do
-      file_name_full_path="$MYDIR/../package_documentation/${machine}_${category}.mediawiki"
+      file_name_full_path="$MYDIR/../package_documentation/${machine}_${category}.merged.mediawiki"
+      true "file_name_full_path: $file_name_full_path"
+      true "package_documentation_all_merged_file: $package_documentation_all_merged_file"
+
+      if [ "$machine" = "gateway" ]; then
+         echo "= Whonix-Gateway =" >> "$package_documentation_all_merged_file"
+      fi
+      if [ "$machine" = "workstation" ]; then
+         echo "= Whonix-Workstation =" >> "$package_documentation_all_merged_file"
+      fi
+      if [ "$machine" = "shared" ]; then
+         echo "= Shared by Whonix-Gateway and Whonix-Workstation =" >> "$package_documentation_all_merged_file"
+      fi
+
       cat "$file_name_full_path" >> "$package_documentation_all_merged_file"
    done
 
