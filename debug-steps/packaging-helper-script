@@ -561,7 +561,7 @@ pkg_descr_merge_all() {
    machine_list="gateway workstation shared"
 
    for machine in $machine_list ; do
-      file_name_full_path in "$MYDIR/../package_documentation/${machine}_${category}.mediawiki"
+      file_name_full_path="$MYDIR/../package_documentation/${machine}_${category}.mediawiki"
       cat "$file_name_full_path" >> "$package_documentation_all_merged_file"
    done
 
