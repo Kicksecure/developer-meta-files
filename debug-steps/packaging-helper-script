@@ -508,7 +508,7 @@ internal_descr_writer() {
 pkg_descr_merger() {
    category=networking
 
-   local file_name_full_path file_name_only package_name
+   local file_name_full_path file_name_only package_name machine
 
    for file_name_full_path in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
       file_name_only="${file_name_full_path##*/}"
@@ -547,6 +547,22 @@ pkg_descr_merger() {
       fi
 
       cat "$file_name_full_path" >> "$package_documentation_merged_file"
+   done
+
+
+}
+
+pkg_descr_merge_all() {
+   pkg_descr_merger
+
+   local machine_list machine file_name_full_path package_documentation_all_merged_file
+   package_documentation_all_merged_file="$MYDIR/../package_documentation/all_${category}.mediawiki"
+   rm -f "$package_documentation_all_merged_file"
+   machine_list="gateway workstation shared"
+
+   for machine in $machine_list ; do
+      file_name_full_path in "$MYDIR/../package_documentation/${machine}_${category}.mediawiki" ; do
+      cat "$file_name_full_path" >> "$package_documentation_all_merged_file"
    done
 
    exit
