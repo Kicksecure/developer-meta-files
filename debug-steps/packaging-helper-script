@@ -539,7 +539,7 @@ pkg_descr_merger() {
       if [ "$package_name" = "ipv4-forward-disable" ]; then
          machine=gateway
       fi
-      if [ "$package_name" = "ipv6-disable_networking" ]; then
+      if [ "$package_name" = "ipv6-disable" ]; then
          machine=gateway
       fi
 
