@@ -14,7 +14,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/system_tor.anondist</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Local AppArmor Profile for Anonymity Distributions
 
@@ -23,6 +23,6 @@ AUDIT desired.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/usr.bin.obfsproxy.anondist /etc/apparmor.d/local/usr.bin.obfsproxy.anondist]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 apparmor relaxations for obfsproxy

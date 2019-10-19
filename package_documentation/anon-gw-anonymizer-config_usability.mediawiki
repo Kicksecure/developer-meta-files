@@ -14,7 +14,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/sudoers.d/anonymizer-config-gateway /etc/sudoers.d/anonymizer-config-gateway]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/sudoers.d/anonymizer-config-gateway</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Allow members of the group <code>sudo</code> to restart Tor without a
 password.
@@ -24,7 +24,7 @@ Tor config check using <code>anon-verify</code> without a password.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/95_whonix.conf /etc/torrc.d/95_whonix.conf]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/95_whonix.conf</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 
 * <code>%include /usr/local/etc/torrc.d/40_tor_control_panel.conf</code>
@@ -34,49 +34,49 @@ Tor config check using <code>anon-verify</code> without a password.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-info /usr/bin/anon-info]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-info</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Tor apt sources and version info command line tool.
 === /usr/bin/anon-verify ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-verify /usr/bin/anon-verify]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-verify</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Tor configuration check command line utility.
 === /usr/lib/gateway-shortcuts/nyx ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/nyx /usr/lib/gateway-shortcuts/nyx]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/nyx</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to start nxy
 === /usr/lib/gateway-shortcuts/reloadtor ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/reloadtor /usr/lib/gateway-shortcuts/reloadtor]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/reloadtor</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to reload Tor
 === /usr/lib/gateway-shortcuts/restarttor ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/restarttor /usr/lib/gateway-shortcuts/restarttor]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/restarttor</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to restart Tor
 === /usr/lib/gateway-shortcuts/stoptor ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/stoptor /usr/lib/gateway-shortcuts/stoptor]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/stoptor</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to stop Tor
 === /usr/lib/gateway-shortcuts/tordata ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/tordata /usr/lib/gateway-shortcuts/tordata]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/tordata</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to open folder <code>/var/lib/tor</code> in default file manager
 using graphical sudo.
@@ -84,7 +84,7 @@ using graphical sudo.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/torrc /usr/lib/gateway-shortcuts/torrc]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/torrc</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 
 https://bugzilla.xfce.org/show_bug.cgi?id=15282
@@ -95,28 +95,28 @@ https://github.com/lxqt/lxqt-sudo/issues/114
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/gateway-shortcuts/torrcexamples /usr/lib/gateway-shortcuts/torrcexamples]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/gateway-shortcuts/torrcexamples</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 wrapper to show Tor configuration examples
 === /usr/share/anon-gw-anonymizer-config/torrc.examples ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/anon-gw-anonymizer-config/torrc.examples /usr/share/anon-gw-anonymizer-config/torrc.examples]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/anon-gw-anonymizer-config/torrc.examples</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 documentation only
 === /usr/share/applications/gateway-arm.desktop ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-arm.desktop /usr/share/applications/gateway-arm.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-arm.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Nyx - Status Monitor for Tor - desktop file for start menu
 === /usr/share/applications/gateway-reloadtor.desktop ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-reloadtor.desktop /usr/share/applications/gateway-reloadtor.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-reloadtor.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 desktop file
 reload Tor
@@ -124,7 +124,7 @@ reload Tor
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-stoptor.desktop /usr/share/applications/gateway-stoptor.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-stoptor.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 desktop file
 stop tor
@@ -132,7 +132,7 @@ stop tor
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-tordata.desktop /usr/share/applications/gateway-tordata.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-tordata.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 desktop file
 Tor Data - Open /var/lib/tor folder in file manager
@@ -141,7 +141,7 @@ Tor Data - Open /var/lib/tor folder in file manager
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-torrc.desktop /usr/share/applications/gateway-torrc.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-torrc.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 desktop file
 Open /usr/local/etc/torrc.d/50_user.conf configuration file in editor
@@ -149,7 +149,7 @@ Open /usr/local/etc/torrc.d/50_user.conf configuration file in editor
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/applications/gateway-torrcexamples.desktop /usr/share/applications/gateway-torrcexamples.desktop]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/applications/gateway-torrcexamples.desktop</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 desktop file
 Tor Configuration Examples

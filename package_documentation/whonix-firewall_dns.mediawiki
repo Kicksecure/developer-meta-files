@@ -22,6 +22,6 @@ Do not remove, unless you no longer wish to use Whonix.
 
 * [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]
 * <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_workstation_default.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Whonix firewall configuration file

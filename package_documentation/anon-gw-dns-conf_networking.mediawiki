@@ -15,7 +15,7 @@ Transparent DNS Proxy) or not is up to the Gateway's firewall as well.
 
 * [https://github.com/Whonix/anon-gw-dns-conf/blob/master/etc/resolv.conf.anondist /etc/resolv.conf.anondist]
 * <code>~/Whonix/packages/anon-gw-dns-conf/etc/resolv.conf.anondist</code>
-* gateway only
+* gateway only<!--gateway-only-->
 * Not installed by default.
 
 Configure to use torified DNS server for traffic originating from
@@ -27,7 +27,7 @@ and comments.
 
 * [https://github.com/Whonix/anon-gw-dns-conf/blob/master/lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf /lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf]
 * <code>~/Whonix/packages/anon-gw-dns-conf/lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Disable <code>systemd-resolved</code> if file
 <code>/etc/resolv.conf.anondist</code> exists.

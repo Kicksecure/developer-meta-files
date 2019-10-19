@@ -13,7 +13,7 @@ Currently relevant for Non-Qubes-Whonix only.
 
 * [https://github.com/Whonix/whonix-ws-network-conf/blob/master/debian/whonix-ws-network-conf.links /debian/whonix-ws-network-conf.links]
 * <code>~/Whonix/packages/whonix-ws-network-conf/debian/whonix-ws-network-conf.links</code>
-* workstation only
+* workstation only<!--workstation-only-->
 * Non-Qubes-Whonix only
 
 
@@ -27,7 +27,7 @@ Disabling them as per
 
 * [https://github.com/Whonix/whonix-ws-network-conf/blob/master/debian/whonix-ws-network-conf.triggers /debian/whonix-ws-network-conf.triggers]
 * <code>~/Whonix/packages/whonix-ws-network-conf/debian/whonix-ws-network-conf.triggers</code>
-* workstation only
+* workstation only<!--workstation-only-->
 * Non-Qubes-Whonix only
 
 
@@ -39,7 +39,7 @@ Required for /etc/systemd/network/99-default.link to take effect as per
 
 * [https://github.com/Whonix/whonix-ws-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix /etc/network/interfaces.d/30_non-qubes-whonix]
 * <code>~/Whonix/packages/whonix-ws-network-conf/etc/network/interfaces.d/30_non-qubes-whonix</code>
-* workstation only
+* workstation only<!--workstation-only-->
 * Non-Qubes-Whonix only
 
 network interfaces configuration eth0 to communicate with Whonix-Gateway

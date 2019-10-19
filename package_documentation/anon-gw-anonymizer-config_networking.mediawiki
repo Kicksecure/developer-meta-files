@@ -14,7 +14,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/tor/tor-service-defaults-torrc.anondist /usr/share/tor/tor-service-defaults-torrc.anondist]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/tor/tor-service-defaults-torrc.anondist</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Whonix Tor configuration
 

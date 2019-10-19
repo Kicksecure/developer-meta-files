@@ -52,14 +52,14 @@ by any package if not existing.
 
 * [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_gateway_default.conf /etc/whonix_firewall.d/30_whonix_gateway_default.conf]
 * <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_gateway_default.conf</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 Whonix firewall configuration file
 === /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
 
 * [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]
 * <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_workstation_default.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Whonix firewall configuration file
 === /lib/systemd/system/networking.service.d/30_whonix-gw-firewall-fail-closed.conf ===

@@ -21,7 +21,7 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
    exit
 }
 
-#trap "build_all_error_handler" ERR
+trap "build_all_error_handler" ERR
 #set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -44,6 +44,8 @@ nothing_to_commit_msg="On branch master
 nothing to commit, working tree clean"
 
 rm -f /tmp/list-of-packages
+
+command -v isutf8
 
 repo_skip() {
    if [ "$reponame" = "$1" ]; then
@@ -312,12 +314,6 @@ README.md
 
       test -f "$file_name"
 
-      ## TODO
-      if [ "$base_name" = "30_non-qubes-whonix" ]; then
-         echo "${red}XXXXXXXXXXXXXXXXXXX${reset}"
-         sleep 2
-      fi
-
       meta_start=false
       non_qubes_whonix_only=no
       qubes_whonix_only=no
@@ -485,10 +481,10 @@ internal_descr_writer() {
             echo "* [$web_link $file_name_without_reponame]" >> "$description_write_to_file"
             echo "* <code>$file_name_to_open</code>" >> "$description_write_to_file"
             if [ "$gateway_only" = "yes" ]; then
-               echo "* gateway only" >> "$description_write_to_file"
+               echo "* gateway only<!--gateway-only-->" >> "$description_write_to_file"
             fi
             if [ "$workstation_only" = "yes" ]; then
-               echo "* workstation only" >> "$description_write_to_file"
+               echo "* workstation only<!--workstation-only-->" >> "$description_write_to_file"
             fi
             if [ "$non_qubes_whonix_only" = "yes" ]; then
                echo "* Non-Qubes-Whonix only" >> "$description_write_to_file"
@@ -513,7 +509,7 @@ pkg_descr_merger() {
 
    local file_name
 
-   package_documentation_merged_file="$MYDIR/../package_documentation/networking.mediawiki"
+   package_documentation_merged_file="$MYDIR/../package_documentation/${category}.mediawiki"
    rm -f "$package_documentation_merged_file"
 
    for file_name in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do

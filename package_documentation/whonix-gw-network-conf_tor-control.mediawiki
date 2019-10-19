@@ -14,7 +14,7 @@ Provides /usr/share/whonix-gw-network-conf/network_internal_ip.txt.
 
 * [https://github.com/Whonix/whonix-gw-network-conf/blob/master/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf]
 * <code>~/Whonix/packages/whonix-gw-network-conf/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf</code>
-* gateway only
+* gateway only<!--gateway-only-->
 * Non-Qubes-Whonix only
 
 onion-grater systemd unit file extension

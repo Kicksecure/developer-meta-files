@@ -12,7 +12,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/bindp/blob/master/debian/bindp.postinst /debian/bindp.postinst]
 * <code>~/Whonix/packages/bindp/debian/bindp.postinst</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Compiles <code>/usr/lib/bindp.c</code> to <code>/usr/lib/libindp.so</code>
 during package installation using <code>gcc</code>.

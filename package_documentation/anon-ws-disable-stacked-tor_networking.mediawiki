@@ -42,7 +42,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/debian/anon-ws-disable-stacked-tor.displace /debian/anon-ws-disable-stacked-tor.displace]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/debian/anon-ws-disable-stacked-tor.displace</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>config-package-dev</code> <code>displace</code> the following files:
 
@@ -54,7 +54,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/debian/anon-ws-disable-stacked-tor.postinst /debian/anon-ws-disable-stacked-tor.postinst]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/debian/anon-ws-disable-stacked-tor.postinst</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>/etc/X11/Xsession.d/</code> hook to <code>source</code>
 <code>/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
@@ -67,14 +67,14 @@ User "user" already exists thanks to the anon-base-files package.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf /etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>systemd-unit-files-generator</code> and <code>socat-unix-sockets</code> configuration examples.
 === /etc/profile.d/20_torbrowser.sh ===
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/profile.d/20_torbrowser.sh /etc/profile.d/20_torbrowser.sh]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/etc/profile.d/20_torbrowser.sh</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>/etc/profile.d</code> hook to <code>source</code>
 <code>/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
@@ -82,7 +82,7 @@ User "user" already exists thanks to the anon-base-files package.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/rsyslog.d/anon-ws-disable-stacked-tor.conf /etc/rsyslog.d/anon-ws-disable-stacked-tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/etc/rsyslog.d/anon-ws-disable-stacked-tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 rsyslog configuration drop-in snippet
 
@@ -97,7 +97,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796235
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/X11/Xsession.d/20torbrowser /etc/X11/Xsession.d/20torbrowser]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/etc/X11/Xsession.d/20torbrowser</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>/etc/X11/Xsession.d/</code> hook to <code>source</code>
 <code>/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
@@ -105,7 +105,7 @@ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796235
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/anon-ws-disable-stacked-tor.service /lib/systemd/system/anon-ws-disable-stacked-tor.service]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/anon-ws-disable-stacked-tor.service</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Runs <code>/usr/lib/anon-ws-disable-stacked-tor/state-files</code> and
 <code>/usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets</code>.
@@ -113,7 +113,7 @@ Runs <code>/usr/lib/anon-ws-disable-stacked-tor/state-files</code> and
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Qubes-Whonix:
 
@@ -129,7 +129,7 @@ In effect the dummy Tor service will run on Whonix-Workstation.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Compatibility with system Tor package.
 
@@ -142,7 +142,7 @@ Makes all <code>systemctl</code> <code>restart</code> <code>reload</code>
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Make 'sudo service tor status' exit '0' for better compatibility.
 * <code>RemainAfterExit=yes</code>
@@ -150,7 +150,7 @@ Make 'sudo service tor status' exit '0' for better compatibility.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/bin/tor.anondist /usr/bin/tor.anondist]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/bin/tor.anondist</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 dummy Tor wrapper doing nothing but wait forever and
 
@@ -159,14 +159,14 @@ OnionShare support for configuration option "bundled Tor".
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets /usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 <code>socat-unix-sockets</code> starter.
 === /usr/lib/anon-ws-disable-stacked-tor/state-files ===
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/state-files /usr/lib/anon-ws-disable-stacked-tor/state-files]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/state-files</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Emulates Tor by copying and chmodding the correct state files such as
 <code>/run/tor/control.authcookie</code>.
@@ -174,7 +174,7 @@ Emulates Tor by copying and chmodding the correct state files such as
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator /usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Generates systemd unit files in
 <code>/lib/systemd/system/anon-ws-disable-stacked-tor_autogen_*</code> which
@@ -198,7 +198,7 @@ Redirect Whonix-Workstation unix domain socket file /run/tor/control to Whonix-G
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh /usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Environment variables for Tor Browser integration.
 
@@ -263,7 +263,7 @@ https://trac.torproject.org/projects/tor/ticket/14100
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/tmpfiles.d/anon-ws-disable-stacked-tor.conf /usr/lib/tmpfiles.d/anon-ws-disable-stacked-tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/tmpfiles.d/anon-ws-disable-stacked-tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Create folder <code>/run/anon-ws-disable-stacked-tor</code>.
 
@@ -273,6 +273,6 @@ Create folder <code>/run/anon-ws-disable-stacked-tor</code>.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/sbin/tor.anondist /usr/sbin/tor.anondist]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/sbin/tor.anondist</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 dummy Tor wrapper doing nothing but wait forever.

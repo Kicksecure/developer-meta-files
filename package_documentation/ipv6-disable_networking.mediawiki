@@ -12,6 +12,6 @@ For better security.
 
 * [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
 * <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
-* gateway only
+* gateway only<!--gateway-only-->
 
 disable IPv6

@@ -42,7 +42,7 @@ The Tor Project.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/anon-ws-disable-stacked-tor.service /lib/systemd/system/anon-ws-disable-stacked-tor.service]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/anon-ws-disable-stacked-tor.service</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Runs <code>/usr/lib/anon-ws-disable-stacked-tor/state-files</code> and
 <code>/usr/lib/anon-ws-disable-stacked-tor/socat-unix-sockets</code>.
@@ -50,7 +50,7 @@ Runs <code>/usr/lib/anon-ws-disable-stacked-tor/state-files</code> and
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/50_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Qubes-Whonix:
 
@@ -66,7 +66,7 @@ In effect the dummy Tor service will run on Whonix-Workstation.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor@default.service.d/51_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Compatibility with system Tor package.
 
@@ -79,7 +79,7 @@ Makes all <code>systemctl</code> <code>restart</code> <code>reload</code>
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf /lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/lib/systemd/system/tor.service.d/50_anon_ws_disable_stacked_tor.conf</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Make 'sudo service tor status' exit '0' for better compatibility.
 * <code>RemainAfterExit=yes</code>
@@ -87,7 +87,7 @@ Make 'sudo service tor status' exit '0' for better compatibility.
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/bin/tor.anondist /usr/bin/tor.anondist]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/bin/tor.anondist</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 dummy Tor wrapper doing nothing but wait forever and
 
@@ -96,7 +96,7 @@ OnionShare support for configuration option "bundled Tor".
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/state-files /usr/lib/anon-ws-disable-stacked-tor/state-files]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/state-files</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Emulates Tor by copying and chmodding the correct state files such as
 <code>/run/tor/control.authcookie</code>.
@@ -104,7 +104,7 @@ Emulates Tor by copying and chmodding the correct state files such as
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator /usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/systemd-unit-files-generator</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Generates systemd unit files in
 <code>/lib/systemd/system/anon-ws-disable-stacked-tor_autogen_*</code> which
@@ -128,7 +128,7 @@ Redirect Whonix-Workstation unix domain socket file /run/tor/control to Whonix-G
 
 * [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh /usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh]
 * <code>~/Whonix/packages/anon-ws-disable-stacked-tor/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
-* workstation only
+* workstation only<!--workstation-only-->
 
 Environment variables for Tor Browser integration.
 
