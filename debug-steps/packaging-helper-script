@@ -438,6 +438,7 @@ README.md
 }
 
 declare -A -g file_header_done
+declare -A -g file_deleted_already
 
 internal_descr_writer() {
    #for project in $projects ; do
@@ -507,13 +508,45 @@ internal_descr_writer() {
 pkg_descr_merger() {
    category=networking
 
-   local file_name
+   local file_name_full_path file_name_only package_name
 
-   package_documentation_merged_file="$MYDIR/../package_documentation/${category}.mediawiki"
-   rm -f "$package_documentation_merged_file"
+   for file_name_full_path in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
+      file_name_only="${file_name_full_path##*/}"
+      package_name="$(echo "$file_name_only" | str_replace "_${category}.mediawiki" "")"
 
-   for file_name in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
-      cat "$file_name" >> "$package_documentation_merged_file"
+      if echo "$package_name" | grep "\-gw-" ; then
+         machine=gateway
+      elif echo "$package_name" | grep "\-ws-" ; then
+         machine=workstation
+      else
+         machine=shared
+      fi
+
+      ## TODO: don't hardcode here
+      if [ "$package_name" = "onion-grater" ]; then
+         machine=gateway
+      fi
+      if [ "$package_name" = "anon-apps-config" ]; then
+         machine=workstation
+      fi
+      if [ "$package_name" = "bindp" ]; then
+         machine=workstation
+      fi
+      if [ "$package_name" = "ipv4-forward-disable" ]; then
+         machine=gateway
+      fi
+      if [ "$package_name" = "ipv6-disable_networking" ]; then
+         machine=gateway
+      fi
+
+      package_documentation_merged_file="$MYDIR/../package_documentation/${machine}_${category}.mediawiki"
+
+      if [ ! "${file_deleted_already["${package_documentation_merged_file}"]}" = "true" ]; then
+         rm -f "$package_documentation_merged_file"
+         file_deleted_already["${package_documentation_merged_file}"]=true
+      fi
+
+      cat "$file_name_full_path" >> "$package_documentation_merged_file"
    done
 
    exit
