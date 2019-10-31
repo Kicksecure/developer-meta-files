@@ -88,12 +88,12 @@ libvirt_compress() {
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.qcow2") "
       filelist+=" $(basename "$WHONIX_BINARY/${VMNAME}-${anon_dist_build_version}.xml") "
    else
-      filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
-      filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
-      filelist=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
-      filelist=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
-      filelist=" $(basename "$libvirt_target_network_file_external") "
-      filelist=" $(basename "$libvirt_target_network_file_internal") "
+      filelist+=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
+      filelist+=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.qcow2") "
+      filelist+=" $(basename "$WHONIX_BINARY/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
+      filelist+=" $(basename "$WHONIX_BINARY/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${anon_dist_build_version}.xml") "
+      filelist+=" $(basename "$libvirt_target_network_file_external") "
+      filelist+=" $(basename "$libvirt_target_network_file_internal") "
    fi
 
    true "filelist: $filelist"
