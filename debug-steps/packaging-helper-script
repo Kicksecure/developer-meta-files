@@ -181,6 +181,7 @@ commit_filter() {
 
 pkg_readme_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "anon-meta-packages" || return 0
 
    local control_file
    control_file="debian/control"
