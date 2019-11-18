@@ -954,7 +954,7 @@ pkg_git_push_remotes() {
 #       git_pid_list="$git_pid_list $git_pid"
 #    fi
 
-#    make git-tag-push &
+#    /usr/share/genmkfile/make-helper.bsh git-tag-push &
 #    git_pid="$!"
 #    ##wait "$git_pid"
 #    git_pid_list="$git_pid_list $git_pid"
@@ -1116,19 +1116,19 @@ pkg_git_sign_tags() {
    repo_skip "whonix-developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
-   make git-commit-verify
+   /usr/share/genmkfile/make-helper.bsh git-commit-verify
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
-   if ! make git-verify ; then
+   if ! /usr/share/genmkfile/make-helper.bsh git-verify ; then
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
 
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
-      make git-tag-sign
+      /usr/share/genmkfile/make-helper.bsh git-tag-sign
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
    fi
 
-   make git-verify
+   /usr/share/genmkfile/make-helper.bsh git-verify
 
    true
 }
@@ -1136,14 +1136,14 @@ pkg_git_sign_tags() {
 pkg_verify_signed_commit() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   make git-commit-verify
+   /usr/share/genmkfile/make-helper.bsh git-commit-verify
    true
 }
 
 pkg_verify_signed_commit_and_tag() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   make git-verify
+   /usr/share/genmkfile/make-helper.bsh git-verify
    true
 }
 
@@ -1193,7 +1193,7 @@ pkg_need_version_bump_do() {
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   make git-commit-verify
+   /usr/share/genmkfile/make-helper.bsh git-commit-verify
 
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
@@ -1205,15 +1205,15 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    git push origin master
 
-   pkg_git_sign_tags ## Includes "make git-commit-verify".
+   pkg_git_sign_tags ## Includes "/usr/share/genmkfile/make-helper.bsh git-commit-verify".
 
-   make git-tag-push
+   /usr/share/genmkfile/make-helper.bsh git-tag-push
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   make deb-pkg
-   make reprepro-add
-   make deb-cleanup
+   /usr/share/genmkfile/make-helper.bsh deb-pkg
+   /usr/share/genmkfile/make-helper.bsh reprepro-add
+   /usr/share/genmkfile/make-helper.bsh deb-cleanup
 
    true
 }
@@ -1226,7 +1226,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   make deb-uachl-bumpup-major
+   /usr/share/genmkfile/make-helper.bsh deb-uachl-bumpup-major
 
    git add changelog.upstream
    git add debian/changelog
