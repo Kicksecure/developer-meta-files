@@ -193,7 +193,7 @@ pkg_readme_creator() {
    generic_readme="../whonix-developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
-   local line first_word matched
+   local line first_word matched headline
 
    if [ -f "README_generic.md" ]; then
       ## When there is a README_generic.md, this is a way to express
@@ -206,22 +206,34 @@ pkg_readme_creator() {
 
    rm --force "$readme_file"
 
-   matched="false"
+   matched=0
 
    while read -r line; do
       read -r first_word _ <<< "$line"
-      if [ "$matched" = "true" ]; then
+      if [ "$first_word" = "Description:" ]; then
+         matched=$(( $matched + 1 ))
+      fi
+      if [ "$matched" gt "1" ]; then
+         break
+      fi
+      if [ "$matched" = "1" ]; then
+         if [ "$line" = "" ]; then
+            break
+         fi
+         if [ "$headline" = "done" ]; then
+            true
+         else
+            line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
+            echo "#$line_with_keyword #" | tee -a "$readme_file" >/dev/null
+            echo "" | tee -a "$readme_file" >/dev/null
+            headline=done
+            continue
+         fi
          if [ "$line" = "." ]; then
             echo "" | tee -a "$readme_file" >/dev/null
          else
             echo "$line" | tee -a "$readme_file" >/dev/null
          fi
-      fi
-      if [ "$first_word" = "Description:" ]; then
-         matched="true"
-         line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
-         echo "#$line_with_keyword #" | tee -a "$readme_file" >/dev/null
-         echo "" | tee -a "$readme_file" >/dev/null
       fi
    done < "$control_file"
 
