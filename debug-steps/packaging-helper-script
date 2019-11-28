@@ -604,6 +604,10 @@ pkg_descr_merge_all() {
 pkg_readme_create_and_commit() {
    repo_skip "whonix-developer-meta-files" || return 0
 
+   ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
+   repo_skip "tirdad" || return 0
+   repo_skip "lkrg" || return 0
+
    pkg_readme_creator
 
    git add "$readme_file"
