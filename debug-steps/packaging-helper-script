@@ -23,7 +23,7 @@ reponame: $reponame
 }
 
 trap "build_all_error_handler" ERR
-#set +e
+set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
