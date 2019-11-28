@@ -14,10 +14,12 @@ build_all_error_handler() {
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+reponame: $reponame
 " >&2
    echo "Press enter to continue or ctrl +c to break or enter to continue." >&2
    sleep 2
-   read temp
+   read temp || true
+   true
 }
 
 trap "build_all_error_handler" ERR
