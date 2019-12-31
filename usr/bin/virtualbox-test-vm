@@ -1,0 +1,129 @@
+#!/bin/bash
+
+## Copyright (C) 2019 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+#set -x
+set -e
+
+## Thanks to  perreal for the convertsecs function.
+## http://stackoverflow.com/a/12199798
+convertsecs() {
+   local h m s
+   ((h="${1}/3600"))
+   ((m="(${1}%3600)/60"))
+   ((s="${1}%60"))
+   printf "%02d:%02d:%02d\n" "$h" "$m" "$s"
+}
+
+benchmark_time_start() {
+   benchmark_time_start="$(date +%s)"
+}
+
+benchmark_time_end() {
+   benchmarktimeend="$(date +%s)"
+   benchmark_took_seconds="$(( $benchmarktimeend - $benchmark_time_start ))"
+}
+
+variables() {
+   vmname="Whonix-Gateway-XFCE"
+   vmname_with_quotes='"$vmname"'
+   user_name="user"
+   password="changeme"
+
+   vboxmanage_cmd="VBoxManage --nologo"
+   vboxheadless_cmd="vboxheadless"
+
+   vm_wait_for_vm_start_timeout=60
+   vm_wait_for_vm_shutdown_timeout=20
+}
+
+vm_is_running_test() {
+   running_vms_list="$($vboxmanage_cmd list runningvms)" || true
+
+   ## example running_vms_list:
+   ## "Whonix-Workstation-XFCE" {c504a345-8217-4954-8864-a5270a661b11}
+
+   vm_running=false
+   for word in $running_vms_list ; do
+      if [ "$word" = "$vmname_with_quotes" ]; then
+         vm_running=true
+         break
+      fi
+   done
+}
+
+wait_vm_shutdown() {
+   while true ; do
+      benchmark_time_start
+      vm_is_running_test
+      benchmark_time_end
+      if [ "$vm_running" = "false" ]; then
+         echo "INFO: VM shutdown took $benchmark_took_seconds seconds."
+         break
+      fi
+      if [ "$benchmark_took_seconds" -ge "$vm_wait_for_vm_shutdown_timeout" ]; then
+         echo "ERROR: VM shutdown longer than $vm_wait_for_vm_shutdown_timeout seconds." >&2
+         exit 1
+      fi
+      sleep 2
+   done
+}
+
+error_out_if_vm_is_running() {
+   vm_is_running_test
+   if [ "$vm_running" = "true" ]; then
+      echo "ERROR: VM not expected to be still running!" >&2
+      exit 1
+   fi
+}
+
+start_vm() {
+   ## Does not exist but more debug output.
+   #$vboxheadless_cmd --startvm "$vmname"
+
+   $vboxmanage_cmd startvm "$vmname" --type headless
+}
+
+power_off_vm_audit() {
+   $vboxmanage_cmd controlvm "$vmname" poweroff
+}
+
+power_off_vm_ignore() {
+   $vboxmanage_cmd controlvm "$vmname" poweroff &>/dev/null || true
+}
+
+acpipowerbutton_vm() {
+   VBoxManage controlvm "$vmname" acpipowerbutton
+}
+
+vm_guest_control_cmd() {
+   $vboxmanage_cmd guestcontrol "$vmname" run --username "$user_name" --password "$password" --wait-stdout --wait-stderr --exe "$@"
+}
+
+wait_for_vm() {
+   echo "INFO: Waiting for VM guestcontrol to get ready."
+   benchmark_time_start
+   while true ; do
+      benchmark_time_end
+      if vm_guest_control_cmd "/bin/ls" &>/dev/null ; then
+         echo "INFO: VM was ready after $benchmark_took_seconds seconds."
+         break
+      fi
+      if [ "$benchmark_took_seconds" -ge "$vm_wait_for_vm_start_timeout" ]; then
+         echo "ERROR: VM took longer than $vm_wait_for_vm_start_timeout seconds to start." >&2
+         exit 1
+      fi
+      sleep 2
+   done
+}
+
+variables
+power_off_vm_ignore
+error_out_if_vm_is_running
+start_vm
+wait_for_vm
+acpipowerbutton_vm
+wait_vm_shutdown
+
+#$vboxmanage_cmd guestcontrol "$vmname" run --username "$user_name" --password changeme --wait-stdout --wait-stderr --exe "/bin/ls" -- ls/arg0 vmtest arg1 "a test2"
