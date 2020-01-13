@@ -1,0 +1,64 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+## TODO: unfinished
+
+#set -x
+set -e
+set -o pipefail
+set -o errtrace
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+rm -r /home/user/Downloads/temp
+mkdir /home/user/Downloads/temp
+
+pushd ~/whonix_binary/aptrepo_remote
+
+while read -r line; do
+   if ! read -r one two three _ <<< $line ; then
+      echo "faulty line: '$line'"
+   fi
+
+   if [ "$one" = "Filename:" ]; then
+      true
+   else
+      continue
+   fi
+
+   file_name="$(echo "$line" | str_replace "Filename: " "")"
+
+   if echo "$file_name" | grep -q anon-meta-packages ; then
+      continue
+   fi
+
+   dir_name="$(dirname "$file_name")"
+   base_name="$(basename "$file_name")"
+   pkg_name="$(echo "$base_name" | cut -d"_" -f1)"
+
+   deb="$(ls "${dir_name}/${pkg_name}_"*".deb" | sort -r | head -1)"
+
+   if [ "$file_name" = "$deb" ]; then
+      continue
+   fi
+
+   if \
+      diffoscope \
+         --no-progress \
+         --no-default-limit \
+         --exclude-directory-metadata=recursive \
+         --exclude=changelog.Debian \
+         --exclude="*/changelog.Debian.gz" \
+         --exclude=changelog \
+         --exclude="*/changelog.gz" \
+         --exclude=md5sums \
+         --exclude="*/usr/share/man/*" \
+         --html="/home/user/Downloads/temp/${pkg_name}.html" \
+         "$file_name" "$deb" ; then
+      continue
+   fi
+done < ./dists/buster-testers/main/binary-amd64/Packages
+
+# ./dists/buster-developers/main/binary-amd64/Packages
