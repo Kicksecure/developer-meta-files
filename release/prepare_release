@@ -456,7 +456,7 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$binary_image_iso_signature"
-      verify_cmd_signinfy "$binary_image_iso_torrent_signature"
+      verify_cmd_signinfy "$binary_image_iso_torrent"
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
