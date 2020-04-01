@@ -1004,8 +1004,8 @@ pkg_git_commit_copyright() {
 }
 
 pkg_git_commit_man() {
-   msg='man page'
-   git add man/* || true
+   msg='add man pages (generated using "genmkfile manpages")'
+   git add auto-generated-man-pages/* || true
    git commit -m "$msg" || true
    git status
    true
