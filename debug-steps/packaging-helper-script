@@ -1013,12 +1013,13 @@ pkg_git_commit_man() {
 }
 
 pkg_git_commit_packaging() {
-   git add Makefile
-   git add make-helper.bsh
+   #git add Makefile
+   #git add make-helper.bsh
    #git add debian/changelog
    #git add changelog.upstream
+   git add debian/*.install
    #git add -u
-   msg="updated makefile generic to version 1.5"
+   msg="add debian install file"
    git commit -m "$msg"
    git status
    true
