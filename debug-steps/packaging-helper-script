@@ -1051,7 +1051,8 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="change path to auto generated man pages"
+   commit_message="no longer create man pages during build process
+use pre-created man pages"
 
    git add -A
    git add -u
@@ -1059,8 +1060,8 @@ pkg_git_diff_and_commit() {
 
    true "press enter to continue"
    read temp
-
-   git commit -m "$commit_message"
+   git commit -a -m "$commit_message"
+   #git commit -m "$commit_message"
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
