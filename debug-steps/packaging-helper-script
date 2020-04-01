@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
 ## See the file COPYING for copying conditions.
 
 set -x
@@ -993,9 +993,8 @@ pkg_git_commit_changelog() {
 }
 
 pkg_git_commit_copyright() {
-   msg='https://www.whonix.org/wiki/Dev/Licensing'
-   git add debian/copyright
-   git add COPYING
+   msg='update copyright year'
+   git add -A
    git commit -m "$msg"
    git status
    true
@@ -1268,7 +1267,7 @@ debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
 }
 
 debian_watch_file_create() {
-   echo "## Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   echo "## Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
 ## See the file COPYING for copying conditions.
 
 version=4
