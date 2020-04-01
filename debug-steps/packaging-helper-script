@@ -993,7 +993,7 @@ pkg_git_commit_changelog() {
 }
 
 pkg_git_commit_copyright() {
-   msg='update copyright year'
+   msg='copyright'
    git add -A
    git commit -m "$msg" || true
    git status
