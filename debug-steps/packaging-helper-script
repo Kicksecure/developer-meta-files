@@ -1051,7 +1051,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="code documentation"
+   commit_message="change path to auto generated man pages"
 
    git add -A
    git add -u
