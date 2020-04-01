@@ -183,7 +183,8 @@ commit_filter() {
 pkg_readme_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   genmkfile make_manpages
+   genmkfile manpages
+   genmkfile debinstfile
 
    repo_skip "anon-meta-packages" || return 0
 
