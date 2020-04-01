@@ -1013,14 +1013,23 @@ pkg_git_commit_man() {
 }
 
 pkg_git_commit_packaging() {
+   repo_skip "whonix-developer-meta-files" || return 0
+
+   returned="$(git status)"
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+      true "press enter to continue_not"
+      #read temp
+      return
+   fi
+
    #git add Makefile
    #git add make-helper.bsh
    #git add debian/changelog
    #git add changelog.upstream
    #git add debian/*.install
-   #git add debian/control
+   git add debian/control
    #git add -u
-   msg="add debian install file"
+   msg="remove 'Build-Depends: ronn' since no longer required"
    git commit -m "$msg"
    git status
    true
