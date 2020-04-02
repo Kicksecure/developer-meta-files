@@ -872,7 +872,6 @@ pkg_packaging_files_diff() {
 
    diff "$compare_with_full_path/debian/source/format" "$repo_full_path/debian/source/format"
    diff "$compare_with_full_path/debian/compat" "$repo_full_path/debian/compat"
-   diff "$compare_with_full_path/Makefile" "$repo_full_path/Makefile"
 
    if [ "$reponame" = "corridor" ]; then
       ## Corridor has no COPYING but a LICENSE-ISC file.
