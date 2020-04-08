@@ -1249,7 +1249,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    fi
 
    returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
       true "uncommited changes #1"
       exit 1
    fi
@@ -1264,7 +1264,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    pkg_upstream_and_debian_changelog_bump
 
    returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
       true "uncommited changes #2"
       exit 1
    fi
