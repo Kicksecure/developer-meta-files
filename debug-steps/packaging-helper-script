@@ -1239,15 +1239,15 @@ pkg_need_version_bump_do() {
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "whonix-developer-meta-files" || return 0
 
-   genmkfile git-commit-verify
-
    last_log_entry="$(git log --format=%s -1)"
    if [ "bumped changelog version" = "$last_log_entry" ]; then
       return 0
-   else
-      echo "needs version bump: $item"
-      pkg_upstream_and_debian_changelog_bump
    fi
+
+   genmkfile git-commit-verify
+
+   echo "needs version bump: $item"
+   pkg_upstream_and_debian_changelog_bump
 
    git push origin master
 
