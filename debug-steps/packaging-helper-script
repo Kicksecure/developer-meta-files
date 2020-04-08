@@ -180,11 +180,14 @@ commit_filter() {
    set -x
 }
 
-pkg_readme_creator() {
-   repo_skip "whonix-developer-meta-files" || return 0
+pkg_readme_creator_commit() {
+   pkg_readme_creator_do
+   git add "$readme_file" || true
+   git commit -m "readme" || true
+}
 
-   genmkfile manpages
-   genmkfile debinstfile
+pkg_readme_creator_do() {
+   repo_skip "whonix-developer-meta-files" || return 0
 
    repo_skip "anon-meta-packages" || return 0
 
@@ -205,6 +208,7 @@ pkg_readme_creator() {
 
    local line first_word matched headline
 
+   ## global readme_file
    if [ -f "README_generic.md" ]; then
       ## When there is a README_generic.md, this is a way to express
       ## "do not create a generic README.md for that package, because it
@@ -606,19 +610,6 @@ pkg_descr_merge_all() {
    exit
 }
 
-pkg_readme_create_and_commit() {
-   repo_skip "whonix-developer-meta-files" || return 0
-
-   ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
-   repo_skip "tirdad" || return 0
-   repo_skip "lkrg" || return 0
-
-   pkg_readme_creator
-
-   git add "$readme_file"
-   git commit -m "readme" || true
-}
-
 pkg_links_echo() {
    echo "https://github.com/Whonix/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
@@ -1008,9 +999,22 @@ pkg_git_commit_copyright() {
    true
 }
 
-pkg_git_commit_man() {
+pkg_git_manpages() {
+   if ! test -d "$item/man" ; then
+      return 0
+   fi
+   genmkfile manpages
    msg='add man pages (generated using "genmkfile manpages")'
    git add auto-generated-man-pages/* || true
+   git commit -m "$msg" || true
+   git status
+   true
+}
+
+pkg_git_debinstfile() {
+   genmkfile debinstfile
+   msg='add debian install file (generated using "genmkfile debinstfile")'
+   git add "debian/$item.install" || true
    git commit -m "$msg" || true
    git status
    true
@@ -1244,10 +1248,26 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       return 0
    fi
 
+   returned="$(git status)"
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+      true "uncommited changes #1"
+      exit 1
+   fi
+
    genmkfile git-commit-verify
+
+   pkg_git_manpages
+   pkg_git_debinstfile
+   pkg_readme_creator_commit
 
    echo "needs version bump: $item"
    pkg_upstream_and_debian_changelog_bump
+
+   returned="$(git status)"
+   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+      true "uncommited changes #2"
+      exit 1
+   fi
 
    git push origin master
 
