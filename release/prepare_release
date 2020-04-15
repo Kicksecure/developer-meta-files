@@ -339,7 +339,11 @@ hashes_create_and_verify() {
             ;;
       esac
 
-      rm --force "$hash_file"
+      if [ "$WHONIX_BUILD_ISO" = "true" ]; then
+         true "INFO: Not deleting hash_file '$hash_file'. Appending."
+      else
+         rm --force "$hash_file"
+      fi
 
       ## Using `basename` so we end up with relative paths in hash sums file.
 
