@@ -32,18 +32,6 @@ if [ "$anon_dist_build_version" = "" ]; then
    error "Variable anon_dist_build_version is empty."
 fi
 
-if [ "$server" = "" ]; then
-   server="root@whonix.org:/var/rsync/ova"
-   #server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
-fi
-
-#server="hulahoop@whonix.org:/home/hulahoop/libvirt"
-#server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
-
-if [ "$server" = "" ]; then
-   error "Variable server is empty."
-fi
-
 for file_name in "$WHONIX_BINARY"/* ; do
    if [ "$file_name" == "" ]; then
       continue
@@ -54,6 +42,7 @@ for file_name in "$WHONIX_BINARY"/* ; do
 
    if [ "$file_extension" = "iso" ]; then
       true
+      iso=true
    elif [ "$file_extension" = "ova" ]; then
       true
    elif [ "$file_extension" = "libvirt.xz" ]; then
@@ -81,10 +70,32 @@ $file_name"
    fi
 done
 
+####
+
+#server="hulahoop@whonix.org:/home/hulahoop/libvirt"
+#server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
+
+if [ "$server" = "" ]; then
+   if [ "$iso" = "true" ]; then
+      server="root@whonix.org:/var/rsync/iso"
+   else
+      server="root@whonix.org:/var/rsync/ova"
+      #server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
+   fi
+fi
+
+if [ "$server" = "" ]; then
+   error "Variable server is empty."
+fi
+
+####
+
+server_with_version="${server}/${anon_dist_build_version}/"
+
 true "file_list:
 $file_list"
 
-server_with_version="${server}/${anon_dist_build_version}/"
+true "server_with_version: $server_with_version"
 
 if [ ! "$build_upload_noninteractive" = "true" ]; then
    true "${cyan}INFO: Press any enter to continue.${reset}"
