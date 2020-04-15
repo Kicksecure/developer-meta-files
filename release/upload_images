@@ -84,7 +84,7 @@ done
 true "file_list:
 $file_list"
 
-server_with_version="$server/$anon_dist_build_version/"
+server_with_version="${server}/${anon_dist_build_version}/"
 
 if [ ! "$build_upload_noninteractive" = "true" ]; then
    true "${cyan}INFO: Press any enter to continue.${reset}"
