@@ -28,8 +28,8 @@ source ../../../help-steps/variables
 # true "${cyan}INFO: Press any enter to continue.${reset}"
 # read temp
 
-if [ "$anon_dist_build_version" = "" ]; then
-   error "Variable anon_dist_build_version is empty."
+if [ "$dist_build_version" = "" ]; then
+   error "Variable dist_build_version is empty."
 fi
 
 for file_name in "$WHONIX_BINARY"/* ; do
@@ -90,7 +90,7 @@ fi
 
 ####
 
-server_with_version="${server}/${anon_dist_build_version}/"
+server_with_version="${server}/${dist_build_version}/"
 
 true "file_list:
 $file_list"

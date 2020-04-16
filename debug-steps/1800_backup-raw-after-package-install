@@ -25,7 +25,7 @@ backup-raw-after-package-install() {
       exit 0
    fi
 
-   sudo $SUDO_OPTS cp "$binary_image_raw" "$WHONIX_BINARY/$VMNAME-$anon_dist_build_version-backup-after-package-install.raw"
+   sudo $SUDO_OPTS cp "$binary_image_raw" "$WHONIX_BINARY/$VMNAME-$dist_build_version-backup-after-package-install.raw"
 }
 
 main() {
