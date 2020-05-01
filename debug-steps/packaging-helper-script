@@ -190,6 +190,7 @@ pkg_readme_creator_do() {
    repo_skip "whonix-developer-meta-files" || return 0
 
    repo_skip "anon-meta-packages" || return 0
+   repo_skip "monero-gui" || return 0
 
    ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
