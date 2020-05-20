@@ -194,7 +194,7 @@ pkg_readme_creator_do() {
 
    ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
-   repo_skip "lkrg" || return 0
+   #repo_skip "lkrg" || return 0
 
    local control_file
    control_file="debian/control"
