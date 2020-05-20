@@ -228,7 +228,7 @@ pkg_readme_creator_do() {
       if [ "$first_word" = "Description:" ]; then
          matched=$(( $matched + 1 ))
       fi
-      if [ "$matched" gt "1" ]; then
+      if [ "$matched" -gt "1" ]; then
          break
       fi
       if [ "$matched" = "1" ]; then
