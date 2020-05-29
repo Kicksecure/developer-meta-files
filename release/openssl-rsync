@@ -1,0 +1,49 @@
+#!/bin/bash
+# This must be called as (note the trailing dot):
+#
+#    openssl-rsync HOSTNAME rsync --server --daemon .
+#
+# ... which is typically done via the rsync-ssl script, which results in something like this:
+#
+#    rsync --rsh=openssl-rsync -aiv HOSTNAME::module [ARGS]
+#
+# This SSL setup based on rsync's stunnel-rsync
+
+# The current environment can override using the RSYNC_SSL_* values:
+if [ x"$RSYNC_SSL_CERT" = x ]; then
+    certopt=""
+else
+    certopt="cert $RSYNC_SSL_CERT"
+fi
+
+if [ -z ${RSYNC_SSL_CA_CERT+x} ] ; then
+    # RSYNC_SSL_CA_CERT unset - default CA set AND verify:
+    caopt="-verify_return_error -verify 4"
+elif [ "$RSYNC_SSL_CA_CERT" = "" ]; then
+    # RSYNC_SSL_CA_CERT set but empty -do NO verifications:
+    caopt="-verify 1"
+else
+    # RSYNC_SSL_CA_CERT set - use CA AND verify:
+    caopt="-CAfile $RSYNC_SSL_CA_CERT -verify_return_error -verify 4"
+fi
+
+port="${RSYNC_PORT:-0}"
+if [ "$port" = 0 ]; then
+    port="${RSYNC_SSL_PORT:-874}"
+fi
+
+# If the user specified USER@HOSTNAME::module, then rsync passes us
+# the -l USER option too, so we must be prepared to ignore it.
+if [ x"$1" = x"-l" ]; then
+    shift 2
+fi
+
+hostname=$1
+shift
+
+if [ x"$hostname" = x -o x"$1" != x"rsync" -o x"$2" != x"--server" -o x"$3" != x"--daemon" ]; then
+    echo "Usage: openssl-rsync HOSTNAME rsync --server --daemon ." 1>&2
+    exit 1
+fi
+
+openssl s_client $caopt $certopt -quiet -verify_quiet -servername $hostname -connect $hostname:$port

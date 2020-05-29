@@ -14,6 +14,8 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+openssl_rsync="$MYDIR/openssl-rsync"
+
 source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
@@ -22,6 +24,33 @@ trap "exithandler" EXIT
 
 true "${cyan}INFO: rsync test...${reset}"
 
+test -x "$openssl_rsync"
+
+## sudo apt install ftpsync stunnel socat
+command -v rsync-ssl-tunnel >/dev/null
+command -v stunnel >/dev/null
+command -v socat >/dev/null
+
+## Unencrypted rsync default port is 874.
 rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
+
+## Cannot use subdomain.
+
+## openssl-rsync uses by default port 874.
+#rsync --rsh="$openssl_rsync" --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+
+## sudo apt install socat ftpsync
+RSYNC_SSL_PORT=874 RSYNC_SSL_METHOD=socat rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+
+## sudo apt install stunnel ftpsync
+#RSYNC_SSL_PORT=874 rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+
+## XXX: hardcoded
+onion="dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion"
+torsocks rsync --dry-run --recursive --times --quiet "rsync://${onion}/whonix"
+
+## sudo apt install stunnel ftpsync
+## rsync-ssl-tunnel uses by default port 1874.
+#rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 
 true "${cyan}INFO: Done with rsync test.${reset}"
