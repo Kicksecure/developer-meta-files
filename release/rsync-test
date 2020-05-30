@@ -14,6 +14,8 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+## please add openssl-rsync script for use of encrypted rsync over TLS
+## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=961827
 openssl_rsync="$MYDIR/openssl-rsync"
 
 source ../../../help-steps/pre
