@@ -934,6 +934,7 @@ internal_git_diff() {
 pkg_git_fetch_remotes() {
    git fetch origin &
    git fetch adre &
+   git fetch gitlab-whonix &
 }
 
 pkg_git_push_remotes() {
@@ -957,6 +958,13 @@ pkg_git_push_remotes() {
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
    fi
+
+    if internal_git_diff master gitlab-whonix/master ; then
+      git push gitlab-whonix master &
+       git_pid="$!"
+       #wait "$git_pid"
+       git_pid_list="$git_pid_list $git_pid"
+    fi
 
 #    if internal_git_diff Whonix15 origin/Whonix15  ; then
 #       git push origin Whonix15 &
