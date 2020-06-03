@@ -938,11 +938,15 @@ pkg_git_fetch_remotes() {
 }
 
 pkg_git_push_remotes() {
-   if internal_git_diff master adre/master ; then
-      git push adre master &
-      git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
+   if [ "$reponame" = "monero-gui" ]; then
+      true
+   else
+      if internal_git_diff master adre/master ; then
+         git push adre master &
+         git_pid="$!"
+         #wait "$git_pid"
+         git_pid_list="$git_pid_list $git_pid"
+      fi
    fi
 
 #    if internal_git_diff Whonix15 adre/Whonix15 ; then
@@ -952,11 +956,15 @@ pkg_git_push_remotes() {
 #       git_pid_list="$git_pid_list $git_pid"
 #    fi
 
-   if internal_git_diff master origin/master ; then
-      git push origin master &
-      git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
+   if [ "$reponame" = "monero-gui" ]; then
+      true
+   else
+      if internal_git_diff master origin/master ; then
+         git push origin master &
+         git_pid="$!"
+         #wait "$git_pid"
+         git_pid_list="$git_pid_list $git_pid"
+      fi
    fi
 
     if internal_git_diff master gitlab-whonix/master ; then
