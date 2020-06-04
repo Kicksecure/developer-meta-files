@@ -709,7 +709,7 @@ pkg_git_remotes_add() {
    git remote add irykoon git@github.com:irykoon/$reponame.git || true
    git remote add algernon git@github.com:Algernon-01/$reponame.git || true
 
-   git remote add gitlab-whonix git@gitlab.com:whonix/$reponame.git
+   git remote add gitlab-whonix git@gitlab.com:whonix/$reponame.git || true
 
    git remote -v
    true
