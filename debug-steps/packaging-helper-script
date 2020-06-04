@@ -711,7 +711,6 @@ pkg_git_remotes_add() {
 
    git remote add gitlab-whonix git@gitlab.com:whonix/$reponame.git || true
 
-   git remote -v
    true
 }
 
