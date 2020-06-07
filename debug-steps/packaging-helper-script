@@ -703,7 +703,10 @@ pkg_git_remotes_add() {
 
    git remote add adre git@github.com:adrelanos/$reponame.git || true
    git remote add troubadoour git@github.com:troubadoour/$reponame.git || true
-   git remote add origin git@github.com:Whonix/$reponame.git || true
+
+   git remote add     origin git@github.com:Whonix/$reponame.git || true
+   git remote set-url origin git@github.com:Whonix/$reponame.git
+
    git remote add joysn git@github.com:joysn/$reponame.git || true
    git remote add jason git@github.com:JasonJAyalaP/$reponame.git || true
    git remote add irykoon git@github.com:irykoon/$reponame.git || true
