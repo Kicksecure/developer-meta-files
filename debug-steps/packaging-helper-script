@@ -935,22 +935,22 @@ internal_git_diff() {
 }
 
 pkg_git_fetch_remotes() {
-   git fetch origin &
-   git fetch adre &
+   #git fetch adre &
    git fetch gitlab-whonix &
+   git fetch github &
 }
 
 pkg_git_push_remotes() {
-   if [ "$reponame" = "monero-gui" ]; then
-      true
-   else
-      if internal_git_diff master adre/master ; then
-         git push adre master &
-         git_pid="$!"
-         #wait "$git_pid"
-         git_pid_list="$git_pid_list $git_pid"
-      fi
-   fi
+#    if [ "$reponame" = "monero-gui" ]; then
+#       true
+#    else
+#       if internal_git_diff master adre/master ; then
+#          git push adre master &
+#          git_pid="$!"
+#          #wait "$git_pid"
+#          git_pid_list="$git_pid_list $git_pid"
+#       fi
+#    fi
 
 #    if internal_git_diff Whonix15 adre/Whonix15 ; then
 #       git push adre Whonix15 &
@@ -962,20 +962,20 @@ pkg_git_push_remotes() {
    if [ "$reponame" = "monero-gui" ]; then
       true
    else
-      if internal_git_diff master origin/master ; then
-         git push origin master &
+      if internal_git_diff master github/master ; then
+         git push github master &
          git_pid="$!"
          #wait "$git_pid"
          git_pid_list="$git_pid_list $git_pid"
       fi
    fi
 
-    if internal_git_diff master gitlab-whonix/master ; then
+   if internal_git_diff master gitlab-whonix/master ; then
       git push gitlab-whonix master &
-       git_pid="$!"
-       #wait "$git_pid"
-       git_pid_list="$git_pid_list $git_pid"
-    fi
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
 
 #    if internal_git_diff Whonix15 origin/Whonix15  ; then
 #       git push origin Whonix15 &
@@ -1291,7 +1291,12 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       exit 1
    fi
 
-   git push origin master
+   if [ "$reponame" = "monero-gui" ]; then
+      git push gitlab-whonix master
+   else
+      git push github master
+      git push gitlab-whonix master
+   fi
 
    pkg_git_sign_tags ## Includes "genmkfile git-commit-verify".
 
