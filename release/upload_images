@@ -82,7 +82,7 @@ done
 
 ####
 
-#server="hulahoop@whonix.org:/home/hulahoop/libvirt"
+#server="hulahoop@whonix.org:/var/rsync/libvirt"
 #server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
 
 if [ "$server" = "" ]; then
