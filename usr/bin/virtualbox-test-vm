@@ -6,7 +6,7 @@
 #set -x
 set -e
 
-## Thanks to  perreal for the convertsecs function.
+## Thanks to perreal for the convertsecs function.
 ## http://stackoverflow.com/a/12199798
 convertsecs() {
    local h m s
