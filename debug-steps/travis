@@ -133,11 +133,10 @@ systemctl --no-pager timesanitycheck start || true
 systemctl --no-pager bootclockrandomization start || true
 systemctl --no-pager msgcollector start || true
 systemctl --no-pager sdwdate start || true
-systemctl --no-pager whonixcheckd start || true
 
-true "INFO $BASH_SOURCE: Executing whonixcheck..."
-sudo --non-interactive -E -u travis bash -x whonixcheck || true
-true "INFO $BASH_SOURCE: Executed whonixcheck."
+true "INFO $BASH_SOURCE: Executing systemcheck"
+sudo --non-interactive -E -u travis bash -x systemcheck || true
+true "INFO $BASH_SOURCE: Executed systemcheck."
 
 ## {{ Do not try to reboot Travis CI!
 

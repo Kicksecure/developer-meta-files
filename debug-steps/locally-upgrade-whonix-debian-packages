@@ -18,7 +18,7 @@ source ../../../help-steps/variables
 main() {
    trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
 
-   ## Lockfile for whonixcheck.
+   ## Lockfile for systemcheck.
    touch "/run/package_manager_lock"
 
    sync
@@ -128,7 +128,7 @@ main() {
    $CHROOT sync
    sync
 
-   ## Remove lockfile for whonixcheck.
+   ## Remove lockfile for systemcheck.
    rm --force "/run/package_manager_lock"
 
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unchroot-raw"
