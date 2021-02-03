@@ -121,7 +121,7 @@ wait_for_vm() {
 }
 
 whonix_developer_repository_enable() {
-   $vboxmanage_sudo_wrapper whonix_repository --verbose --enable --repository developers
+   $vboxmanage_sudo_wrapper repository-dist --verbose --enable --repository developers
 }
 
 # kill_apt() {
