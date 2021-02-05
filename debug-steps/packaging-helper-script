@@ -703,18 +703,32 @@ pkg_git_remotes_add() {
 
    #git remote rm origin || true
 
-   git remote add adre git@github.com:adrelanos/$reponame.git || true
-   git remote add troubadoour git@github.com:troubadoour/$reponame.git || true
-
    git remote add     github git@github.com:Whonix/$reponame.git || true
    git remote set-url origin git@github.com:Whonix/$reponame.git
 
-   git remote add joysn git@github.com:joysn/$reponame.git || true
-   git remote add jason git@github.com:JasonJAyalaP/$reponame.git || true
-   git remote add irykoon git@github.com:irykoon/$reponame.git || true
-   git remote add algernon git@github.com:Algernon-01/$reponame.git || true
+   git remote add     adre git@github.com:adrelanos/$reponame.git || true
+   git remote set-url adre git@github.com:adrelanos/$reponame.git || true
 
-   git remote add gitlab-whonix git@gitlab.com:whonix/$reponame.git || true
+   git remote add     troubadoour git@github.com:troubadoour/$reponame.git || true
+   git remote set-url troubadoour git@github.com:troubadoour/$reponame.git || true
+
+   git remote add     github git@github.com:Whonix/$reponame.git || true
+   git remote set-url github git@github.com:Whonix/$reponame.git
+
+   git remote add joysn     git@github.com:joysn/$reponame.git || true
+   git remote set-url joysn git@github.com:joysn/$reponame.git || true
+
+   git remote add jason     git@github.com:JasonJAyalaP/$reponame.git || true
+   git remote set-url jason git@github.com:JasonJAyalaP/$reponame.git || true
+
+   git remote add irykoon     git@github.com:irykoon/$reponame.git || true
+   git remote set-url irykoon git@github.com:irykoon/$reponame.git || true
+
+   git remote add algernon     git@github.com:Algernon-01/$reponame.git || true
+   git remote set-url algernon git@github.com:Algernon-01/$reponame.git || true
+
+   git remote add gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
+   git remote set-url gitlab-whonix git@gitlab.com:whonix/$reponame.git || true
 
    true
 }
