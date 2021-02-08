@@ -32,7 +32,7 @@ if [ "$dist_build_version" = "" ]; then
    error "Variable dist_build_version is empty."
 fi
 
-for file_name in "$WHONIX_BINARY"/* ; do
+for file_name in "$dist_binary_build_folder"/* ; do
    if [ "$file_name" == "" ]; then
       continue
    fi
@@ -50,7 +50,7 @@ for file_name in "$WHONIX_BINARY"/* ; do
       iso=true
    elif [ "$file_extension" = "ova" ]; then
       true
-   ## XXX: non-ideal, would upload all files named *.xz in $WHONIX_BINARY
+   ## XXX: non-ideal, would upload all files named *.xz in $dist_binary_build_folder
    ##      folder but there should be no other files named like this except
    ##      libvirt.xz files and therefore good enough for now.
    elif [ "$file_extension" = "xz" ]; then
