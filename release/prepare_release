@@ -194,7 +194,7 @@ Please donate! [C]
                --description "$description" \
                --manifest \
                --product "Whonix-Gateway" \
-               --producturl "https://www.whonix.org/wiki/Main_Page" \
+               --producturl "https://www.whonix.org/wiki/Whonix-Gateway" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
                --version "${dist_build_version}" \
@@ -203,7 +203,7 @@ Please donate! [C]
                --description "$description" \
                --manifest \
                --product "Whonix-Workstation" \
-               --producturl "https://www.whonix.org/wiki/Multiple_Whonix-Workstations" \
+               --producturl "https://www.whonix.org/wiki/Whonix-Workstation" \
                --vendor "Whonix" \
                --vendorurl "https://www.whonix.org" \
                --version "${dist_build_version}"
