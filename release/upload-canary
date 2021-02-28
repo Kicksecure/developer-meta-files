@@ -31,6 +31,8 @@ read temp
 
 cp "$WHONIX_BINARY/canary/canary.txt.asc" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.sig" ~/sourcesown/canary/
 
 pushd ~/sourcesown/canary/
 git add -A
@@ -49,6 +51,8 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/canary/canary.txt.asc" \
    "$WHONIX_BINARY/canary/canary.txt" \
+   "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
+   "$WHONIX_BINARY/canary/canary.txt.sig" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
@@ -61,4 +65,6 @@ rsync \
    --rsh ssh \
    "$WHONIX_BINARY/canary/canary.txt.asc" \
    "$WHONIX_BINARY/canary/canary.txt" \
+   "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
+   "$WHONIX_BINARY/canary/canary.txt.sig" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
