@@ -32,7 +32,7 @@ read temp
 cp "$WHONIX_BINARY/canary/canary.txt.asc" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary/canary.sig" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.txt.sig" ~/sourcesown/canary/
 
 pushd ~/sourcesown/canary/
 git add -A
