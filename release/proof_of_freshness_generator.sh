@@ -13,7 +13,7 @@ rsstail -1 -n5 -u https://www.spiegel.de/international/index.rss
 
 rsstail -1 -n5 -u https://rss.nytimes.com/services/xml/rss/nyt/World.xml
 
-#rsstail -1 -n5 -u https://feeds.bbci.co.uk/news/world/rss.xml
+rsstail -1 -n5 -u https://feeds.bbci.co.uk/news/world/rss.xml
 
 #rsstail -1 -n5 -u http://feeds.reuters.com/reuters/worldnews
 
