@@ -35,6 +35,8 @@ sanity_tests() {
 }
 
 sign_cmd() {
+   test -f "$full_path_to_canary_txt"
+
    ## GPG signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
@@ -50,9 +52,9 @@ sign_cmd_signify() {
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}.sig"
+   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}${2}" ${3}
    ## Sanity test.
-   test -f "${1}.sig"
+   test -f "${1}${2}"
 }
 
 verify_cmd() {
@@ -60,7 +62,7 @@ verify_cmd() {
 }
 
 verify_cmd_signinfy() {
-   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}.sig"
+   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}${2}" ${3}
 }
 
 sanity_tests
@@ -84,5 +86,11 @@ full_path_to_gpg_output_file="$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
 sign_cmd --clearsign
 verify_cmd "$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
 
-sign_cmd_signify "$full_path_to_canary_txt"
-verify_cmd_signinfy "$full_path_to_canary_txt"
+sign_cmd_signify "$full_path_to_canary_txt" ".sig"
+verify_cmd_signinfy "$full_path_to_canary_txt" ".sig"
+
+sign_cmd_signify "$full_path_to_canary_txt" ".embed.sig" -e
+
+signify-openbsd -V -e -p "$signify_public_key" -x "$WHONIX_BINARY/canary/canary.txt.embed.sig" -m "$WHONIX_BINARY/canary/canary-unembed.txt"
+
+diff "$full_path_to_canary_txt" "$WHONIX_BINARY/canary/canary-unembed.txt"
