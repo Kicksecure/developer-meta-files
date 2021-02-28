@@ -33,6 +33,7 @@ cp "$WHONIX_BINARY/canary/canary.txt.asc" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
 cp "$WHONIX_BINARY/canary/canary.txt.sig" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.txt.embed.sig" ~/sourcesown/canary/
 
 pushd ~/sourcesown/canary/
 git add -A
@@ -53,6 +54,7 @@ rsync \
    "$WHONIX_BINARY/canary/canary.txt" \
    "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
    "$WHONIX_BINARY/canary/canary.txt.sig" \
+   "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
@@ -67,4 +69,5 @@ rsync \
    "$WHONIX_BINARY/canary/canary.txt" \
    "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
    "$WHONIX_BINARY/canary/canary.txt.sig" \
+   "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
