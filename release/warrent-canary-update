@@ -64,7 +64,8 @@ full_path_to_canary_txt="$WHONIX_BINARY/canary.txt"
 
 sudo $SUDO_OPTS cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
 
-sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1 | sudo $SUDO_OPTS tee -a "$full_path_to_canary_txt"
+proof_of_freshness_output="$(sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1)"
+echo "$proof_of_freshness_output" | sudo $SUDO_OPTS tee -a "$full_path_to_canary_txt"
 
 sudo $SUDO_OPTS cat "$full_path_to_canary_txt"
 
