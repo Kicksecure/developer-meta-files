@@ -67,6 +67,10 @@ verify_cmd_signinfy() {
 
 sanity_tests
 
+if test -d "$WHONIX_BINARY/canary" ; then
+    rm --recursive "$WHONIX_BINARY/canary"
+fi
+
 mkdir --parents "$WHONIX_BINARY/canary"
 
 full_path_to_canary_txt="$WHONIX_BINARY/canary/canary.txt"
