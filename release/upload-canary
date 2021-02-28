@@ -24,8 +24,6 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-command -v rsstail
-
 cat "$WHONIX_BINARY/canary.txt"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"

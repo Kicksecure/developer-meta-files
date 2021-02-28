@@ -24,6 +24,8 @@ sanity_tests() {
    test -f "$signify_public_key"
    test -f "$signify_private_key"
 
+   command -v rsstail
+
    "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 }
 
