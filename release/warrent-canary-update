@@ -24,19 +24,26 @@ sign_cmd() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   sudo $SUDO_OPTS $gpg_bin "$@" --armor --yes --set-notation "file@name"="$(basename "$full_path_to_canary_txt")" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 }
 
 verify_cmd() {
-   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$1"
+   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$@"
 }
 
-sudo $SUDO_OPTS cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$WHONIX_BINARY/canary.txt"
+full_path_to_canary_txt="$WHONIX_BINARY/canary.txt"
 
-sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1 | sudo $SUDO_OPTS tee -a "$WHONIX_BINARY/canary.txt"
+sudo $SUDO_OPTS cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
 
-sudo $SUDO_OPTS cat "$WHONIX_BINARY/canary.txt"
+sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1 | sudo $SUDO_OPTS tee -a "$full_path_to_canary_txt"
 
-sign_cmd "$WHONIX_BINARY/canary.txt"
+sudo $SUDO_OPTS cat "$full_path_to_canary_txt"
 
-verify_cmd "$WHONIX_BINARY/canary.txt.asc"
+full_path_to_gpg_output_file="$WHONIX_BINARY/canary.txt.asc"
+sign_cmd --detach-sign
+verify_cmd "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
+
+full_path_to_gpg_output_file="$WHONIX_BINARY/canary.txt.clearsign.asc"
+sign_cmd --clearsign
+verify_cmd "$WHONIX_BINARY/canary.txt.clearsign.asc"
+
