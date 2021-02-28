@@ -24,13 +24,14 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-cat "$WHONIX_BINARY/canary.txt"
+cat "$WHONIX_BINARY/canary/canary.txt"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"
 read temp
 
-cp "$WHONIX_BINARY/canary.txt.asc" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary.txt" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.txt.asc" ~/sourcesown/canary/
+cp "$WHONIX_BINARY/canary/canary.txt" ~/sourcesown/canary/
+
 pushd ~/sourcesown/canary/
 git add -A
 git commit -a -m "update canary"
@@ -46,8 +47,8 @@ rsync \
    $rsync_opts \
    --recursive \
    --rsh ssh \
-   "$WHONIX_BINARY/canary.txt.asc" \
-   "$WHONIX_BINARY/canary.txt" \
+   "$WHONIX_BINARY/canary/canary.txt.asc" \
+   "$WHONIX_BINARY/canary/canary.txt" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
@@ -58,6 +59,6 @@ rsync \
    $rsync_opts \
    --recursive \
    --rsh ssh \
-   "$WHONIX_BINARY/canary.txt.asc" \
-   "$WHONIX_BINARY/canary.txt" \
+   "$WHONIX_BINARY/canary/canary.txt.asc" \
+   "$WHONIX_BINARY/canary/canary.txt" \
    "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"

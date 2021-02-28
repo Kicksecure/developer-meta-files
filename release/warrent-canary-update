@@ -19,6 +19,11 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
+if [ "$(id -u)" = "0" ]; then
+   true "ERROR: Do not run this as root!"
+   exit 1
+fi
+
 sanity_tests() {
    command -v signify-openbsd >/dev/null
    test -f "$signify_public_key"
@@ -34,7 +39,7 @@ sign_cmd() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   sudo $SUDO_OPTS $gpg_bin "$@" --armor --yes --set-notation "file@name"="$(basename "$full_path_to_canary_txt")" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
+   $gpg_bin "$@" --armor --yes --set-notation "file@name"="$(basename "$full_path_to_canary_txt")" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 }
 
 sign_cmd_signify() {
@@ -45,37 +50,39 @@ sign_cmd_signify() {
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   sudo $SUDO_OPTS signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}.sig"
+   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}.sig"
    ## Sanity test.
    test -f "${1}.sig"
 }
 
 verify_cmd() {
-   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$@"
+   $gpg_bin --verify-options show-notations --verify "$@"
 }
 
 verify_cmd_signinfy() {
-   sudo $SUDO_OPTS signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}.sig"
+   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}.sig"
 }
 
 sanity_tests
 
-full_path_to_canary_txt="$WHONIX_BINARY/canary.txt"
+mkdir --parents "$WHONIX_BINARY/canary"
 
-sudo $SUDO_OPTS cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
+full_path_to_canary_txt="$WHONIX_BINARY/canary/canary.txt"
 
-proof_of_freshness_output="$(sudo $SUDO_OPTS "$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1)"
-echo "$proof_of_freshness_output" | sudo $SUDO_OPTS tee -a "$full_path_to_canary_txt"
+cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
 
-sudo $SUDO_OPTS cat "$full_path_to_canary_txt"
+proof_of_freshness_output="$("$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1)"
+echo "$proof_of_freshness_output" | tee -a "$full_path_to_canary_txt"
 
-full_path_to_gpg_output_file="$WHONIX_BINARY/canary.txt.asc"
+cat "$full_path_to_canary_txt"
+
+full_path_to_gpg_output_file="$WHONIX_BINARY/canary/canary.txt.asc"
 sign_cmd --detach-sign
 verify_cmd "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 
-full_path_to_gpg_output_file="$WHONIX_BINARY/canary.txt.clearsign.asc"
+full_path_to_gpg_output_file="$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
 sign_cmd --clearsign
-verify_cmd "$WHONIX_BINARY/canary.txt.clearsign.asc"
+verify_cmd "$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
 
 sign_cmd_signify "$full_path_to_canary_txt"
 verify_cmd_signinfy "$full_path_to_canary_txt"
