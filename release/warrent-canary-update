@@ -19,6 +19,14 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
+sanity_tests() {
+   command -v signify-openbsd >/dev/null
+   test -f "$signify_public_key"
+   test -f "$signify_private_key"
+
+   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+}
+
 sign_cmd() {
    ## GPG signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
@@ -27,9 +35,28 @@ sign_cmd() {
    sudo $SUDO_OPTS $gpg_bin "$@" --armor --yes --set-notation "file@name"="$(basename "$full_path_to_canary_txt")" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 }
 
+sign_cmd_signify() {
+   ## To create a key for signify-openbsd:
+   ## as user "user"
+   ## mkdir -p ~/.signify
+   ## cd ~/.signify
+   ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
+
+   ## https://forums.whonix.org/t/signify-openbsd/7842
+   sudo $SUDO_OPTS signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}.sig"
+   ## Sanity test.
+   test -f "${1}.sig"
+}
+
 verify_cmd() {
    sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$@"
 }
+
+verify_cmd_signinfy() {
+   sudo $SUDO_OPTS signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}.sig"
+}
+
+sanity_tests
 
 full_path_to_canary_txt="$WHONIX_BINARY/canary.txt"
 
@@ -47,3 +74,5 @@ full_path_to_gpg_output_file="$WHONIX_BINARY/canary.txt.clearsign.asc"
 sign_cmd --clearsign
 verify_cmd "$WHONIX_BINARY/canary.txt.clearsign.asc"
 
+sign_cmd_signify "$full_path_to_canary_txt"
+verify_cmd_signinfy "$full_path_to_canary_txt"
