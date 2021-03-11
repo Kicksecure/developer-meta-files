@@ -76,9 +76,6 @@ main() {
       export UWT_DEV_PASSTHROUGH="0"
    fi
 
-   ## Debugging.
-   $CHROOT apt-key finger
-
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
