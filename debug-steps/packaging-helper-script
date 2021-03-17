@@ -1186,7 +1186,7 @@ pkg_git_sign_tags() {
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
-   if ! genmkfile git-verify ; then
+   if ! genmkfile git-verify 2>/dev/null ; then
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
 
       true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
@@ -1285,16 +1285,19 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       exit 1
    fi
 
+   ## Includes "genmkfile git-commit-verify".
+   pkg_git_sign_tags
+
+   make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
+
+   git push gitlab-whonix master
+   git push gitlab-whonix "$make_git_tag_latest"
    if [ "$reponame" = "monero-gui" ]; then
-      git push gitlab-whonix master
+      true
    else
       git push github-whonix master
-      git push gitlab-whonix master
+      git push github-whonix "$make_git_tag_latest"
    fi
-
-   pkg_git_sign_tags ## Includes "genmkfile git-commit-verify".
-
-   genmkfile git-tag-push
 
    export make_lintian=true
    export make_use_cowbuilder=true
