@@ -1140,7 +1140,7 @@ pkg_git_submodule_file_writer() {
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$reponame
-        url = https://github.com/Whonix/${reponame}.git
+        url = https://gitlab.com/whonix/${reponame}.git
 " >> ../../".gitmodules"
 }
 
