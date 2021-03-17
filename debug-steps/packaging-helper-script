@@ -1354,7 +1354,7 @@ debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
 }
 
 debian_watch_file_create() {
-   echo "## Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+   echo "## Copyright (C) 2012 - 2021 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4

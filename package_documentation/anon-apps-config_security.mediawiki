@@ -2,13 +2,13 @@
 
 * https://github.com/Whonix/anon-apps-config
 * [https://github.com/Whonix/anon-apps-config/blob/master/debian/control debian/control]
-## Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## Copyright (C) 2012 - 2021 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 Source: anon-apps-config
 Section: misc
 Priority: optional
-Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Maintainer: Patrick Schleizer <adrelanos@whonix.org>
 Build-Depends: debhelper (>= 12), genmkfile, config-package-dev
 Homepage: https://github.com/Whonix/anon-apps-config
 Vcs-Browser: https://github.com/Whonix/anon-apps-config
