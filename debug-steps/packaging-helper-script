@@ -929,7 +929,7 @@ internal_git_diff() {
 }
 
 pkg_git_fetch_remotes() {
-   #git fetch adre &
+   git fetch adrelanos &
    git fetch gitlab-whonix &
    git fetch github-whonix &
 }
@@ -938,16 +938,16 @@ pkg_git_push_remotes() {
 #    if [ "$reponame" = "monero-gui" ]; then
 #       true
 #    else
-#       if internal_git_diff master adre/master ; then
-#          git push adre master &
+#       if internal_git_diff master adrelanos/master ; then
+#          git push adrelanos master &
 #          git_pid="$!"
 #          #wait "$git_pid"
 #          git_pid_list="$git_pid_list $git_pid"
 #       fi
 #    fi
 
-#    if internal_git_diff Whonix15 adre/Whonix15 ; then
-#       git push adre Whonix15 &
+#    if internal_git_diff Whonix15 adrelanos/Whonix15 ; then
+#       git push adrelanos Whonix15 &
 #       git_pid="$!"
 #       #wait "$git_pid"
 #       git_pid_list="$git_pid_list $git_pid"
