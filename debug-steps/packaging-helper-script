@@ -694,10 +694,6 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
-   git remote rm origin || true
-   git remote rm github || true
-   git remote rm adre || true
-
    git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
    git remote set-url adrelanos         git@github.com:adrelanos/$reponame.git || true
 
@@ -935,7 +931,7 @@ internal_git_diff() {
 pkg_git_fetch_remotes() {
    #git fetch adre &
    git fetch gitlab-whonix &
-   git fetch github &
+   git fetch github-whonix &
 }
 
 pkg_git_push_remotes() {
@@ -960,8 +956,8 @@ pkg_git_push_remotes() {
    if [ "$reponame" = "monero-gui" ]; then
       true
    else
-      if internal_git_diff master github/master ; then
-         git push github master &
+      if internal_git_diff master github-whonix/master ; then
+         git push github-whonix master &
          git_pid="$!"
          #wait "$git_pid"
          git_pid_list="$git_pid_list $git_pid"
@@ -1292,7 +1288,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    if [ "$reponame" = "monero-gui" ]; then
       git push gitlab-whonix master
    else
-      git push github master
+      git push github-whonix master
       git push gitlab-whonix master
    fi
 
