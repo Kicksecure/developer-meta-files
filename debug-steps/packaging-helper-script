@@ -56,128 +56,137 @@ repo_skip() {
 }
 
 ## XXX
+version_old_main="15.0.1.5.4-developers-only"
+version_new_main="15.0.1.7.2-developers-only"
 giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
 giant_git_log_processed_file="/home/user/whonix_binary/giant_git_log_processed.txt"
 
 commit_filter() {
-   set +x
-   if [ "$giant_git_log_processed_delete_once" = "" ]; then
-      giant_git_log_processed_delete_once=done
-      rm -r -f "$giant_git_log_processed_file"
-   fi
+    set +x
 
-   while read -r line; do
-      local skip=false
-      commit_msg="${line#*" "}"#
-      commit_msg="$line"
+    if echo "$commit_msg_short" | grep -i -q "Merge remote-tracking branch" ; then
+       set -x
+       return 1
+    fi
+    if echo "$commit_msg_short" | grep -i -q "Merge pull request" ; then
+       set -x
+       return 1
+    fi
 
-      if echo "$commit_msg" | grep -i -q "Merge remote-tracking branch" ; then
-         true "skip : $line"
-         skip=true
-         continue
-      fi
-      if echo "$commit_msg" | grep -i -q "Merge pull request" ; then
-         true "skip : $line"
-         skip=true
-         continue
-      fi
+    for text in \
+        "output, refactoring" \
+        "manpage" \
+        "lintian" \
+        "fix comment" \
+        "genmkfile manpages" \
+        "update comment" \
+        "fix linitian warning" \
+        "PEP8" \
+        "intentd" \
+        "improve error handling" \
+        "refactoring; output" \
+        "refactoring; fix" \
+        "fix; refactoring" \
+        "refactoring; debugging" \
+        "output; refactoring" \
+        "autopep8" \
+        "anondate" \
+        "apparmor" \
+        "update path" \
+        "update link" \
+        "package description" \
+        "update copyright year" \
+        "remove white spaces from file names" \
+        "Added creation of upstream changelog to debian/rules" \
+        "add debian install file" \
+        "remove genmkfile" \
+        "# On branch master nothing to commit (working directory clean)" \
+        "copyright" \
+        "fix lintian warnings" \
+        "fix lintian warning" \
+        "fixed debian/changelog" \
+        "fix path" \
+        "remove trailing spaces" \
+        "typos" \
+        "minor" \
+        "typo" \
+        "update Depends" \
+        "update copyright" \
+        "Update Copyright" \
+        "remove faketime from Build-Depends:" \
+        "remove debian/gain-root-command workaround" \
+        "packaging simplification config-package-dev (>= 5.1) -> config-package-dev" \
+        "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support" \
+        "bump version number" \
+        "bumped version number" \
+        "bumped changelog version" \
+        "packaging" \
+        "fix" \
+        "comment" \
+        "comments" \
+        "output" \
+        "news" \
+        "readme" \
+        "updated generic makefile" \
+        "bumped compat from 8 to 9" \
+        "Updated debian/changelog." \
+        "Fixed changelog date." \
+        "updated makefile generic to version 1.3" \
+        "updated makefile generic to version 1.4" \
+        "updated makefile generic to version 1.5" \
+        "added changelog.upstream" \
+        "quotes" \
+        "refactoring" \
+        "debugging" \
+        "lintian warning copyright fix" \
+        "https://www.whonix.org/wiki/Dev/Licensing" \
+        "port to debian buster" \
+        "surpress lintian warning" \
+        "update" \
+        "fix debian/watch lintian warning debian-watch-contains-dh_make-template" \
+        "code simplification" \
+        "simplification" \
+        "update path to pre.bsh" \
+        "sudo" \
+        "gksudo" \
+        "description" \
+        "buster" \
+        "cleanup" \
+        "license" \
+        "update path to pre.bsh" \
+        "anon-shared-helper-scripts -> helper-scripts" \
+        "enable debugging" \
+        "Update control" \
+        "fix output" \
+        "local" \
+        "man page" \
+        "coypright" \
+        "formatting" \
+        "improve error handler" \
+        "cleanup" \
+        "fix lintian warning" \
+        "bump" \
+        "trailing spaces" \
+        "coypright" \
+        "description" \
+        "shuffle" \
+        "use pre.bsh" \
+        "set -e" \
+        "Update control" \
+        "update control" \
+        "disable debugging" \
+        "set -o pipefail" \
+        "style" \
+        "upgrade license from GPLv2+ to GPLv3+" \
+        "CI fix" \
+        "."
+        do
+        if [ "$text" = "$commit_msg_short" ]; then
+            return 1
+        fi
+    done
 
-      for text in \
-         "# On branch master nothing to commit (working directory clean)" \
-         "copyright" \
-         "fix lintian warnings" \
-         "fix lintian warning" \
-         "fixed debian/changelog" \
-         "fix path" \
-         "remove trailing spaces" \
-         "typos" \
-         "minor" \
-         "typo" \
-         "update Depends" \
-         "update copyright" \
-         "Update Copyright" \
-         "remove faketime from Build-Depends:" \
-         "remove debian/gain-root-command workaround" \
-         "packaging simplification config-package-dev (>= 5.1) -> config-package-dev" \
-         "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support" \
-         "bump version number" \
-         "bumped version number" \
-         "bumped changelog version" \
-         "packaging" \
-         "fix" \
-         "comment" \
-         "comments" \
-         "output" \
-         "news" \
-         "readme" \
-         "updated generic makefile" \
-         "bumped compat from 8 to 9" \
-         "Updated debian/changelog." \
-         "Fixed changelog date." \
-         "updated makefile generic to version 1.3" \
-         "updated makefile generic to version 1.4" \
-         "updated makefile generic to version 1.5" \
-         "added changelog.upstream" \
-         "quotes" \
-         "refactoring" \
-         "debugging" \
-         "lintian warning copyright fix" \
-         "https://www.whonix.org/wiki/Dev/Licensing" \
-         "port to debian buster" \
-         "surpress lintian warning" \
-         "update" \
-         "fix debian/watch lintian warning debian-watch-contains-dh_make-template" \
-         "code simplification" \
-         "simplification" \
-         "update path to pre.bsh" \
-         "sudo" \
-         "gksudo" \
-         "description" \
-         "buster" \
-         "cleanup" \
-         "license" \
-         "update path to pre.bsh" \
-         "anon-shared-helper-scripts -> helper-scripts" \
-         "enable debugging" \
-         "Update control" \
-         "fix output" \
-         "local" \
-         "man page" \
-         "coypright" \
-         "formatting" \
-         "improve error handler" \
-         "cleanup" \
-         "fix lintian warning" \
-         "bump" \
-         "trailing spaces" \
-         "coypright" \
-         "description" \
-         "shuffle" \
-         "use pre.bsh" \
-         "set -e" \
-         "Update control" \
-         "update control" \
-         "disable debugging" \
-         "set -o pipefail" \
-         "style" \
-         "upgrade license from GPLv2+ to GPLv3+" \
-         "CI fix" \
-         "."
-         do
-            if [ "$text" = "$commit_msg" ]; then
-               true "skip : $line"
-               skip=true
-               continue
-            fi
-      done
-      if [ "$skip" = "true" ]; then
-         continue
-      fi
-      true "write: $line"
-      ## XXX
-      echo "$line" >> "$giant_git_log_processed_file"
-   done < "$giant_git_log_file"
-   set -x
+    set -x
 }
 
 pkg_readme_creator_commit() {
@@ -1157,7 +1166,7 @@ pkg_git_log_giant_make() {
    echo "" >> "$giant_git_log_file"
    echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
 
-   git --no-pager shortlog Whonix14..master >> "$giant_git_log_file"
+   git --no-pager shortlog "${version_old}..${version_new}" >> "$giant_git_log_file"
 
    ## TODO
    #$(git describe)..master
@@ -1165,15 +1174,77 @@ pkg_git_log_giant_make() {
    true
 }
 
-pkg_git_log_Whonix13_Whonix15() {
-   if [ ! "$deleteonce" = "1" ]; then
-      deleteonce="1"
-      rm -f "../../changes"
+pkg_git_log_old_new() {
+   repo_skip "lkrg" || return 0
+   repo_skip "hardened_malloc" || return 0
+
+   if [ "$giant_git_log_delete_once" = "" ]; then
+      giant_git_log_delete_once=done
+      rm -r -f "$giant_git_log_file"
    fi
-   echo "$reponame" >> "../../changes"
-   output="$(git --no-pager log --pretty="format:https://github.com/Whonix/$reponame/commit/%h %s" Whonix13 Whonix15)"
-   echo "$output" >> "../../changes"
-   echo "" >> "../../changes"
+
+   ## TODO: Whonix/Whonix
+
+   notable_changes=""
+
+   pushd .. >/dev/null
+   if package_version_old="$(git rev-parse "${version_old_main}:packages/$reponame")" ; then
+      new_package=false
+   else
+      new_package=true
+   fi
+   package_version_new="$(git rev-parse "${version_new_main}:packages/$reponame")"
+   popd >/dev/null
+
+   if [ "$new_package" = "false" ]; then
+      commit_msg_short_list="$(git --no-pager log --pretty="%H %s" "${package_version_old}..${package_version_new}")"
+#       echo "git --no-pager log ${package_version_old}..${package_version_new}" >> "$giant_git_log_file"
+#       echo ""
+   else
+      commit_msg_short_list="$(git --no-pager log --pretty="%H %s")"
+#       echo "git --no-pager log" >> "$giant_git_log_file"
+#       echo ""
+      return 0
+   fi
+
+   while read -r commit_hash commit_msg_short ; do
+      if ! commit_filter ; then
+         true "SKIP: $commit_msg_short"
+         continue
+      fi
+      true "OK: $commit_msg_short"
+
+      committer_person="$(git log --format="%an" -n 1 "$commit_hash")"
+      commit_msg_full="$(git log --format="%B" -n 1 "$commit_hash")"
+      ## Remove trailing spaces.
+      commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
+      commit_msg_full="$(echo "$commit_msg_full" | sed '/^[[:space:]]*$/d')"
+      ## Replace new lines with spaces to unbreak links for mutli line comments.
+      commit_msg_full="$(echo "$commit_msg_full" | tr "\n" " ")"
+      ## Remove trailing spaces.
+      commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
+      commit_msg_full_with_link="[$commit_msg_full](https://gitlab.com/whonix/$reponame/-/commit/$commit_hash)"
+
+      if [ "$committer_person" = "Patrick Schleizer" ]; then
+         credit_msg=""
+      else
+         credit_msg=" (Thanks to ${committer_person}!)"
+      fi
+
+      log_msg="$commit_msg_full_with_link"
+      log_msg+="$credit_msg"
+
+      if [ "$notable_changes" = "" ]; then
+         notable_changes=yes
+         echo "* [$reponame](https://gitlab.com/whonix/$reponame)" >> "$giant_git_log_file"
+      fi
+
+      echo "  * $log_msg" >> "$giant_git_log_file"
+
+   done <<< "$commit_msg_short_list"
+
+   ## TODO
+   #exit
 
    true
 }
