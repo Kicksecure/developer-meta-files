@@ -1061,7 +1061,7 @@ pkg_git_commit_packaging() {
    #git add changelog.upstream
    #git add debian/*.install
    git add debian/control
-   #git add -u
+   #git add -A
    msg="remove 'Build-Depends: ronn' since no longer required"
    git commit -m "$msg"
    git status
@@ -1121,7 +1121,6 @@ pkg_git_diff_and_commit() {
    commit_message=""
 
    git add -A
-   git add -u
    git diff --cached
 
    true "press enter to continue"
