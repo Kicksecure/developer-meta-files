@@ -1,0 +1,100 @@
+# Testers Wanted!
+
+Download the Testers-Only version of Whonix for VirtualBox:
+
+https://www.whonix.org/wiki/VirtualBox_Testers_Only_Version
+
+----
+
+Alternatively, in-place release upgrade is possible upgrade using [Whonix testers repository](https://www.whonix.org/wiki/Project-APT-Repository).
+
+----
+
+This release would not have been possible without the numerous supporters of Whonix!
+
+----
+
+Please Donate!
+
+https://www.whonix.org/wiki/Donate
+
+----
+
+Please Contribute!
+
+https://www.whonix.org/wiki/Contribute
+
+----
+
+# Notable Changes
+
+* [anon-connection-wizard](https://gitlab.com/whonix/anon-connection-wizard)
+  * [update usr/share/anon-connection-wizard/bridges_default from ~/tor-browser/Browser/TorBrowser/Data/Tor/torrc](https://gitlab.com/whonix/anon-connection-wizard/-/commit/fba74756136ac85b68e64f63311d64107cf5383f)
+  * [fix error handling Thanks to Bl3ckJ4ck for the bug report! https://forums.whonix.org/t/anon-connection-wizard-py-possible-error-in-the-code/11427](https://gitlab.com/whonix/anon-connection-wizard/-/commit/380b4b3411aa9f8a1a31e8a2b2decedc52d431df)
+  * [minor non-Whonix reliability fix](https://gitlab.com/whonix/anon-connection-wizard/-/commit/cb20675cecb5c023dc47e3a8df680c98df544501)
+  * [wording similar to newer tor-launcher](https://gitlab.com/whonix/anon-connection-wizard/-/commit/47a9303bcb8c34517c90fb4439e03951a029281b)
+  * [part of fixing meek lite in Whonix https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/9 https://forums.whonix.org/t/whonix-gateway-cli-15-0-1-5-4-meek-azure-bridge-tls-error/11383 Thanks to @Bl3ckJ4ck for the bug report!](https://gitlab.com/whonix/anon-connection-wizard/-/commit/3d1d5ad3f5ec5a9da997c248cdc78ad0c8669533)
+  * [part of fixing meek lite in Whonix add /usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/9 https://forums.whonix.org/t/whonix-gateway-cli-15-0-1-5-4-meek-azure-bridge-tls-error/11383 Thanks to @Bl3ckJ4ck for the bug report!](https://gitlab.com/whonix/anon-connection-wizard/-/commit/2b33df7e051a2d7426b6312ecc9a128f7e7ffa95)
+  * [make executable](https://gitlab.com/whonix/anon-connection-wizard/-/commit/6947dd1c41e36e3e53902f5fe675a2ece3442b74)
+* [anon-gw-anonymizer-config](https://gitlab.com/whonix/anon-gw-anonymizer-config)
+  * [reload apparmor profiles after installation to make package work after installation no longer requiring reboot](https://gitlab.com/whonix/anon-gw-anonymizer-config/-/commit/57e1b3a3678b3026a2ab30b031f42f4ca7f4f173)
+  * [part of fixing meek lite in Whonix add /usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/9 https://forums.whonix.org/t/whonix-gateway-cli-15-0-1-5-4-meek-azure-bridge-tls-error/11383 Thanks to @Bl3ckJ4ck for the bug report!](https://gitlab.com/whonix/anon-gw-anonymizer-config/-/commit/3242a0fc37b24847a6168cd7563af9ab582dbb4a)
+* [anon-meta-packages](https://gitlab.com/whonix/anon-meta-packages)
+  * [fix ristretto missing thumbnails and popup by installing tumbler by default add "Depends: tumbler" to whonix-workstation-packages-recommended-gui (tumbler is a "Recommends:" of ristretto) Thanks to @TNT for the bug report! https://forums.whonix.org/t/which-image-viewer-to-install-by-default/9268/3](https://gitlab.com/whonix/anon-meta-packages/-/commit/0ad99f40b5496bf4ddb38aa5aa8ec42e6d923075)
+  * [No longer install OnionShare by default. Debian buster (which Whonix 15 is based on) ships only onionshare 1.3.2 which only supports legacy onion v2 which are being phased out and deprecated on July 15th, 2021. https://blog.torproject.org/v2-deprecation-timeline https://lists.torproject.org/pipermail/tor-dev/2020-May/014322.html https://forums.whonix.org/t/onionshare-whonix-integration-development-discussion/300 Flatpak installation method recommended, see: https://www.whonix.org/wiki/OnionShare](https://gitlab.com/whonix/anon-meta-packages/-/commit/3e0d2bdceea7046e1120e289e0077d3127057ee5)
+  * [Bump python-msgpack to python3 ZeroNet now uses python3, and python2 is removed from Debian as of bullseye.](https://gitlab.com/whonix/anon-meta-packages/-/commit/d95f9ec9333591ad1edd100662c5a71b5cd66f9b) (Thanks to Jeremy Rand!)
+* [apparmor-profile-everything](https://gitlab.com/whonix/apparmor-profile-everything)
+  * [proper whitespace handling https://www.whonix.org/wiki/Dev/bash](https://gitlab.com/whonix/apparmor-profile-everything/-/commit/d3eccd40b1547114159ef5309518a75f14800391)
+* [binaries-freedom](https://gitlab.com/whonix/binaries-freedom)
+  * [electrum-4.1.2-x86_64.AppImage](https://gitlab.com/whonix/binaries-freedom/-/commit/8ba7669ec2177434619d449b0190bd44ee0d2da0)
+  * [delete for upcoming update](https://gitlab.com/whonix/binaries-freedom/-/commit/98cc77021fb0d7e9adb177b96fbafbf3bdbfda76)
+* [genmkfile](https://gitlab.com/whonix/genmkfile)
+  * [change output of genmkfile deb-chl-bumpup-manual](https://gitlab.com/whonix/genmkfile/-/commit/c2c649bc91cddc4fa1884213cc0b6bed14d43f2f)
+* [helper-scripts](https://gitlab.com/whonix/helper-scripts)
+  * [`apt-key-install`: utility to install APT signing key to system Input file can be either, gpg keys in either ASCII-armored or binary format. due to `apt-key` deprecation by Debian https://forums.whonix.org/t/apt-key-deprecation-apt-2-2-changes/11240/1](https://gitlab.com/whonix/helper-scripts/-/commit/5b0c3c7e9526691ce1b0e27bf51ef6994596963f)
+  * [`gpg-dearmor`: wrapper to convert gpg ASCII-armored format binary format due to `apt-key` deprecation by Debian since only gpg binary format is understood by Debian's APT https://forums.whonix.org/t/apt-key-deprecation-apt-2-2-changes/11240](https://gitlab.com/whonix/helper-scripts/-/commit/5ffcd6d28454195889c8dd208a35a5d405524430)
+* [kicksecure-meta-packages](https://gitlab.com/whonix/kicksecure-meta-packages)
+  * [fix ristretto missing thumbnails and popup by installing tumbler by default add "Depends: tumbler" to whonix-workstation-packages-recommended-gui (tumbler is a "Recommends:" of ristretto) Thanks to @TNT for the bug report! https://forums.whonix.org/t/which-image-viewer-to-install-by-default/9268/3](https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/493155ea1b77c22b3e0e4749105503b42f03d2c7)
+* [monero-gui](https://gitlab.com/whonix/monero-gui)
+  * [monero-gui-linux-x64-v0.17.2.1.tar.bz2 https://web.archive.org/web/20210417155611/https://github.com/monero-project/monero-gui/releases/tag/v0.17.2.1 https://web.archive.org/web/20210417155614/https://downloads.getmonero.org/gui/monero-gui-linux-x64-v0.17.2.1.tar.bz2 https://web.archive.org/web/20210417155621/https://www.getmonero.org/downloads/hashes.txt](https://gitlab.com/whonix/monero-gui/-/commit/7aee0082903927991367008810d38cfb3f4870f5)
+  * [delete for upcoming update](https://gitlab.com/whonix/monero-gui/-/commit/ffa21cf079ababcd5639358df3d4cf0f2c4406b9)
+* [repository-dist](https://gitlab.com/whonix/repository-dist)
+  * [same gpg signing key with new e-mail addresses](https://gitlab.com/whonix/repository-dist/-/commit/b369b4417083d9f270898d40531c6f04bd91d88b)
+* [sandbox-app-launcher](https://gitlab.com/whonix/sandbox-app-launcher)
+  * [wait (blocking) for processes inside the sandbox to be killed](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/24ca2da82bc90add9cc1fe38ccb826714c4127fd)
+  * [replace dynamic wrapper script creation with static script for code simplification https://forums.whonix.org/t/system-wide-sandboxing-framework-sandbox-app-launcher/9008/352](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/f939fe8b579063478576e8fab02e3468a09dd03c)
+  * [fix wrapper script creation and access rights](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/133558cc97d3ee0523f555a53dfb2c9a1cd5daa8)
+  * [improve command to create wrapper script for more self-explanatory bash xtrace](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/a9a760071be1266157e989178e898d685a0de01a)
+  * [unduplicate/remove permission check code in function run_program since already done exactly the same in function setup_or_check which runs anyhow](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/83b68c672277269207e9bb0a0ca6b2e5a3517a33)
+  * [minor usability improvements * Downgraded messages if removal previously completed to `INFO:`. Not an issue to worry the user with. * Show `INFO:` after `setup` was successfully completed. * Show`INFO:` after `remove` was successfully completed.](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/cc319021ad289c78ffcde4889809f4757dac3840)
+  * [run all checks before start https://forums.whonix.org/t/system-wide-sandboxing-framework-sandbox-app-launcher/9008/325](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/1f181df1709b63e113397c94ea29b425d01d1b7f)
+  * [Indentation](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/f176e5e5a2b3e0f621424472e9991544d8cd5172) (Thanks to madaidan!)
+  * [Use sal_is_run_with_root instead of extra id calls](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/392aabdb4f6c293f076ecc2c08e69db3f7441a92) (Thanks to madaidan!)
+  * [Reordering](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/2e5de688bfa7d280882f7f86ff502934b9b0cf6f) (Thanks to madaidan!)
+  * [More robust checks](https://gitlab.com/whonix/sandbox-app-launcher/-/commit/984d90dd15992e482c35bba701cc6fff770ab467) (Thanks to madaidan!)
+* [security-misc](https://gitlab.com/whonix/security-misc)
+  * [systemd RemainAfterExit=yes for better usability https://forums.whonix.org/t/restrict-hardware-information-to-root-testers-wanted/8618/33](https://gitlab.com/whonix/security-misc/-/commit/41734ec523eb3cd233fe4651b9807222c8ccb1d5)
+* [systemcheck](https://gitlab.com/whonix/systemcheck)
+  * [Depends: replace bsdtar with libarchive-tools Thanks to @JeremyRand! https://github.com/Whonix/whonixcheck/pull/15](https://gitlab.com/whonix/systemcheck/-/commit/577da7d2e5aa122b2ac0fd87ade605c9747f181d)
+* [tb-updater](https://gitlab.com/whonix/tb-updater)
+  * [alpha tbb_hardcoded_version="10.5a14"](https://gitlab.com/whonix/tb-updater/-/commit/ecf856c3fe78d3007454102c916a35d8ed1000bc)
+  * [tbb_hardcoded_version="10.0.16"](https://gitlab.com/whonix/tb-updater/-/commit/0f404d631f859ebacab9c7382249f4ff6df2ec23)
+  * [Depends: replace bsdtar with libarchive-tools Thanks to @JeremyRand! https://github.com/Whonix/whonixcheck/pull/15](https://gitlab.com/whonix/tb-updater/-/commit/eb6ba9b1c48afc0a394b26e1c331564948a53bd1)
+* [usability-misc](https://gitlab.com/whonix/usability-misc)
+  * [update signing key](https://gitlab.com/whonix/usability-misc/-/commit/d5347a7a13f73a94e6cc2cc8764ec97324c1729d)
+* [uwt](https://gitlab.com/whonix/uwt)
+  * [guess, tell user which package needs to be installed https://forums.whonix.org/t/whonix-workstation-xfce-15-0-1-5-4-sudo-git-uwtwrapper-uwt-wrapper-error-usr-bin-git-anondist-orig-does-not-exist/11399](https://gitlab.com/whonix/uwt/-/commit/21aa111631f17e71b989636f62748d5f77d37c30)
+  * [improve output https://forums.whonix.org/t/whonix-workstation-xfce-15-0-1-5-4-sudo-git-uwtwrapper-uwt-wrapper-error-usr-bin-git-anondist-orig-does-not-exist/11399](https://gitlab.com/whonix/uwt/-/commit/7e6b623ffaf2d7359774904d1344387c7f746432)
+* [whonix-firewall](https://gitlab.com/whonix/whonix-firewall)
+  * [remove deprecated variable SOCKS_PORT_TBB_GPG](https://gitlab.com/whonix/whonix-firewall/-/commit/24dd32c992a426c43d08e972fb8004614a314f75)
+  * [Whonix-Gateway firewall: implement INTERNAL_OPEN_PORTS Deprecate support for `SOCKS_PORT_CUSTOM=" 9230 "` syntax, use INTERNAL_OPEN_PORTS+=" 9230 " instead. refactoring / code simplification https://forums.whonix.org/t/internal-open-ports-setting/11404](https://gitlab.com/whonix/whonix-firewall/-/commit/f8fce1133fbb1408b281dd9175b781f657fa3d5e)
+
+----
+
+# Full difference of all changes
+
+ https://github.com/Whonix/Whonix/compare/15.0.1.7.2-developers-only...15.0.1.7.3-developers-only
+
+----
+
+(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)
