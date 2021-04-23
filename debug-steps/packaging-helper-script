@@ -56,8 +56,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="15.0.1.5.4-developers-only"
-version_new_main="15.0.1.7.2-developers-only"
+version_old_main="15.0.1.7.2-developers-only"
+version_new_main="15.0.1.7.3-developers-only"
 giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
 giant_git_log_processed_file="/home/user/whonix_binary/giant_git_log_processed.txt"
 
@@ -1196,13 +1196,17 @@ pkg_git_log_old_new() {
    popd >/dev/null
 
    if [ "$new_package" = "false" ]; then
-      commit_msg_short_list="$(git --no-pager log --pretty="%H %s" "${package_version_old}..${package_version_new}")"
-#       echo "git --no-pager log ${package_version_old}..${package_version_new}" >> "$giant_git_log_file"
-#       echo ""
+      if [ "${package_version_old}" = "${package_version_new}" ]; then
+         return 0
+      else
+         commit_msg_short_list="$(git --no-pager log --pretty="%H %s" "${package_version_old}..${package_version_new}")"
+         #echo "git --no-pager log ${package_version_old}..${package_version_new}" >> "$giant_git_log_file"
+         #echo ""
+      fi
    else
       commit_msg_short_list="$(git --no-pager log --pretty="%H %s")"
-#       echo "git --no-pager log" >> "$giant_git_log_file"
-#       echo ""
+      #echo "git --no-pager log" >> "$giant_git_log_file"
+      #echo ""
       return 0
    fi
 
@@ -1241,9 +1245,6 @@ pkg_git_log_old_new() {
       echo "  * $log_msg" >> "$giant_git_log_file"
 
    done <<< "$commit_msg_short_list"
-
-   ## TODO
-   #exit
 
    true
 }
