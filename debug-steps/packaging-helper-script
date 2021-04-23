@@ -1511,12 +1511,12 @@ $(cat "$giant_git_log_file")
 
 # Full difference of all changes
 
- https://github.com/Whonix/Whonix/compare/${package_version_old}...${package_version_new}
+ https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}
 
 ----
 
 (This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
-   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_testers_${package_version_new}.txt" >/dev/null
+   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_testers_${version_new_main}.txt" >/dev/null
 
 ####
 
@@ -1565,12 +1565,12 @@ $(cat "$giant_git_log_file")
 
 # Full difference of all changes
 
- https://github.com/Whonix/Whonix/compare/${package_version_old}...${package_version_new}
+ https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}
 
 ----
 
 (This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
-   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_point_${package_version_new}.txt" >/dev/null
+   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_point_${version_new_main}.txt" >/dev/null
 }
 
 main() {
