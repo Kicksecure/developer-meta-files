@@ -59,7 +59,6 @@ repo_skip() {
 version_old_main="15.0.1.7.2-developers-only"
 version_new_main="15.0.1.7.3-developers-only"
 giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
-giant_git_log_processed_file="/home/user/whonix_binary/giant_git_log_processed.txt"
 
 commit_filter() {
     set +x
@@ -1474,6 +1473,106 @@ loop_helper() {
    done
 }
 
+announcement() {
+   echo "\
+# Testers Wanted!
+
+Download the Testers-Only version of Whonix for VirtualBox:
+
+https://www.whonix.org/wiki/VirtualBox_Testers_Only_Version
+
+----
+
+Alternatively, in-place release upgrade is possible upgrade using [Whonix testers repository](https://www.whonix.org/wiki/Project-APT-Repository).
+
+----
+
+This release would not have been possible without the numerous supporters of Whonix!
+
+----
+
+Please Donate!
+
+https://www.whonix.org/wiki/Donate
+
+----
+
+Please Contribute!
+
+https://www.whonix.org/wiki/Contribute
+
+----
+
+# Notable Changes
+
+$(cat "$giant_git_log_file")
+
+----
+
+# Full difference of all changes
+
+ https://github.com/Whonix/Whonix/compare/${package_version_old}...${package_version_new}
+
+----
+
+(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
+   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_testers_${package_version_new}.txt" >/dev/null
+
+####
+
+   echo "\
+# Whonix for VirtualBox
+
+Download Whonix for VirtualBox:
+
+https://www.whonix.org/wiki/VirtualBox_Testers_Only_Version
+
+----
+
+This is a point release.
+
+https://www.whonix.org/wiki/Point_Release
+
+----
+
+# Upgrade
+
+Alternatively, in-place release upgrade is possible upgrade using [Whonix repository](https://www.whonix.org/wiki/Project-APT-Repository).
+
+----
+
+This release would not have been possible without the numerous supporters of Whonix!
+
+----
+
+Please Donate!
+
+https://www.whonix.org/wiki/Donate
+
+----
+
+Please Contribute!
+
+https://www.whonix.org/wiki/Contribute
+
+----
+
+# Notable Changes
+
+$(cat "$giant_git_log_file")
+
+----
+
+# Full difference of all changes
+
+ https://github.com/Whonix/Whonix/compare/${package_version_old}...${package_version_new}
+
+----
+
+(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
+   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_point_${package_version_new}.txt" >/dev/null
+}
+
 main() {
    args="$@"
    if [ "$args" = "" ]; then
@@ -1485,7 +1584,12 @@ main() {
 
    if [ "$@" = "commit_filter" ]; then
       commit_filter
-      exit 0
+      return 0
+   fi
+
+   if [ "$@" = "announcement" ]; then
+      announcement
+      return 0
    fi
 
    loop_helper "$@"
