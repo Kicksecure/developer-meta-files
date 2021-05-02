@@ -37,15 +37,6 @@ Creates user and group <code>onion-grater</code>.
 * <code>~/Whonix/packages/onion-grater/etc/apparmor.d/usr.lib.onion-grater</code>
 
 onion-grater apparmor profile
-=== /etc/onion-grater-merger.d/30_whonix.yml ===
-
-* [https://github.com/Whonix/onion-grater/blob/master/etc/onion-grater-merger.d/30_whonix.yml /etc/onion-grater-merger.d/30_whonix.yml]
-* <code>~/Whonix/packages/onion-grater/etc/onion-grater-merger.d/30_whonix.yml</code>
-
-Whonix onion-grater default configuration file.
-
-TODO: would be cleaner to split this file and to move snippets to covered
-applications sdwdate, whonixcheck and tb-starter.
 === /lib/systemd/system/onion-grater.service ===
 
 * [https://github.com/Whonix/onion-grater/blob/master/lib/systemd/system/onion-grater.service /lib/systemd/system/onion-grater.service]
@@ -81,6 +72,15 @@ Shipped but not enabled by default onion-grater profile.
 * <code>~/Whonix/packages/onion-grater/usr/share/doc/onion-grater-merger/examples/40_bitcoind.yml</code>
 
 Shipped but not enabled by default onion-grater profile.
+=== /usr/share/doc/onion-grater-merger/examples/40_onion_authentication.yml ===
+
+* [https://github.com/Whonix/onion-grater/blob/master/usr/share/doc/onion-grater-merger/examples/40_onion_authentication.yml /usr/share/doc/onion-grater-merger/examples/40_onion_authentication.yml]
+* <code>~/Whonix/packages/onion-grater/usr/share/doc/onion-grater-merger/examples/40_onion_authentication.yml</code>
+
+Onion Authentication
+Not default when one workstation would login, this would login all workstations.
+Therefore potential cross VM linking identifier.
+https://blog.torproject.org/new-release-tor-browser-95
 === /usr/share/doc/onion-grater-merger/examples/40_onionshare.yml ===
 
 * [https://github.com/Whonix/onion-grater/blob/master/usr/share/doc/onion-grater-merger/examples/40_onionshare.yml /usr/share/doc/onion-grater-merger/examples/40_onionshare.yml]

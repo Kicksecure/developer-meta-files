@@ -9,127 +9,50 @@ Tor config file with distribution defaults (for stream isolation, etc.),
 example user configurations and other tweaks required. The Tor binary
 itself does not get modified.
 
+Deactivates IPv4 forwarding using /etc/sysctl.d/
+IPv4 forwarding is not required for a Tor based Anonymity Distribution
+Gateways. Deactivating it as defense in depth to prevent leaks.
+
+Deactivates IPv6 using /etc/sysctl.d/
+There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
+yet. Therefore deactivating it to prevent leaks.
+
 This package is produced independently of, and carries no guarantee from,
 The Tor Project.
+=== /etc/torrc.d/60_network.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/60_network.conf /etc/torrc.d/60_network.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/60_network.conf</code>
+* gateway only<!--gateway-only-->
+
+Tor is disabled by default.
+Users are supposed to enable Tor through setup-dist which would
+create file /usr/local/etc/torrc.d/40_tor_control_panel.conf with
+"DisableNetwork 0" or by removing the hash ('#') in front of
+"DisableNetwork 0" in /usr/local/etc/torrc.d/40_tor_control_panel.conf
+* <code>DisableNetwork 1</code>
+
+* <code>VirtualAddrNetwork 10.192.0.0/10</code>
+* <code>AutomapHostsOnResolve 1</code>
+
+* <code>Log notice file /run/tor/log</code>
+=== /etc/torrc.d/65_gateway.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/65_gateway.conf /etc/torrc.d/65_gateway.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/65_gateway.conf</code>
+* gateway only<!--gateway-only-->
+
+Tor settings for Gateway: `ClientOnionAuthDir`, `SocksPort`s, `TransPort`,
+`DnsPort`, `HTTPTunnelPort`s and stream isolation settings.
 === /usr/share/tor/tor-service-defaults-torrc.anondist ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/tor/tor-service-defaults-torrc.anondist /usr/share/tor/tor-service-defaults-torrc.anondist]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/tor/tor-service-defaults-torrc.anondist</code>
 * gateway only<!--gateway-only-->
 
-Whonix Tor configuration
-
-https://www.whonix.org/wiki/Stream_Isolation
-
-* <code>ControlSocket</code>
-* <code>SocksPort</code>
-* <code>HTTPTunnelPort</code>
-* <code>TransPort</code>
-* <code>DnsPort</code>
-* Upstream Defaults File
-* Enable / Disable Tor
-* Leak Tests
-* General Settings
-* Workstation Trans/Dns-Port
-* Workstation SocksPorts
-* Gateway Trans/Dns-Port
-* Gateway SocksPorts
-== anon-gw-dhcp-conf ==
-
-* https://github.com/Whonix/anon-gw-dhcp-conf
-* [https://github.com/Whonix/anon-gw-dhcp-conf/blob/master/debian/control debian/control]
-===  DHCP config for Anonymity Distribution Gateways ===
-
-Prevents DHCP from modifications of /etc/resolv.conf by shipping a
-configuration file.
-
-In context of Anonymity Distribution Gateways, it is useful to obtain network
-configuration for the interface to connect to the internet from a virtual
-machine or hardware router to avoid usability issues with manual static
-network configuration. At the same time, Anonymity Distribution Gateways
-usually do not need a functional system DNS resolver (/etc/resolv.conf),
-pointing to a clearnet DNS resolver, because ideally all the Gateway's traffic
-including its own DNS is routed through the anonymity network as well.
-
-Usually the Gateway's firewall should ensure, that the Gateway will not leak
-it's own DNS requests. However, preventing DHCP from setting /etc/resolv.conf
-to a functional clearnet DNS resolver is useful as defense in depth. Also in
-case the Gateways system DNS resolver points to the anonymizer, it is crucial,
-that it does not get modified by DHCP.
-=== /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate ===
-
-* [https://github.com/Whonix/anon-gw-dhcp-conf/blob/master/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate]
-* <code>~/Whonix/packages/anon-gw-dhcp-conf/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate</code>
-* gateway only<!--gateway-only-->
-* Not installed by default.
-
-prevent resolvconf from modifying <code>/etc/resolv.conf</code>
-== anon-gw-dns-conf ==
-
-* https://github.com/Whonix/anon-gw-dns-conf
-* [https://github.com/Whonix/anon-gw-dns-conf/blob/master/debian/control debian/control]
-===  DNS configuration Anonymity Linux Distribution Gateways ===
-
-Pointing /etc/resolv.conf to 127.0.0.1.
-
-Whether a Anonymity Linux Distribution Gateway supports system DNS for its own
-traffic in the clear or anonymized mainly depends on the Gateway's firewall.
-
-Routing the workstation's system DNS through the anonymizer (also known as
-Transparent DNS Proxy) or not is up to the Gateway's firewall as well.
-=== /etc/resolv.conf.anondist ===
-
-* [https://github.com/Whonix/anon-gw-dns-conf/blob/master/etc/resolv.conf.anondist /etc/resolv.conf.anondist]
-* <code>~/Whonix/packages/anon-gw-dns-conf/etc/resolv.conf.anondist</code>
-* gateway only<!--gateway-only-->
-* Not installed by default.
-
-Configure to use torified DNS server for traffic originating from
-Whonix-Gateway.
-
-Set <code>/etc/resolv.conf</code> to <code>nameserver 127.0.0.1</code>
-and comments.
-=== /lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf ===
-
-* [https://github.com/Whonix/anon-gw-dns-conf/blob/master/lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf /lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf]
-* <code>~/Whonix/packages/anon-gw-dns-conf/lib/systemd/system/systemd-resolved.service.d/40_anon-dns-conf.conf</code>
-* gateway only<!--gateway-only-->
-
-Disable <code>systemd-resolved</code> if file
-<code>/etc/resolv.conf.anondist</code> exists.
-== ipv4-forward-disable ==
-
-* https://github.com/Whonix/ipv4-forward-disable
-* [https://github.com/Whonix/ipv4-forward-disable/blob/master/debian/control debian/control]
-===  Deactivates IPv4 forwarding using /etc/sysctl.d/ ===
-
-IPv4 forwarding is not required for a Tor based Anonymity Distribution
-Gateways. Deactivating it as defense in depth to prevent leaks.
-
-For better security.
-=== /etc/sysctl.d/ipv4-forward-disable.conf ===
-
-* [https://github.com/Whonix/ipv4-forward-disable/blob/master/etc/sysctl.d/ipv4-forward-disable.conf /etc/sysctl.d/ipv4-forward-disable.conf]
-* <code>~/Whonix/packages/ipv4-forward-disable/etc/sysctl.d/ipv4-forward-disable.conf</code>
-
-Disable ipv4 Forwarding as per https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxy
-== ipv6-disable ==
-
-* https://github.com/Whonix/ipv6-disable
-* [https://github.com/Whonix/ipv6-disable/blob/master/debian/control debian/control]
-===  Deactivates IPv6 using /etc/sysctl.d/ ===
-
-There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
-yet. Therefore deactivating it to prevent leaks.
-
-For better security.
-=== /etc/sysctl.d/ipv6-disable.conf ===
-
-* [https://github.com/Whonix/ipv6-disable/blob/master/etc/sysctl.d/ipv6-disable.conf /etc/sysctl.d/ipv6-disable.conf]
-* <code>~/Whonix/packages/ipv6-disable/etc/sysctl.d/ipv6-disable.conf</code>
-* gateway only<!--gateway-only-->
-
-disable IPv6
+Tor settings for Workstation: `SocksPort`s, `TransPort`,
+`DnsPort`, `HTTPTunnelPort`s and stream isolation settings.
+IP HARDCODED unfortunately.
 == whonix-gw-network-conf ==
 
 * https://github.com/Whonix/whonix-gw-network-conf
@@ -142,6 +65,15 @@ Non-Qubes-Whonix-Gateway.
 Sets up two network interfaces, an external one eth0 and an internal one eth1.
 
 Provides /usr/share/whonix-gw-network-conf/network_internal_ip.txt.
+
+DNS configuration Anonymity Linux Distribution Gateways
+
+* Pointing /etc/resolv.conf to 127.0.0.1.
+* Whether a Anonymity Linux Distribution Gateway supports system DNS for its
+own traffic in the clear or anonymized mainly depends on the Gateway's
+firewall.
+* Routing the workstation's system DNS through the anonymizer (also known as
+Transparent DNS Proxy) or not is up to the Gateway's firewall as well.
 === /debian/whonix-gw-network-conf.links ===
 
 * [https://github.com/Whonix/whonix-gw-network-conf/blob/master/debian/whonix-gw-network-conf.links /debian/whonix-gw-network-conf.links]
@@ -179,6 +111,7 @@ network interfaces configuration eth0 (external network interface) and eth1 (int
 
 static network configuration
 
+IP HARDCODED below but comment only. No need to change.
 eth0
 <code>#address 10.0.2.15</code><br />
 <code>#netmask 255.255.255.0</code><br />
@@ -187,6 +120,17 @@ eth0
 eth1
 <code>#address 10.152.152.10</code><br />
 <code>#netmask 255.255.192.0</code><br />
+=== /etc/resolv.conf.whonix ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/resolv.conf.whonix /etc/resolv.conf.whonix]
+* <code>~/Whonix/packages/whonix-gw-network-conf/etc/resolv.conf.whonix</code>
+* gateway only<!--gateway-only-->
+
+No DNS configuration.
+Only comments.
+Whonix-Gateway by default does not have system default DNS.
+See https://www.whonix.org/wiki/Whonix-Gateway_Own_Traffic_Transparent_Proxy
+and footnotes.
 === /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf ===
 
 * [https://github.com/Whonix/whonix-gw-network-conf/blob/master/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf]
@@ -212,9 +156,15 @@ Reconfigure <code>onion-grater</code> to listen on network interface
 Most settings take effect for newly created user account onlys, and not
 for existing user accounts.
 
+Sets timezone to UTC.
+
 Enables Menubar in Dolphin by default.
 
-Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
+gnupg configuration for Anonymity Distributions:
+* Sets `use-tor` in `/etc/skel/.gnupg/dirmngr.conf`.
+* Ships Thunderbird torbirdy configuration file
+`/etc/thunderbird/pref/30_whonix.js` that allows torified keyserver access.
+* Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
 default keyserver. Disables tip of the day. Disables KGpg's systray.
 
 Double click instead of single click in KDE.
@@ -233,6 +183,7 @@ Disables KDE graphics effects. Disables some background processes.
 Stream Isolation (proxy) settings for KDE apps for Anonymity Distributions
 Configures global proxy settings, which acts as a fallback if no other proxy
 settings are set, for KDE applications to socks 10.152.152.10:9122.
+IP HARDCODED above but no need to change since it is description only.
 Otherwise unconfigured KDE applications would use no proxy settings
 (Transparent Proxying) if the anonymity distribution features a transparent
 proxy.
@@ -274,6 +225,23 @@ verify software signatures by hiding file
 Disables systemd-resolved during boot unless file /etc/dns-enable exists.
 
 Disables systemd-resolved fallback DNS (which by default is set to Google).
+
+Removes capabilities from `/bin/ping` if
+[security-misc](https://github.com/Whonix/security-misc) is
+installed as ping doesn't work with Tor anyway and its capabilities are just
+unneeded attack surface.
+
+Create a dummy Tor binary '/home/user/.local/share/Bisq/btc_mainnet/tor/tor'
+to avoid Tor over Tor.
+
+Improves HexChat Privacy Settings
+* As per: https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/XChat
+* Moves the following files:
+- `/usr/lib/xchat/plugins/python.so`
+- `/usr/lib/xchat/plugins/tcl.so`
+- `/usr/lib/xchat/plugins/perl.so`
+to `/usr/share/anon-apps-config`, so these plugins get disabled by
+default.
 
 Due to technical limitations some settings only take effect for applications
 being started for the very first time, i.e. when the user config of that
@@ -321,6 +289,7 @@ KDE stream isolation settings.
 * <code>NoProxyFor=127.0.0.1</code>
 * <code>ProxyType=1</code>
 * <code>ReversedException=false</code>
+IP HARDCODED
 * <code>socksProxy=http://10.152.152.10 9122</code>
 
 === /usr/share/anon-apps-config/ksmserverrc ===
@@ -393,7 +362,7 @@ The Tor Project.
 <code>/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
 
 Add user "user" to the group "debian-tor", so user "user" can access Tor's control port.
-User "user" already exists thanks to the anon-base-files package.
+User "user" already exists thanks to the dist-base-files package.
 * <code>addgroup --quiet user debian-tor</code>
 
 === /etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf ===
@@ -554,6 +523,7 @@ could be used.)
 Fortunately, this is not required for Whonix by default anymore,
 because systemd-socket-proxyd is configured to redirect
 Whonix-Workstation ports
+IP HARDCODED but no need to change since comment only.
 127.0.0.1:9050 to Whonix-Gateway 10.152.152.10:9050
 127.0.0.1:9051 to Whonix-Gateway 10.152.152.10:9051
 127.0.0.1:9150 to Whonix-Gateway 10.152.152.10:9150
@@ -590,6 +560,7 @@ Environment variable to disable the "TorButton" ->
 on a workstation, because Tor must be configured on the Whonix-Gateway, which is
 for security reasons forbidden from the Whonix-Gateway.
 https://trac.torproject.org/projects/tor/ticket/14100
+https://www.whonix.org/wiki/Tor_Browser/Advanced_Users#Open_Network_Settings
 * <code>export TOR_NO_DISPLAY_NETWORK_SETTINGS=1</code>
 
 === /usr/lib/tmpfiles.d/anon-ws-disable-stacked-tor.conf ===
@@ -609,29 +580,6 @@ Create folder <code>/run/anon-ws-disable-stacked-tor</code>.
 * workstation only<!--workstation-only-->
 
 dummy Tor wrapper doing nothing but wait forever.
-== anon-ws-dns-conf ==
-
-* https://github.com/Whonix/anon-ws-dns-conf
-* [https://github.com/Whonix/anon-ws-dns-conf/blob/master/debian/control debian/control]
-===  DNS configuration Anonymity Linux Distribution Workstations ===
-
-Whether a Anonymity Linux Distribution Gateway supports anonymized system DNS
-for Workstation's traffic (also known as Transparent DNS Proxy) mainly depends
-on the Gateway's firewall.
-
-This package is simply installing /etc/resolv.conf which points to
-10.152.152.10, where an Anon-Gateway is supposed to provide a DnsPort on port
-53.
-
-When you do not wish to use the Transparent DNS features, this package can be
-removed.
-=== /etc/resolv.conf.anondist ===
-
-* [https://github.com/Whonix/anon-ws-dns-conf/blob/master/etc/resolv.conf.anondist /etc/resolv.conf.anondist]
-* <code>~/Whonix/packages/anon-ws-dns-conf/etc/resolv.conf.anondist</code>
-
-set <code>nameserver 10.152.152.10</code>
-This works different in Qubes-Whonix.
 == bindp ==
 
 * https://github.com/Whonix/bindp
@@ -659,6 +607,15 @@ during package installation using <code>gcc</code>.
 Includes /etc/network/interfaces for Whonix-Workstation.
 
 Sets up an internal network interface eth0.
+
+DNS configuration Anonymity Linux Distribution Workstations
+Whether a Anonymity Linux Distribution Gateway supports anonymized system DNS
+for Workstation's traffic (also known as Transparent DNS Proxy) mainly depends
+on the Gateway's firewall.
+
+This package is simply installing /etc/resolv.conf which points to
+10.152.152.10, where an Anon-Gateway is supposed to provide a DnsPort on port
+53. IP HARDCODED but no need to change because only description.
 
 Currently relevant for Non-Qubes-Whonix only.
 === /debian/whonix-ws-network-conf.links ===
@@ -698,9 +655,17 @@ network interfaces configuration eth0 to communicate with Whonix-Gateway
 
 static network configuration
 
+IP HARDCODED but not need to change since only comment.
 <code>#address 10.152.152.11</code><br />
 <code>#netmask 255.255.192.0</code><br />
 <code>#gateway 10.152.152.10</code><br />
+=== /etc/resolv.conf.whonix ===
+
+* [https://github.com/Whonix/whonix-ws-network-conf/blob/master/etc/resolv.conf.whonix /etc/resolv.conf.whonix]
+* <code>~/Whonix/packages/whonix-ws-network-conf/etc/resolv.conf.whonix</code>
+
+set <code>nameserver 10.152.152.10</code>
+This works different in Qubes-Whonix.
 = Shared by Whonix-Gateway and Whonix-Workstation =
 == anon-apt-sources-list ==
 
@@ -725,50 +690,11 @@ Debian APT repository sources.list
 Configured to use <code>tor+https</code>.
 
 Technical notes:
-- Why is buster-updates disabled by default?
-  See: https://wiki.debian.org/StableUpdates
 - Why are sources (deb-src) disabled by default?
   Because those are not required by most users, to save time while
   running <code>sudo apt update</code>.
 - See also: https://www.debian.org/security/
 - See also: <code>/etc/apt/sources.list.d/</code>
-== anon-base-files ==
-
-* https://github.com/Whonix/anon-base-files
-* [https://github.com/Whonix/anon-base-files/blob/master/debian/control debian/control]
-===  base files for Anonymity Distributions ===
-
-Creates user "user" with password "changeme" (not in Qubes).
-That is if user "user" is not existing yet.
-And if it does create "user" user it also locks the root account.
-Therefore root account locking effectively only happens in new
-builds not having user "user" already created.
-
-Adds user "user" to groups "cdrom,audio,dip,sudo,plugdev".
-
-Creates version file /var/lib/anon-dist/build_version.
-
-Anonymized operating system user name "user", /etc/hostname, /etc/hosts,
-/etc/machine-id, /var/lib/dbus/machine-id, which should be shared among all
-anonymity distributions. See also:
-
-* https://mailman.boum.org/pipermail/tails-dev/2013-January/002457.html
-* https://labs.riseup.net/code/issues/5655
-* http://lists.autistici.org/message/20140627.215105.24023267.en.html
-
-Ships a systemd unit file anon-base-files-skel-first-boot.service
-which runs /usr/lib/helper-scripts/first-boot-skel (part of helper-scripts)
-package.
-
-This package gets installed by default in both, Kicksecure and Whonix.
-=== /etc/hosts.anondist ===
-
-* [https://github.com/Whonix/anon-base-files/blob/master/etc/hosts.anondist /etc/hosts.anondist]
-* <code>~/Whonix/packages/anon-base-files/etc/hosts.anondist</code>
-
-Debian default /etc/hosts + Anonymity Distribution specific additions.
-
-Currently only <code>127.0.0.1 host.localdomain host</code> gets added.
 == anon-shared-build-apt-sources-tpo ==
 
 * https://github.com/Whonix/anon-shared-build-apt-sources-tpo
@@ -787,52 +713,6 @@ The Tor Project.
 * Not installed by default.
 
 Tor Project APT repository sources.list
-== kicksecure-network-conf ==
-
-* https://github.com/Whonix/kicksecure-network-conf
-* [https://github.com/Whonix/kicksecure-network-conf/blob/master/debian/control debian/control]
-===  Network Configuration for Kicksecure ===
-
-Sets up external network interfaces eth0 by shipping a configuration file
-/etc/network/interfaces.d/30_kicksecure for Kicksecure.
-
-Disables systemd Predictable Network Interface Names.
-
-Configures DNS by shipping a configuration file /etc/resolv.conf for
-Kicksecure.
-
-Enables DNSCrypt.
-=== /etc/dnscrypt-proxy/kicksecure.toml ===
-
-* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/dnscrypt-proxy/kicksecure.toml /etc/dnscrypt-proxy/kicksecure.toml]
-* <code>~/Whonix/packages/kicksecure-network-conf/etc/dnscrypt-proxy/kicksecure.toml</code>
-
-DNSCrypt configuration
-=== /etc/network/interfaces.d/30_kicksecure ===
-
-* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/network/interfaces.d/30_kicksecure /etc/network/interfaces.d/30_kicksecure]
-* <code>~/Whonix/packages/kicksecure-network-conf/etc/network/interfaces.d/30_kicksecure</code>
-
-network interfaces configuration eth0
-=== /etc/resolv.conf.kicksecure ===
-
-* [https://github.com/Whonix/kicksecure-network-conf/blob/master/etc/resolv.conf.kicksecure /etc/resolv.conf.kicksecure]
-* <code>~/Whonix/packages/kicksecure-network-conf/etc/resolv.conf.kicksecure</code>
-
-DNSCrypt configuration
-=== /lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf ===
-
-* [https://github.com/Whonix/kicksecure-network-conf/blob/master/lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf /lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf]
-* <code>~/Whonix/packages/kicksecure-network-conf/lib/systemd/system/dnscrypt-proxy.service.d/30_kicksecure.conf</code>
-
-Reconfigure DNSCrypt to use configuration file
-<code>/etc/dnscrypt-proxy/kicksecure.toml</code> instead of the default
-<code>/etc/dnscrypt-proxy/dnscrypt-proxy.toml</code>.
-
-This has the advantage
-that no <code>config-package-dev</code> <code>displace</code> is required
-and that changes to upstream config file do not conflict with Kicksecure
-config file.
 == qubes-whonix ==
 
 * https://github.com/Whonix/qubes-whonix
@@ -850,7 +730,7 @@ Template updates over Tor.
 
 Package: qubes-whonix-shared-packages-recommended
 Architecture: all
-Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+Depends: qubes-core-agent-passwordless-root | dummy-dependency,
 qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
 qubes-usb-proxy, qubes-input-proxy-sender,
 qubes-core-agent-thunar, qubes-core-agent-nautilus,
@@ -868,7 +748,7 @@ Architecture: all
 Depends: tinyproxy,
 yum,
 yum-utils,
-qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+qubes-core-agent-dom0-updates,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Gateway
 ===  Recommended packages for Qubes-Whonix-Gateway ===
@@ -884,7 +764,7 @@ Depends: qubes-thunderbird,
 qubes-gpg-split,
 qubes-pdf-converter,
 qubes-img-converter,
-pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+pulseaudio-qubes,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Workstation
 ===  Recommended packages for Qubes-Whonix-Workstation ===
@@ -905,6 +785,7 @@ Configure Qubes to not modify files shipped by Whonix:
 * <code>/etc/hosts</code>
 * <code>/etc/localtime</code>
 * <code>/etc/timezone</code>
+* <code>/etc/resolv.conf</code>
 === /etc/uwt.d/40_qubes.conf ===
 
 * [https://github.com/Whonix/qubes-whonix/blob/master/etc/uwt.d/40_qubes.conf /etc/uwt.d/40_qubes.conf]
@@ -917,9 +798,9 @@ Runs only inside Qubes TemplateVM.
 
 This configuration snippets configures [[#uwt|uwt]] to wait before running
 <code>apt</code> until status file
-<code>/run/qubes-service/whonix-secure-proxy</code> or
+<code>/run/updatesproxycheck/whonix-secure-proxy</code> or
 status file
-<code>/run/qubes-service/whonix-secure-proxy-check-done</code>
+<code>/run/updatesproxycheck/whonix-secure-proxy-check-done</code>
 exists. It will timeout after <code>120</code> seconds.
 
 This is to determine if torified Qubes updates proxy was detected.
@@ -940,6 +821,27 @@ settings for TCP based Qubes Updates proxy
 <code>Acquire::http::Proxy "http://10.137.255.254:8082/";</code>
 or for qrexec based Qubes updates proxy.
 <code>Acquire::http::Proxy "http://127.0.0.1:8082/";</code>
+== ro-mode-init ==
+
+* https://github.com/Whonix/ro-mode-init
+* [https://github.com/Whonix/ro-mode-init/blob/master/debian/control debian/control]
+===  Detects read-only disks and automatically enables live-boot ===
+
+Allows booting the system in live mode. Meaning, no persistent modifications
+will be written to the disk. All changes stay in RAM.
+
+No claims are made with regard to anti forensics.
+=== /debian/ro-mode-init.triggers ===
+
+* [https://github.com/Whonix/ro-mode-init/blob/master/debian/ro-mode-init.triggers /debian/ro-mode-init.triggers]
+* <code>~/Whonix/packages/ro-mode-init/debian/ro-mode-init.triggers</code>
+* workstation only<!--workstation-only-->
+* Non-Qubes-Whonix only
+
+
+Make changes by ro-mode-init take effect.
+* <code>activate-noawait update-initramfs</code>
+
 == sdwdate ==
 
 * https://github.com/Whonix/sdwdate
@@ -976,235 +878,20 @@ in Qubes-Whonix.
 
 * https://github.com/Whonix/security-misc
 * [https://github.com/Whonix/security-misc/blob/master/debian/control debian/control]
-===  enhances misc security settings ===
+===  Enhances Miscellaneous Security Settings ===
 
-Inspired by Kernel Self Protection Project (KSPP)
+https://github.com/Whonix/security-misc/blob/master/README.md
 
-* Implements most if not all recommended Linux kernel settings (sysctl) and
-kernel parameters by KSPP.
-
-* https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project
-
-kernel hardening:
-
-* deactivates Netfilter's connection tracking helper
-Netfilter's connection tracking helper module increases kernel attack
-surface by enabling superfluous functionality such as IRC parsing in
-the kernel. (!) Hence, this package disables this feature by shipping the
-/etc/modprobe.d/30_nf_conntrack_helper_disable.conf configuration file.
-
-* Kernel symbols in various files in /proc are hidden as they can be
-very useful for kernel exploits.
-
-* Kexec is disabled as it can be used to load a malicious kernel.
-/etc/sysctl.d/kexec.conf
-
-* ASLR effectiveness for mmap is increased.
-
-* The TCP/IP stack is hardened by disabling ICMP redirect acceptance,
-ICMP redirect sending and source routing to prevent man-in-the-middle attacks,
-ignoring all ICMP requests, enabling TCP syncookies to prevent SYN flood
-attacks and enabling RFC1337 to protect against time-wait assassination
-attacks.
-
-* Some data spoofing attacks are made harder.
-
-* SACK can be disabled as it is commonly exploited and is rarely used by
-uncommenting settings in file /etc/sysctl.d/tcp_sack.conf.
-
-* Slab merging is disabled as sometimes a slab can be used in a vulnerable
-way which an attacker can exploit.
-
-* Sanity checks, redzoning, and memory poisoning are enabled.
-
-* Machine checks (MCE) are disabled which makes the kernel panic
-on uncorrectable errors in ECC memory that could be exploited.
-
-* Kernel Page Table Isolation is enabled to mitigate Meltdown and increase
-KASLR effectiveness.
-
-* SMT is disabled as it can be used to exploit the MDS and other
-vulnerabilities.
-
-* All mitigations for the MDS vulnerability are enabled.
-
-* A systemd service clears System.map on boot as these contain kernel symbols
-that could be useful to an attacker.
-/etc/kernel/postinst.d/30_remove-system-map
-/lib/systemd/system/remove-system-map.service
-/usr/lib/security-misc/remove-system.map
-
-* Coredumps are disabled as they may contain important information such as
-encryption keys or passwords.
-/etc/security/limits.d/disable-coredumps.conf
-/etc/sysctl.d/coredumps.conf
-/lib/systemd/coredump.conf.d/disable-coredumps.conf
-
-* The thunderbolt and firewire kernel modules are blacklisted as they can be
-used for DMA (Direct Memory Access) attacks.
-
-* IOMMU is enabled with a boot parameter to prevent DMA attacks.
-
-* The kernel now panics on oopses to prevent it from continuing running a
-flawed process.
-
-* Bluetooth is blacklisted to reduce attack surface. Bluetooth also has
-a history of security concerns.
-https://en.wikipedia.org/wiki/Bluetooth#History_of_security_concerns
-
-* A systemd service restricts /proc/cpuinfo, /proc/bus, /proc/scsi and
-/sys to the root user only. This hides a lot of hardware identifiers from
-unprivileged users and increases security as /sys exposes a lot of information
-that shouldn't be accessible to unprivileged users. As this will break many
-things, it is disabled by default and can optionally be enabled by running
-`systemctl enable hide-hardware-info.service` as root.
-
-Uncommon network protocols are blacklisted:
-These are rarely used and may have unknown vulnerabilities.
-/etc/modprobe.d/uncommon-network-protocols.conf
-The network protocols that are blacklisted are:
-
-* DCCP - Datagram Congestion Control Protocol
-* SCTP - Stream Control Transmission Protocol
-* RDS - Reliable Datagram Sockets
-* TIPC - Transparent Inter-process Communication
-* HDLC - High-Level Data Link Control
-* AX25 - Amateur X.25
-* NetRom
-* X25
-* ROSE
-* DECnet
-* Econet
-* af_802154 - IEEE 802.15.4
-* IPX - Internetwork Packet Exchange
-* AppleTalk
-* PSNAP - Subnetwork Access Protocol
-* p8023 - Novell raw IEEE 802.3
-* p8022 - IEEE 802.2
-
-user restrictions:
-
-* A systemd service mounts /proc with hidepid=2 at boot to prevent users from
-seeing each other's processes.
-
-* The kernel logs are restricted to root only.
-
-* The BPF JIT compiler is restricted to the root user and is hardened.
-
-* The ptrace system call is restricted to the root user only.
-
-restricts access to the root account:
-
-* `su` is restricted to only users within the group `sudo` which prevents
-users from using `su` to gain root access or to switch user accounts.
-/usr/share/pam-configs/wheel-security-misc
-(Which results in a change in file `/etc/pam.d/common-auth`.)
-
-* Add user `root` to group `sudo`. This is required to make above work so
-login as a user in a virtual console is still possible.
-debian/security-misc.postinst
-
-* Abort login for users with locked passwords.
-/usr/lib/security-misc/pam-abort-on-locked-password
-
-* Lock user accounts after 100 failed login attempts using pam_tally2.
-/usr/share/pam-configs/tally2-security-misc
-
-* Logging into the root account from a virtual, serial, whatnot console is
-prevented by shipping an existing and empty /etc/securetty.
-(Deletion of /etc/securetty has a different effect.)
-/etc/securetty.security-misc
-
-informational output during Linux PAM:
-
-* Show failed and remaining password attempts.
-* Document unlock procedure if Linux user account got locked.
-* Point out, that there is no password feedback for `su`.
-* Explain locked (root) account if locked.
-* /usr/share/pam-configs/tally2-security-misc
-* /usr/lib/security-misc/pam_tally2-info
-* /usr/lib/security-misc/pam-abort-on-locked-password
-
-access rights restrictions:
-
-* Removes read, write and execute access for others for all users who have
-home folders under folder /home by running for example
-"chmod o-rwx /home/user"
-during package installation, upgrade or pam. This will be done only once per
-folder in folder /home so users who wish to relax file permissions are free to
-do so. This is to protect previously created files in user home folder which
-were previously created with lax file permissions prior installation of this
-package.
-debian/security-misc.postinst
-/usr/share/pam-configs/permission-lockdown-security-misc
-/usr/lib/security-misc/permission-lockdown
-
-access rights relaxations:
-
-This package does (not yet) automatically lock the root account password.
-It is not clear that would be sane in such a package.
-It is recommended to lock and expire the root account.
-In new Whonix builds, root account will be locked by package
-anon-base-files.
-https://www.whonix.org/wiki/Root
-https://www.whonix.org/wiki/Dev/Permissions
-https://forums.whonix.org/t/restrict-root-access/7658
-However, a locked root password will break rescue and emergency shell.
-Therefore this package enables passwordless resuce and emergency shell.
-This is the same solution that Debian will likely addapt for Debian
-installer.
-https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=802211
-Adverse security effects can be prevented by setting up BIOS password
-protection, grub password protection and/or full disk encryption.
-/etc/systemd/system/emergency.service.d/override.conf
-/etc/systemd/system/rescue.service.d/override.conf
-
-Disables TCP Time Stamps:
-
-TCP time stamps (RFC 1323) allow for tracking clock
-information with millisecond resolution. This may or may not allow an
-attacker to learn information about the system clock at such
-a resolution, depending on various issues such as network lag.
-This information is available to anyone who monitors the network
-somewhere between the attacked system and the destination server.
-It may allow an attacker to find out how long a given
-system has been running, and to distinguish several
-systems running behind NAT and using the same IP address. It might
-also allow one to look for clocks that match an expected value to find the
-public IP used by a user.
-
-Hence, this package disables this feature by shipping the
-/etc/sysctl.d/tcp_timestamps.conf configuration file.
-
-Note that TCP time stamps normally have some usefulness. They are
-needed for:
-
-* the TCP protection against wrapped sequence numbers; however, to
-trigger a wrap, one needs to send roughly 2^32 packets in one
-minute:  as said in RFC 1700, "The current recommended default
-time to live (TTL) for the Internet Protocol (IP) [45,105] is 64".
-So, this probably won't be a practical problem in the context
-of Anonymity Distributions.
-* "Round-Trip Time Measurement", which is only useful when the user
-manages to saturate their connection. When using Anonymity Distributions,
-probably the limiting factor for transmission speed is rarely the capacity
-of the user connection.
-
-Application specific hardening:
-
-* Enables APT seccomp-BPF sandboxing. /etc/apt/apt.conf.d/40sandbox
-* Deactivates previews in Dolphin.
-* Deactivates previews in Nautilus.
-* Deactivates thumbnails in Thunar.
+https://www.whonix.org/wiki/Security-misc
 
 Discussion:
 
 Happening primarily in Whonix forums.
 https://forums.whonix.org/t/kernel-hardening/7296
-=== /etc/sysctl.d/tcp_hardening.conf ===
+=== /etc/sysctl.d/30_security-misc.conf ===
 
-* [https://github.com/Whonix/security-misc/blob/master/etc/sysctl.d/tcp_hardening.conf /etc/sysctl.d/tcp_hardening.conf]
-* <code>~/Whonix/packages/security-misc/etc/sysctl.d/tcp_hardening.conf</code>
+* [https://github.com/Whonix/security-misc/blob/master/etc/sysctl.d/30_security-misc.conf /etc/sysctl.d/30_security-misc.conf]
+* <code>~/Whonix/packages/security-misc/etc/sysctl.d/30_security-misc.conf</code>
 
 TCP/IP stack hardening
 
@@ -1223,6 +910,8 @@ Disables ICMP redirect acceptance.
 Disables ICMP redirect sending.
 * <code>net.ipv4.conf.all.send_redirects=0</code>
 * <code>net.ipv4.conf.default.send_redirects=0</code>
+* <code>net.ipv6.conf.all.accept_redirects=0</code>
+* <code>net.ipv6.conf.default.accept_redirects=0</code>
 
 Ignores ICMP requests.
 * <code>net.ipv4.icmp_echo_ignore_all=1</code>
@@ -1233,15 +922,14 @@ Enables TCP syncookies.
 Disable source routing.
 * <code>net.ipv4.conf.all.accept_source_route=0</code>
 * <code>net.ipv4.conf.default.accept_source_route=0</code>
+* <code>net.ipv6.conf.all.accept_source_route=0</code>
+* <code>net.ipv6.conf.default.accept_source_route=0</code>
 
-=== /etc/sysctl.d/tcp_timestamps.conf ===
-
-* [https://github.com/Whonix/security-misc/blob/master/etc/sysctl.d/tcp_timestamps.conf /etc/sysctl.d/tcp_timestamps.conf]
-* <code>~/Whonix/packages/security-misc/etc/sysctl.d/tcp_timestamps.conf</code>
-
-disable IPv4 TCP Timestamps
-
-* <code>net.ipv4.tcp_timestamps=0</code>
+Enable reverse path filtering to prevent IP spoofing and
+mitigate vulnerabilities such as CVE-2019-14899.
+https://forums.whonix.org/t/enable-reverse-path-filtering/8594
+* <code>net.ipv4.conf.default.rp_filter=1</code>
+* <code>net.ipv4.conf.all.rp_filter=1</code>
 
 == uwt ==
 
@@ -1289,8 +977,7 @@ Timeprivacy can keep your time private. You can create wrappers for
 applications and timeprivacy will feed those applications with a fake time,
 which obfuscates at which time you really used that applications (such as when
 you made the git commit or when you signed that document). It does NOT set
-your time zone to UTC. (You could manually set your timezone to UTC or install
-the timezone-utc package.)
+your time zone to UTC.
 
 This package is probably most useful for Anonymity Distributions.
 
@@ -1559,6 +1246,37 @@ outside of Whonix) listen on the external IP instead. See also:
 
 * https://github.com/Whonix/bindp
 * https://phabricator.whonix.org/T561
+== whonix-base-files ==
+
+* https://github.com/Whonix/whonix-base-files
+* [https://github.com/Whonix/whonix-base-files/blob/master/debian/control debian/control]
+===  Whonix base system miscellaneous files ===
+
+This package contains several important miscellaneous files, such as
+/etc/issue, /etc/motd, /etc/dpkg/origins/whonix,
+/etc/skel/.bashrc, /usr/bin/whonix, and others.
+
+Anonymized operating system user name `user`, `/etc/hostname`, `/etc/hosts`,
+`/etc/machine-id`, `/var/lib/dbus/machine-id`, which should be shared among
+all anonymity distributions. See also:
+
+* https://mailman.boum.org/pipermail/tails-dev/2013-January/002457.html
+* https://labs.riseup.net/code/issues/5655
+* http://lists.autistici.org/message/20140627.215105.24023267.en.html
+
+Sets the WHONIX environment variable to 1 as well.
+
+Ships marker files:
+* /usr/share/whonix/marker
+* /usr/share/anon-dist/marker
+=== /etc/hosts.whonix ===
+
+* [https://github.com/Whonix/whonix-base-files/blob/master/etc/hosts.whonix /etc/hosts.whonix]
+* <code>~/Whonix/packages/whonix-base-files/etc/hosts.whonix</code>
+
+Debian default /etc/hosts + Anonymity Distribution specific additions.
+
+Currently only <code>127.0.0.1 host.localdomain host</code> gets added.
 == whonix-firewall ==
 
 * https://github.com/Whonix/whonix-firewall
@@ -1585,7 +1303,7 @@ Do not remove, unless you no longer wish to use Whonix.
 * <code>~/Whonix/packages/whonix-firewall/debian/whonix-firewall.postinst</code>
 
 Creates linux user accounts used by firewall script
-clearnet tunnel notunnel whonixcheck sdwdate updatesproxycheck.
+clearnet tunnel notunnel systemcheck sdwdate updatesproxycheck.
 
 Creates empty /etc/whonix_firewall.d/50_user.conf which is not owned
 by any package if not existing.
@@ -1596,6 +1314,12 @@ by any package if not existing.
 * gateway only<!--gateway-only-->
 
 Whonix firewall configuration file
+=== /etc/whonix_firewall.d/30_whonix_host_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_host_default.conf /etc/whonix_firewall.d/30_whonix_host_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_host_default.conf</code>
+
+undocumented
 === /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
 
 * [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]

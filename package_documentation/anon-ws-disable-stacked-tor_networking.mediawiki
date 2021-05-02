@@ -60,7 +60,7 @@ The Tor Project.
 <code>/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh</code>
 
 Add user "user" to the group "debian-tor", so user "user" can access Tor's control port.
-User "user" already exists thanks to the anon-base-files package.
+User "user" already exists thanks to the dist-base-files package.
 * <code>addgroup --quiet user debian-tor</code>
 
 === /etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf ===
@@ -221,6 +221,7 @@ could be used.)
 Fortunately, this is not required for Whonix by default anymore,
 because systemd-socket-proxyd is configured to redirect
 Whonix-Workstation ports
+IP HARDCODED but no need to change since comment only.
 127.0.0.1:9050 to Whonix-Gateway 10.152.152.10:9050
 127.0.0.1:9051 to Whonix-Gateway 10.152.152.10:9051
 127.0.0.1:9150 to Whonix-Gateway 10.152.152.10:9150
@@ -257,6 +258,7 @@ Environment variable to disable the "TorButton" ->
 on a workstation, because Tor must be configured on the Whonix-Gateway, which is
 for security reasons forbidden from the Whonix-Gateway.
 https://trac.torproject.org/projects/tor/ticket/14100
+https://www.whonix.org/wiki/Tor_Browser/Advanced_Users#Open_Network_Settings
 * <code>export TOR_NO_DISPLAY_NETWORK_SETTINGS=1</code>
 
 === /usr/lib/tmpfiles.d/anon-ws-disable-stacked-tor.conf ===

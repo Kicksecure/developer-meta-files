@@ -15,7 +15,7 @@ Template updates over Tor.
 
 Package: qubes-whonix-shared-packages-recommended
 Architecture: all
-Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+Depends: qubes-core-agent-passwordless-root | dummy-dependency,
 qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
 qubes-usb-proxy, qubes-input-proxy-sender,
 qubes-core-agent-thunar, qubes-core-agent-nautilus,
@@ -33,7 +33,7 @@ Architecture: all
 Depends: tinyproxy,
 yum,
 yum-utils,
-qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+qubes-core-agent-dom0-updates,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Gateway
 ===  Recommended packages for Qubes-Whonix-Gateway ===
@@ -49,7 +49,7 @@ Depends: qubes-thunderbird,
 qubes-gpg-split,
 qubes-pdf-converter,
 qubes-img-converter,
-pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+pulseaudio-qubes,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Workstation
 ===  Recommended packages for Qubes-Whonix-Workstation ===
@@ -70,9 +70,9 @@ Runs only inside Qubes TemplateVM.
 
 This configuration snippets configures [[#uwt|uwt]] to wait before running
 <code>apt</code> until status file
-<code>/run/qubes-service/whonix-secure-proxy</code> or
+<code>/run/updatesproxycheck/whonix-secure-proxy</code> or
 status file
-<code>/run/qubes-service/whonix-secure-proxy-check-done</code>
+<code>/run/updatesproxycheck/whonix-secure-proxy-check-done</code>
 exists. It will timeout after <code>120</code> seconds.
 
 This is to determine if torified Qubes updates proxy was detected.

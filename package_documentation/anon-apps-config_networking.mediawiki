@@ -7,9 +7,15 @@
 Most settings take effect for newly created user account onlys, and not
 for existing user accounts.
 
+Sets timezone to UTC.
+
 Enables Menubar in Dolphin by default.
 
-Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
+gnupg configuration for Anonymity Distributions:
+* Sets `use-tor` in `/etc/skel/.gnupg/dirmngr.conf`.
+* Ships Thunderbird torbirdy configuration file
+`/etc/thunderbird/pref/30_whonix.js` that allows torified keyserver access.
+* Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
 default keyserver. Disables tip of the day. Disables KGpg's systray.
 
 Double click instead of single click in KDE.
@@ -28,6 +34,7 @@ Disables KDE graphics effects. Disables some background processes.
 Stream Isolation (proxy) settings for KDE apps for Anonymity Distributions
 Configures global proxy settings, which acts as a fallback if no other proxy
 settings are set, for KDE applications to socks 10.152.152.10:9122.
+IP HARDCODED above but no need to change since it is description only.
 Otherwise unconfigured KDE applications would use no proxy settings
 (Transparent Proxying) if the anonymity distribution features a transparent
 proxy.
@@ -69,6 +76,23 @@ verify software signatures by hiding file
 Disables systemd-resolved during boot unless file /etc/dns-enable exists.
 
 Disables systemd-resolved fallback DNS (which by default is set to Google).
+
+Removes capabilities from `/bin/ping` if
+[security-misc](https://github.com/Whonix/security-misc) is
+installed as ping doesn't work with Tor anyway and its capabilities are just
+unneeded attack surface.
+
+Create a dummy Tor binary '/home/user/.local/share/Bisq/btc_mainnet/tor/tor'
+to avoid Tor over Tor.
+
+Improves HexChat Privacy Settings
+* As per: https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/XChat
+* Moves the following files:
+- `/usr/lib/xchat/plugins/python.so`
+- `/usr/lib/xchat/plugins/tcl.so`
+- `/usr/lib/xchat/plugins/perl.so`
+to `/usr/share/anon-apps-config`, so these plugins get disabled by
+default.
 
 Due to technical limitations some settings only take effect for applications
 being started for the very first time, i.e. when the user config of that
@@ -116,6 +140,7 @@ KDE stream isolation settings.
 * <code>NoProxyFor=127.0.0.1</code>
 * <code>ProxyType=1</code>
 * <code>ReversedException=false</code>
+IP HARDCODED
 * <code>socksProxy=http://10.152.152.10 9122</code>
 
 === /usr/share/anon-apps-config/ksmserverrc ===

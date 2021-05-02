@@ -1,0 +1,54 @@
+== setup-dist ==
+
+* https://github.com/Whonix/setup-dist
+* [https://github.com/Whonix/setup-dist/blob/master/debian/control debian/control]
+===  First Time Connection Setup ===
+
+When Whonix starts for the first time, it won't automatically connect to the
+public Tor network. This is useful for users who want to hide Tor from their
+ISP. setup-dist is automatically started, which educates about different
+methods to connect (public Tor network, bridges, etc.).
+
+Also automatically starts the Whonix Repository Tool (if installed), so the
+user can decide whether to use Whonix's Repository and if yes, choose which
+one.
+=== /usr/bin/easo ===
+
+* [https://github.com/Whonix/setup-dist/blob/master/usr/bin/easo /usr/bin/easo]
+* <code>~/Whonix/packages/setup-dist/usr/bin/easo</code>
+
+`easo` stands for `easyorca`.
+A short name to avoid y vs z on English vs German and other keyboard
+layouts. Cannot be called `easyorca` due to technical reasons.
+https://gitlab.gnome.org/GNOME/orca/-/issues/189
+
+Simple wrapper that runs the following commands:
+
+- `amixer set Master 50%`
+- `orca --replace & disown`
+- `dsudo easyorca-root`.
+
+Works only as long as the default password has not been changed because it
+is using `dsudo`.
+
+`dsudo`, see:
+https://www.whonix.org/wiki/Root#dsudo_-_default_password_sudo
+
+After default password was changed, users would have to use
+`sudo easyorca-root` instead.
+=== /usr/sbin/easyorca-root ===
+
+* [https://github.com/Whonix/setup-dist/blob/master/usr/sbin/easyorca-root /usr/sbin/easyorca-root]
+* <code>~/Whonix/packages/setup-dist/usr/sbin/easyorca-root</code>
+
+Helper script. Supposed to be run by `easo` (easyorca). Not supposed to be
+run directly.
+
+* Disable autostart of setup-wizard-dist GUI.
+* Enable orca autostart.
+* Enable orca-kill-at-shutdown.service systemd unit.
+* Accept setup-wizard-dist legal notices using `setup-dist`(`-noninteractive`).
+* Enable Tor public network using `setup-dist`(`-noninteractive`).
+* Does not start `orca` because this script is supposed to run as root while
+`orca` should run as user, not root. Starting `orca` is expected to be done
+`easo` or the user.

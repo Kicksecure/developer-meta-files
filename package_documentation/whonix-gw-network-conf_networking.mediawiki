@@ -10,6 +10,15 @@ Non-Qubes-Whonix-Gateway.
 Sets up two network interfaces, an external one eth0 and an internal one eth1.
 
 Provides /usr/share/whonix-gw-network-conf/network_internal_ip.txt.
+
+DNS configuration Anonymity Linux Distribution Gateways
+
+* Pointing /etc/resolv.conf to 127.0.0.1.
+* Whether a Anonymity Linux Distribution Gateway supports system DNS for its
+own traffic in the clear or anonymized mainly depends on the Gateway's
+firewall.
+* Routing the workstation's system DNS through the anonymizer (also known as
+Transparent DNS Proxy) or not is up to the Gateway's firewall as well.
 === /debian/whonix-gw-network-conf.links ===
 
 * [https://github.com/Whonix/whonix-gw-network-conf/blob/master/debian/whonix-gw-network-conf.links /debian/whonix-gw-network-conf.links]
@@ -47,6 +56,7 @@ network interfaces configuration eth0 (external network interface) and eth1 (int
 
 static network configuration
 
+IP HARDCODED below but comment only. No need to change.
 eth0
 <code>#address 10.0.2.15</code><br />
 <code>#netmask 255.255.255.0</code><br />
@@ -55,6 +65,17 @@ eth0
 eth1
 <code>#address 10.152.152.10</code><br />
 <code>#netmask 255.255.192.0</code><br />
+=== /etc/resolv.conf.whonix ===
+
+* [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/resolv.conf.whonix /etc/resolv.conf.whonix]
+* <code>~/Whonix/packages/whonix-gw-network-conf/etc/resolv.conf.whonix</code>
+* gateway only<!--gateway-only-->
+
+No DNS configuration.
+Only comments.
+Whonix-Gateway by default does not have system default DNS.
+See https://www.whonix.org/wiki/Whonix-Gateway_Own_Traffic_Transparent_Proxy
+and footnotes.
 === /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf ===
 
 * [https://github.com/Whonix/whonix-gw-network-conf/blob/master/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf]

@@ -9,7 +9,7 @@ Source: anon-shared-build-apt-sources-tpo
 Section: misc
 Priority: optional
 Maintainer: Patrick Schleizer <adrelanos@whonix.org>
-Build-Depends: debhelper (>= 12), genmkfile
+Build-Depends: debhelper (>= 12)
 Homepage: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
 Vcs-Browser: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
 Vcs-Git: https://github.com/Whonix/anon-shared-build-apt-sources-tpo.git

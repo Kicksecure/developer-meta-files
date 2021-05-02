@@ -8,6 +8,15 @@ Includes /etc/network/interfaces for Whonix-Workstation.
 
 Sets up an internal network interface eth0.
 
+DNS configuration Anonymity Linux Distribution Workstations
+Whether a Anonymity Linux Distribution Gateway supports anonymized system DNS
+for Workstation's traffic (also known as Transparent DNS Proxy) mainly depends
+on the Gateway's firewall.
+
+This package is simply installing /etc/resolv.conf which points to
+10.152.152.10, where an Anon-Gateway is supposed to provide a DnsPort on port
+53. IP HARDCODED but no need to change because only description.
+
 Currently relevant for Non-Qubes-Whonix only.
 === /debian/whonix-ws-network-conf.links ===
 
@@ -46,6 +55,14 @@ network interfaces configuration eth0 to communicate with Whonix-Gateway
 
 static network configuration
 
+IP HARDCODED but not need to change since only comment.
 <code>#address 10.152.152.11</code><br />
 <code>#netmask 255.255.192.0</code><br />
 <code>#gateway 10.152.152.10</code><br />
+=== /etc/resolv.conf.whonix ===
+
+* [https://github.com/Whonix/whonix-ws-network-conf/blob/master/etc/resolv.conf.whonix /etc/resolv.conf.whonix]
+* <code>~/Whonix/packages/whonix-ws-network-conf/etc/resolv.conf.whonix</code>
+
+set <code>nameserver 10.152.152.10</code>
+This works different in Qubes-Whonix.

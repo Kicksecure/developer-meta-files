@@ -1,0 +1,21 @@
+== ro-mode-init ==
+
+* https://github.com/Whonix/ro-mode-init
+* [https://github.com/Whonix/ro-mode-init/blob/master/debian/control debian/control]
+===  Detects read-only disks and automatically enables live-boot ===
+
+Allows booting the system in live mode. Meaning, no persistent modifications
+will be written to the disk. All changes stay in RAM.
+
+No claims are made with regard to anti forensics.
+=== /debian/ro-mode-init.triggers ===
+
+* [https://github.com/Whonix/ro-mode-init/blob/master/debian/ro-mode-init.triggers /debian/ro-mode-init.triggers]
+* <code>~/Whonix/packages/ro-mode-init/debian/ro-mode-init.triggers</code>
+* workstation only<!--workstation-only-->
+* Non-Qubes-Whonix only
+
+
+Make changes by ro-mode-init take effect.
+* <code>activate-noawait update-initramfs</code>
+

@@ -9,7 +9,7 @@ Source: anon-apt-sources-list
 Section: misc
 Priority: optional
 Maintainer: Patrick Schleizer <adrelanos@whonix.org>
-Build-Depends: debhelper (>= 12), genmkfile
+Build-Depends: debhelper (>= 12)
 Homepage: https://github.com/Whonix/anon-apt-sources-list
 Vcs-Browser: https://github.com/Whonix/anon-apt-sources-list
 Vcs-Git: https://github.com/Whonix/anon-apt-sources-list.git
@@ -38,8 +38,6 @@ Debian APT repository sources.list
 Configured to use <code>tor+https</code>.
 
 Technical notes:
-- Why is buster-updates disabled by default?
-  See: https://wiki.debian.org/StableUpdates
 - Why are sources (deb-src) disabled by default?
   Because those are not required by most users, to save time while
   running <code>sudo apt update</code>.

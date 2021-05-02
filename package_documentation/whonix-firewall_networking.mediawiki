@@ -24,7 +24,7 @@ Do not remove, unless you no longer wish to use Whonix.
 * <code>~/Whonix/packages/whonix-firewall/debian/whonix-firewall.postinst</code>
 
 Creates linux user accounts used by firewall script
-clearnet tunnel notunnel whonixcheck sdwdate updatesproxycheck.
+clearnet tunnel notunnel systemcheck sdwdate updatesproxycheck.
 
 Creates empty /etc/whonix_firewall.d/50_user.conf which is not owned
 by any package if not existing.
@@ -35,6 +35,12 @@ by any package if not existing.
 * gateway only<!--gateway-only-->
 
 Whonix firewall configuration file
+=== /etc/whonix_firewall.d/30_whonix_host_default.conf ===
+
+* [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_host_default.conf /etc/whonix_firewall.d/30_whonix_host_default.conf]
+* <code>~/Whonix/packages/whonix-firewall/etc/whonix_firewall.d/30_whonix_host_default.conf</code>
+
+undocumented
 === /etc/whonix_firewall.d/30_whonix_workstation_default.conf ===
 
 * [https://github.com/Whonix/whonix-firewall/blob/master/etc/whonix_firewall.d/30_whonix_workstation_default.conf /etc/whonix_firewall.d/30_whonix_workstation_default.conf]

@@ -8,6 +8,14 @@ Tor config file with distribution defaults (for stream isolation, etc.),
 example user configurations and other tweaks required. The Tor binary
 itself does not get modified.
 
+Deactivates IPv4 forwarding using /etc/sysctl.d/
+IPv4 forwarding is not required for a Tor based Anonymity Distribution
+Gateways. Deactivating it as defense in depth to prevent leaks.
+
+Deactivates IPv6 using /etc/sysctl.d/
+There are no IPv6 Anonymity Distribution Gateways featuring an IPv6 firewall
+yet. Therefore deactivating it to prevent leaks.
+
 This package is produced independently of, and carries no guarantee from,
 The Tor Project.
 === /debian/anon-gw-anonymizer-config.displace ===
@@ -20,7 +28,6 @@ Replace configuration files shipped by the Debian <code>tor</code>
 package with configuration files by this package.
 
 * <code>/etc/tor/torrc.anondist</code>
-* <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>
 * <code>/etc/default/tor.anondist</code>
 * <code>/etc/apparmor.d/local/system_tor.anondist</code>
 * <code>/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
@@ -32,7 +39,22 @@ package with configuration files by this package.
 * gateway only<!--gateway-only-->
 
 Add user "user" to the group "debian-tor", so user "user" can access Tor's control port.
-User "user" already exists thanks to the anon-base-files package.
+User "user" already exists thanks to the dist-base-files package.
+=== /debian/anon-gw-anonymizer-config.undisplace ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/debian/anon-gw-anonymizer-config.undisplace /debian/anon-gw-anonymizer-config.undisplace]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/debian/anon-gw-anonymizer-config.undisplace</code>
+* gateway only<!--gateway-only-->
+
+Legacy.
+Reset /usr/share/tor/tor-service-defaults-torrc to original.
+This is possible since there is now torrc.d support.
+
+* <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>
+
+File is not being used for controlling Tor-startup when Tor is launched by systemd.
+* <code>/etc/default/tor.anondist</code>
+
 === /etc/apparmor.d/local/system_tor.anondist ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]
@@ -49,18 +71,6 @@ AUDIT desired.
 * gateway only<!--gateway-only-->
 
 apparmor relaxations for obfsproxy
-=== /etc/audit/rules.d/30_anon-gw-anonymizer-config.rules ===
-
-* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/audit/rules.d/30_anon-gw-anonymizer-config.rules /etc/audit/rules.d/30_anon-gw-anonymizer-config.rules]
-* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/audit/rules.d/30_anon-gw-anonymizer-config.rules</code>
-* gateway only<!--gateway-only-->
-
-monitor <code>/var/lib/tor/lock</code> using access rights modifications
-
-https://phabricator.whonix.org/T53
-
-* <code>-w /var/lib/tor/lock -p wxa</code>
-
 === /etc/sudoers.d/anonymizer-config-gateway ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/sudoers.d/anonymizer-config-gateway /etc/sudoers.d/anonymizer-config-gateway]
@@ -79,6 +89,61 @@ Tor config check using <code>anon-verify</code> without a password.
 
 Raising fs.file-max to 100000 as suggested by /etc/init.d/tor.
 * <code>fs.file-max=100000</code>
+=== /etc/torrc.d/60_network.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/60_network.conf /etc/torrc.d/60_network.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/60_network.conf</code>
+* gateway only<!--gateway-only-->
+
+Tor is disabled by default.
+Users are supposed to enable Tor through setup-dist which would
+create file /usr/local/etc/torrc.d/40_tor_control_panel.conf with
+"DisableNetwork 0" or by removing the hash ('#') in front of
+"DisableNetwork 0" in /usr/local/etc/torrc.d/40_tor_control_panel.conf
+* <code>DisableNetwork 1</code>
+
+* <code>VirtualAddrNetwork 10.192.0.0/10</code>
+* <code>AutomapHostsOnResolve 1</code>
+
+* <code>Log notice file /run/tor/log</code>
+=== /etc/torrc.d/65_gateway.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/65_gateway.conf /etc/torrc.d/65_gateway.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/65_gateway.conf</code>
+* gateway only<!--gateway-only-->
+
+Tor settings for Gateway: `ClientOnionAuthDir`, `SocksPort`s, `TransPort`,
+`DnsPort`, `HTTPTunnelPort`s and stream isolation settings.
+=== /etc/torrc.d/70_workstation.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/70_workstation.conf /etc/torrc.d/70_workstation.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/torrc.d/70_workstation.conf</code>
+* gateway only<!--gateway-only-->
+
+
+This is non-ideal. Better would be to copy the contents from
+/usr/share/tor/tor-service-defaults-torrc.anondist into this file.
+Unfortunately this is required until "Qubes-Whonix eth1 static networking"
+gets implemented, see:
+https://phabricator.whonix.org/T947
+
+This is because Qubes uses dynamic local LAN IPs by default. By
+extension Qubes-Whonix internal LAN IP of virtual network interface eth1 is
+also dynamic. However, Tor needs to bind at a specific IP address. An IP
+address which needs to be written verbatim to a Tor configuration file
+before Tor starts. And Tor does not have any option to build to a network
+interface. Tor only supports binding to IP addresses. Tor also does not
+support reading the IP address into a variable or any scripting.
+Package qubes-whonix uses a dpkg trigger to modify the IP addresses written
+in file /usr/share/tor/tor-service-defaults-torrc.anondist to the current
+dynamic IP address of eth1. Having the dpkg trigger modify this file in /etc
+directly would be a bad idea since then this would falsely detected as a
+configuration file manually edited by users and users would get an
+interactive dpkg configuration file conflict resolution dialog during
+upgrade when this file is upgraded.
+
+* <code>%include /usr/share/tor/tor-service-defaults-torrc.anondist</code>
+
 === /etc/torrc.d/95_whonix.conf ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/95_whonix.conf /etc/torrc.d/95_whonix.conf]
@@ -86,8 +151,7 @@ Raising fs.file-max to 100000 as suggested by /etc/init.d/tor.
 * gateway only<!--gateway-only-->
 
 
-* <code>%include /usr/local/etc/torrc.d/40_tor_control_panel.conf</code>
-* <code>%include /usr/local/etc/torrc.d/50_user.conf</code>
+* <code>%include /usr/local/etc/torrc.d/</code>
 
 === /lib/systemd/system/anon-gw-anonymizer-config.service ===
 
@@ -96,8 +160,23 @@ Raising fs.file-max to 100000 as suggested by /etc/init.d/tor.
 * gateway only<!--gateway-only-->
 
 Runs <code>/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist</code>
-to Make Sure Torrc Files Exist. Runs Before=tor.service and
-Before=tor@default.service.
+to Make Sure Torrc Files Exist and runs
+<code>/usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner</code> to remove
+files not ending with '.conf' from folders <code>/etc/torrc.d</code> and
+<code>/usr/local/etc/torrc.d</code>. Runs <code>Before=tor.service</code>
+and <code>Before=tor@default.service</code>.
+=== /lib/systemd/system/tor@default.service.d/30_clean-torrc-d-on-reload.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/lib/systemd/system/tor@default.service.d/30_clean-torrc-d-on-reload.conf /lib/systemd/system/tor@default.service.d/30_clean-torrc-d-on-reload.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/lib/systemd/system/tor@default.service.d/30_clean-torrc-d-on-reload.conf</code>
+* gateway only<!--gateway-only-->
+
+Run torrc.d cleaner at reload.
+https://forums.whonix.org/t/torrc-d-is-comming/4041/72
+* <code>[Service]</code>
+* <code>ExecReload=</code>
+* <code>ExecReload=sh -c "/usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner && /bin/kill -HUP ${MAINPID}"</code>
+
 === /lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf /lib/systemd/system/tor@default.service.d/40_obfs4proxy-workaround.conf]
@@ -121,6 +200,13 @@ https://lists.torproject.org/pipermail/tor-dev/2018-February/012887.html
 * <code>[Service]</code>
 * <code>ExecStartPost=/bin/kill -HUP ${MAINPID}</code>
 
+=== /usr/bin/anon-consensus-delete ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-consensus-delete /usr/bin/anon-consensus-delete]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-consensus-delete</code>
+* gateway only<!--gateway-only-->
+
+stops Tor, deletes Tor consensus and restarts Tor
 === /usr/bin/anon-info ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-info /usr/bin/anon-info]
@@ -128,6 +214,13 @@ https://lists.torproject.org/pipermail/tor-dev/2018-February/012887.html
 * gateway only<!--gateway-only-->
 
 Tor apt sources and version info command line tool.
+=== /usr/bin/anon-log ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-log /usr/bin/anon-log]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/bin/anon-log</code>
+* gateway only<!--gateway-only-->
+
+Tor log parsing command line utility.
 === /usr/bin/anon-verify ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-verify /usr/bin/anon-verify]
@@ -135,15 +228,43 @@ Tor apt sources and version info command line tool.
 * gateway only<!--gateway-only-->
 
 Tor configuration check command line utility.
+=== /usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf /usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/anon-gw-anonymizer-config/edit-etc-resolv-conf</code>
+* gateway only<!--gateway-only-->
+
+TODO
 === /usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist /usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist]
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/anon-gw-anonymizer-config/make-sure-torrc-exist</code>
 * gateway only<!--gateway-only-->
 
-helper script to create folders <code>/usr/local/etc/torrc.d</code> and files
-* <code>/usr/local/etc/torrc.d/40_tor_control_panel.conf</code>, and
-* <code>/usr/share/anon-gw-anonymizer-config/user_torrc_template.conf /usr/local/etc/torrc.d/50_user.conf</code> with correct access rights from template folder <code>/usr/share/anon-gw-anonymizer-config</code>.
+helper script to create folders
+
+* <code>/etc/tor</code>
+* <code>/etc/torrc.d/code>
+* <code>/usr/local/etc/torrc.d</code>
+
+and make sure files exist
+
+* <code>/etc/tor/torrc</code>
+* <code>/etc/torrc.d/95_whonix.conf</code>
+* <code>/usr/local/etc/torrc.d/40_tor_control_panel.conf</code>
+* <code>/usr/share/anon-gw-anonymizer-config/user_torrc_template.conf /usr/local/etc/torrc.d/50_user.conf</code>
+
+create folder <code>/var/lib/tor/authdir</code>
+
+with correct access rights from template folder <code>/usr/share/anon-gw-anonymizer-config</code>.
+=== /usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner /usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/lib/anon-gw-anonymizer-config/torrc-d-cleaner</code>
+* gateway only<!--gateway-only-->
+
+Move files in folder /usr/local/etc/torrc.d/ and /etc/torrc.d/ that do not
+end with '.conf' out of the way.
 === /usr/lib/anon-gw-anonymizer-config/torrc-parser ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/lib/anon-gw-anonymizer-config/torrc-parser /usr/lib/anon-gw-anonymizer-config/torrc-parser]
@@ -196,7 +317,8 @@ using graphical sudo.
 
 https://bugzilla.xfce.org/show_bug.cgi?id=15282
 https://github.com/lxqt/lxqt-sudo/issues/114
-* <code>sudoedit /usr/local/etc/torrc.d/50_user.conf</code>
+https://forums.whonix.org/t/use-sudoedit-in-whonix-documentation-and-whonix-software/7599/30
+* <code>lxsudo sudo -u "$(whoami)" env VISUAL="$VISUAL" sudoedit /usr/local/etc/torrc.d/50_user.conf</code>
 
 === /usr/lib/gateway-shortcuts/torrcexamples ===
 
@@ -205,6 +327,15 @@ https://github.com/lxqt/lxqt-sudo/issues/114
 * gateway only<!--gateway-only-->
 
 wrapper to show Tor configuration examples
+=== /usr/share/anon-gw-anonymizer-config/etc_torrc_d_template.conf ===
+
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/anon-gw-anonymizer-config/etc_torrc_d_template.conf /usr/share/anon-gw-anonymizer-config/etc_torrc_d_template.conf]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/anon-gw-anonymizer-config/etc_torrc_d_template.conf</code>
+* gateway only<!--gateway-only-->
+
+
+* <code>%include /usr/local/etc/torrc.d/</code>
+
 === /usr/share/anon-gw-anonymizer-config/torrc.examples ===
 
 * [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/anon-gw-anonymizer-config/torrc.examples /usr/share/anon-gw-anonymizer-config/torrc.examples]
@@ -266,20 +397,6 @@ Tor Configuration Examples
 * <code>~/Whonix/packages/anon-gw-anonymizer-config/usr/share/tor/tor-service-defaults-torrc.anondist</code>
 * gateway only<!--gateway-only-->
 
-Whonix Tor configuration
-
-https://www.whonix.org/wiki/Stream_Isolation
-
-* <code>ControlSocket</code>
-* <code>SocksPort</code>
-* <code>HTTPTunnelPort</code>
-* <code>TransPort</code>
-* <code>DnsPort</code>
-* Upstream Defaults File
-* Enable / Disable Tor
-* Leak Tests
-* General Settings
-* Workstation Trans/Dns-Port
-* Workstation SocksPorts
-* Gateway Trans/Dns-Port
-* Gateway SocksPorts
+Tor settings for Workstation: `SocksPort`s, `TransPort`,
+`DnsPort`, `HTTPTunnelPort`s and stream isolation settings.
+IP HARDCODED unfortunately.

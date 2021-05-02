@@ -44,8 +44,7 @@ Timeprivacy can keep your time private. You can create wrappers for
 applications and timeprivacy will feed those applications with a fake time,
 which obfuscates at which time you really used that applications (such as when
 you made the git commit or when you signed that document). It does NOT set
-your time zone to UTC. (You could manually set your timezone to UTC or install
-the timezone-utc package.)
+your time zone to UTC.
 
 This package is probably most useful for Anonymity Distributions.
 

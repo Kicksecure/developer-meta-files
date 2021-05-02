@@ -21,8 +21,6 @@ Debian APT repository sources.list
 Configured to use <code>tor+https</code>.
 
 Technical notes:
-- Why is buster-updates disabled by default?
-  See: https://wiki.debian.org/StableUpdates
 - Why are sources (deb-src) disabled by default?
   Because those are not required by most users, to save time while
   running <code>sudo apt update</code>.

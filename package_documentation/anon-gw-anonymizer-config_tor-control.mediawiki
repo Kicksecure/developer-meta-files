@@ -18,19 +18,12 @@ yet. Therefore deactivating it to prevent leaks.
 
 This package is produced independently of, and carries no guarantee from,
 The Tor Project.
-=== /etc/apparmor.d/local/system_tor.anondist ===
+=== /etc/onion-grater-merger.d/30_whonix-default.yml ===
 
-* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]
-* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/system_tor.anondist</code>
-* gateway only<!--gateway-only-->
+* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/onion-grater-merger.d/30_whonix-default.yml /etc/onion-grater-merger.d/30_whonix-default.yml]
+* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/onion-grater-merger.d/30_whonix-default.yml</code>
 
-Local AppArmor Profile for Anonymity Distributions
+Whonix onion-grater default configuration file.
 
-AUDIT desired.
-=== /etc/apparmor.d/local/usr.bin.obfsproxy.anondist ===
-
-* [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/usr.bin.obfsproxy.anondist /etc/apparmor.d/local/usr.bin.obfsproxy.anondist]
-* <code>~/Whonix/packages/anon-gw-anonymizer-config/etc/apparmor.d/local/usr.bin.obfsproxy.anondist</code>
-* gateway only<!--gateway-only-->
-
-apparmor relaxations for obfsproxy
+TODO: would be cleaner to split this file and to move snippets to covered
+applications sdwdate, systemcheck and tb-starter.

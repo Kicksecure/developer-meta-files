@@ -2,10 +2,6 @@
 
 * https://github.com/Whonix/qubes-whonix
 * [https://github.com/Whonix/qubes-whonix/blob/master/debian/control debian/control]
-## This file is part of Whonix
-## -- and --
-## The Qubes OS Project, http://www.qubes-os.org
-##
 ## Copyright (C) 2014 - 2015 Jason Mehring <nrgaway@gmail.com>
 ## Copyright (C) 2012 - 2021 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
@@ -14,7 +10,7 @@ Source: qubes-whonix
 Section: admin
 Priority: optional
 Maintainer: Patrick Schleizer <adrelanos@whonix.org>
-Build-Depends: debhelper (>= 12), genmkfile, python, dh-python, config-package-dev
+Build-Depends: debhelper (>= 12), config-package-dev
 Homepage: https://github.com/Whonix/qubes-whonix
 Vcs-Browser: https://github.com/Whonix/qubes-whonix
 Vcs-Git: https://github.com/Whonix/qubes-whonix.git
@@ -23,7 +19,6 @@ Standards-Version: 4.3.0
 Package: qubes-whonix
 Architecture: all
 Depends: adduser,
-qubes-core-agent,
 qubesdb-vm,
 ethtool,
 net-tools,
@@ -32,10 +27,9 @@ systemd,
 rsync,
 whonix-firewall,
 curl,
-qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-networking,
+qubes-core-agent-networking,
 python3,
 python3-pyqt5,
-${python:Depends},
 ${misc:Depends}
 Provides: ${diverted-files}
 Conflicts: ${diverted-files}
@@ -53,7 +47,7 @@ Template updates over Tor.
 
 Package: qubes-whonix-shared-packages-recommended
 Architecture: all
-Depends: qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-passwordless-root,
+Depends: qubes-core-agent-passwordless-root | dummy-dependency,
 qubes-kernel-vm-support, initramfs-tools, qubes-mgmt-salt-vm-connector,
 qubes-usb-proxy, qubes-input-proxy-sender,
 qubes-core-agent-thunar, qubes-core-agent-nautilus,
@@ -71,7 +65,7 @@ Architecture: all
 Depends: tinyproxy,
 yum,
 yum-utils,
-qubes-core-agent (<< 4.0.0-1) | qubes-core-agent-dom0-updates,
+qubes-core-agent-dom0-updates,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Gateway
 ===  Recommended packages for Qubes-Whonix-Gateway ===
@@ -87,7 +81,7 @@ Depends: qubes-thunderbird,
 qubes-gpg-split,
 qubes-pdf-converter,
 qubes-img-converter,
-pulseaudio-qubes | qubes-gui-agent (<< 4.0.0),
+pulseaudio-qubes,
 ${misc:Depends}
 Description: Recommended packages for Qubes-Whonix-Workstation
 ===  Recommended packages for Qubes-Whonix-Workstation ===
@@ -108,3 +102,4 @@ Configure Qubes to not modify files shipped by Whonix:
 * <code>/etc/hosts</code>
 * <code>/etc/localtime</code>
 * <code>/etc/timezone</code>
+* <code>/etc/resolv.conf</code>
