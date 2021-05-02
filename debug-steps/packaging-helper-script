@@ -291,7 +291,7 @@ recurse() {
 pkg_descr_creator() {
    repo_skip "whonix-developer-meta-files" || return 0
    repo_skip "anon-icon-pack" || return 0
-   repo_skip "whonix-host-firewall" || return 0
+   repo_skip "kicksecure-network-conf" || return 0
 
    local file_name file_name_without_leading_dot
 
