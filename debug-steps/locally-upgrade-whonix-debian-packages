@@ -79,38 +79,15 @@ main() {
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
-   if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-kde" ]; then
-      $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install \
-         whonix-gateway-packages-dependencies-pre \
-         anon-shared-packages-dependencies \
-         anon-shared-packages-recommended \
-         anon-shared-desktop \
-         anon-shared-desktop-kde \
-         anon-shared-kde-accessibility \
-         whonix-shared-packages-dependencies \
-         whonix-shared-packages-recommended \
-         anon-gateway-packages-dependencies \
-         anon-gateway-packages-recommended \
-         whonix-gateway-packages-dependencies \
-         whonix-gateway-packages-recommended
-   elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation-kde" ]; then
-      $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install \
-         whonix-workstation-packages-dependencies-pre \
-         anon-shared-packages-dependencies \
-         anon-shared-packages-recommended \
-         anon-shared-desktop \
-         anon-shared-desktop-kde \
-         anon-shared-kde-accessibility \
-         whonix-shared-packages-dependencies \
-         whonix-shared-packages-recommended \
-         anon-workstation-packages-dependencies \
-         anon-workstation-packages-recommended \
-         whonix-workstation-packages-dependencies \
-         whonix-workstation-packages-recommended
-   else
-      local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
-      error "$MSG"
-   fi
+   ## TODO: ?
+#    if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-xfce" ]; then
+#       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
+#    elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-cli" ]; then
+#       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
+#    else
+#       local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
+#       error "$MSG"
+#    fi
 
    ## Upgrade Whonix Debian Packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes dist-upgrade
