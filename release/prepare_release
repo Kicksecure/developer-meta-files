@@ -34,9 +34,9 @@ libvirt_compress() {
       return 0
    fi
 
-   rm --force "$(basename $libvirt_target_xz_archive)"
+   rm --force "$(basename $libvirt_target_qcow2_xz_archive)"
 
-   true "INFO: Checking if all files to be added to $libvirt_target_xz_archive exist..."
+   true "INFO: Checking if all files to be added to $libvirt_target_qcow2_xz_archive exist..."
 
    if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
@@ -59,7 +59,7 @@ libvirt_compress() {
       test -f "$libvirt_target_network_file_internal"
    fi
 
-   true "INFO: Ok, all files to be added to $libvirt_target_xz_archive exist."
+   true "INFO: Ok, all files to be added to $libvirt_target_qcow2_xz_archive exist."
 
    ## Not using `gzip`, because it cannot handle sparse files:
    ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
@@ -110,17 +110,17 @@ libvirt_compress() {
          --mtime='2015-10-21 00:00Z' \
          --xz \
          --directory="${dist_binary_build_folder}" \
-         --file "$(basename "$libvirt_target_xz_archive")" \
+         --file "$(basename "$libvirt_target_qcow2_xz_archive")" \
          $filelist
 
-   sudo $SUDO_OPTS strip-nondeterminism "$libvirt_target_xz_archive"
+   sudo $SUDO_OPTS strip-nondeterminism "$libvirt_target_qcow2_xz_archive"
 
    sync
 
    ## sanity test
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-      if [ ! -r "$libvirt_target_xz_archive" ]; then
-         error "$libvirt_target_xz_archive not readable!"
+      if [ ! -r "$libvirt_target_qcow2_xz_archive" ]; then
+         error "$libvirt_target_qcow2_xz_archive not readable!"
       fi
    fi
 }
@@ -294,14 +294,14 @@ torrent_create() {
    fi
 
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-      rm --force "$libvirt_target_xz_archive_torrent"
+      rm --force "$libvirt_target_qcow2_xz_archive_torrent"
       sudo $SUDO_OPTS \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
-            --web-seed "https://download.whonix.org/libvirt/${dist_build_version}/$(basename "$libvirt_target_xz_archive")" \
-            -o "$libvirt_target_xz_archive_torrent" \
-            "$libvirt_target_xz_archive"
+            --web-seed "https://download.whonix.org/libvirt/${dist_build_version}/$(basename "$libvirt_target_qcow2_xz_archive")" \
+            -o "$libvirt_target_qcow2_xz_archive_torrent" \
+            "$libvirt_target_qcow2_xz_archive"
    fi
 
    if [ "$WHONIX_BUILD_ISO" = "true" ]; then
@@ -352,7 +352,7 @@ hashes_create_and_verify() {
       fi
 
       if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_xz_archive")" | sudo $SUDO_OPTS tee --append "$hash_file"
+         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | sudo $SUDO_OPTS tee --append "$hash_file"
       fi
 
       if [ "$WHONIX_BUILD_ISO" = "true" ]; then
@@ -408,13 +408,13 @@ signatures_create() {
    fi
 
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-      sign_cmd_gpg "$libvirt_target_xz_archive"
-      sign_cmd_gpg "$libvirt_target_xz_archive_torrent"
+      sign_cmd_gpg "$libvirt_target_qcow2_xz_archive"
+      sign_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent"
 
       ## Too big.
-      #sign_cmd_signify "$libvirt_target_xz_archive"
+      #sign_cmd_signify "$libvirt_target_qcow2_xz_archive"
 
-      sign_cmd_signify "$libvirt_target_xz_archive_torrent"
+      sign_cmd_signify "$libvirt_target_qcow2_xz_archive_torrent"
    fi
 
    if [ "$WHONIX_BUILD_ISO" = "true" ]; then
@@ -422,7 +422,7 @@ signatures_create() {
       sign_cmd_gpg "$binary_image_iso_torrent"
 
       ## Too big.
-      #sign_cmd_signify "$libvirt_target_xz_archive"
+      #sign_cmd_signify "$libvirt_target_qcow2_xz_archive"
 
       sign_cmd_signify "$binary_image_iso_torrent"
    fi
@@ -446,12 +446,12 @@ signatures_verify() {
    fi
 
    if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-      verify_cmd_gpg "$libvirt_target_xz_archive_signature"
-      verify_cmd_gpg "$libvirt_target_xz_archive_torrent_signature"
+      verify_cmd_gpg "$libvirt_target_qcow2_xz_archive_signature"
+      verify_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent_signature"
 
       ## Too big.
-      #verify_cmd_signinfy "$libvirt_target_xz_archive"
-      verify_cmd_signinfy "$libvirt_target_xz_archive_torrent"
+      #verify_cmd_signinfy "$libvirt_target_qcow2_xz_archive"
+      verify_cmd_signinfy "$libvirt_target_qcow2_xz_archive_torrent"
    fi
 
    if [ "$WHONIX_BUILD_ISO" = "true" ]; then
