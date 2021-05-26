@@ -22,6 +22,8 @@ source ../../../help-steps/variables
 ## Debugging.
 "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
 
+## NOTE: Do not deprecate too early.
+## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
 "$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
