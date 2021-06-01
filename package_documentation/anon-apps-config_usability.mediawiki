@@ -15,8 +15,9 @@ gnupg configuration for Anonymity Distributions:
 * Sets `use-tor` in `/etc/skel/.gnupg/dirmngr.conf`.
 * Ships Thunderbird torbirdy configuration file
 `/etc/thunderbird/pref/30_whonix.js` that allows torified keyserver access.
-* Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
-default keyserver. Disables tip of the day. Disables KGpg's systray.
+* Deactivates KGpg's first run wizard. Disables tip of the day.
+Disables KGpg's systray. Disables key server. Reference:
+"High-risk users should stop using the keyserver network immediately."
 
 Double click instead of single click in KDE.
 
@@ -86,7 +87,8 @@ Create a dummy Tor binary '/home/user/.local/share/Bisq/btc_mainnet/tor/tor'
 to avoid Tor over Tor.
 
 Improves HexChat Privacy Settings
-* As per: https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO/XChat
+* As per:
+https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO/XChat
 * Moves the following files:
 - `/usr/lib/xchat/plugins/python.so`
 - `/usr/lib/xchat/plugins/tcl.so`
@@ -150,13 +152,9 @@ Pre-configured first time wizard.
 * <code>[General Options]</code>
 * <code>First run=false</code>
 
-Added hkp://qdigse2yzvuglcix.onion to the default list.
-Same as in:
--- https://raw.github.com/ioerror/torbirdy/master/gpg.conf
--- https://github.com/ioerror/torbirdy/commit/e6d7c9e6e103f0b3289675d04ed3f92e92d8d7b3
--- whonix_workstation/usr/share/whonix/home/.gnupg/gpg.conf
+https://forums.whonix.org/t/gpg-recv-keys-fails-no-longer-use-keyservers-for-anything/5607/8
 * <code>[Servers]</code>
-* <code>Server_List=hkp://qdigse2yzvuglcix.onion,hkp://wwwkeys.pgp.net,hkp://pgp.dtype.org,hkp://search.keyserver.net,hkp://subkeys.pgp.net,hkp://wwwkeys.pgp.net,hkp://wwwkeys.us.pgp.net</code>
+* <code>Server_List=</code>
 
 Disabled tip of the day.
 * <code>[TipOfDay]</code>

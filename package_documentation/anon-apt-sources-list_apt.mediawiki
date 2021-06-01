@@ -43,3 +43,4 @@ Technical notes:
   running <code>sudo apt update</code>.
 - See also: https://www.debian.org/security/
 - See also: <code>/etc/apt/sources.list.d/</code>
+- Same format as https://onion.debian.org

@@ -164,8 +164,9 @@ gnupg configuration for Anonymity Distributions:
 * Sets `use-tor` in `/etc/skel/.gnupg/dirmngr.conf`.
 * Ships Thunderbird torbirdy configuration file
 `/etc/thunderbird/pref/30_whonix.js` that allows torified keyserver access.
-* Deactivates KGpg's first run wizard. Uses hkp://qdigse2yzvuglcix.onion as
-default keyserver. Disables tip of the day. Disables KGpg's systray.
+* Deactivates KGpg's first run wizard. Disables tip of the day.
+Disables KGpg's systray. Disables key server. Reference:
+"High-risk users should stop using the keyserver network immediately."
 
 Double click instead of single click in KDE.
 
@@ -235,7 +236,8 @@ Create a dummy Tor binary '/home/user/.local/share/Bisq/btc_mainnet/tor/tor'
 to avoid Tor over Tor.
 
 Improves HexChat Privacy Settings
-* As per: https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO/XChat
+* As per:
+https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO/XChat
 * Moves the following files:
 - `/usr/lib/xchat/plugins/python.so`
 - `/usr/lib/xchat/plugins/tcl.so`
@@ -695,6 +697,7 @@ Technical notes:
   running <code>sudo apt update</code>.
 - See also: https://www.debian.org/security/
 - See also: <code>/etc/apt/sources.list.d/</code>
+- Same format as https://onion.debian.org
 == anon-shared-build-apt-sources-tpo ==
 
 * https://github.com/Whonix/anon-shared-build-apt-sources-tpo
