@@ -963,6 +963,8 @@ pkg_git_push_remotes() {
 
    if [ "$reponame" = "monero-gui" ]; then
       true
+   elif [ "$reponame" = "binaries-freedom" ]; then
+      true
    else
       if internal_git_diff master github-whonix/master ; then
          git push github-whonix master &
@@ -1363,6 +1365,8 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    git push gitlab-whonix master
    git push gitlab-whonix "$make_git_tag_latest"
    if [ "$reponame" = "monero-gui" ]; then
+      true
+   elif [ "$reponame" = "binaries-freedom" ]; then
       true
    else
       git push github-whonix master
