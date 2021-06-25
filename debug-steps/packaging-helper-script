@@ -1229,6 +1229,14 @@ pkg_git_log_old_new() {
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
       commit_msg_full_with_link="[$commit_msg_full](https://gitlab.com/whonix/$reponame/-/commit/$commit_hash)"
 
+      if [ "$committer_person" = "madaidan" ]; then
+         committer_person="@${committer_person}"
+      elif [ "$committer_person" = "Gavin Pacini" ]; then
+         committer_person="@GavinPacini"
+      elif [ "$committer_person" = "Gavin Pacini" ]; then
+         committer_person="@JeremyRand"
+      fi
+
       if [ "$committer_person" = "Patrick Schleizer" ]; then
          credit_msg=""
       else
