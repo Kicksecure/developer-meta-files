@@ -56,8 +56,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="15.0.1.7.2-developers-only"
-version_new_main="15.0.1.7.3-developers-only"
+version_old_main="15.0.1.7.3-developers-only"
+version_new_main="15.0.1.9.2-developers-only"
 giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
 
 commit_filter() {
@@ -1223,7 +1223,7 @@ pkg_git_log_old_new() {
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
       commit_msg_full="$(echo "$commit_msg_full" | sed '/^[[:space:]]*$/d')"
-      ## Replace new lines with spaces to unbreak links for mutli line comments.
+      ## Replace new lines with spaces to unbreak links for multi line comments.
       commit_msg_full="$(echo "$commit_msg_full" | tr "\n" " ")"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
