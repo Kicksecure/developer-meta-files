@@ -7,7 +7,14 @@ The Whonix lead developer who digitally signed this file states the following:
 
 1. Canary issue date: see the gpg signature time.
 
-2. No warrants have ever been served on the Whonix Project; for example, to hand out the private signing keys or to introduce backdoors.
+2.
+
+Definition “artifact”: Whonix software, Whonix downloads, Whonix source code
+
+* The Whonix Project has never added any backdoor to any artifact.
+* The Whonix Project has never turned over any signing key.
+* The Whonix Project has never knowingly signed any artifact containing any backdoor.
+* The Whonix Project has never weakened, compromised, or subverted any of its cryptography.
 
 3. We plan to publish the next canary statement within 4 weeks.
 
