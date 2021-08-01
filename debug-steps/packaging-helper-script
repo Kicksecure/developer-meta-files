@@ -140,6 +140,7 @@ commit_filter() {
         "lintian warning copyright fix" \
         "https://www.whonix.org/wiki/Dev/Licensing" \
         "port to debian buster" \
+        "port to debian bullseye" \
         "surpress lintian warning" \
         "update" \
         "fix debian/watch lintian warning debian-watch-contains-dh_make-template" \
@@ -150,6 +151,7 @@ commit_filter() {
         "gksudo" \
         "description" \
         "buster" \
+        "bullseye" \
         "cleanup" \
         "license" \
         "update path to pre.bsh" \
@@ -836,7 +838,7 @@ pkg_debhelper_bump() {
    str_replace.pl "$one" "$two" "$repo_full_path/debian/rules"
 
    git add "$repo_full_path/debian/rules"
-   git commit -m "port to debian buster" || true
+   git commit -m "port to debian bullseye" || true
 }
 
 pkg_packaging_files_diff() {
