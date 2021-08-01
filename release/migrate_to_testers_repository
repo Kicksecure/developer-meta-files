@@ -23,5 +23,6 @@ source ../../../help-steps/variables
 cd "$mydir_backup"
 
 ../debug-steps/reprepro-wrapper copymatched buster-testers buster-developers "*"
+../debug-steps/reprepro-wrapper copymatched bullseye-testers bullseye-developers "*"
 
-true "${cyan}INFO: Done. Migrated buster-developers repository to buster-testers repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated developers repository to testers repository. Do not forget to upload it.${reset}"

@@ -23,5 +23,6 @@ source ../../../help-steps/variables
 cd "$mydir_backup"
 
 ../debug-steps/reprepro-wrapper copymatched buster buster-proposed-updates "*"
+../debug-steps/reprepro-wrapper copymatched bullseye bullseye-proposed-updates "*"
 
-true "${cyan}INFO: Done. Migrated buster-proposed-updates repository to buster repository. Do not forget to upload it.${reset}"
+true "${cyan}INFO: Done. Migrated proposed-updates repository to stable repository. Do not forget to upload it.${reset}"
