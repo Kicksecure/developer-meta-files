@@ -1105,6 +1105,10 @@ override_dh_installchangelogs:
    true
 }
 
+pkg_git_reset() {
+   git reset --hard
+}
+
 pkg_git_diff_and_commit() {
    #git reset --hard
    #continue
