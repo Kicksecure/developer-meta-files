@@ -1013,14 +1013,14 @@ pkg_git_commit_copyright() {
 }
 
 pkg_git_manpages() {
-   if ! test -d "$item/man" ; then
+   if ! test -d "man" ; then
       return 0
    fi
    genmkfile manpages
-   msg='add man pages (generated using "genmkfile manpages")'
-   git add auto-generated-man-pages/* || true
-   git commit -m "$msg" || true
-   git status
+   msg='re-generate man pages (generated using "genmkfile manpages")'
+   echo git add auto-generated-man-pages/* || true
+   echo git commit -m "$msg" || true
+   echo git status
    true
 }
 
@@ -1110,7 +1110,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message=""
+   commit_message="man page"
 
    git add -A
    git diff --cached
