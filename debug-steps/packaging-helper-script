@@ -793,8 +793,8 @@ pkg_compat_delete() {
 }
 
 pkg_debhelper_bump() {
-#    one='debhelper (>= 9)'
 #    two='debhelper (>= 12)'
+#    two='debhelper (>= 13), debhelper-compat (= 13)'
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
 
 #    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
@@ -803,7 +803,8 @@ pkg_debhelper_bump() {
 #    str_replace.pl "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
-#    two="Standards-Version: 4.5.1"
+#    two="Standards-Version: 4.5.1
+
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
@@ -1076,7 +1077,7 @@ pkg_git_genmkfile_remove() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="minor"
+   msg="bullseye"
    git commit -m "$msg" || true
    git status
    true
