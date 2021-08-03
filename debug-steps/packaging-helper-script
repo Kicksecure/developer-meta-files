@@ -1110,7 +1110,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="move /usr/lib/helper-scripts and /usr/lib/curl-scripts to /usr/libexec/helper-scripts as per lintian FHS"
+   commit_message="move /usr/lib/security-misc to /usr/libexec/security-misc as per lintian FHS"
 
    git add -A
 
