@@ -1018,9 +1018,9 @@ pkg_git_manpages() {
    fi
    genmkfile manpages
    msg='re-generate man pages (generated using "genmkfile manpages")'
-   echo git add auto-generated-man-pages/* || true
-   echo git commit -m "$msg" || true
-   echo git status
+   git add auto-generated-man-pages/* || true
+   git commit -m "$msg" || true
+   git status
    true
 }
 
