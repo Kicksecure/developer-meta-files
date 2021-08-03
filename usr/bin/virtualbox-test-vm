@@ -37,7 +37,7 @@ variables() {
    vm_wait_for_vm_start_timeout=60
    vm_wait_for_vm_shutdown_timeout=20
 
-   vboxmanage_sudo_wrapper="$vboxmanage_cmd guestcontrol $vmname run --username $user_name --password changeme --wait-stdout --wait-stderr --exe /usr/lib/helper-scripts/sudo-askpass-wrapper -- apt/sudo-askpass-wrapper"
+   vboxmanage_sudo_wrapper="$vboxmanage_cmd guestcontrol $vmname run --username $user_name --password changeme --wait-stdout --wait-stderr --exe /usr/libexec/helper-scripts/sudo-askpass-wrapper -- apt/sudo-askpass-wrapper"
 }
 
 vm_is_running_test() {
