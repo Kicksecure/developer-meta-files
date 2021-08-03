@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 12)
 Homepage: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
 Vcs-Browser: https://github.com/Whonix/anon-shared-build-apt-sources-tpo
 Vcs-Git: https://github.com/Whonix/anon-shared-build-apt-sources-tpo.git
-Standards-Version: 4.3.0
+Standards-Version: 4.5.1
 
 Package: anon-shared-build-apt-sources-tpo
 Architecture: all

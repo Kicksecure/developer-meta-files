@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 12), config-package-dev
 Homepage: https://github.com/Whonix/qubes-whonix
 Vcs-Browser: https://github.com/Whonix/qubes-whonix
 Vcs-Git: https://github.com/Whonix/qubes-whonix.git
-Standards-Version: 4.3.0
+Standards-Version: 4.5.1
 
 Package: qubes-whonix
 Architecture: all

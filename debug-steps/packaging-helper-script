@@ -786,15 +786,8 @@ pkg_copy_contributing_file() {
    true
 }
 
-pkg_copy_compat() {
-   repo_skip "genmkfile" || return 0
-
-   local compare_with_path
-
-   compare_with_path="../genmkfile"
-   compare_with_full_path="$(realpath "$compare_with_path")"
-
-   cp "$compare_with_full_path/debian/compat" "$repo_full_path/debian/compat"
+pkg_compat_delete() {
+   git rm "debian/compat"
 
    true
 }
@@ -810,7 +803,7 @@ pkg_debhelper_bump() {
 #    str_replace.pl "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
-#    two="Standards-Version: 4.3.0"
+#    two="Standards-Version: 4.5.1"
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
@@ -869,7 +862,6 @@ pkg_packaging_files_diff() {
    fi
 
    diff "$compare_with_full_path/debian/source/format" "$repo_full_path/debian/source/format"
-   diff "$compare_with_full_path/debian/compat" "$repo_full_path/debian/compat"
 
    if [ "$reponame" = "corridor" ]; then
       ## Corridor has no COPYING but a LICENSE-ISC file.

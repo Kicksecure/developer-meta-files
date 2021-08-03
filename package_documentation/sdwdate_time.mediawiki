@@ -14,7 +14,7 @@ dh-apparmor, dh-python, python3
 Homepage: https://github.com/Whonix/sdwdate
 Vcs-Browser: https://github.com/Whonix/sdwdate
 Vcs-Git: https://github.com/Whonix/sdwdate.git
-Standards-Version: 4.3.0
+Standards-Version: 4.5.1
 
 Package: sdwdate
 Architecture: all
