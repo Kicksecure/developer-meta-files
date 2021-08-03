@@ -1050,7 +1050,7 @@ pkg_git_commit_packaging() {
    #git add debian/*.install
    git add debian/control
    #git add -A
-   msg="remove 'Build-Depends: ronn' since no longer required"
+   msg="bullseye"
    git commit -m "$msg"
    git status
    true
