@@ -821,14 +821,6 @@ pkg_debhelper_bump() {
 #    two="ronn"
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
 #
-#    one="dh-systemd,"
-#    two=""
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
-#
-#    one=", dh-systemd"
-#    two=""
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
-#
 #    one='Priority: extra'
 #    two='Priority: optional'
 #    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
