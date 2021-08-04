@@ -330,7 +330,7 @@ Using <code>config-package-dev</code> <code>displace</code>.
 Replace <code>apt</code>, <code>wget</code>, <code>curl</code>,
 <code>ssh</code>, <code>onionshare</code>, <code>ricochet</code>,
 <code>wormhole</code> with <code>uwt</code> wrapper which then calls
-<code>/usr/lib/uwtwrapper</code>.
+<code>/usr/libexec/uwt/uwtwrapper</code>.
 * <code>/usr/bin/apt.anondist</code>
 * <code>/usr/bin/apt-file.anondist</code>
 * <code>/usr/bin/apt-get.anondist</code>
@@ -394,7 +394,7 @@ https://phabricator.whonix.org/T317
 uwt wrapped application
 
 * <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
-* <code>exec /usr/lib/uwtwrapper "$@"</code>
+* <code>exec /usr/libexec/uwt/uwtwrapper "$@"</code>
 
 === /usr/bin/apt-file.anondist ===
 
@@ -422,7 +422,7 @@ uwt wrapped application
 uwt wrapped application
 
 * <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
-* <code>exec /usr/lib/uwtwrapper "$@"</code>
+* <code>exec /usr/libexec/uwt/uwtwrapper "$@"</code>
 
 === /usr/bin/git.anondist ===
 
@@ -471,7 +471,7 @@ https://phabricator.whonix.org/T444
 * <code>export TOR_CONTROL_PORT</code>
 
 * <code>export uwtwrapper_parent="${BASH_SOURCE[0]}"</code>
-* <code>exec /usr/lib/uwtwrapper "$@"</code>
+* <code>exec /usr/libexec/uwt/uwtwrapper "$@"</code>
 === /usr/bin/ssh.anondist ===
 
 * [https://github.com/Whonix/uwt/blob/master/usr/bin/ssh.anondist /usr/bin/ssh.anondist]
@@ -519,10 +519,10 @@ Disable torsocks warning spam such as.
 https://phabricator.whonix.org/T317
 * <code>export TORSOCKS_LOG_LEVEL=1</code>
 
-=== /usr/lib/uwtexec ===
+=== /usr/libexec/uwt/uwtexec ===
 
-* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtexec /usr/lib/uwtexec]
-* <code>~/Whonix/packages/uwt/usr/lib/uwtexec</code>
+* [https://github.com/Whonix/uwt/blob/master/usr/libexec/uwt/uwtexec /usr/libexec/uwt/uwtexec]
+* <code>~/Whonix/packages/uwt/usr/libexec/uwt/uwtexec</code>
 
 
 This script is used by uwtwrapper as a workaround to preserve the zeroth
@@ -537,10 +537,10 @@ argument when executing programs with other wrappers like faketime or torsocks.
 * <code>echo "uwt INFO: Stream isolation for some applications enabled. uwt / torsocks will be automatically prepended to some commands. What is that? See:"</code>
 * <code>echo "uwt INFO: https://www.whonix.org/wiki/Stream_Isolation/Easy"</code>
 
-=== /usr/lib/uwtwrapper ===
+=== /usr/libexec/uwt/uwtwrapper ===
 
-* [https://github.com/Whonix/uwt/blob/master/usr/lib/uwtwrapper /usr/lib/uwtwrapper]
-* <code>~/Whonix/packages/uwt/usr/lib/uwtwrapper</code>
+* [https://github.com/Whonix/uwt/blob/master/usr/libexec/uwt/uwtwrapper /usr/libexec/uwt/uwtwrapper]
+* <code>~/Whonix/packages/uwt/usr/libexec/uwt/uwtwrapper</code>
 
 When running uwt wrapped applications (such as <code>apt</code>,
 <code>wget</code>, <code>curl</code>, <code>onionshare</code> or others)
@@ -550,7 +550,7 @@ When for example <code>apt</code> or <code>curl</code> is executed, what
 really happens is running <code>torsocks apt</code> or
 <code>torsocks curl</code>.
 
-uwtwrappers and <code>/usr/lib/uwtwrapper</code> are hacks to socksify applications
+uwtwrappers and <code>/usr/libexec/uwt/uwtwrapper</code> are hacks to socksify applications
 that do
 not support native socks proxy settings. Used to implement Stream Isolation.
 https://www.whonix.org/wiki/Stream_Isolation
