@@ -1392,6 +1392,8 @@ pkg_only_build_all() {
    export make_lintian=true
    export make_use_cowbuilder=true
    genmkfile deb-pkg
+
+   true
 }
 
 pkg_upstream_and_debian_changelog_bump() {
