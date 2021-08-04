@@ -1110,7 +1110,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="move /usr/lib/security-misc to /usr/libexec/security-misc as per lintian FHS"
+   commit_message="move /usr/lib/msgcollector to /usr/libexec/msgcollector as per lintian FHS"
 
    git add -A
 
