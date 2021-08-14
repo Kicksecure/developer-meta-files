@@ -28,8 +28,11 @@ true "${cyan}INFO: rsync test...${reset}"
 
 test -x "$openssl_rsync"
 
+## package ftpsync provides rsync-ssl-tunnel but `Depends:` on default-mta (exim)
+## Too heavy a dependency.
+#command -v rsync-ssl-tunnel >/dev/null
+
 ## sudo apt install ftpsync stunnel socat
-command -v rsync-ssl-tunnel >/dev/null
 command -v stunnel >/dev/null
 command -v socat >/dev/null
 
@@ -39,10 +42,10 @@ rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
 ## Cannot use subdomain.
 
 ## openssl-rsync uses by default port 874.
-#rsync --rsh="$openssl_rsync" --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+rsync --rsh="$openssl_rsync" --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 
 ## sudo apt install socat ftpsync
-RSYNC_SSL_PORT=874 RSYNC_SSL_METHOD=socat rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+#RSYNC_SSL_PORT=874 RSYNC_SSL_METHOD=socat rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 
 ## sudo apt install stunnel ftpsync
 #RSYNC_SSL_PORT=874 rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
