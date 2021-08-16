@@ -1447,6 +1447,21 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
    true
 }
 
+## not yet used
+onetime_usrmerge() {
+   if ! -d ./lib ; then
+      return 0
+   fi
+
+   mkdir -p ./usr
+   git mv ./lib ./usr/
+
+   sed -i '/lib\/\*/d' "./debian/$item.install"
+   git add "./debian/$item.install"
+
+   true
+}
+
 loop_helper() {
    for item in ./*; do
       if [ ! -d "$item" ]; then
