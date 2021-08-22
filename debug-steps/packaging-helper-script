@@ -319,8 +319,8 @@ README.md
 
       true "file_name: $file_name"
       temp="$file_name"
-      file_name_without_leading_dot="$(echo "$temp" | str_replace "/home/user/whonix_dot/Whonix/packages/" "")"
-      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | str_replace "/home/user/Whonix/packages/" "")"
+      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/whonix_dot/Whonix/packages/" "")"
+      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace "/home/user/Whonix/packages/" "")"
 
       file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
       file_name_without_reponame="/${file_name_without_reponame}"
@@ -369,7 +369,7 @@ README.md
          if [ "$first_word" = "####" ]; then
             #echo "$web_link $file_name_to_open"
 
-            #file_name_editor="$(echo "$file_name_to_open" | str_replace "~" ~)"
+            #file_name_editor="$(echo "$file_name_to_open" | LANG=C str_replace "~" ~)"
             #kate "$file_name_editor"
             #break
 
@@ -387,8 +387,8 @@ README.md
                fi
             fi
             if [ "$second_word" = "project" ]; then
-               projects="$(echo "$line" | str_replace "#### project " "")"
-               projects="$(echo "$projects" | str_replace " and" "")"
+               projects="$(echo "$line" | LANG=C str_replace "#### project " "")"
+               projects="$(echo "$projects" | LANG=C str_replace " and" "")"
                echo "projects: $projects"
                continue
             fi
@@ -423,8 +423,8 @@ README.md
                fi
             fi
             if [ "$second_word" = "category" ]; then
-               categories="$(echo "$line" | str_replace "#### category " "")"
-               categories="$(echo "$categories" | str_replace " and" "")"
+               categories="$(echo "$line" | LANG=C str_replace "#### category " "")"
+               categories="$(echo "$categories" | LANG=C str_replace " and" "")"
                echo "categories: $categories"
                continue
             fi
@@ -452,7 +452,7 @@ README.md
             ## translate '#commented-out-command' to '* <code>#commented-out-command</code><br />'
             if [ "$first_character_of_line" = "#" ]; then
                if [ ! "$second_character_of_line" = "#" ]; then
-                  line="$(echo "$line" | str_replace "#" "")"
+                  line="$(echo "$line" | LANG=C str_replace "#" "")"
                   line="<code>#$line</code><br />"
                   internal_descr_writer "$line"
                   continue
@@ -465,7 +465,7 @@ README.md
                continue
             fi
 
-            line="$(echo "$line" | str_replace "## " "")"
+            line="$(echo "$line" | LANG=C str_replace "## " "")"
             internal_descr_writer "$line"
          fi
       done < "$file_name"
@@ -554,7 +554,7 @@ pkg_descr_merger() {
 
    for file_name_full_path in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
       file_name_only="${file_name_full_path##*/}"
-      package_name="$(echo "$file_name_only" | str_replace "_${category}.mediawiki" "")"
+      package_name="$(echo "$file_name_only" | LANG=C str_replace "_${category}.mediawiki" "")"
 
       if echo "$package_name" | grep "\-gw-" ; then
          machine=gateway
@@ -795,33 +795,33 @@ pkg_compat_delete() {
 pkg_debhelper_bump() {
 #    two='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
-#    str_replace "$one" "$two" "$repo_full_path/debian/control"
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 
 #    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
 #    two='https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
-#    str_replace "$one" "$two" debian/copyright
-#    str_replace "$one" "$two" COPYING
+#    LANG=C str_replace "$one" "$two" debian/copyright
+#    LANG=C str_replace "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
 #    two="Standards-Version: 4.5.1
 
-#    str_replace "$one" "$two" "$repo_full_path/debian/control"
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
 #    two="debian-watch-does-not-check-gpg-signature"
-#    str_replace "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
 #
 #    one="ruby-ronn"
 #    two="ronn"
-#    str_replace "$one" "$two" "$repo_full_path/debian/control"
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one='Priority: extra'
 #    two='Priority: optional'
-#    str_replace "$one" "$two" "$repo_full_path/debian/control"
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 
    one='--with=config-package --with=systemd'
    two='--with=config-package'
-   str_replace "$one" "$two" "$repo_full_path/debian/rules"
+   LANG=C str_replace "$one" "$two" "$repo_full_path/debian/rules"
 
    git add "$repo_full_path/debian/rules"
    git commit -m "port to debian bullseye" || true
