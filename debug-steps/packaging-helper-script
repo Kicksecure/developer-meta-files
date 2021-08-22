@@ -795,33 +795,33 @@ pkg_compat_delete() {
 pkg_debhelper_bump() {
 #    two='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+#    str_replace "$one" "$two" "$repo_full_path/debian/control"
 
 #    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
 #    two='https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
-#    str_replace.pl "$one" "$two" debian/copyright
-#    str_replace.pl "$one" "$two" COPYING
+#    str_replace "$one" "$two" debian/copyright
+#    str_replace "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
 #    two="Standards-Version: 4.5.1
 
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+#    str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
 #    two="debian-watch-does-not-check-gpg-signature"
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
+#    str_replace "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
 #
 #    one="ruby-ronn"
 #    two="ronn"
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+#    str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one='Priority: extra'
 #    two='Priority: optional'
-#    str_replace.pl "$one" "$two" "$repo_full_path/debian/control"
+#    str_replace "$one" "$two" "$repo_full_path/debian/control"
 
    one='--with=config-package --with=systemd'
    two='--with=config-package'
-   str_replace.pl "$one" "$two" "$repo_full_path/debian/rules"
+   str_replace "$one" "$two" "$repo_full_path/debian/rules"
 
    git add "$repo_full_path/debian/rules"
    git commit -m "port to debian bullseye" || true
