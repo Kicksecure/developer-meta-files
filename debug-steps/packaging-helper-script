@@ -1166,7 +1166,12 @@ pkg_git_log_giant_make() {
    true
 }
 
-pkg_git_log_old_new() {
+pkg_git_main_git_log_writer() {
+   pushd .. >/dev/null
+   pushd .. >/dev/null
+}
+
+pkg_git_packges_git_log_writer() {
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
@@ -1463,35 +1468,47 @@ onetime_usrmerge() {
    true
 }
 
+## not yet used
+do_nothing() {
+   true "INFO: Doing nothing."
+}
+
+loop_helper_worker() {
+   counter=$(( $counter + 1 ))
+   true "item: $item | counter: $counter"
+
+   reponame="$(basename "$item")"
+   repo_full_path="$(realpath "$item")"
+
+   true "${cyan}INFO: reponame: $reponame${reset}"
+
+   if [ ! "$item" = "Whonix" ]; then
+      cd "$item"
+   fi
+
+   $@
+
+   if [ ! "$item" = "Whonix" ]; then
+      cd ..
+   fi
+
+   #true "press enter to continue_did"
+   #read temp
+}
+
 loop_helper() {
    for item in ./*; do
       if [ ! -d "$item" ]; then
          continue
       fi
-
-      #set +x
-
-      counter=$(( $counter + 1 ))
-      true "item: $item | counter: $counter"
-
-      reponame="$(basename "$item")"
-      repo_full_path="$(realpath "$item")"
-
-      true "${cyan}INFO: reponame: $reponame${reset}"
-
-      cd "$item"
-
-      $@
-
-      cd ..
-
-      true
-      true
-      true
-
-      #true "press enter to continue_did"
-      #read temp
+      loop_helper_worker
    done
+
+   ## Whonix/Whonix
+   item=Whonix
+   cd ..
+
+   loop_helper_worker
 }
 
 announcement() {
