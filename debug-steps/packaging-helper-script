@@ -56,9 +56,10 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="15.0.1.7.3-developers-only"
-version_new_main="15.0.1.9.2-developers-only"
-giant_git_log_file="/home/user/whonix_binary/giant_git_log.txt"
+version_old_main="15.0.1.9.3-developers-only"
+version_new_main="16.0.0.8-developers-only"
+giant_git_log_file="/home/user/whonix_binary/temp-delete/giant_git_log.txt"
+mkdir -p "/home/user/whonix_binary/temp-delete/g"
 
 commit_filter() {
     set +x
