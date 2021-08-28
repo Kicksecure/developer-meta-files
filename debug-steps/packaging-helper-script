@@ -1179,10 +1179,9 @@ pkg_git_packges_git_log_writer() {
 
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
+      announcement_create=true
       rm -r -f "$giant_git_log_file"
    fi
-
-   ## TODO: Whonix/Whonix
 
    notable_changes=""
 
@@ -1603,14 +1602,14 @@ loop_helper() {
       if [ ! -d "$item" ]; then
          continue
       fi
-      loop_helper_worker
+      loop_helper_worker "$@"
    done
 
    ## Whonix/Whonix
    item=Whonix
    cd ..
 
-   loop_helper_worker
+   loop_helper_worker "$@"
 }
 
 main() {
@@ -1620,17 +1619,6 @@ main() {
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
       true "INFO: syntax: ./$0 function-name"
       exit 0
-   fi
-
-   if [ "$@" = "commit_filter" ]; then
-      commit_filter
-      return 0
-   fi
-
-   if [ "$@" = "announcement" ]; then
-      loop_helper pkg_git_log_giant_make
-      announcement
-      return 0
    fi
 
    loop_helper "$@"
@@ -1644,4 +1632,13 @@ main() {
 # pkg_descr_creator
 # exit
 
+if [ "$@" = "commit_filter" ]; then
+   commit_filter
+   exit 0
+fi
+
 main "$@"
+
+if [ "$announcement_create" = "true" ]; then
+   announcement
+fi
