@@ -1253,7 +1253,7 @@ pkg_git_packges_git_log_writer() {
 
       if [ "$notable_changes" = "" ]; then
          notable_changes=yes
-         echo "* [$reponame](https://gitlab.com/whonix/$reponame)" >> "$giant_git_log_file"
+         echo "* [$reponame_pretty](https://gitlab.com/whonix/$reponame)" >> "$giant_git_log_file"
       fi
 
       echo "  * $log_msg" >> "$giant_git_log_file"
@@ -1586,17 +1586,20 @@ loop_helper_worker() {
    true "item: $item | counter: $counter"
 
    reponame="$(basename "$item")"
+   reponame_pretty="$reponame"
    repo_full_path="$(realpath "$item")"
 
    true "${cyan}INFO: reponame: $reponame${reset}"
 
-   if [ ! "$item" = "Whonix" ]; then
+   if [ ! "$main_source_code_folder" = "true" ]; then
       cd "$item"
+   else
+      reponame_pretty="Whonix build script"
    fi
 
    $@
 
-   if [ ! "$item" = "Whonix" ]; then
+   if [ ! "$main_source_code_folder" = "true" ]; then
       cd ..
    fi
 
