@@ -1651,6 +1651,10 @@ fi
 
 main "$@"
 
+## To auto generate a release announcement, run:
+## ./debug-steps/packaging-helper-script pkg_git_packges_git_log_writer
+##
+## Can be found in folder $announcements_draft_folder
 if [ "$announcement_create" = "true" ]; then
    announcement
 fi
