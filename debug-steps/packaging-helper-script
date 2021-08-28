@@ -1628,6 +1628,7 @@ main() {
    fi
 
    if [ "$@" = "announcement" ]; then
+      loop_helper pkg_git_log_giant_make
       announcement
       return 0
    fi
