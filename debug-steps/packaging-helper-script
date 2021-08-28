@@ -1186,14 +1186,20 @@ pkg_git_packges_git_log_writer() {
 
    notable_changes=""
 
-   pushd .. >/dev/null
-   if package_version_old="$(git rev-parse "${version_old_main}:packages/$reponame")" ; then
-      new_package=false
+   if [ "$main_source_code_folder" = "false" ]; then
+      pushd .. >/dev/null
+      if package_version_old="$(git rev-parse "${version_old_main}:packages/$reponame")" ; then
+         new_package=false
+      else
+         new_package=true
+      fi
+      package_version_new="$(git rev-parse "${version_new_main}:packages/$reponame")"
+      popd >/dev/null
    else
-      new_package=true
+      new_package=false
+      package_version_old="${version_old_main}"
+      package_version_new="${version_new_main}"
    fi
-   package_version_new="$(git rev-parse "${version_new_main}:packages/$reponame")"
-   popd >/dev/null
 
    if [ "$new_package" = "false" ]; then
       if [ "${package_version_old}" = "${package_version_new}" ]; then
@@ -1599,6 +1605,7 @@ loop_helper_worker() {
 }
 
 loop_helper() {
+   main_source_code_folder=false
    for item in ./*; do
       if [ ! -d "$item" ]; then
          continue
@@ -1607,6 +1614,7 @@ loop_helper() {
    done
 
    ## Whonix/Whonix
+   main_source_code_folder=true
    item=Whonix
    cd ..
 
