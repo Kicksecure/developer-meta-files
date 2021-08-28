@@ -59,7 +59,9 @@ repo_skip() {
 version_old_main="15.0.1.9.3-developers-only"
 version_new_main="16.0.0.8-developers-only"
 giant_git_log_file="/home/user/whonix_binary/temp-delete/giant_git_log.txt"
-mkdir -p "/home/user/whonix_binary/temp-delete/g"
+announcements_draft_folder="/home/user/whonix_binary/announcements-drafts"
+mkdir -p "/home/user/whonix_binary/temp-delete/"
+mkdir -p "$announcements_draft_folder"
 
 commit_filter() {
     set +x
@@ -1516,7 +1518,7 @@ $(cat "$giant_git_log_file")
 ----
 
 (This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
-   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_testers_${version_new_main}.txt" >/dev/null
+   tee "$announcements_draft_folder/Whonix_VirtualBox_testers_${version_new_main}.txt" >/dev/null
 
 ####
 
@@ -1570,7 +1572,7 @@ $(cat "$giant_git_log_file")
 ----
 
 (This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
-   tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_point_${version_new_main}.txt" >/dev/null
+   tee "$announcements_draft_folder/Whonix_VirtualBox_point_${version_new_main}.txt" >/dev/null
 }
 
 loop_helper_worker() {
