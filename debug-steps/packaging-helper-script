@@ -1473,44 +1473,6 @@ do_nothing() {
    true "INFO: Doing nothing."
 }
 
-loop_helper_worker() {
-   counter=$(( $counter + 1 ))
-   true "item: $item | counter: $counter"
-
-   reponame="$(basename "$item")"
-   repo_full_path="$(realpath "$item")"
-
-   true "${cyan}INFO: reponame: $reponame${reset}"
-
-   if [ ! "$item" = "Whonix" ]; then
-      cd "$item"
-   fi
-
-   $@
-
-   if [ ! "$item" = "Whonix" ]; then
-      cd ..
-   fi
-
-   #true "press enter to continue_did"
-   #read temp
-}
-
-loop_helper() {
-   for item in ./*; do
-      if [ ! -d "$item" ]; then
-         continue
-      fi
-      loop_helper_worker
-   done
-
-   ## Whonix/Whonix
-   item=Whonix
-   cd ..
-
-   loop_helper_worker
-}
-
 announcement() {
    echo "\
 # Testers Wanted!
@@ -1609,6 +1571,44 @@ $(cat "$giant_git_log_file")
 
 (This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
    tee "${MYDIR}/../misc/announcements-drafts/Whonix_VirtualBox_point_${version_new_main}.txt" >/dev/null
+}
+
+loop_helper_worker() {
+   counter=$(( $counter + 1 ))
+   true "item: $item | counter: $counter"
+
+   reponame="$(basename "$item")"
+   repo_full_path="$(realpath "$item")"
+
+   true "${cyan}INFO: reponame: $reponame${reset}"
+
+   if [ ! "$item" = "Whonix" ]; then
+      cd "$item"
+   fi
+
+   $@
+
+   if [ ! "$item" = "Whonix" ]; then
+      cd ..
+   fi
+
+   #true "press enter to continue_did"
+   #read temp
+}
+
+loop_helper() {
+   for item in ./*; do
+      if [ ! -d "$item" ]; then
+         continue
+      fi
+      loop_helper_worker
+   done
+
+   ## Whonix/Whonix
+   item=Whonix
+   cd ..
+
+   loop_helper_worker
 }
 
 main() {
