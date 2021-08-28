@@ -74,9 +74,30 @@ commit_filter() {
        set -x
        return 1
     fi
+    if echo "$commit_msg_short" | grep -i -q "lintian FHS" ; then
+       set -x
+       return 1
+    fi
+    if echo "$commit_msg_short" | grep -i -q "LANG=C" ; then
+       set -x
+       return 1
+    fi
+    if echo "$commit_msg_short" | grep -i -q "genmkfile manpages" ; then
+       set -x
+       return 1
+    fi
+    if echo "$commit_msg_short" | grep -i -q "lintian" ; then
+       set -x
+       return 1
+    fi
 
     for text in \
+        "re-generated man pages" \
+        "update lintian tag name" \
+        "genmkfile debinstfile" \
+        "update-path" \
         "output, refactoring" \
+        "man" \
         "manpage" \
         "lintian" \
         "fix comment" \
@@ -1240,6 +1261,8 @@ pkg_git_packges_git_log_writer() {
          committer_person="@GavinPacini"
       elif [ "$committer_person" = "Gavin Pacini" ]; then
          committer_person="@JeremyRand"
+      elif [ "$committer_person" = "HulaHoop0" ]; then
+         committer_person="@HulaHoop"
       fi
 
       if [ "$committer_person" = "Patrick Schleizer" ]; then
@@ -1519,7 +1542,7 @@ $(cat "$giant_git_log_file")
 
 # Full difference of all changes
 
- https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}
+[https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}](https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main})
 
 ----
 
