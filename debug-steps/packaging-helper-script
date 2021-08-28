@@ -186,6 +186,7 @@ commit_filter() {
         "."
         do
         if [ "$text" = "$commit_msg_short" ]; then
+            set -x
             return 1
         fi
     done
