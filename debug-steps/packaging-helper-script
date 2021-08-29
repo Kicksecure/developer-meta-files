@@ -49,6 +49,12 @@ rm -f /tmp/list-of-packages
 command -v isutf8
 
 repo_skip() {
+   if [ "main" = "$1" ]; then
+      if [ "$main_source_code_folder" = "true" ]; then
+         true "Skipping $reponame (main)."
+         return 1
+      fi
+   fi
    if [ "$reponame" = "$1" ]; then
       true "Skipping $reponame."
       return 1
@@ -222,6 +228,7 @@ pkg_readme_creator_commit() {
 }
 
 pkg_readme_creator_do() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    repo_skip "anon-meta-packages" || return 0
@@ -316,6 +323,7 @@ recurse() {
 }
 
 pkg_descr_creator() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
    repo_skip "anon-icon-pack" || return 0
    repo_skip "kicksecure-network-conf" || return 0
@@ -788,6 +796,7 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
+   repo_skip "main" || return 0
    repo_skip "genmkfile" || return 0
 
    cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
@@ -801,6 +810,7 @@ pkg_packaging_copy() {
 }
 
 pkg_copy_contributing_file() {
+   repo_skip "main" || return 0
    repo_skip "kloak" || return 0
    repo_skip "corridor" || return 0
 
@@ -1059,6 +1069,7 @@ pkg_git_debinstfile() {
 }
 
 pkg_git_commit_packaging() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    returned="$(git status)"
@@ -1082,6 +1093,7 @@ pkg_git_commit_packaging() {
 }
 
 pkg_git_genmkfile_remove() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
    repo_skip "genmkfile" || return 0
 
@@ -1196,6 +1208,7 @@ pkg_git_main_git_log_writer() {
 }
 
 pkg_git_packges_git_log_writer() {
+   repo_skip "main" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
@@ -1287,6 +1300,7 @@ pkg_git_packges_git_log_writer() {
 }
 
 pkg_git_sign_tags() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
@@ -1308,6 +1322,7 @@ pkg_git_sign_tags() {
 }
 
 pkg_verify_signed_commit() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    genmkfile git-commit-verify
@@ -1315,6 +1330,7 @@ pkg_verify_signed_commit() {
 }
 
 pkg_verify_signed_commit_and_tag() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    genmkfile git-verify
@@ -1339,6 +1355,7 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1351,6 +1368,7 @@ pkg_need_version_bump_show() {
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1365,6 +1383,7 @@ pkg_need_version_bump_do() {
 }
 
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1424,6 +1443,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 }
 
 pkg_only_build_all() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    export make_lintian=true
@@ -1434,6 +1454,7 @@ pkg_only_build_all() {
 }
 
 pkg_upstream_and_debian_changelog_bump() {
+   repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
    genmkfile deb-uachl-bumpup-major
