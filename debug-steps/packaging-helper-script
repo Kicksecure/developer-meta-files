@@ -62,8 +62,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="15.0.1.9.3-developers-only"
-version_new_main="16.0.0.8-developers-only"
+version_old_main="16.0.0.8-developers-only"
+version_new_main="16.0.2.7-developers-only"
 giant_git_log_file="/home/user/whonix_binary/temp-delete/giant_git_log.txt"
 announcements_draft_folder="/home/user/whonix_binary/announcements-drafts"
 mkdir -p "/home/user/whonix_binary/temp-delete/"
