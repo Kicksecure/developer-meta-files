@@ -221,7 +221,22 @@ commit_filter() {
 }
 
 pkg_readme_creator_commit() {
-   pkg_readme_creator_do
+   repo_skip "main" || return 0
+   repo_skip "whonix-developer-meta-files" || return 0
+
+#    repo_skip "anon-meta-packages" || return 0
+#    repo_skip "monero-gui" || return 0
+#    repo_skip "lkrg" || return 0
+
+   ## global readme_file
+   if [ -f "README_generic.md" ]; then
+      ## When there is a README_generic.md, this is a way to express
+      ## "do not create a generic README.md for that package, because it
+      ## already has a real readme."
+      readme_file="README_generic.md"
+   else
+      readme_file="README.md"
+   fi
    git add "$readme_file" || true
    git commit -m "readme" || true
 }
@@ -230,9 +245,9 @@ pkg_readme_creator_do() {
    repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
-   repo_skip "anon-meta-packages" || return 0
-   repo_skip "monero-gui" || return 0
-   repo_skip "lkrg" || return 0
+#    repo_skip "anon-meta-packages" || return 0
+#    repo_skip "monero-gui" || return 0
+#    repo_skip "lkrg" || return 0
 
    ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
