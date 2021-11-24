@@ -62,8 +62,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="16.0.2.7-developers-only"
-version_new_main="16.0.3.1-developers-only"
+version_old_main="16.0.3.1-developers-only"
+version_new_main="16.0.3.7-developers-only"
 announcements_draft_folder="/home/user/whonix_binary/announcements-drafts"
 giant_git_log_file="$announcements_draft_folder/giant_git_log.txt"
 mkdir -p "$announcements_draft_folder"
@@ -1222,7 +1222,7 @@ pkg_git_main_git_log_writer() {
 }
 
 pkg_git_packges_git_log_writer() {
-   repo_skip "main" || return 0
+   #repo_skip "main" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
