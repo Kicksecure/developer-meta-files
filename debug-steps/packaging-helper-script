@@ -1557,6 +1557,8 @@ do_nothing() {
 
 announcement() {
    echo "\
+Whonix ${version_main_new_short} - for VirtualBox - Point Release!
+
 # Testers Wanted!
 
 Download the Testers-Only version of Whonix for VirtualBox:
@@ -1587,7 +1589,11 @@ https://www.whonix.org/wiki/Contribute
 
 # Changelog
 
+TODO
 
+https://www.whonix.org/wiki/Testers_Release
+
+$giant_git_log_file
 
 ----
 
@@ -1598,11 +1604,13 @@ https://www.whonix.org/wiki/Contribute
 ----
 
 (This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
-   tee "$announcements_draft_folder/Whonix_VirtualBox_testers_${version_new_main}.txt" >/dev/null
+   tee "$announcements_draft_folder/Whonix_VirtualBox_testers.txt" >/dev/null
 
 ####
 
    echo "\
+Whonix ${version_main_new_short} - for VirtualBox - Point Release!
+
 # Whonix for VirtualBox
 
 Download Whonix for VirtualBox:
@@ -1614,6 +1622,12 @@ https://www.whonix.org/wiki/VirtualBox
 This is a point release.
 
 https://www.whonix.org/wiki/Point_Release
+
+----
+
+# Major Changes
+
+TODO
 
 ----
 
@@ -1641,7 +1655,9 @@ https://www.whonix.org/wiki/Contribute
 
 # Changelog
 
+TODO
 
+https://www.whonix.org/wiki/Stable_Release
 
 ----
 
@@ -1652,7 +1668,7 @@ https://www.whonix.org/wiki/Contribute
 ----
 
 (This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
-   tee "$announcements_draft_folder/Whonix_VirtualBox_point_${version_new_main}.txt" >/dev/null
+   tee "$announcements_draft_folder/Whonix_VirtualBox_point.txt" >/dev/null
 }
 
 loop_helper_worker() {
