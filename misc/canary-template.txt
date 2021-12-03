@@ -1,24 +1,24 @@
-Whonix Canary
+Canary for Kicksecure / Whonix project
 ----
 Statements
 -----------
 
-The Whonix lead developer who digitally signed this file states the following:
+The Kicksecure / Whonix lead developer who digitally signed this file states the following:
 
 1. Canary issue date: see the gpg signature time.
 
 2.
 
-Definition “artifact”: Whonix software, Whonix downloads, Whonix source code
+Definition “artifact”: Kicksecure / Whonix software, Kicksecure / Whonix downloads, Kicksecure / Whonix source code
 
-* The Whonix Project has never added any backdoor to any artifact.
-* The Whonix Project has never turned over any signing key.
-* The Whonix Project has never knowingly signed any artifact containing any backdoor.
-* The Whonix Project has never weakened, compromised, or subverted any of its cryptography.
+* The Kicksecure / Whonix Project has never added any backdoor to any artifact.
+* The Kicksecure / Whonix Project has never turned over any signing key.
+* The Kicksecure / Whonix Project has never knowingly signed any artifact containing any backdoor.
+* The Kicksecure / Whonix Project has never weakened, compromised, or subverted any of its cryptography.
 
 3. We plan to publish the next canary statement within 4 weeks.
 
-This file should be signed with a detached OpenPGP signature by the Whonix lead developer.
+This file should be signed with a detached OpenPGP signature by the Kicksecure / Whonix lead developer.
 
 Do not trust the contents of this file blindly - always verify digital signatures!
 
@@ -32,7 +32,7 @@ None.
 Disclaimers and notes
 ---------------------
 
-Be mindful that Whonix has been designed under the assumption that all relevant infrastructure is permanently compromised. This means NO trust is placed in any of the servers or services which host or provide any Whonix-related data, particularly software updates, source code repositories, and Whonix downloads.
+Be mindful that Kicksecure / Whonix has been designed under the assumption that all relevant infrastructure is permanently compromised. This means NO trust is placed in any of the servers or services which host or provide any Whonix-related data, particularly software updates, source code repositories, and Kicksecure / Whonix downloads.
 
 This canary scheme is not infallible. Signing the declaration makes it very difficult for a third party to produce arbitrary declarations, but this does not prevent the use of coercion, blackmail, compromise of the signer's laptop or other measures to produce false declarations.
 
