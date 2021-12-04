@@ -17,6 +17,6 @@ rsstail -1 -n5 -u https://feeds.bbci.co.uk/news/world/rss.xml
 
 #rsstail -1 -n5 -u http://feeds.reuters.com/reuters/worldnews
 
-curl --silent --fail --proto =https --tlsv1.3 https://blockchain.info/latestblock | python3 -c "import sys, json; print(json.load(sys.stdin)['height'])"
+curl --silent --fail --proto =https --tlsv1.3 --cert-status https://blockchain.info/latestblock | python3 -c "import sys, json; print(json.load(sys.stdin)['height'])"
 
 date -u "+%s"
