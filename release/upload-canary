@@ -55,7 +55,7 @@ rsync \
    "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
    "$WHONIX_BINARY/canary/canary.txt.sig" \
    "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
-   "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
+   "root@whonix.org:/var/rsync/developer-meta-files/canary"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
 read temp
@@ -70,4 +70,4 @@ rsync \
    "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
    "$WHONIX_BINARY/canary/canary.txt.sig" \
    "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
-   "root@whonix.org:/var/rsync/whonixdevelopermetafiles/canary"
+   "root@whonix.org:/var/rsync/developer-meta-files/canary"

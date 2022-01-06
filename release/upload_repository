@@ -133,10 +133,10 @@ main() {
    upload_real_pool
 }
 
-upload_location="root@whonix.org:/var/rsync/whonixdevelopermetafiles/internal"
+upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
 
 main "$@"
 
-# upload_location="adrelanos,whonixdevelopermetafiles@frs.sourceforge.net:/home/frs/project/whonixdevelopermetafiles/internal"
+# upload_location="adrelanos,developer-meta-files@frs.sourceforge.net:/home/frs/project/developer-meta-files/internal"
 #
 # main "$@"

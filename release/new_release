@@ -5,9 +5,9 @@
 
 ## Whonix News v4
 ## A deterministic tarball on
-## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz/download
+## http://sourceforge.net/projects/developer-meta-files/files/internal/news_v4/whonix_news.tar.xz/download
 ## and a detached armored OpenPGP signature on
-## http://sourceforge.net/projects/whonixdevelopermetafiles/files/internal/news_v4/whonix_news.tar.xz.asc/download
+## http://sourceforge.net/projects/developer-meta-files/files/internal/news_v4/whonix_news.tar.xz.asc/download
 
 set -x
 set -e
