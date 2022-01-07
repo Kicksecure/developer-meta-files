@@ -1,7 +1,0 @@
-This feature has been deprecated!
-#################################
-
-No news will be posted here.
-
-To stay up to date, use one of the many methods listed here:
-https://www.whonix.org/wiki/Stay_Tuned
