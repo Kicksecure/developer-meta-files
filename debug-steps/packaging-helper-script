@@ -1495,6 +1495,11 @@ pkg_upstream_and_debian_changelog_bump() {
    ## sets maybe: version_numbers_by_upstream
    make_source_overrides_file
 
+   ## If version_numbers_by_upstream=true then 'genmkfile deb-uachl-bumpup-major'
+   ## would be bumping only the package revision number. Not the version number.
+   ## In that case reprepro ('genmkfile reprepro-add"I) would then detect the same
+   ## source tarball version but with different content (checksum) and therefore
+   ## refuse adding it.
    if [ "$version_numbers_by_upstream" = "true" ]; then
       ## XXX: manual
       genmkfile deb-uachl-bumpup-manual
