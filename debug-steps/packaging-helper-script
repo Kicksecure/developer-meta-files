@@ -1415,15 +1415,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
-   ## Complex, slow.
-   #make_init ## includes make_get_variables
-   ## sets maybe: version_numbers_by_upstream
-   make_source_overrides_file
-
-#    if [ "$version_numbers_by_upstream" = "true" ]; then
-#       exit 55
-#    fi
-
    last_log_entry="$(git log --format=%s -1)"
 
    if [ "bumped changelog version" = "$last_log_entry" ]; then
@@ -1499,7 +1490,17 @@ pkg_upstream_and_debian_changelog_bump() {
    repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
-   genmkfile deb-uachl-bumpup-major
+   ## Complex, slow.
+   #make_init ## includes make_get_variables
+   ## sets maybe: version_numbers_by_upstream
+   make_source_overrides_file
+
+   if [ "$version_numbers_by_upstream" = "true" ]; then
+      ## XXX: manual
+      genmkfile deb-uachl-bumpup-manual
+   else
+      genmkfile deb-uachl-bumpup-major
+   fi
 
    git add changelog.upstream
    git add debian/changelog
