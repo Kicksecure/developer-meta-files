@@ -1417,6 +1417,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## Complex, slow.
    #make_init ## includes make_get_variables
+   ## sets maybe: version_numbers_by_upstream
    make_source_overrides_file
 
 #    if [ "$version_numbers_by_upstream" = "true" ]; then
