@@ -1415,6 +1415,14 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "main" || return 0
    repo_skip "whonix-developer-meta-files" || return 0
 
+   ## Complex, slow.
+   #make_init ## includes make_get_variables
+   make_source_overrides_file
+
+#    if [ "$version_numbers_by_upstream" = "true" ]; then
+#       exit 55
+#    fi
+
    last_log_entry="$(git log --format=%s -1)"
 
    if [ "bumped changelog version" = "$last_log_entry" ]; then
@@ -1751,3 +1759,5 @@ main "$@"
 if [ "$announcement_create" = "true" ]; then
    announcement
 fi
+
+true "END: $0"
