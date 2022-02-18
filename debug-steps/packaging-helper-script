@@ -1224,7 +1224,7 @@ pkg_git_main_git_log_writer() {
    pushd .. >/dev/null
 }
 
-pkg_git_packges_git_log_writer() {
+pkg_git_packages_git_log_writer() {
    #repo_skip "main" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
@@ -1760,7 +1760,7 @@ fi
 main "$@"
 
 ## To auto generate a release announcement, run:
-## ./debug-steps/packaging-helper-script pkg_git_packges_git_log_writer
+## ./debug-steps/packaging-helper-script pkg_git_packages_git_log_writer
 ##
 ## Can be found in folder $announcements_draft_folder
 if [ "$announcement_create" = "true" ]; then
