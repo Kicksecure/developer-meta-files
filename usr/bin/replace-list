@@ -9,13 +9,7 @@ set -e
 cd ~/Whonix
 
 replace_list=$(echo "\
-dist_build_qubes dist_build_qubes
-dist_build_unattended_pkg_install dist_build_unattended_pkg_install
-dist_build_upgrade_build_machine dist_build_upgrade_build_machine
-dist_build_upgrade_build_machine dist_build_upgrade_build_machine
-dist_build_unattended_pkg_install dist_build_unattended_pkg_install
-buildconfig-dist buildconfig-dist
-./derivative-maker ./derivative-maker
+whonix_build derivative-maker
 ")
 
 # total=0
