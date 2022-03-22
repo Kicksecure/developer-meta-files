@@ -1,0 +1,38 @@
+#!/bin/bash
+
+## Copyright (C) 2022 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+#set -x
+set -e
+
+cd ~/Whonix
+
+replace_list=$(echo "\
+first_test second_test
+abc def
+'multi start' 'multi end'
+")
+
+# total=0
+# while IFS= read -r -d '' file_name ; do
+#    total=$(( total + 1 ))
+# done < <( find . -type f -not -iwholename '*.git*' -print0 )
+
+counter=0
+while IFS= read -r -d '' file_name ; do
+   counter=$(( total + 1 ))
+   while read line; do
+      if [ "$line" = "" ]; then
+         echo "ERROR! line is empty!"
+      fi
+      read first second <<< "$line"
+      if [ "$first" = "" ]; then
+         echo "ERROR! first is empty!"
+      fi
+      if [ "$second" = "" ]; then
+         echo "ERROR! second is empty!"
+      fi
+      echo LANG=C str_replace "$first" "$second" "$file_name"
+   done < <( echo "$replace_list" )
+done < <( find . -type f -not -iwholename '*.git*' -print0 )
