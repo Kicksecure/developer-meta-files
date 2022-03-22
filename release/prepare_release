@@ -55,7 +55,7 @@ libvirt_compress() {
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      test -f "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
+      test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
@@ -106,7 +106,7 @@ libvirt_compress() {
       filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT") "
       filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER") "
    else
-      filelist+=" $(basename "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT") "
+      filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT") "
       filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_DISCLAIMER") "
    fi
 
@@ -202,7 +202,7 @@ Please donate! [C]
       producturl="https://www.whonix.org/wiki/Other_Operating_Systems"
       vendorurl="https://www.whonix.org"
       vendor="Whonix"
-      eulafile="${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
+      eulafile="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       description="\
 Build Version [A]: ${dist_build_version}
 
@@ -239,7 +239,7 @@ Please donate! [C]
             export $vm_names_to_be_exported \
             --output "$binary_image_ova" \
             --vsys '0' \
-               --eulafile "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT" \
+               --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
                --description "$description" \
                --manifest \
                --product "Whonix-Gateway" \
@@ -561,7 +561,7 @@ main() {
       sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix-base-files/usr/share/whonix/binary_build_folder_dist_LICENSE_AGREEMENT" "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 

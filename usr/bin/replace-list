@@ -9,7 +9,7 @@ set -e
 cd ~/Whonix
 
 replace_list=$(echo "\
-binary_build_folder_dist_LICENSE_AGREEMENT WHONIX_BINARY_LICENSE_AGREEMENT
+WHONIX_BINARY_LICENSE_AGREEMENT WHONIX_BINARY_LICENSE_AGREEMENT
 ")
 
 # total=0
