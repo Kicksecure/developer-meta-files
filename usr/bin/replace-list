@@ -27,7 +27,9 @@ counter=0
 while IFS= read -r -d '' file_name ; do
    counter=$(( total + 1 ))
 
-   if [ "$file_name" = "changelog.upstream" ]; then
+   basename_file_name="${file_name##*/}"
+
+   if [ "$basename_file_name" = "changelog.upstream" ]; then
       continue
    fi
 
