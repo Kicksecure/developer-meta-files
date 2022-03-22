@@ -375,7 +375,7 @@ README.md
 
       true "file_name: $file_name"
       temp="$file_name"
-      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/whonix_dot/Whonix/packages/" "")"
+      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/Whonix/packages/" "")"
       file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace "/home/user/Whonix/packages/" "")"
 
       file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
