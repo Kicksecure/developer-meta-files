@@ -11,7 +11,7 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 ## disable cmd line parser, since not needed
-export whonix_build_one_parsed="1"
+export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
 cd "$MYDIR"

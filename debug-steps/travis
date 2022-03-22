@@ -25,13 +25,13 @@ true "INFO $BASH_SOURCE: mydir: $mydir"
 ## Example mydir:
 ## /home/travis/build/Whonix/developer-meta-files/debug-steps
 
-whonix_dev_meta_files_folder="$(dirname "$mydir")"
-true "INFO $BASH_SOURCE: whonix_dev_meta_files_folder: $whonix_dev_meta_files_folder"
+dist_developer_meta_files_folder="$(dirname "$mydir")"
+true "INFO $BASH_SOURCE: dist_developer_meta_files_folder: $dist_developer_meta_files_folder"
 
-## Example whonix_dev_meta_files_folder:
+## Example dist_developer_meta_files_folder:
 ## /home/travis/build/Whonix/developer-meta-files
 
-whonix_source_folder="$(dirname "$(dirname "$whonix_dev_meta_files_folder")")"
+whonix_source_folder="$(dirname "$(dirname "$dist_developer_meta_files_folder")")"
 true "INFO $BASH_SOURCE: whonix_source_folder: $whonix_source_folder"
 
 ## Example whonix_source_folder:
@@ -52,7 +52,7 @@ elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    sudo --non-interactive -E ./build-steps.d/1100_prepare-build-machine --allow-untagged true
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway --allow-untagged true
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    sudo --non-interactive -E ./whonix_build --flavor whonix-workstation -- --target root --build --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
@@ -60,7 +60,7 @@ elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    sudo --non-interactive -E ./build-steps.d/1100_prepare-build-machine --allow-untagged true
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation --allow-untagged true
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation --allow-untagged true
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
@@ -88,24 +88,24 @@ export dist_build_version="101"
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
    ./build-steps.d/1200_create-debian-packages  --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages --allow-untagged true
-   #sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
+   #sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
    true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages --allow-untagged true
-   #sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
+   #sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
    true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
-   sudo --non-interactive -E "$whonix_dev_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
+   sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
 fi
@@ -149,4 +149,4 @@ true "INFO $BASH_SOURCE: Executed systemcheck."
 ## }}
 
 ## End.
-true "INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected."
+true "INFO: End of: $BASH_SOURCE | $dist_build_error_counter error(s) detected."

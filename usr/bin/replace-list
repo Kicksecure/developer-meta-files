@@ -9,7 +9,9 @@ set -e
 cd ~/Whonix
 
 replace_list=$(echo "\
-WHONIX_BINARY_LICENSE_AGREEMENT WHONIX_BINARY_LICENSE_AGREEMENT
+dist_build_host_operating_system dist_build_host_operating_system
+create_derivative_distribution_debian_packages create_derivative_distribution_debian_packages
+dist_sources_list_temp_build_file dist_sources_list_temp_build_file
 ")
 
 # total=0
@@ -20,6 +22,11 @@ WHONIX_BINARY_LICENSE_AGREEMENT WHONIX_BINARY_LICENSE_AGREEMENT
 counter=0
 while IFS= read -r -d '' file_name ; do
    counter=$(( total + 1 ))
+
+   if [ "$file_name" = "changelog.upstream" ]; then
+      continue
+   fi
+
    while read line; do
       if [ "$line" = "" ]; then
          echo "ERROR! line is empty!"

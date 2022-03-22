@@ -20,7 +20,7 @@ source variables
 
 backup-raw-after-package-install() {
    ## If whonix_build is run with --fast2 switch.
-   if [ "$WHONIX_BUILD_FAST2" = "1" ]; then
+   if [ "$dist_build_fast2" = "1" ]; then
       echo "${bold}${cyan}INFO: run with --fast2 switch, skipping $BASH_SOURCE. ${reset}"
       exit 0
    fi

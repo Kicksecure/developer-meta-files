@@ -51,7 +51,7 @@ main() {
    "$dist_source_help_steps_folder"/prevent-daemons-from-starting || true
 
    ## Networking should be available. Otherwise use the following.
-   #export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
+   #export dist_chroot_mount_resolv_conf="0"
 
    "$dist_source_help_steps_folder"/chroot-raw
 

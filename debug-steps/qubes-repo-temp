@@ -9,7 +9,7 @@ set -e
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## disable cmd line parser, since not needed
-export whonix_build_one_parsed="1"
+export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -61,4 +61,4 @@ qvm-run "$target_vm" "sudo chown -R _apt /var/cache/aptrepo_temp_copy"
 
 qvm-run "$target_vm" "sudo apt-get update"
 
-true "INFO: End of: $BASH_SOURCE | $whonix_build_error_counter error(s) detected."
+true "INFO: End of: $BASH_SOURCE | $dist_build_error_counter error(s) detected."

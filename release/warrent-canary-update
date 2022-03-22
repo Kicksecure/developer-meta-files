@@ -12,7 +12,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
 ## disable cmd line parser, since not needed
-export whonix_build_one_parsed="1"
+export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
 source ../../../help-steps/pre
@@ -75,9 +75,9 @@ mkdir --parents "$binary_build_folder_dist/canary"
 
 full_path_to_canary_txt="$binary_build_folder_dist/canary/canary.txt"
 
-cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
+cp "$dist_developer_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
 
-proof_of_freshness_output="$("$whonix_dev_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1)"
+proof_of_freshness_output="$("$dist_developer_meta_files_folder/release/proof_of_freshness_generator.sh" 2>&1)"
 echo "$proof_of_freshness_output" | tee -a "$full_path_to_canary_txt"
 
 cat "$full_path_to_canary_txt"

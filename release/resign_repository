@@ -9,7 +9,7 @@ set -e
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## disable cmd line parser, since not needed
-export whonix_build_one_parsed="1"
+export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -24,14 +24,14 @@ source ../../../help-steps/variables
 
 ## NOTE: Do not deprecate too early.
 ## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
-#"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
-#"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
-#"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
-#"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-developers
+#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
+#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
+#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
+#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-developers
 
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-proposed-updates
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-testers
-"$whonix_dev_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-developers
+"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye
+"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-proposed-updates
+"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-testers
+"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-developers
 
 true "${cyan}INFO: Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"

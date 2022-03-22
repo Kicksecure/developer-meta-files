@@ -11,7 +11,7 @@ set -e
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
-whonix_build_one_parsed="1"
+dist_build_one_parsed="1"
 VMNAME="internalrun"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -25,7 +25,7 @@ main() {
    reprepro_exit_code="0"
    reprepro_output="$(reprepro \
       $dist_build_reprepro_signing_options \
-      $whonix_build_reprepro_folder_options \
+      $dist_build_reprepro_folder_options \
       "$@" 2>&1)" || { reprepro_exit_code="$?" ; true; };
 
    if echo "$reprepro_output" | grep "is already registered with different checksums!" ; then
@@ -35,5 +35,5 @@ main() {
    return "$reprepro_exit_code"
 }
 
-set_whonix_build_reprepro_folder_options
+set_dist_build_reprepro_folder_options
 main "$@"

@@ -9,7 +9,7 @@ set -e
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## disable cmd line parser, since not needed
-export whonix_build_one_parsed="1"
+export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
