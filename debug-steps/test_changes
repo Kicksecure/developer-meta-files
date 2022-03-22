@@ -25,12 +25,12 @@ cd ..
 
 rm --recursive --force /home/user/whonix_binary
 
-./whonix_build --clean --tor-gateway "$@"
+./derivative-maker --clean --tor-gateway "$@"
 ./build-steps.d/2500_convert-raw-to-vdi --tor-gateway "$@"
 ./build-steps.d/2600_create-vbox-vm --tor-gateway "$@"
 ./build-steps.d/2700_export-vbox-vm --tor-gateway "$@"
 
-./whonix_build --clean --tor-workstation "$@"
+./derivative-maker --clean --tor-workstation "$@"
 ./build-steps.d/2500_convert-raw-to-vdi --tor-workstation "$@"
 ./build-steps.d/2600_create-vbox-vm --tor-workstation "$@"
 ./build-steps.d/2700_export-vbox-vm --tor-workstation "$@"

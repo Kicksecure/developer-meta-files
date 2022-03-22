@@ -46,17 +46,17 @@ ls -la
 ## {{ Build physically isolated machine.
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
-   sudo --non-interactive -E ./whonix_build --flavor whonix-gateway -- --target root --build --allow-untagged true
+   sudo --non-interactive -E ./derivative-maker --flavor whonix-gateway -- --target root --build --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
-   sudo --non-interactive -E ./whonix_build --flavor whonix-gateway -- --target root --build --allow-untagged true
+   sudo --non-interactive -E ./derivative-maker --flavor whonix-gateway -- --target root --build --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
    sudo --non-interactive -E ./build-steps.d/1100_prepare-build-machine --allow-untagged true
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
    sudo --non-interactive -E "$dist_developer_meta_files_folder/debug-steps/locally-upgrade-whonix-debian-packages" --target root --build --flavor whonix-gateway --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
-   sudo --non-interactive -E ./whonix_build --flavor whonix-workstation -- --target root --build --allow-untagged true
+   sudo --non-interactive -E ./derivative-maker --flavor whonix-workstation -- --target root --build --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
-   sudo --non-interactive -E ./whonix_build --flavor whonix-workstation -- --target root --build --allow-untagged true
+   sudo --non-interactive -E ./derivative-maker --flavor whonix-workstation -- --target root --build --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
    sudo --non-interactive -E ./build-steps.d/1100_prepare-build-machine --allow-untagged true
    ./build-steps.d/1200_create-debian-packages --allow-untagged true

@@ -40,13 +40,13 @@ main() {
 
    if [ "$pkg" = "" ]; then
       if [ "$dist_build_flavor" = "whonix-gateway-kde" ]; then
-         if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
+         if [ "$dist_build_qubes" = "true" ]; then
             pkg="qubes-whonix-gateway-kde"
          else
             pkg="non-qubes-whonix-gateway"
          fi
       elif [ "$dist_build_flavor" = "whonix-workstation-kde" ]; then
-         if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
+         if [ "$dist_build_qubes" = "true" ]; then
             pkg="qubes-whonix-workstation"
          else
             pkg="non-qubes-whonix-workstation-kde"

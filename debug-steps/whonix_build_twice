@@ -28,23 +28,23 @@ rm --recursive --force "/home/$SUDO_USER/whonix_binary"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_first"
 rm --recursive --force "/home/$SUDO_USER/whonix_binary_second"
 
-./whonix_build --tor-gateway            -- --clean --target virtualbox "$@"
-./whonix_build --tor-workstation        -- --clean --target virtualbox "$@"
-./whonix_build --tor-custom-workstation -- --clean --target virtualbox "$@"
+./derivative-maker --tor-gateway            -- --clean --target virtualbox "$@"
+./derivative-maker --tor-workstation        -- --clean --target virtualbox "$@"
+./derivative-maker --tor-custom-workstation -- --clean --target virtualbox "$@"
 
-./whonix_build --tor-gateway            -- --build --target virtualbox --report true "$@"
-./whonix_build --tor-workstation        -- --build --target virtualbox --report true "$@"
-./whonix_build --tor-custom-workstation -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-gateway            -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-workstation        -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-custom-workstation -- --build --target virtualbox --report true "$@"
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_first"
 
-./whonix_build --tor-gateway            -- --clean --target virtualbox "$@"
-./whonix_build --tor-workstation        -- --clean --target virtualbox "$@"
-./whonix_build --tor-custom-workstation -- --clean --target virtualbox "$@"
+./derivative-maker --tor-gateway            -- --clean --target virtualbox "$@"
+./derivative-maker --tor-workstation        -- --clean --target virtualbox "$@"
+./derivative-maker --tor-custom-workstation -- --clean --target virtualbox "$@"
 
-./whonix_build --tor-gateway            -- --build --target virtualbox --report true "$@"
-./whonix_build --tor-workstation        -- --build --target virtualbox --report true "$@"
-./whonix_build --tor-custom-workstation -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-gateway            -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-workstation        -- --build --target virtualbox --report true "$@"
+./derivative-maker --tor-custom-workstation -- --build --target virtualbox --report true "$@"
 
 mv "/home/$SUDO_USER/whonix_binary" "/home/$SUDO_USER/whonix_binary_second"
 
