@@ -20,7 +20,7 @@ source ../../../help-steps/colors
 source ../../../help-steps/variables
 
 ## Debugging.
-"$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+"$dist_source_help_steps_folder/gpg_test_sign"
 
 ## NOTE: Do not deprecate too early.
 ## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720

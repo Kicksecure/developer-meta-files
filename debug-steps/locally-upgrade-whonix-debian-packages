@@ -23,11 +23,11 @@ main() {
 
    sync
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/mount-raw"
-   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER/prevent-daemons-from-starting"
+   "$dist_source_help_steps_folder/mount-raw"
+   #"$dist_source_help_steps_folder/prevent-daemons-from-starting"
 
    export WHONIX_CHROOT_MOUNT_RESOLV_CONF="0"
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/chroot-raw"
+   "$dist_source_help_steps_folder/chroot-raw"
 
    sync
 
@@ -46,13 +46,13 @@ main() {
    ## grml-debootstrap is incomplete (does not complain debian security repository) and points to 127.0.0.1.
 
    ## This file doesn't include Whonix's APT repository.
-   cp "$WHONIX_SOURCE_FOLDER/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
    ## Not using any /etc/apt/preferences.d snippets at the moment.
-   #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
+   #cp "$source_code_folder_dist/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
 
    ## Not using any important /etc/apt/apt.conf.d snippets at the moment.
-   #cp "$WHONIX_SOURCE_FOLDER/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
+   #cp "$source_code_folder_dist/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
 
    sync
 
@@ -63,7 +63,7 @@ main() {
    #$CHROOT apt-get ${APTGETOPT[@]} update
    #$CHROOT apt-get ${APTGETOPT[@]} --yes dist-upgrade
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/create-local-temp-apt-repo"
 
    ## Check if we are running on a Whonix-Gateway.
    if [ -f "/usr/share/anon-gw-base-files/gateway" ]; then
@@ -80,9 +80,9 @@ main() {
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    ## TODO: ?
-#    if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-xfce" ]; then
+#    if [ "$dist_build_flavor" = "whonix-gateway-xfce" ]; then
 #       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
-#    elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-cli" ]; then
+#    elif [ "$dist_build_flavor" = "whonix-gateway-cli" ]; then
 #       $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
 #    else
 #       local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
@@ -94,7 +94,7 @@ main() {
 
    #$CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/remove-local-temp-apt-repo"
 
    ## Forget about local repository containing Whonix's packages.
    $CHROOT apt-get --no-download --list-cleanup update
@@ -105,9 +105,9 @@ main() {
    ## Remove lockfile for systemcheck.
    rm --force "/run/package_manager_lock"
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unchroot-raw"
-   #"$WHONIX_SOURCE_HELP_STEPS_FOLDER/unprevent-daemons-from-starting"
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/unmount-raw"
+   "$dist_source_help_steps_folder/unchroot-raw"
+   #"$dist_source_help_steps_folder/unprevent-daemons-from-starting"
+   "$dist_source_help_steps_folder/unmount-raw"
 
    sync
 }

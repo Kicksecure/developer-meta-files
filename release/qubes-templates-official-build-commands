@@ -26,8 +26,8 @@ fi
 
 timestamp=$(date --utc +"%Y%m%d%H%M")
 
-mkdir --parents "$WHONIX_BINARY/qubes-build-commands"
-file_path="$WHONIX_BINARY/qubes-build-commands"
+mkdir --parents "$binary_build_folder_dist/qubes-build-commands"
+file_path="$binary_build_folder_dist/qubes-build-commands"
 
 echo "Build-template r4.0 whonix-gateway-14 $timestamp" > "$file_path/r4.0_whonix-gateway-14.txt"
 gpg --yes --clearsign "$file_path/r4.0_whonix-gateway-14.txt"

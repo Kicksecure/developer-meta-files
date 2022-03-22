@@ -23,7 +23,7 @@ sanity_tests() {
    test -f "$signify_public_key"
    test -f "$signify_private_key"
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+   "$dist_source_help_steps_folder/gpg_test_sign"
 }
 
 libvirt_compress() {
@@ -51,11 +51,11 @@ libvirt_compress() {
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive $libvirt_target_qcow2_xz_archive exist..."
    fi
 
-   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+   if [ "$dist_build_type_long" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      test -f "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
@@ -68,20 +68,20 @@ libvirt_compress() {
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
       fi
    else
-      test -f "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.xml"
-      test -f "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.xml"
+      test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml"
+      test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml"
 
       test -f "$libvirt_target_network_file_external"
       test -f "$libvirt_target_network_file_internal"
 
       if [ "$WHONIX_BUILD_RAW" = "true" ]; then
-         test -f "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.raw"
-         test -f "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.raw"
+         test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
+         test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
          true "INFO: Ok, all files to be added to $libvirt_target_raw_xz_archive exist."
       fi
       if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         test -f "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
-         test -f "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
+         test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
+         test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
          true "INFO: Ok, all files to be added to $libvirt_target_qcow2_xz_archive exist."
       fi
    fi
@@ -102,11 +102,11 @@ libvirt_compress() {
 
    local filelist
 
-   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+   if [ "$dist_build_type_long" = "kicksecure" ]; then
       filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT") "
       filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER") "
    else
-      filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT") "
+      filelist+=" $(basename "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT") "
       filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_DISCLAIMER") "
    fi
 
@@ -120,18 +120,18 @@ libvirt_compress() {
          filelist+=" $(basename "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
       fi
    else
-      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.xml") "
-      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.xml") "
+      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml") "
+      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml") "
       filelist+=" $(basename "$libvirt_target_network_file_external") "
       filelist+=" $(basename "$libvirt_target_network_file_internal") "
 
       if [ "$WHONIX_BUILD_RAW" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
+         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
+         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
       fi
       if [ "$WHONIX_BUILD_QCOW2" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${WHONIX_BUILD_DESKTOP}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
+         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
+         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
       fi
    fi
 
@@ -183,7 +183,7 @@ virtualbox_export() {
    fi
 
    local producturl vendorurl vendor eulafile description
-   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+   if [ "$dist_build_type_long" = "kicksecure" ]; then
       producturl="https://www.whonix.org/wiki/Kicksecure"
       vendorurl="https://www.whonix.org/wiki/Kicksecure"
       vendor="Kicksecure"
@@ -202,7 +202,7 @@ Please donate! [C]
       producturl="https://www.whonix.org/wiki/Other_Operating_Systems"
       vendorurl="https://www.whonix.org"
       vendor="Whonix"
-      eulafile="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      eulafile="${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
       description="\
 Build Version [A]: ${dist_build_version}
 
@@ -239,7 +239,7 @@ Please donate! [C]
             export $vm_names_to_be_exported \
             --output "$binary_image_ova" \
             --vsys '0' \
-               --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
+               --eulafile "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT" \
                --description "$description" \
                --manifest \
                --product "Whonix-Gateway" \
@@ -557,29 +557,29 @@ main() {
    sanity_tests
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
-   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
-      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+   if [ "$dist_build_type_long" = "kicksecure" ]; then
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$WHONIX_SOURCE_FOLDER/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix-base-files/usr/share/whonix/binary_build_folder_dist_LICENSE_AGREEMENT" "${dist_binary_build_folder}/binary_build_folder_dist_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
-   if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
+   if [ "$dist_build_type_long" = "gateway" ]; then
       ## skip, to unify gateway image with workstation image
       return 0
    fi
 
    vm_multiple=false
-   if [ "$WHONIX_BUILD_TYPE" = "workstation" ]; then
+   if [ "$dist_build_type_long" = "workstation" ]; then
       vm_multiple=true
-      ## WHONIX_BUILD_DESKTOP could be KDE, CLI, XFCE, RPi or CUSTOM
-      vm_names_to_be_exported="Whonix-Gateway-${WHONIX_BUILD_DESKTOP} Whonix-Workstation-${WHONIX_BUILD_DESKTOP}"
+      ## dist_build_desktop could be KDE, CLI, XFCE, RPi or CUSTOM
+      vm_names_to_be_exported="Whonix-Gateway-${dist_build_desktop} Whonix-Workstation-${dist_build_desktop}"
    fi
-   if [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
+   if [ "$dist_build_type_long" = "custom-workstation" ]; then
       vm_names_to_be_exported="$VMNAME"
    fi
-   if [ "$WHONIX_BUILD_TYPE" = "kicksecure" ]; then
+   if [ "$dist_build_type_long" = "kicksecure" ]; then
       vm_names_to_be_exported="$VMNAME"
    fi
 

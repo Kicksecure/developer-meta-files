@@ -5,7 +5,7 @@
 
 ## example usage:
 ## Requires local repository already created.
-## cd ~/Whonix/packages/whonix-developer-meta-files
+## cd ~/Whonix/packages/Kicksecure/developer-meta-files
 ## sudo ./debug-steps/install-from-local-repository --target root --flavor whonix-gateway --build
 
 set -x
@@ -31,21 +31,21 @@ main() {
    fi
 
    ## This file doesn't include Whonix's APT repository.
-   cp "$WHONIX_SOURCE_FOLDER/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/create-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/create-local-temp-apt-repo"
 
    ## Reading local repository containing Whonix's packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "$pkg" = "" ]; then
-      if [ "$WHONIX_BUILD_FLAVOR" = "whonix-gateway-kde" ]; then
+      if [ "$dist_build_flavor" = "whonix-gateway-kde" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
             pkg="qubes-whonix-gateway-kde"
          else
             pkg="non-qubes-whonix-gateway"
          fi
-      elif [ "$WHONIX_BUILD_FLAVOR" = "whonix-workstation-kde" ]; then
+      elif [ "$dist_build_flavor" = "whonix-workstation-kde" ]; then
          if [ "$WHONIX_BUILD_QUBES" = "true" ]; then
             pkg="qubes-whonix-workstation"
          else
@@ -61,7 +61,7 @@ main() {
 
    #$CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/remove-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/remove-local-temp-apt-repo"
 
    ## Forget about local repository containing Whonix's packages.
    $CHROOT apt-get --no-download --list-cleanup update

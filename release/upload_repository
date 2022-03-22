@@ -33,7 +33,7 @@ preparation() {
 show_dists() {
    true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
    set +x
-   for file_name in "$WHONIX_BINARY/aptrepo_remote/dists/"**; do
+   for file_name in "$binary_build_folder_dist/aptrepo_remote/dists/"**; do
       if [ -d "$file_name" ]; then
          continue
       fi
@@ -50,7 +50,7 @@ show_pool() {
    fi
    true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
    set +x
-   for file_name in "$WHONIX_BINARY/aptrepo_remote/pool/"**; do
+   for file_name in "$binary_build_folder_dist/aptrepo_remote/pool/"**; do
       if [ -d "$file_name" ]; then
          continue
       fi
@@ -72,7 +72,7 @@ upload_dry_dists() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
+      "$binary_build_folder_dist/aptrepo_remote/dists/"* \
       "${upload_location}/dists/"
 }
 
@@ -88,7 +88,7 @@ upload_dry_pool() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
+      "$binary_build_folder_dist/aptrepo_remote/pool/"* \
       "${upload_location}/pool/"
 }
 
@@ -106,7 +106,7 @@ upload_real_dists() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/dists/"* \
+      "$binary_build_folder_dist/aptrepo_remote/dists/"* \
       "${upload_location}/dists/"
 }
 
@@ -117,7 +117,7 @@ upload_real_pool() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$WHONIX_BINARY/aptrepo_remote/pool/"* \
+      "$binary_build_folder_dist/aptrepo_remote/pool/"* \
       "${upload_location}/pool/"
 }
 

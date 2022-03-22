@@ -38,20 +38,20 @@ fi
 source_vm="$(qubesdb-read /name)"
 
 ## Get rid of huge .git folder.
-rm -r -f "$WHONIX_BINARY/aptrepo_temp_copy/"
-sudo $SUDO_OPTS mkdir -p "$WHONIX_BINARY/aptrepo_temp_copy"
-sudo $SUDO_OPTS cp -r "$WHONIX_BINARY/aptrepo_remote/dists" "$WHONIX_BINARY/aptrepo_temp_copy/dists"
-sudo $SUDO_OPTS cp -r "$WHONIX_BINARY/aptrepo_remote/pool" "$WHONIX_BINARY/aptrepo_temp_copy/pool"
+rm -r -f "$binary_build_folder_dist/aptrepo_temp_copy/"
+sudo $SUDO_OPTS mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
+sudo $SUDO_OPTS cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
+sudo $SUDO_OPTS cp -r "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
 
-echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $WHONIX_BUILD_APT_CODENAME main" > "$WHONIX_BINARY/whonix_repo_temp.list"
-cat "$WHONIX_BINARY/whonix_repo_temp.list"
+echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $dist_build_apt_codename main" > "$binary_build_folder_dist/whonix_repo_temp.list"
+cat "$binary_build_folder_dist/whonix_repo_temp.list"
 
 qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
 qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list"
 qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/whonix_repo_temp.list"
 
-qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/whonix_repo_temp.list"
-qvm-copy-to-vm "$target_vm" "$WHONIX_BINARY/aptrepo_temp_copy/"
+qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/whonix_repo_temp.list"
+qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/aptrepo_temp_copy/"
 
 qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list /etc/apt/sources.list.d/whonix_repo_temp.list"
 

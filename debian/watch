@@ -2,5 +2,5 @@
 ## See the file COPYING for copying conditions.
 
 version=4
-opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/whonix-developer-meta-files-$1\.tar\.gz/ \
-  https://github.com/Whonix/whonix-developer-meta-files/tags .*/v?(\d\S+)\.tar\.gz
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/developer-meta-files-$1\.tar\.gz/ \
+  https://github.com/Whonix/developer-meta-files/tags .*/v?(\d\S+)\.tar\.gz

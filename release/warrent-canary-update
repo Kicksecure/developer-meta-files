@@ -31,7 +31,7 @@ sanity_tests() {
 
    command -v rsstail
 
-   "$WHONIX_SOURCE_HELP_STEPS_FOLDER/gpg_test_sign"
+   "$dist_source_help_steps_folder/gpg_test_sign"
 }
 
 sign_cmd() {
@@ -67,13 +67,13 @@ verify_cmd_signinfy() {
 
 sanity_tests
 
-if test -d "$WHONIX_BINARY/canary" ; then
-    rm --recursive "$WHONIX_BINARY/canary"
+if test -d "$binary_build_folder_dist/canary" ; then
+    rm --recursive "$binary_build_folder_dist/canary"
 fi
 
-mkdir --parents "$WHONIX_BINARY/canary"
+mkdir --parents "$binary_build_folder_dist/canary"
 
-full_path_to_canary_txt="$WHONIX_BINARY/canary/canary.txt"
+full_path_to_canary_txt="$binary_build_folder_dist/canary/canary.txt"
 
 cp "$whonix_dev_meta_files_folder/misc/canary-template.txt" "$full_path_to_canary_txt"
 
@@ -82,19 +82,19 @@ echo "$proof_of_freshness_output" | tee -a "$full_path_to_canary_txt"
 
 cat "$full_path_to_canary_txt"
 
-full_path_to_gpg_output_file="$WHONIX_BINARY/canary/canary.txt.asc"
+full_path_to_gpg_output_file="$binary_build_folder_dist/canary/canary.txt.asc"
 sign_cmd --detach-sign
 verify_cmd "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 
-full_path_to_gpg_output_file="$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
+full_path_to_gpg_output_file="$binary_build_folder_dist/canary/canary.txt.clearsign.asc"
 sign_cmd --clearsign
-verify_cmd "$WHONIX_BINARY/canary/canary.txt.clearsign.asc"
+verify_cmd "$binary_build_folder_dist/canary/canary.txt.clearsign.asc"
 
 sign_cmd_signify "$full_path_to_canary_txt" ".sig"
 verify_cmd_signinfy "$full_path_to_canary_txt" ".sig"
 
 sign_cmd_signify "$full_path_to_canary_txt" ".embed.sig" -e
 
-signify-openbsd -V -e -p "$signify_public_key" -x "$WHONIX_BINARY/canary/canary.txt.embed.sig" -m "$WHONIX_BINARY/canary/canary-unembed.txt"
+signify-openbsd -V -e -p "$signify_public_key" -x "$binary_build_folder_dist/canary/canary.txt.embed.sig" -m "$binary_build_folder_dist/canary/canary-unembed.txt"
 
-diff "$full_path_to_canary_txt" "$WHONIX_BINARY/canary/canary-unembed.txt"
+diff "$full_path_to_canary_txt" "$binary_build_folder_dist/canary/canary-unembed.txt"

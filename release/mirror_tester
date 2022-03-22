@@ -20,7 +20,7 @@ source ../../../help-steps/pre
 source ../../../help-steps/colors
 source ../../../help-steps/variables
 
-cd "$WHONIX_BINARY"
+cd "$binary_build_folder_dist"
 
 ## https://www.whonix.org/wiki/Dev/Mirrors
 

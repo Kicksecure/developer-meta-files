@@ -30,13 +30,15 @@ my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 
 cd "$MYDIR"
 
-source ../../../help-steps/colors
+source ../../../../help-steps/colors
 
+cd ..
 cd ..
 
 ## Source make-helper.bsh to get function make_get_variables.
-source ../genmkfile/usr/share/genmkfile/make-helper-one.bsh
+source ./genmkfile/usr/share/genmkfile/make-helper-one.bsh
 
+cd ..
 cd ..
 
 counter=0
@@ -223,9 +225,13 @@ commit_filter() {
     set -x
 }
 
+pkg_nothing() {
+   true "item: $item"
+}
+
 pkg_readme_creator_commit() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
 #    repo_skip "monero-gui" || return 0
@@ -246,7 +252,7 @@ pkg_readme_creator_commit() {
 
 pkg_readme_creator_do() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
 #    repo_skip "monero-gui" || return 0
@@ -264,7 +270,7 @@ pkg_readme_creator_do() {
       return
    fi
 
-   generic_readme="../whonix-developer-meta-files/README_generic.md"
+   generic_readme="../developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
    local line first_word matched headline
@@ -341,8 +347,8 @@ recurse() {
 
 pkg_descr_creator() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
-   repo_skip "anon-icon-pack" || return 0
+   repo_skip "developer-meta-files" || return 0
+   repo_skip "icon-pack-dist" || return 0
    repo_skip "kicksecure-network-conf" || return 0
 
    local file_name file_name_without_leading_dot
@@ -1087,7 +1093,7 @@ pkg_git_debinstfile() {
 
 pkg_git_commit_packaging() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
@@ -1111,7 +1117,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_genmkfile_remove() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
    repo_skip "genmkfile" || return 0
 
    returned="$(git status)"
@@ -1320,7 +1326,7 @@ https://gitlab.com/whonix/$reponame/-/commit/$commit_hash
 
 pkg_git_sign_tags() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
    genmkfile git-commit-verify
@@ -1342,7 +1348,7 @@ pkg_git_sign_tags() {
 
 pkg_verify_signed_commit() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    genmkfile git-commit-verify
    true
@@ -1350,7 +1356,7 @@ pkg_verify_signed_commit() {
 
 pkg_verify_signed_commit_and_tag() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    genmkfile git-verify
    true
@@ -1375,7 +1381,7 @@ allowed_distributions 	= trusty" >> /home/user/dput.cfg
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1393,7 +1399,7 @@ pkg_need_version_bump_show() {
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1413,7 +1419,7 @@ pkg_need_version_bump_do() {
 
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1477,7 +1483,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 
 pkg_only_build_all() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    export make_lintian=true
    export make_use_cowbuilder=true
@@ -1488,7 +1494,7 @@ pkg_only_build_all() {
 
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "main" || return 0
-   repo_skip "whonix-developer-meta-files" || return 0
+   repo_skip "developer-meta-files" || return 0
 
    ## Complex, slow.
    #make_init ## includes make_get_variables
@@ -1700,7 +1706,7 @@ loop_helper_worker() {
    true "${cyan}INFO: reponame: $reponame${reset}"
 
    if [ ! "$main_source_code_folder" = "true" ]; then
-      cd "$item"
+      pushd "$item"
    else
       reponame_pretty="Whonix build script"
    fi
@@ -1708,7 +1714,7 @@ loop_helper_worker() {
    $@
 
    if [ ! "$main_source_code_folder" = "true" ]; then
-      cd ..
+      popd
    fi
 
    #true "press enter to continue_did"
@@ -1717,14 +1723,18 @@ loop_helper_worker() {
 
 loop_helper() {
    main_source_code_folder=false
-   for item in ./*; do
+
+   for item in ./packages/Kicksecure/* ./packages/Whonix/* ; do
+      true pwd: $PWD
+      true item: $item
+      ls "$item"
       if [ ! -d "$item" ]; then
          continue
       fi
       loop_helper_worker "$@"
    done
 
-   ## Whonix/Whonix
+   ## TODO: Whonix/Whonix
    main_source_code_folder=true
    item=Whonix
    cd ..

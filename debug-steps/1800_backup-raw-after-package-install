@@ -29,17 +29,17 @@ backup-raw-after-package-install() {
 }
 
 main() {
-   if [ "$ANON_BUILD_INSTALL_TO_ROOT" = "1" ]; then
-      true "${green}INFO: Skipping $BASH_SOURCE, because ANON_BUILD_INSTALL_TO_ROOT is set to 1.${reset}"
+   if [ "$dist_build_install_to_root" = "1" ]; then
+      true "${green}INFO: Skipping $BASH_SOURCE, because dist_build_install_to_root is set to 1.${reset}"
    else
-      if [ "$WHONIX_BUILD_TYPE" = "gateway" ]; then
+      if [ "$dist_build_type_long" = "gateway" ]; then
          backup-raw-after-package-install
-      elif [ "$WHONIX_BUILD_TYPE" = "workstation" ]; then
+      elif [ "$dist_build_type_long" = "workstation" ]; then
          backup-raw-after-package-install
-      elif [ "$WHONIX_BUILD_TYPE" = "custom-workstation" ]; then
+      elif [ "$dist_build_type_long" = "custom-workstation" ]; then
          true "${cyan}INFO: Skipping backup-raw-after-package-install for $VMNAME.${reset}"
       else
-         error "ERROR: Invalid WHONIX_BUILD_FLAVOR $WHONIX_BUILD_FLAVOR. Please report this bug!"
+         error "ERROR: Invalid dist_build_flavor $dist_build_flavor. Please report this bug!"
       fi
    fi
 }

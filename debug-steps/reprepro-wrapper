@@ -24,8 +24,8 @@ source ../../../help-steps/variables
 main() {
    reprepro_exit_code="0"
    reprepro_output="$(reprepro \
-      $WHONIX_BUILD_REPREPRO_SIGNING_OPTIONS \
-      $WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS \
+      $dist_build_reprepro_signing_options \
+      $whonix_build_reprepro_folder_options \
       "$@" 2>&1)" || { reprepro_exit_code="$?" ; true; };
 
    if echo "$reprepro_output" | grep "is already registered with different checksums!" ; then
@@ -35,5 +35,5 @@ main() {
    return "$reprepro_exit_code"
 }
 
-set_WHONIX_BUILD_REPREPRO_FOLDER_OPTIONS
+set_whonix_build_reprepro_folder_options
 main "$@"

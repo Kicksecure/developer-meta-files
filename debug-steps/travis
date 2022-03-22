@@ -23,13 +23,13 @@ mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 true "INFO $BASH_SOURCE: mydir: $mydir"
 
 ## Example mydir:
-## /home/travis/build/Whonix/whonix-developer-meta-files/debug-steps
+## /home/travis/build/Whonix/developer-meta-files/debug-steps
 
 whonix_dev_meta_files_folder="$(dirname "$mydir")"
 true "INFO $BASH_SOURCE: whonix_dev_meta_files_folder: $whonix_dev_meta_files_folder"
 
 ## Example whonix_dev_meta_files_folder:
-## /home/travis/build/Whonix/whonix-developer-meta-files
+## /home/travis/build/Whonix/developer-meta-files
 
 whonix_source_folder="$(dirname "$(dirname "$whonix_dev_meta_files_folder")")"
 true "INFO $BASH_SOURCE: whonix_source_folder: $whonix_source_folder"

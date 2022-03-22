@@ -24,16 +24,16 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-cat "$WHONIX_BINARY/canary/canary.txt"
+cat "$binary_build_folder_dist/canary/canary.txt"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"
 read temp
 
-cp "$WHONIX_BINARY/canary/canary.txt.asc" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary/canary.txt" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary/canary.txt.sig" ~/sourcesown/canary/
-cp "$WHONIX_BINARY/canary/canary.txt.embed.sig" ~/sourcesown/canary/
+cp "$binary_build_folder_dist/canary/canary.txt.asc" ~/sourcesown/canary/
+cp "$binary_build_folder_dist/canary/canary.txt" ~/sourcesown/canary/
+cp "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
+cp "$binary_build_folder_dist/canary/canary.txt.sig" ~/sourcesown/canary/
+cp "$binary_build_folder_dist/canary/canary.txt.embed.sig" ~/sourcesown/canary/
 
 pushd ~/sourcesown/canary/
 git add -A
@@ -50,11 +50,11 @@ rsync \
    $rsync_opts \
    --recursive \
    --rsh ssh \
-   "$WHONIX_BINARY/canary/canary.txt.asc" \
-   "$WHONIX_BINARY/canary/canary.txt" \
-   "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
-   "$WHONIX_BINARY/canary/canary.txt.sig" \
-   "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
+   "$binary_build_folder_dist/canary/canary.txt.asc" \
+   "$binary_build_folder_dist/canary/canary.txt" \
+   "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
+   "$binary_build_folder_dist/canary/canary.txt.sig" \
+   "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
    "root@whonix.org:/var/rsync/developer-meta-files/canary"
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
@@ -65,9 +65,9 @@ rsync \
    $rsync_opts \
    --recursive \
    --rsh ssh \
-   "$WHONIX_BINARY/canary/canary.txt.asc" \
-   "$WHONIX_BINARY/canary/canary.txt" \
-   "$WHONIX_BINARY/canary/canary.txt.clearsign.asc" \
-   "$WHONIX_BINARY/canary/canary.txt.sig" \
-   "$WHONIX_BINARY/canary/canary.txt.embed.sig" \
+   "$binary_build_folder_dist/canary/canary.txt.asc" \
+   "$binary_build_folder_dist/canary/canary.txt" \
+   "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
+   "$binary_build_folder_dist/canary/canary.txt.sig" \
+   "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
    "root@whonix.org:/var/rsync/developer-meta-files/canary"
