@@ -9,9 +9,7 @@ set -e
 cd ~/Whonix
 
 replace_list=$(echo "\
-dist_build_host_operating_system dist_build_host_operating_system
-create_derivative_distribution_debian_packages create_derivative_distribution_debian_packages
-dist_sources_list_temp_build_file dist_sources_list_temp_build_file
+WHONIX_BUILD_QUBES dist_build_qubes
 ")
 
 # total=0
