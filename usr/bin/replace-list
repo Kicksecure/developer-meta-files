@@ -10,6 +10,10 @@ cd ~/Whonix
 
 replace_list=$(echo "\
 WHONIX_BUILD_QUBES dist_build_qubes
+WHONIX_BUILD_UNATTENDED_PKG_INSTALL dist_build_unattended_pkg_install
+WHONIX_BUILD_UPGRADE_BUILD_MACHINE dist_build_upgrade_build_machine
+WHONIX_BUILD_UPGRADE_BUILD_MACHINE dist_build_upgrade_build_machine
+WHONIX_BUILD_UNATTENDED_PKG_INSTALL dist_build_unattended_pkg_install
 ")
 
 # total=0
