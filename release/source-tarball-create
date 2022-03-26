@@ -1,0 +1,27 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2021 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## standalone script
+## manual use for now only
+
+set -x
+set -e
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+[ -n "$XZ_OPT" ] || XZ_OPT="--threads=8"
+export XZ_OPT
+
+tar \
+   --create \
+   --verbose \
+   --owner=0 --group=0 --numeric-owner \
+   --mode=go=rX,u+rw,a-s \
+   --sort=name \
+   --sparse \
+   --mtime='2015-10-21 00:00Z' \
+   --xz \
+   --directory="./" \
+   --file "./Whonix.tar.xz" \
+   ./Whonix
