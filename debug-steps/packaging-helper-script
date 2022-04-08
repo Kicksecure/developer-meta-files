@@ -69,7 +69,7 @@ version_new_main="16.0.4.2-developers-only"
 version_main_new_short="16.0.4.2"
 
 ## XXX
-announcements_draft_folder="/home/user/whonix_binary/announcements-drafts"
+announcements_draft_folder="/home/user/derivative-binary/announcements-drafts"
 giant_git_log_file="$announcements_draft_folder/giant_git_log.txt"
 mkdir -p "$announcements_draft_folder"
 

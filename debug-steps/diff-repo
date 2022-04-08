@@ -15,7 +15,7 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 rm -r /home/user/Downloads/temp
 mkdir /home/user/Downloads/temp
 
-pushd ~/whonix_binary/aptrepo_remote
+pushd ~/derivative-binary/aptrepo_remote
 
 while read -r line; do
    if ! read -r one two three _ <<< $line ; then

@@ -23,7 +23,7 @@ cd ..
 cd ..
 cd ..
 
-rm --recursive --force /home/user/whonix_binary
+rm --recursive --force /home/user/derivative-binary
 
 ./derivative-maker --clean --tor-gateway "$@"
 ./build-steps.d/2500_convert-raw-to-vdi --tor-gateway "$@"

@@ -6,10 +6,10 @@
 #set -x
 set -e
 
-cd ~/Whonix
+cd ~/derivative-maker
 
 replace_list=$(echo "\
-whonix_build derivative-maker
+derivative-binary derivative-binary
 ")
 
 # total=0

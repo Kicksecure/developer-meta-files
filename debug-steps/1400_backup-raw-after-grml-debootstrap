@@ -29,7 +29,7 @@ source colors
 source variables
 
 backup-raw-after-grml-debootstrap() {
-   ## If whonix_build is run with --fast1 switch.
+   ## If derivative-maker is run with --fast1 switch.
 
    root_check
 
