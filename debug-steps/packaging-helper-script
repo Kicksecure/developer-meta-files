@@ -696,6 +696,10 @@ pkg_names_echo() {
    echo "$reponame"
 }
 
+pkg_names_test() {
+   echo "$reponame | $project_name_short"
+}
+
 pkg_links_open() {
    torbrowser --new-tab "$(pkg_links_echo)"
 }
@@ -1727,7 +1731,16 @@ loop_helper() {
    for item in ./packages/Kicksecure/* ./packages/Whonix/* ; do
       true pwd: $PWD
       true item: $item
-      #ls "$item"
+      if echo "$item" | grep -q packages/Kicksecure ; then
+         project_name_short=Kicksecure
+         project_name_short_lowercase=kicksecure
+      elif echo "$item" | grep -q packages/Whonix ; then
+         project_name_short=Whonix
+         project_name_short_lowercase=whonix
+      else
+         echo "ERROR: project name detection failed!"
+         exit 1
+      fi
       if [ ! -d "$item" ]; then
          continue
       fi
