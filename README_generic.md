@@ -3,10 +3,10 @@
 1\. Download the APT Signing Key.
 
 ```
-wget https://www.whonix.org/derivative.asc
+wget https://www.##project_clearnet##/derivative.asc
 ```
 
-Users can [check Whonix Signing Key](https://www.whonix.org/wiki/Signing_Key) for better security.
+Users can [check Whonix Signing Key](https://www.##project_clearnet##/wiki/Signing_Key) for better security.
 
 2\. Add the APT Signing Key..
 
@@ -17,7 +17,7 @@ sudo cp ~/derivative.asc /usr/share/keyrings/derivative.asc
 3\. Add the derivative repository.
 
 ```
-echo "deb [signed-by=/usr/share/keyrings/derivative.asc] https://deb.whonix.org bullseye main contrib non-free" | sudo tee /etc/apt/sources.list.d/derivative.list
+echo "deb [signed-by=/usr/share/keyrings/derivative.asc] https://deb.##project_clearnet## bullseye main contrib non-free" | sudo tee /etc/apt/sources.list.d/derivative.list
 ```
 
 4\. Update your package lists.
@@ -44,14 +44,14 @@ See instructions.
 
 NOTE: Replace `generic-package` with the actual name of this package `package-name`.
 
-* **A)** [easy](https://www.whonix.org/wiki/Dev/Build_Documentation/generic-package/easy), _OR_
-* **B)** [including verifying software signatures](https://www.whonix.org/wiki/Dev/Build_Documentation/generic-package)
+* **A)** [easy](https://www.##project_clearnet##/wiki/Dev/Build_Documentation/generic-package/easy), _OR_
+* **B)** [including verifying software signatures](https://www.##project_clearnet##/wiki/Dev/Build_Documentation/generic-package)
 
 ## Contact ##
 
-* [Free Forum Support](https://forums.whonix.org)
-* [Professional Support](https://www.whonix.org/wiki/Professional_Support)
+* [Free Forum Support](https://forums.##project_clearnet##)
+* [Professional Support](https://www.##project_clearnet##/wiki/Professional_Support)
 
 ## Donate ##
 
-`package-name` requires [donations](https://www.whonix.org/wiki/Donate) to stay alive!
+`package-name` requires [donations](https://www.##project_clearnet##/wiki/Donate) to stay alive!
