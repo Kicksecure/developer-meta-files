@@ -172,7 +172,7 @@ commit_filter() {
         "refactoring" \
         "debugging" \
         "lintian warning copyright fix" \
-        "https://www.whonix.org/wiki/Dev/Licensing" \
+        "https://www.kicksecure.com/wiki/Dev/Licensing" \
         "port to debian buster" \
         "port to debian bullseye" \
         "surpress lintian warning" \
@@ -1706,15 +1706,15 @@ loop_helper_worker() {
    true "${cyan}INFO: reponame: $reponame${reset}"
 
    if [ ! "$main_source_code_folder" = "true" ]; then
-      pushd "$item"
+      pushd "$item" >/dev/null
    else
-      reponame_pretty="Whonix build script"
+      reponame_pretty="derivative-maker"
    fi
 
    $@
 
    if [ ! "$main_source_code_folder" = "true" ]; then
-      popd
+      popd >/dev/null
    fi
 
    #true "press enter to continue_did"
@@ -1727,7 +1727,7 @@ loop_helper() {
    for item in ./packages/Kicksecure/* ./packages/Whonix/* ; do
       true pwd: $PWD
       true item: $item
-      ls "$item"
+      #ls "$item"
       if [ ! -d "$item" ]; then
          continue
       fi
@@ -1736,7 +1736,7 @@ loop_helper() {
 
    ## TODO: Whonix/Whonix
    main_source_code_folder=true
-   item=Whonix
+   item=derivate-maker
    cd ..
 
    loop_helper_worker "$@"
