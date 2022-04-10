@@ -375,8 +375,8 @@ README.md
 
       true "file_name: $file_name"
       temp="$file_name"
-      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/Whonix/packages/" "")"
-      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace "/home/user/Whonix/packages/" "")"
+      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/derivative-maker/packages/" "")"
+      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace "/home/user/derivative-maker/packages/" "")"
 
       file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
       file_name_without_reponame="/${file_name_without_reponame}"
@@ -385,11 +385,11 @@ README.md
          continue
       fi
 
-      file_name_to_open="~/Whonix/packages/$file_name_without_leading_dot"
+      file_name_to_open="~/derivative-maker/packages/$file_name_without_leading_dot"
 
-      repo_web_link="https://github.com/Whonix/$reponame"
-      debian_control_web_link="https://github.com/Whonix/$reponame/blob/master/debian/control"
-      web_link="https://github.com/Whonix/$reponame/blob/master${file_name_without_reponame}"
+      repo_web_link="https://github.com/$project_name_short/$reponame"
+      debian_control_web_link="https://github.com/$project_name_short/$reponame/blob/master/debian/control"
+      web_link="https://github.com/$project_name_short/$reponame/blob/master${file_name_without_reponame}"
 
       base_name="${file_name##*/}"
 
@@ -757,7 +757,7 @@ pkg_twitter_to_github() {
 
    #curl -v -u adrelanos:$gh_token -X POST https://api.github.com/authorizations --data @/tmp/xxx789
 
-   curl -v -H "Authorization: token $gh_token" -X POST https://api.github.com/orgs/Whonix/repos --data @/tmp/xxx789
+   curl -v -H "Authorization: token $gh_token" -X POST https://api.github.com/orgs/$project_name_short/repos --data @/tmp/xxx789
 
    true "press enter"
    read temp
@@ -841,7 +841,7 @@ pkg_copy_contributing_file() {
    repo_skip "kloak" || return 0
    repo_skip "corridor" || return 0
 
-   cp "/home/user/Whonix/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
+   cp "/home/user/derivative-maker/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
    git add "$repo_full_path/CONTRIBUTING.md"
    git commit -m "update"
 
@@ -938,8 +938,8 @@ pkg_packaging_files_diff() {
       #diff "$compare_with_full_path/COPYING" "$repo_full_path/COPYING"
 
 #       if diff ~/old-copying "$repo_full_path/COPYING" &>/dev/null ; then
-#          cp ~/Whonix/COPYING "$repo_full_path/COPYING"
-#          cp ~/Whonix/COPYING "$repo_full_path/debian/copyright"
+#          cp ~/derivative-maker/COPYING "$repo_full_path/COPYING"
+#          cp ~/derivative-maker/COPYING "$repo_full_path/debian/copyright"
 #       else
 #          echo "$reponame" >> /tmp/list-of-packages
 #          kate "$repo_full_path/COPYING"
@@ -1207,7 +1207,7 @@ pkg_git_submodule_file_writer() {
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$reponame
-        url = https://gitlab.com/whonix/${reponame}.git
+        url = https://gitlab.com/$project_name_short_lowercase/${reponame}.git
 " >> ../../".gitmodules"
 }
 
@@ -1219,7 +1219,7 @@ pkg_git_log_giant_make() {
 
    echo "########################################" >> "$giant_git_log_file"
    echo "" >> "$giant_git_log_file"
-   echo "https://github.com/Whonix/$reponame" >> "$giant_git_log_file"
+   echo "https://github.com/$project_name_short/$reponame" >> "$giant_git_log_file"
 
    git --no-pager shortlog "${version_old}..${version_new}" >> "$giant_git_log_file"
 
@@ -1294,7 +1294,7 @@ pkg_git_packages_git_log_writer() {
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
       commit_msg_full_with_link="$commit_msg_full <ref>
-https://gitlab.com/whonix/$reponame/-/commit/$commit_hash
+https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
 </ref>"
 
       if [ "$committer_person" = "madaidan" ]; then
@@ -1318,7 +1318,7 @@ https://gitlab.com/whonix/$reponame/-/commit/$commit_hash
 
       if [ "$notable_changes" = "" ]; then
          notable_changes=yes
-         echo "[https://gitlab.com/whonix/$reponame <code>$reponame_pretty</code>]:" >> "$giant_git_log_file"
+         echo "[https://gitlab.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" >> "$giant_git_log_file"
       fi
 
       echo "* $log_msg" >> "$giant_git_log_file"
@@ -1553,7 +1553,7 @@ debian_watch_file_create() {
 
 version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/$reponame-\$1\.tar\.gz/ \\
-  https://github.com/Whonix/$reponame/tags .*/v?(\d\S+)\.tar\.gz" > "$repo_full_path/debian/watch"
+  https://github.com/$project_name_short/$reponame/tags .*/v?(\d\S+)\.tar\.gz" > "$repo_full_path/debian/watch"
 
    git add "$repo_full_path/debian/watch"
    local msg
@@ -1627,7 +1627,7 @@ $giant_git_log_file
 
 # Full difference of all changes
 
-[https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}](https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main})
+[https://github.com/derivative-maker/derivative-maker/compare/${version_old_main}...${version_new_main}](https://github.com/derivative-maker/derivative-maker/compare/${version_old_main}...${version_new_main})
 
 ----
 
@@ -1691,7 +1691,7 @@ https://www.whonix.org/wiki/Stable_Release
 
 # Full difference of all changes
 
- https://github.com/Whonix/Whonix/compare/${version_old_main}...${version_new_main}
+ https://github.com/derivative-maker/derivative-maker/compare/${version_old_main}...${version_new_main}
 
 ----
 
