@@ -1239,12 +1239,25 @@ pkg_git_submodule_file_writer() {
       git_submodule_file_deleted=true
    fi
 
+   local url
+   if [ "$reponame" = "monero-gui" ]; then
+      url="\
+        ## monero-gui on gitlab instead of github due to github git space restrictions.
+        url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git"
+   else
+      url="\
+        url = https://github.com/${project_name_short}/${reponame}.git
+        #url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git"
+   fi
+
    echo "\
 [submodule \"packages/$reponame\"]
         path = packages/$project_name_short/${reponame}
-        url = https://github.com/${project_name_short}/${reponame}.git
-        #url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git
-" >> "$derivative_maker_source_code_folder/.gitmodules"
+$url" \
+         | \
+         tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
+
+   echo "" | tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
 }
 
 pkg_git_log_giant_make() {
