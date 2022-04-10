@@ -266,7 +266,7 @@ pkg_readme_creator_do() {
       return
    fi
 
-   generic_readme="../developer-meta-files/README_generic.md"
+   generic_readme="$MYDIR/../README_generic.md"
    test -f "$generic_readme"
 
    local line first_word matched headline
@@ -320,6 +320,8 @@ pkg_readme_creator_do() {
 #       echo 'See also `man` folder for more information.' >> "$readme_file"
 #       echo "" | tee -a "$readme_file" >/dev/null
 #    fi
+
+   echo "" | tee -a "$readme_file" >/dev/null
 
    while read -r line; do
       line="${line/package-name/$reponame}"
