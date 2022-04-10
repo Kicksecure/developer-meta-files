@@ -15,6 +15,7 @@ build_all_error_handler() {
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 reponame: $reponame
+PWD: $PWD
 " >&2
    echo "Press enter to continue or ctrl +c to break or enter to continue." >&2
    sleep 2
@@ -26,7 +27,12 @@ trap "build_all_error_handler" ERR
 set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+## example MYDIR:
+## /home/user/derivative-maker/packages/Kicksecure/developer-meta-files/debug-steps
+
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
+## example my_pkg_name:
+## developer-meta-files
 
 cd "$MYDIR"
 
@@ -34,12 +40,20 @@ source ../../../../help-steps/colors
 
 cd ..
 cd ..
+cd ..
+cd ..
+
+derivative_maker_source_code_folder="$PWD"
+## example derivative_maker_source_code_folder:
+## /home/user/derivative-maker
+
+derivative_maker_folder_name="$(basename "$(dirname "$derivative_maker_source_code_folder")")"
+if [ "$derivative_maker_folder_name" = "derivative-maker" ]; then
+   exit 1
+fi
 
 ## Source make-helper.bsh to get function make_get_variables.
-source ./genmkfile/usr/share/genmkfile/make-helper-one.bsh
-
-cd ..
-cd ..
+source "$derivative_maker_source_code_folder/packages/Kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 
 counter=0
 
@@ -52,7 +66,7 @@ command -v isutf8 >/dev/null
 
 repo_skip() {
    if [ "main" = "$1" ]; then
-      if [ "$main_source_code_folder" = "true" ]; then
+      if [ "$this_is_derivative_maker_source_code_folder" = "true" ]; then
          true "Skipping $reponame (main)."
          return 1
       fi
@@ -1063,10 +1077,16 @@ git_reset_changelog_upstream() {
 }
 
 pkg_git_commmit_readme() {
-   git add README.md
+   if test -f README_generic.md ; then
+      git add README_generic.md
+   elif test -f README.md ; then
+      git add README.md
+   elif test -f README.mediawiki ; then
+      git add README.mediawiki
+   fi
    #git diff --cached
    msg="readme"
-   git commit -m "$msg"
+   git commit -m "$msg" || true
    git status
 }
 
@@ -1260,7 +1280,7 @@ pkg_git_packages_git_log_writer() {
 
    notable_changes=""
 
-   if [ "$main_source_code_folder" = "false" ]; then
+   if [ "$this_is_derivative_maker_source_code_folder" = "false" ]; then
       pushd .. >/dev/null
       if package_version_old="$(git rev-parse "${version_old_main}:packages/$reponame")" ; then
          new_package=false
@@ -1722,15 +1742,16 @@ loop_helper_worker() {
 
    true "${cyan}INFO: reponame: $reponame${reset}"
 
-   if [ ! "$main_source_code_folder" = "true" ]; then
+   if [ ! "$this_is_derivative_maker_source_code_folder" = "true" ]; then
       pushd "$item" >/dev/null
    else
+      pushd "$derivative_maker_source_code_folder" >/dev/null
       reponame_pretty="derivative-maker"
    fi
 
    $@
 
-   if [ ! "$main_source_code_folder" = "true" ]; then
+   if [ ! "$this_is_derivative_maker_source_code_folder" = "true" ]; then
       popd >/dev/null
    fi
 
@@ -1739,7 +1760,7 @@ loop_helper_worker() {
 }
 
 loop_helper() {
-   main_source_code_folder=false
+   this_is_derivative_maker_source_code_folder=false
 
    for item in ./packages/Kicksecure/* ./packages/Whonix/* ; do
       true pwd: $PWD
@@ -1762,10 +1783,9 @@ loop_helper() {
       loop_helper_worker "$@"
    done
 
-   ## TODO: Whonix/Whonix
-   main_source_code_folder=true
+   ## TODO: derivative-maker/derivative-maker
+   this_is_derivative_maker_source_code_folder=true
    item=derivate-maker
-   cd ..
 
    loop_helper_worker "$@"
 }
