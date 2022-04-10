@@ -1751,9 +1751,7 @@ loop_helper_worker() {
 
    $@
 
-   if [ ! "$this_is_derivative_maker_source_code_folder" = "true" ]; then
-      popd >/dev/null
-   fi
+   popd >/dev/null
 
    #true "press enter to continue_did"
    #read temp
