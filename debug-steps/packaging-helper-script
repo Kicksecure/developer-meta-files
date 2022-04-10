@@ -69,7 +69,7 @@ version_new_main="16.0.4.2-developers-only"
 version_main_new_short="16.0.4.2"
 
 ## XXX
-announcements_draft_folder="/home/user/derivative-binary/announcements-drafts"
+announcements_draft_folder="~/derivative-binary/announcements-drafts"
 giant_git_log_file="$announcements_draft_folder/giant_git_log.txt"
 mkdir -p "$announcements_draft_folder"
 
@@ -375,8 +375,8 @@ README.md
 
       true "file_name: $file_name"
       temp="$file_name"
-      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace "/home/user/derivative-maker/packages/" "")"
-      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace "/home/user/derivative-maker/packages/" "")"
+      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace ~/derivative-maker/packages/ "")"
+      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace ~/derivative-maker/packages/ "")"
 
       file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
       file_name_without_reponame="/${file_name_without_reponame}"
@@ -841,7 +841,7 @@ pkg_copy_contributing_file() {
    repo_skip "kloak" || return 0
    repo_skip "corridor" || return 0
 
-   cp "/home/user/derivative-maker/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
+   cp "~/derivative-maker/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
    git add "$repo_full_path/CONTRIBUTING.md"
    git commit -m "update"
 
@@ -1377,7 +1377,7 @@ fqdn			= ppa.launchpad.net
 method			= sftp
 incoming                = ~${launchpad_name}/${reponame}/ubuntu/
 login			= ${launchpad_name}
-allowed_distributions 	= trusty" >> /home/user/dput.cfg
+allowed_distributions 	= trusty" >> ~/dput.cfg
 
    true
 }
