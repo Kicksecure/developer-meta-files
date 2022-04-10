@@ -326,6 +326,11 @@ pkg_readme_creator_do() {
       echo "$line" | tee -a "$readme_file" >/dev/null
    done < "$generic_readme"
 
+   local search replace
+   search="##project_clearnet##"
+   replace="$project_clearnet"
+   str_replace "$search" "$replace" "$readme_file"
+
    true "Done: $readme_file"
 }
 
@@ -1740,9 +1745,11 @@ loop_helper() {
       if echo "$item" | grep -q packages/Kicksecure ; then
          project_name_short=Kicksecure
          project_name_short_lowercase=kicksecure
+         project_clearnet="kicksecure.com"
       elif echo "$item" | grep -q packages/Whonix ; then
          project_name_short=Whonix
          project_name_short_lowercase=whonix
+         project_clearnet="whonix.org"
       else
          echo "ERROR: project name detection failed!"
          exit 1
