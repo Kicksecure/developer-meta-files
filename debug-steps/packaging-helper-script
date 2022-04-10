@@ -764,6 +764,8 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
+   git remote rm origin || true
+
    git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
    git remote set-url adrelanos         git@github.com:adrelanos/$reponame.git || true
 
