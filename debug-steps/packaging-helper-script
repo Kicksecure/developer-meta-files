@@ -1758,8 +1758,6 @@ loop_helper() {
          continue
       fi
       loop_helper_worker "$@"
-
-      exit
    done
 
    ## TODO: Whonix/Whonix
