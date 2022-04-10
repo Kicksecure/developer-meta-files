@@ -679,17 +679,17 @@ pkg_descr_merge_all() {
 }
 
 pkg_links_echo() {
-   echo "https://github.com/Whonix/$reponame"
+   echo "https://github.com/$project_name_short/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
 }
 
 pkg_links_markdown_echo() {
-   echo "[$reponame](https://github.com/Whonix/$reponame)"
+   echo "[$reponame](https://github.com/$project_name_short/$reponame)"
    #echo "https://github.com/adrelanos/$reponame"
 }
 
 pkg_echo_commits_adrelanos() {
-   echo "https://github.com/Whonix/$reponame/commits?author=adrelanos"
+   echo "https://github.com/$project_name_short/$reponame/commits?author=adrelanos"
 }
 
 pkg_names_echo() {
