@@ -225,10 +225,6 @@ commit_filter() {
     set -x
 }
 
-pkg_nothing() {
-   true "item: $item"
-}
-
 pkg_readme_creator_commit() {
    repo_skip "main" || return 0
    repo_skip "developer-meta-files" || return 0
@@ -348,8 +344,6 @@ recurse() {
 pkg_descr_creator() {
    repo_skip "main" || return 0
    repo_skip "developer-meta-files" || return 0
-   repo_skip "icon-pack-dist" || return 0
-   repo_skip "kicksecure-network-conf" || return 0
 
    local file_name file_name_without_leading_dot
 
@@ -1757,6 +1751,8 @@ loop_helper() {
          continue
       fi
       loop_helper_worker "$@"
+
+      exit
    done
 
    ## TODO: Whonix/Whonix
