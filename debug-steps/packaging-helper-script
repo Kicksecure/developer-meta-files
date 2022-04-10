@@ -240,7 +240,7 @@ commit_filter() {
 }
 
 pkg_readme_creator_commit() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
@@ -261,7 +261,7 @@ pkg_readme_creator_commit() {
 }
 
 pkg_readme_creator_do() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
@@ -363,7 +363,7 @@ recurse() {
 }
 
 pkg_descr_creator() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    local file_name file_name_without_leading_dot
@@ -850,7 +850,7 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "genmkfile" || return 0
 
    cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
@@ -864,7 +864,7 @@ pkg_packaging_copy() {
 }
 
 pkg_copy_contributing_file() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "kloak" || return 0
    repo_skip "corridor" || return 0
 
@@ -1129,7 +1129,7 @@ pkg_git_debinstfile() {
 }
 
 pkg_git_commit_packaging() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    returned="$(git status)"
@@ -1153,7 +1153,7 @@ pkg_git_commit_packaging() {
 }
 
 pkg_git_genmkfile_remove() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
    repo_skip "genmkfile" || return 0
 
@@ -1232,6 +1232,8 @@ pkg_debian_control_open() {
 }
 
 pkg_git_submodule_file_writer() {
+   repo_skip "derivate-maker" || return 0
+
    if [ ! "$git_submodule_file_deleted" = "true" ]; then
       rm ../../".gitmodules"
       git_submodule_file_deleted=true
@@ -1239,7 +1241,7 @@ pkg_git_submodule_file_writer() {
 
    echo "\
 [submodule \"packages/$reponame\"]
-        path = packages/$reponame
+        path = packages/$project_name_short/$reponame
         url = https://gitlab.com/$project_name_short_lowercase/${reponame}.git
 " >> ../../".gitmodules"
 }
@@ -1268,7 +1270,7 @@ pkg_git_main_git_log_writer() {
 }
 
 pkg_git_packages_git_log_writer() {
-   #repo_skip "main" || return 0
+   #repo_skip "derivate-maker" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
@@ -1362,7 +1364,7 @@ https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
 }
 
 pkg_git_sign_tags() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
@@ -1384,7 +1386,7 @@ pkg_git_sign_tags() {
 }
 
 pkg_verify_signed_commit() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    genmkfile git-commit-verify
@@ -1392,7 +1394,7 @@ pkg_verify_signed_commit() {
 }
 
 pkg_verify_signed_commit_and_tag() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    genmkfile git-verify
@@ -1417,7 +1419,7 @@ allowed_distributions 	= trusty" >> ~/dput.cfg
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1435,7 +1437,7 @@ pkg_need_version_bump_show() {
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1455,7 +1457,7 @@ pkg_need_version_bump_do() {
 }
 
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1519,7 +1521,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 }
 
 pkg_only_build_all() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    export make_lintian=true
@@ -1530,7 +1532,7 @@ pkg_only_build_all() {
 }
 
 pkg_upstream_and_debian_changelog_bump() {
-   repo_skip "main" || return 0
+   repo_skip "derivate-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    ## Complex, slow.
