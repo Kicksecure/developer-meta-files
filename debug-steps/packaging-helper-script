@@ -779,6 +779,8 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
+   repo_skip "derivate-maker" || return 0
+
    git remote rm origin || true
 
    git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
