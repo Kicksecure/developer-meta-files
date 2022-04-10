@@ -47,8 +47,8 @@ derivative_maker_source_code_folder="$PWD"
 ## example derivative_maker_source_code_folder:
 ## /home/user/derivative-maker
 
-derivative_maker_folder_name="$(basename "$(dirname "$derivative_maker_source_code_folder")")"
-if [ "$derivative_maker_folder_name" = "derivative-maker" ]; then
+derivative_maker_folder_name="$(basename "$derivative_maker_source_code_folder")"
+if [ ! "$derivative_maker_folder_name" = "derivative-maker" ]; then
    exit 1
 fi
 
@@ -1235,7 +1235,7 @@ pkg_git_submodule_file_writer() {
    repo_skip "derivate-maker" || return 0
 
    if [ ! "$git_submodule_file_deleted" = "true" ]; then
-      rm ../../".gitmodules"
+      rm "$derivative_maker_source_code_folder/.gitmodules"
       git_submodule_file_deleted=true
    fi
 
@@ -1243,7 +1243,7 @@ pkg_git_submodule_file_writer() {
 [submodule \"packages/$reponame\"]
         path = packages/$project_name_short/$reponame
         url = https://gitlab.com/$project_name_short_lowercase/${reponame}.git
-" >> ../../".gitmodules"
+" >> "$derivative_maker_source_code_folder/.gitmodules"
 }
 
 pkg_git_log_giant_make() {
