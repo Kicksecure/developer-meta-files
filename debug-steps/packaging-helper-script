@@ -767,17 +767,22 @@ pkg_git_remotes_add() {
    git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
    git remote set-url adrelanos         git@github.com:adrelanos/$reponame.git || true
 
-   git remote add     github-whonix     git@github.com:Whonix/$reponame.git || true
-   git remote set-url github-whonix     git@github.com:Whonix/$reponame.git || true
+   if [ "$project_name_short_lowercase" = "whonix" ]; then
+      git remote add     github-whonix     git@github.com:Whonix/$reponame.git || true
+      git remote set-url github-whonix     git@github.com:Whonix/$reponame.git || true
 
-   git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
-   git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
+      #git remote add     gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
+      #git remote set-url gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
+   elif [ "$project_name_short_lowercase" = "kicksecure" ]; then
+      git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
+      git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
 
-   git remote add     gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
-   git remote set-url gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
-
-   git remote add     gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
-   git remote set-url gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
+      #git remote add     gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
+      #git remote set-url gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
+   else
+      echo "ERROR: project_name_short_lowercase wrong! (1)"
+   fi
+   exit
 
    true
 }
