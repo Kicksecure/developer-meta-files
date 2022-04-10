@@ -794,21 +794,21 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_Whonix15() {
+pkg_git_branch_project16() {
    git checkout master
-   git branch Whonix15 || true
+   git branch ${project_name_short_lowercase}16 || true
    true
 }
 
-pkg_git_diff_branch_Whonix15() {
+pkg_git_diff_branch_project16() {
    git checkout master
-   git diff Whonix15 || true
+   git diff ${project_name_short_lowercase}16 || true
    true
 }
 
-pkg_git_update_branch_Whonix15() {
+pkg_git_update_branch_project16() {
    git checkout master
-   git checkout Whonix15
+   git checkout ${project_name_short_lowercase}16
    git merge --ff-only master
    git checkout master
    true
@@ -819,8 +819,8 @@ pkg_git_branch_checkout_master() {
    true
 }
 
-pkg_git_branch_checkout_Whonix15() {
-   git checkout Whonix15
+pkg_git_branch_checkout_project16() {
+   git checkout ${project_name_short_lowercase}16
    true
 }
 
@@ -1015,8 +1015,8 @@ pkg_git_push_remotes() {
 #       fi
 #    fi
 
-#    if internal_git_diff Whonix15 adrelanos/Whonix15 ; then
-#       git push adrelanos Whonix15 &
+#    if internal_git_diff ${project_name_short_lowercase}16 adrelanos/${project_name_short_lowercase}16 ; then
+#       git push adrelanos ${project_name_short_lowercase}16 &
 #       git_pid="$!"
 #       #wait "$git_pid"
 #       git_pid_list="$git_pid_list $git_pid"
@@ -1042,8 +1042,8 @@ pkg_git_push_remotes() {
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-#    if internal_git_diff Whonix15 origin/Whonix15  ; then
-#       git push origin Whonix15 &
+#    if internal_git_diff ${project_name_short_lowercase}16 origin/${project_name_short_lowercase}16  ; then
+#       git push origin ${project_name_short_lowercase}16 &
 #       git_pid="$!"
 #       ##wait "$git_pid"
 #       git_pid_list="$git_pid_list $git_pid"
