@@ -25,7 +25,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$MYDIR"
 
-cd ../../
+cd ../../../
 
 if [ "$(id -u)" = "0" ]; then
    error "Do not run this as root!"

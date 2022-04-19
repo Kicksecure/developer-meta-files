@@ -22,6 +22,7 @@ cd "$MYDIR"
 cd ..
 cd ..
 cd ..
+cd ..
 
 rm --recursive --force /home/user/derivative-binary
 

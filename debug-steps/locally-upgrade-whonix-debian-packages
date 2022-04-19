@@ -11,9 +11,9 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../../help-steps/pre
-source ../../../help-steps/colors
-source ../../../help-steps/variables
+source ../../../../help-steps/pre
+source ../../../../help-steps/colors
+source ../../../../help-steps/variables
 
 main() {
    trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
@@ -45,8 +45,8 @@ main() {
    ## We have to manually fix /etc/apt/sources.list, because the list which comes with
    ## grml-debootstrap is incomplete (does not complain debian security repository) and points to 127.0.0.1.
 
-   ## This file doesn't include Whonix's APT repository.
-   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   ## This file doesn't include the derivative's APT repository.
+   cp "$source_code_folder_dist/packages/Kicksecure/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
    ## Not using any /etc/apt/preferences.d snippets at the moment.
    #cp "$source_code_folder_dist/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
