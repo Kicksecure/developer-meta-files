@@ -24,51 +24,45 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-cat "$binary_build_folder_dist/canary/canary.txt"
-
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"
 read temp
 
-cp "$binary_build_folder_dist/canary/canary.txt.asc" ~/sourcesown/canary/
-cp "$binary_build_folder_dist/canary/canary.txt" ~/sourcesown/canary/
-cp "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" ~/sourcesown/canary/
-cp "$binary_build_folder_dist/canary/canary.txt.sig" ~/sourcesown/canary/
-cp "$binary_build_folder_dist/canary/canary.txt.embed.sig" ~/sourcesown/canary/
-
 pushd ~/sourcesown/canary/
-git add -A
-git commit -a -m "update canary"
 git push github-kicksecure master
 git push github-whonix master
 git push adrelanos master
 popd
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary --dry-run.${reset}"
-read temp
-true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
-rsync \
-   --dry-run \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$binary_build_folder_dist/canary/canary.txt.asc" \
-   "$binary_build_folder_dist/canary/canary.txt" \
-   "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
-   "$binary_build_folder_dist/canary/canary.txt.sig" \
-   "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
-   "root@whonix.org:/var/rsync/developer-meta-files/canary"
+for upload_location in root@whonix.org root@kicksecure.com ; do
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
-read temp
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary --dry-run.${reset}"
+   read temp
+   true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
+   rsync \
+      --dry-run \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$binary_build_folder_dist/canary/canary.txt.asc" \
+      "$binary_build_folder_dist/canary/canary.txt" \
+      "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
+      "$binary_build_folder_dist/canary/canary.txt.sig" \
+      "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
+      "${upload_location}:/var/rsync/developer-meta-files/canary"
 
-true "${cyan}INFO $BASH_SOURCE: Uploading canary...${reset}"
-rsync \
-   $rsync_opts \
-   --recursive \
-   --rsh ssh \
-   "$binary_build_folder_dist/canary/canary.txt.asc" \
-   "$binary_build_folder_dist/canary/canary.txt" \
-   "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
-   "$binary_build_folder_dist/canary/canary.txt.sig" \
-   "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
-   "root@whonix.org:/var/rsync/developer-meta-files/canary"
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
+   read temp
+
+   true "${cyan}INFO $BASH_SOURCE: Uploading canary...${reset}"
+   rsync \
+      $rsync_opts \
+      --recursive \
+      --rsh ssh \
+      "$binary_build_folder_dist/canary/canary.txt.asc" \
+      "$binary_build_folder_dist/canary/canary.txt" \
+      "$binary_build_folder_dist/canary/canary.txt.clearsign.asc" \
+      "$binary_build_folder_dist/canary/canary.txt.sig" \
+      "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
+      "${upload_location}:/var/rsync/developer-meta-files/canary"
+
+done
