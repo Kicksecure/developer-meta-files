@@ -134,7 +134,9 @@ main() {
 }
 
 upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
+main "$@"
 
+upload_location="root@kicksecure.com:/var/rsync/developer-meta-files/internal"
 main "$@"
 
 # upload_location="adrelanos,developer-meta-files@frs.sourceforge.net:/home/frs/project/developer-meta-files/internal"
