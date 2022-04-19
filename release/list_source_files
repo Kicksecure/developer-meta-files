@@ -17,4 +17,4 @@ recurse() {
  done
 }
 
-recurse ~/Whonix
+recurse ~/derivative-maker

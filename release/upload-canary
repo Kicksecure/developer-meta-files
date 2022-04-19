@@ -15,9 +15,9 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../../help-steps/pre
-source ../../../help-steps/colors
-source ../../../help-steps/variables
+source ../../../../help-steps/pre
+source ../../../../help-steps/colors
+source ../../../../help-steps/variables
 
 if [ "$(id -u)" = "0" ]; then
    true "ERROR: Do not run this as root!"
@@ -38,8 +38,9 @@ cp "$binary_build_folder_dist/canary/canary.txt.embed.sig" ~/sourcesown/canary/
 pushd ~/sourcesown/canary/
 git add -A
 git commit -a -m "update canary"
-git push origin master
-git push adre master
+git push github-kicksecure master
+git push github-whonix master
+git push adrelanos master
 popd
 
 true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary --dry-run.${reset}"
