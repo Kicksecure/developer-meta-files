@@ -8,6 +8,9 @@ set -e
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
+true "ERROR: Not implemented!"
+exit 1
+
 ## disable cmd line parser, since not needed
 export dist_build_one_parsed="1"
 export VMNAME="internalrun"
@@ -37,7 +40,7 @@ fi
 
 source_vm="$(qubesdb-read /name)"
 
-## Get rid of huge .git folder.
+## Get rid of the huge '.git' folder.
 rm -r -f "$binary_build_folder_dist/aptrepo_temp_copy/"
 sudo $SUDO_OPTS mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
 sudo $SUDO_OPTS cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"

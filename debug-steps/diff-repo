@@ -11,6 +11,8 @@ set -o pipefail
 set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
+true "ERRROR: Not implemented!"
+exit 1
 
 rm -r /home/user/Downloads/temp
 mkdir /home/user/Downloads/temp

@@ -26,7 +26,8 @@ main() {
    reprepro_output="$(reprepro \
       $dist_build_reprepro_signing_options \
       $dist_build_reprepro_folder_options \
-      "$@" 2>&1)" || { reprepro_exit_code="$?" ; true; };
+      "$@" 2>&1)" \
+      || { reprepro_exit_code="$?" ; true; };
 
    if echo "$reprepro_output" | grep "is already registered with different checksums!" ; then
       return 0

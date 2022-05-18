@@ -33,7 +33,7 @@ preparation() {
 show_dists() {
    true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
    set +x
-   for file_name in "$binary_build_folder_dist/aptrepo_remote/dists/"**; do
+   for file_name in "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"**; do
       if [ -d "$file_name" ]; then
          continue
       fi
@@ -50,7 +50,7 @@ show_pool() {
    fi
    true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
    set +x
-   for file_name in "$binary_build_folder_dist/aptrepo_remote/pool/"**; do
+   for file_name in "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"**; do
       if [ -d "$file_name" ]; then
          continue
       fi
@@ -72,7 +72,7 @@ upload_dry_dists() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/dists/"* \
+      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
       "${upload_location}/dists/"
 }
 
@@ -88,7 +88,7 @@ upload_dry_pool() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/pool/"* \
+      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
       "${upload_location}/pool/"
 }
 
@@ -106,7 +106,7 @@ upload_real_dists() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/dists/"* \
+      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
       "${upload_location}/dists/"
 }
 
@@ -117,7 +117,7 @@ upload_real_pool() {
       --recursive \
       --delete \
       --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/pool/"* \
+      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
       "${upload_location}/pool/"
 }
 
@@ -133,12 +133,14 @@ main() {
    upload_real_pool
 }
 
+derivative_name_item=Whonix
 upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
 main "$@"
 
+derivative_name_item=Kicksecure
 upload_location="root@kicksecure.com:/var/rsync/developer-meta-files/internal"
 main "$@"
 
+# derivative_name_item=XXX
 # upload_location="adrelanos,developer-meta-files@frs.sourceforge.net:/home/frs/project/developer-meta-files/internal"
-#
 # main "$@"
