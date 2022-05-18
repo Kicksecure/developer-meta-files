@@ -23,6 +23,8 @@ source ../../../../help-steps/variables
 cd "$mydir_backup"
 
 for derivative_name_item in $derivative_name_list ; do
+   export derivative_name_item
+
    #../debug-steps/reprepro-wrapper copymatched buster buster-proposed-updates "*"
    ../debug-steps/reprepro-wrapper copymatched bullseye bullseye-proposed-updates "*"
 

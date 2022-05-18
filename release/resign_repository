@@ -23,6 +23,8 @@ source ../../../../help-steps/variables
 "$dist_source_help_steps_folder/gpg_test_sign"
 
 for derivative_name_item in $derivative_name_list ; do
+   export derivative_name_item
+
    ## NOTE: Do not deprecate too early.
    ## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
    #"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
