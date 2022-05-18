@@ -1040,20 +1040,21 @@ pkg_git_push_remotes() {
 #    fi
 
    if [ "$reponame" = "monero-gui" ]; then
-      true
-   elif [ "$reponame" = "binaries-freedom" ]; then
-      true
-   else
-      if internal_git_diff master github-whonix/master ; then
-         git push github-whonix master &
-         git_pid="$!"
-         #wait "$git_pid"
-         git_pid_list="$git_pid_list $git_pid"
-      fi
+      return 0
+   fi
+   if [ "$reponame" = "binaries-freedom" ]; then
+      return 0
    fi
 
-   if internal_git_diff master gitlab-whonix/master ; then
-      git push gitlab-whonix master &
+   if internal_git_diff master github-$project_name_short_lowercase/master ; then
+      git push github-$project_name_short_lowercase master &
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   fi
+
+   if internal_git_diff master gitlab-$project_name_short_lowercase/master ; then
+      git push gitlab-$project_name_short_lowercase master &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
