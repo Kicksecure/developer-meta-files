@@ -22,16 +22,18 @@ source ../../../../help-steps/variables
 ## Debugging.
 "$dist_source_help_steps_folder/gpg_test_sign"
 
-## NOTE: Do not deprecate too early.
-## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
-#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
-#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
-#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
-#"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-developers
+for derivative_name_item in $derivative_name_list ; do
+   ## NOTE: Do not deprecate too early.
+   ## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
+   #"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster
+   #"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-proposed-updates
+   #"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-testers
+   #"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export buster-developers
 
-"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye
-"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-proposed-updates
-"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-testers
-"$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-developers
+   "$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye
+   "$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-proposed-updates
+   "$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-testers
+   "$dist_developer_meta_files_folder/debug-steps/reprepro-wrapper" --export=changed export bullseye-developers
+done
 
 true "${cyan}INFO: Done. Refreshed repository. OpenPGP Resigned and updated valid-until field. Do not forget to upload the refreshed repository. ${reset}"
