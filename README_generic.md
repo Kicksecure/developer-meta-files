@@ -6,7 +6,7 @@
 wget https://www.##project_clearnet##/derivative.asc
 ```
 
-Users can [check Whonix Signing Key](https://www.##project_clearnet##/wiki/Signing_Key) for better security.
+Users can [check the Signing Key](https://www.##project_clearnet##/wiki/Signing_Key) for better security.
 
 2\. Add the APT Signing Key..
 
