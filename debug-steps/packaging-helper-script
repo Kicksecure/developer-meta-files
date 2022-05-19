@@ -1015,9 +1015,9 @@ internal_git_diff() {
 }
 
 pkg_git_fetch_remotes() {
-   git fetch adrelanos &
-   git fetch gitlab-whonix &
-   git fetch github-whonix &
+   #git fetch adrelanos &
+   git fetch github-$project_name_short_lowercase
+   #git fetch gitlab-$project_name_short_lowercase
 }
 
 pkg_git_push_remotes() {
