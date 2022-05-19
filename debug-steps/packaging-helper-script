@@ -1018,6 +1018,8 @@ pkg_git_fetch_remotes() {
    #git fetch adrelanos &
    git fetch github-$project_name_short_lowercase
    #git fetch gitlab-$project_name_short_lowercase
+
+   true
 }
 
 pkg_git_push_remotes() {
@@ -1053,12 +1055,12 @@ pkg_git_push_remotes() {
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-   if internal_git_diff master gitlab-$project_name_short_lowercase/master ; then
-      git push gitlab-$project_name_short_lowercase master &
-      git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
-   fi
+#    if internal_git_diff master gitlab-$project_name_short_lowercase/master ; then
+#       git push gitlab-$project_name_short_lowercase master &
+#       git_pid="$!"
+#       #wait "$git_pid"
+#       git_pid_list="$git_pid_list $git_pid"
+#    fi
 
 #    if internal_git_diff ${project_name_short_lowercase}16 origin/${project_name_short_lowercase}16  ; then
 #       git push origin ${project_name_short_lowercase}16 &
