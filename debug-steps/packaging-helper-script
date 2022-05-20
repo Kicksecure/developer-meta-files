@@ -803,11 +803,11 @@ pkg_git_remotes_add() {
       git remote rm github-whonix || true
       git remote rm gitlab-whonix || true
    elif [ "$project_name_short_lowercase" = "derivative-maker" ]; then
-      git remote add     github-kicksecure git@github.com:derivative-maker/$reponame.git || true
-      git remote set-url github-kicksecure git@github.com:derivative-maker/$reponame.git || true
+      git remote add     github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
+      git remote set-url github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
 
-      #git remote add     gitlab-kicksecure git@gitlab.com:derivative-maker/$reponame.git || true
-      #git remote set-url gitlab-kicksecure git@gitlab.com:derivative-maker/$reponame.git || true
+      #git remote add     gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
+      #git remote set-url gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
 
       git remote rm github-whonix || true
       git remote rm gitlab-whonix || true
