@@ -240,7 +240,7 @@ commit_filter() {
 }
 
 pkg_readme_creator_commit() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
@@ -261,7 +261,7 @@ pkg_readme_creator_commit() {
 }
 
 pkg_readme_creator_do() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
@@ -363,7 +363,7 @@ recurse() {
 }
 
 pkg_descr_creator() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    local file_name file_name_without_leading_dot
@@ -779,8 +779,6 @@ pkg_twitter_to_github() {
 }
 
 pkg_git_remotes_add() {
-   repo_skip "derivate-maker" || return 0
-
    git remote rm origin || true
 
    git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
@@ -801,6 +799,15 @@ pkg_git_remotes_add() {
 
       #git remote add     gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
       #git remote set-url gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
+
+      git remote rm github-whonix || true
+      git remote rm gitlab-whonix || true
+   elif [ "$project_name_short_lowercase" = "derivative-maker" ]; then
+      git remote add     github-kicksecure git@github.com:derivative-maker/$reponame.git || true
+      git remote set-url github-kicksecure git@github.com:derivative-maker/$reponame.git || true
+
+      #git remote add     gitlab-kicksecure git@gitlab.com:derivative-maker/$reponame.git || true
+      #git remote set-url gitlab-kicksecure git@gitlab.com:derivative-maker/$reponame.git || true
 
       git remote rm github-whonix || true
       git remote rm gitlab-whonix || true
@@ -852,7 +859,7 @@ pkg_git_diff_branch_development() {
 }
 
 pkg_packaging_copy() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "genmkfile" || return 0
 
    cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
@@ -866,7 +873,7 @@ pkg_packaging_copy() {
 }
 
 pkg_copy_contributing_file() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "kloak" || return 0
    repo_skip "corridor" || return 0
 
@@ -1134,7 +1141,7 @@ pkg_git_debinstfile() {
 }
 
 pkg_git_commit_packaging() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    returned="$(git status)"
@@ -1158,7 +1165,7 @@ pkg_git_commit_packaging() {
 }
 
 pkg_git_genmkfile_remove() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
    repo_skip "genmkfile" || return 0
 
@@ -1237,7 +1244,7 @@ pkg_debian_control_open() {
 }
 
 pkg_git_submodule_file_writer() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
 
    if [ ! "$git_submodule_file_deleted" = "true" ]; then
       rm "$derivative_maker_source_code_folder/.gitmodules"
@@ -1289,7 +1296,7 @@ pkg_git_main_git_log_writer() {
 }
 
 pkg_git_packages_git_log_writer() {
-   #repo_skip "derivate-maker" || return 0
+   #repo_skip "derivative-maker" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
@@ -1383,7 +1390,7 @@ https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
 }
 
 pkg_git_sign_tags() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
@@ -1405,7 +1412,7 @@ pkg_git_sign_tags() {
 }
 
 pkg_verify_signed_commit() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    genmkfile git-commit-verify
@@ -1413,7 +1420,7 @@ pkg_verify_signed_commit() {
 }
 
 pkg_verify_signed_commit_and_tag() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    genmkfile git-verify
@@ -1438,7 +1445,7 @@ allowed_distributions 	= trusty" >> ~/dput.cfg
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1456,7 +1463,7 @@ pkg_need_version_bump_show() {
 
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1476,7 +1483,7 @@ pkg_need_version_bump_do() {
 }
 
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1540,7 +1547,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 }
 
 pkg_only_build_all() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    export make_lintian=true
@@ -1551,7 +1558,7 @@ pkg_only_build_all() {
 }
 
 pkg_upstream_and_debian_changelog_bump() {
-   repo_skip "derivate-maker" || return 0
+   repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
    ## Complex, slow.
@@ -1804,7 +1811,10 @@ loop_helper() {
 
    ## TODO: derivative-maker/derivative-maker
    this_is_derivative_maker_source_code_folder=true
-   item=derivate-maker
+   project_name_short=derivative-maker
+   project_name_short_lowercase=derivative-maker
+   project_clearnet="kicksecure.com"
+   item=derivative-maker
 
    loop_helper_worker "$@"
 }
