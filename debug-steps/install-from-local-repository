@@ -5,7 +5,7 @@
 
 ## example usage:
 ## Requires local repository already created.
-## cd ~/Whonix/packages/Kicksecure/developer-meta-files
+## cd ~/Whonix/packages/kicksecure/developer-meta-files
 ## sudo ./debug-steps/install-from-local-repository --target root --flavor whonix-gateway --build
 
 set -x

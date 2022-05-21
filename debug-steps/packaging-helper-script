@@ -28,7 +28,7 @@ set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ## example MYDIR:
-## /home/user/derivative-maker/packages/Kicksecure/developer-meta-files/debug-steps
+## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/debug-steps
 
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 ## example my_pkg_name:
@@ -53,7 +53,7 @@ if [ ! "$derivative_maker_folder_name" = "derivative-maker" ]; then
 fi
 
 ## Source make-helper.bsh to get function make_get_variables.
-source "$derivative_maker_source_code_folder/packages/Kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+source "$derivative_maker_source_code_folder/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 
 counter=0
 
@@ -1788,14 +1788,14 @@ loop_helper_worker() {
 loop_helper() {
    this_is_derivative_maker_source_code_folder=false
 
-   for item in ./packages/Kicksecure/* ./packages/Whonix/* ; do
+   for item in ./packages/kicksecure/* ./packages/whonix/* ; do
       true pwd: $PWD
       true item: $item
-      if echo "$item" | grep -q packages/Kicksecure ; then
+      if echo "$item" | grep -q packages/kicksecure ; then
          project_name_short=Kicksecure
          project_name_short_lowercase=kicksecure
          project_clearnet="kicksecure.com"
-      elif echo "$item" | grep -q packages/Whonix ; then
+      elif echo "$item" | grep -q packages/whonix ; then
          project_name_short=Whonix
          project_name_short_lowercase=whonix
          project_clearnet="whonix.org"

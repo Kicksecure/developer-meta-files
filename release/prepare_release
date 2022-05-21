@@ -558,11 +558,11 @@ main() {
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/Kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/Kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/Whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/Whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
    if [ "$dist_build_type_long" = "gateway" ]; then

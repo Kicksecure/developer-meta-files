@@ -46,7 +46,7 @@ main() {
    ## grml-debootstrap is incomplete (does not complain debian security repository) and points to 127.0.0.1.
 
    ## This file doesn't include the derivative's APT repository.
-   cp "$source_code_folder_dist/packages/Kicksecure/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp "$source_code_folder_dist/packages/kicksecure/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
    ## Not using any /etc/apt/preferences.d snippets at the moment.
    #cp "$source_code_folder_dist/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
