@@ -9,7 +9,8 @@ set -e
 cd ~/derivative-maker
 
 replace_list=$(echo "\
-derivative-binary derivative-binary
+packages/Kicksecure packages/kicksecure
+packages/Whonix packages/whonix
 ")
 
 # total=0
