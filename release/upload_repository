@@ -70,7 +70,7 @@ upload_dry_dists() {
       --dry-run \
       $rsync_opts \
       --recursive \
-      --delete \
+      $rsync_delete_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
       "${upload_location}/dists/"
@@ -86,7 +86,7 @@ upload_dry_pool() {
       --dry-run \
       $rsync_opts \
       --recursive \
-      --delete \
+      $rsync_delete_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
       "${upload_location}/pool/"
@@ -104,7 +104,7 @@ upload_real_dists() {
    rsync \
       $rsync_opts \
       --recursive \
-      --delete \
+      $rsync_delete_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
       "${upload_location}/dists/"
@@ -115,7 +115,7 @@ upload_real_pool() {
    rsync \
       $rsync_opts \
       --recursive \
-      --delete \
+      $rsync_delete_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
       "${upload_location}/pool/"
@@ -132,6 +132,8 @@ main() {
    upload_real_dists
    upload_real_pool
 }
+
+rsync_delete_maybe="--delete"
 
 derivative_name_item=Whonix
 upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
