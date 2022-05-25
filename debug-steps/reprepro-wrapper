@@ -21,7 +21,7 @@ source ../../../../help-steps/pre
 source ../../../../help-steps/colors
 source ../../../../help-steps/variables
 
-main() {
+reprepro_wrap() {
    reprepro_exit_code="0"
    reprepro_output="$(reprepro \
       $dist_build_reprepro_signing_options \
@@ -36,5 +36,11 @@ main() {
    return "$reprepro_exit_code"
 }
 
-set_dist_build_reprepro_folder_options
+main() {
+   for derivative_name_item in $derivative_name_list ; do
+      set_dist_build_reprepro_folder_options
+      reprepro_wrap "$@"
+   done
+}
+
 main "$@"
