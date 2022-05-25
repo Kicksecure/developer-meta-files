@@ -85,7 +85,7 @@ upload_dry_pool() {
       read temp
    fi
    true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
-   test -d ""$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
    rsync \
       --dry-run \
       $rsync_opts \
