@@ -37,6 +37,7 @@ reprepro_wrap() {
 }
 
 main() {
+   ## For now add all packages to both distributions.
    for derivative_name_item in $derivative_name_list ; do
       set_dist_build_reprepro_folder_options
       reprepro_wrap "$@"
