@@ -1525,6 +1525,12 @@ pkg_upstream_and_debian_changelog_bump() {
    repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
 
+   echo "version_numbers_by_upstream: $version_numbers_by_upstream"
+
+   ## TODO:
+   ## Not the cleanest way. Other variables might be unwanted.
+   local version_numbers_by_upstream
+
    ## Complex, slow.
    #make_init ## includes make_get_variables
    ## sets maybe: version_numbers_by_upstream
@@ -1542,9 +1548,9 @@ pkg_upstream_and_debian_changelog_bump() {
       genmkfile deb-uachl-bumpup-major
    fi
 
-   git add changelog.upstream
-   git add debian/changelog
-   git commit -m "bumped changelog version"
+#    git add changelog.upstream
+#    git add debian/changelog
+#    git commit -m "bumped changelog version"
 
    true
 }
