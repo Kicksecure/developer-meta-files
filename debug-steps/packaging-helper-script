@@ -1521,6 +1521,12 @@ pkg_only_build_all() {
    true
 }
 
+pkg_only_reprepro_add() {
+   export make_lintian=true
+   export make_use_cowbuilder=true
+   genmkfile reprepro-add
+}
+
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "derivative-maker" || return 0
    repo_skip "developer-meta-files" || return 0
