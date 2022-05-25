@@ -1030,24 +1030,6 @@ pkg_git_fetch_remotes() {
 }
 
 pkg_git_push_remotes() {
-#    if [ "$reponame" = "monero-gui" ]; then
-#       true
-#    else
-#       if internal_git_diff master adrelanos/master ; then
-#          git push adrelanos master &
-#          git_pid="$!"
-#          #wait "$git_pid"
-#          git_pid_list="$git_pid_list $git_pid"
-#       fi
-#    fi
-
-#    if internal_git_diff ${project_name_short_lowercase}16 adrelanos/${project_name_short_lowercase}16 ; then
-#       git push adrelanos ${project_name_short_lowercase}16 &
-#       git_pid="$!"
-#       #wait "$git_pid"
-#       git_pid_list="$git_pid_list $git_pid"
-#    fi
-
    if [ "$reponame" = "monero-gui" ]; then
       return 0
    fi
@@ -1062,24 +1044,19 @@ pkg_git_push_remotes() {
       git_pid_list="$git_pid_list $git_pid"
    fi
 
-#    if internal_git_diff master gitlab-$project_name_short_lowercase/master ; then
-#       git push gitlab-$project_name_short_lowercase master &
-#       git_pid="$!"
-#       #wait "$git_pid"
-#       git_pid_list="$git_pid_list $git_pid"
-#    fi
+   true
+}
 
-#    if internal_git_diff ${project_name_short_lowercase}16 origin/${project_name_short_lowercase}16  ; then
-#       git push origin ${project_name_short_lowercase}16 &
-#       git_pid="$!"
-#       ##wait "$git_pid"
-#       git_pid_list="$git_pid_list $git_pid"
-#    fi
+pkg_git_push_tags() {
+   make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
 
-#    genmkfile git-tag-push &
-#    git_pid="$!"
-#    ##wait "$git_pid"
-#    git_pid_list="$git_pid_list $git_pid"
+   ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
+   #if internal_git_diff $make_git_tag_latest github-$project_name_short_lowercase/$make_git_tag_latest ; then
+      git push github-$project_name_short_lowercase $make_git_tag_latest &
+      git_pid="$!"
+      #wait "$git_pid"
+      git_pid_list="$git_pid_list $git_pid"
+   #fi
 
    true
 }
@@ -1518,19 +1495,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
-
-   make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
-
-   git push gitlab-whonix master
-   git push gitlab-whonix "$make_git_tag_latest"
-   if [ "$reponame" = "monero-gui" ]; then
-      true
-   elif [ "$reponame" = "binaries-freedom" ]; then
-      true
-   else
-      git push github-whonix master
-      git push github-whonix "$make_git_tag_latest"
-   fi
 
    export make_lintian=true
    export make_use_cowbuilder=true
