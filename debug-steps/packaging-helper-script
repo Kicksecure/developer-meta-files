@@ -1522,6 +1522,9 @@ pkg_only_build_all() {
 }
 
 pkg_only_reprepro_add() {
+   repo_skip "derivative-maker" || return 0
+   repo_skip "developer-meta-files" || return 0
+
    export make_use_cowbuilder=true
    genmkfile reprepro-add
 
@@ -1786,7 +1789,6 @@ loop_helper() {
       loop_helper_worker "$@"
    done
 
-   ## TODO: derivative-maker/derivative-maker
    this_is_derivative_maker_source_code_folder=true
    project_name_short=derivative-maker
    project_name_short_lowercase=derivative-maker
