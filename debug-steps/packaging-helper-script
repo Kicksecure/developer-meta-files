@@ -1522,7 +1522,6 @@ pkg_only_build_all() {
 }
 
 pkg_only_reprepro_add() {
-   export make_lintian=true
    export make_use_cowbuilder=true
    genmkfile reprepro-add
 }
