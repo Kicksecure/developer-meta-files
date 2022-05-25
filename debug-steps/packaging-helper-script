@@ -1832,7 +1832,7 @@ if [ "$announcement_create" = "true" ]; then
 fi
 
 if [ ! "$git_pid_list" = "" ]; then
-   wait "$git_pid_list"
+   wait $git_pid_list
 fi
 
 true "END: $0"
