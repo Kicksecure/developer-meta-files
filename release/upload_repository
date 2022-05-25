@@ -33,6 +33,7 @@ preparation() {
 show_dists() {
    true "${cyan}INFO $BASH_SOURCE: Showing dists...${reset}"
    set +x
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists"
    for file_name in "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"**; do
       if [ -d "$file_name" ]; then
          continue
@@ -50,6 +51,7 @@ show_pool() {
    fi
    true "${cyan}INFO $BASH_SOURCE: Showing pool...${reset}"
    set +x
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
    for file_name in "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"**; do
       if [ -d "$file_name" ]; then
          continue
@@ -66,6 +68,7 @@ upload_dry_dists() {
       read temp
    fi
    true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists"
    rsync \
       --dry-run \
       $rsync_opts \
@@ -82,6 +85,7 @@ upload_dry_pool() {
       read temp
    fi
    true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
+   test -d ""$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
    rsync \
       --dry-run \
       $rsync_opts \
@@ -101,6 +105,7 @@ upload_real_ask() {
 
 upload_real_dists() {
    true "${cyan}INFO $BASH_SOURCE: Uploading dists...${reset}"
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists"
    rsync \
       $rsync_opts \
       --recursive \
@@ -112,6 +117,7 @@ upload_real_dists() {
 
 upload_real_pool() {
    true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
+   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
    rsync \
       $rsync_opts \
       --recursive \
@@ -137,11 +143,11 @@ main() {
 ## TODO: not using during repository split Kicksecure and Whonix
 #rsync_delete_maybe="--delete"
 
-derivative_name_item=Whonix
+derivative_name_item=whonix
 upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
 main "$@"
 
-derivative_name_item=Kicksecure
+derivative_name_item=kicksecure
 upload_location="root@kicksecure.com:/var/rsync/developer-meta-files/internal"
 main "$@"
 
