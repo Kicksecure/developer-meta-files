@@ -1757,7 +1757,7 @@ loop_helper_worker() {
       reponame_pretty="derivative-maker"
    fi
 
-   $@
+   "$@"
 
    popd >/dev/null
 
