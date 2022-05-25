@@ -1031,10 +1031,9 @@ pkg_git_fetch_remotes() {
 
 pkg_git_push_remotes() {
    if [ "$reponame" = "monero-gui" ]; then
-      repo_to_push_to=gitlab-$project_name_short_lowercase/master
-
+      repo_to_push_to=gitlab-$project_name_short_lowercase
    else
-      repo_to_push_to=github-$project_name_short_lowercase/master
+      repo_to_push_to=github-$project_name_short_lowercase
    fi
 
    if internal_git_diff master $repo_to_push_to/master ; then
