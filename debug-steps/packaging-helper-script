@@ -1022,20 +1022,12 @@ internal_git_diff() {
 }
 
 pkg_git_fetch_remotes() {
-   #git fetch adrelanos &
-   git fetch github-$project_name_short_lowercase
-   #git fetch gitlab-$project_name_short_lowercase
+   git fetch $repo_to_push_to &
 
    true
 }
 
 pkg_git_push_remotes() {
-   if [ "$reponame" = "monero-gui" ]; then
-      repo_to_push_to=gitlab-$project_name_short_lowercase
-   else
-      repo_to_push_to=github-$project_name_short_lowercase
-   fi
-
    if internal_git_diff master $repo_to_push_to/master ; then
       git push $repo_to_push_to master &
       git_pid="$!"
@@ -1050,8 +1042,8 @@ pkg_git_push_tags() {
    make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
 
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-   #if internal_git_diff $make_git_tag_latest github-$project_name_short_lowercase/$make_git_tag_latest ; then
-      git push github-$project_name_short_lowercase $make_git_tag_latest &
+   #if internal_git_diff $make_git_tag_latest $repo_to_push_to/$make_git_tag_latest ; then
+      git push $repo_to_push_to $make_git_tag_latest &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
@@ -1507,6 +1499,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
    pkg_need_version_bump_and_pkg_build_and_reprepro_add
    pkg_git_push_remotes
+   pkg_git_push_tags
 }
 
 pkg_only_build_all() {
@@ -1748,6 +1741,12 @@ loop_helper_worker() {
    repo_full_path="$(realpath "$item")"
 
    true "${cyan}INFO: reponame: $reponame${reset}"
+
+   if [ "$reponame" = "monero-gui" ]; then
+      repo_to_push_to=gitlab-$project_name_short_lowercase
+   else
+      repo_to_push_to=github-$project_name_short_lowercase
+   fi
 
    if [ ! "$this_is_derivative_maker_source_code_folder" = "true" ]; then
       pushd "$item" >/dev/null
