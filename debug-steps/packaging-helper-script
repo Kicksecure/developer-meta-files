@@ -1031,14 +1031,14 @@ pkg_git_fetch_remotes() {
 
 pkg_git_push_remotes() {
    if [ "$reponame" = "monero-gui" ]; then
-      return 0
-   fi
-   if [ "$reponame" = "binaries-freedom" ]; then
-      return 0
+      repo_to_push_to=gitlab-$project_name_short_lowercase/master
+
+   else
+      repo_to_push_to=github-$project_name_short_lowercase/master
    fi
 
-   if internal_git_diff master github-$project_name_short_lowercase/master ; then
-      git push github-$project_name_short_lowercase master &
+   if internal_git_diff master $repo_to_push_to/master ; then
+      git push $repo_to_push_to master &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
