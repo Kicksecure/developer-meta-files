@@ -1548,9 +1548,9 @@ pkg_upstream_and_debian_changelog_bump() {
       genmkfile deb-uachl-bumpup-major
    fi
 
-#    git add changelog.upstream
-#    git add debian/changelog
-#    git commit -m "bumped changelog version"
+   git add changelog.upstream
+   git add debian/changelog
+   git commit -m "bumped changelog version"
 
    true
 }
