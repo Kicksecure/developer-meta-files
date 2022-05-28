@@ -149,11 +149,11 @@ upload_files() {
 }
 
 main() {
-   show_files "$@"
-
    if [ "$dist_build_version" = "" ]; then
       error "Variable dist_build_version is empty."
    fi
+
+   show_files "$@"
 
    destination_site="whonix.org"
    upload_files "$@"
