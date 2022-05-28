@@ -72,34 +72,35 @@ show_files() {
 }
 
 upload_files() {
-   #server="hulahoop@whonix.org:/var/rsync/libvirt"
-   #server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
+   ## TODO
+   #dist_server_with_upload_location="hulahoop@whonix.org:/var/rsync/libvirt"
+   #dist_server_with_upload_location="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt"
 
    if [ "$destination_site" = "" ]; then
       error "Variable destination_site is empty."
    fi
 
-   if [ "$server" = "" ]; then
+   if [ "$dist_server_with_upload_location" = "" ]; then
       if [ "$iso" = "true" ]; then
-         server="root@${destination_site}:/var/rsync/iso"
+         dist_server_with_upload_location="root@${destination_site}:/var/rsync/iso"
       else
-         server="root@${destination_site}:/var/rsync/ova"
-         #server="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
+         dist_server_with_upload_location="root@${destination_site}:/var/rsync/ova"
+         #dist_server_with_upload_location="adrelanos,whonix@frs.sourceforge.net:/home/frs/project/whonix/ova"
       fi
    fi
 
-   if [ "$server" = "" ]; then
-      error "Variable server is empty."
+   if [ "$dist_server_with_upload_location" = "" ]; then
+      error "Variable dist_server_with_upload_location is empty."
    fi
 
    ####
 
-   server_with_version="${server}/${dist_build_version}/"
+   dist_server_with_upload_location_with_version="${dist_server_with_upload_location}/${dist_build_version}/"
 
    true "file_list:
    $file_list"
 
-   true "server_with_version: $server_with_version"
+   true "dist_server_with_upload_location_with_version: $dist_server_with_upload_location_with_version"
 
    if [ ! "$build_upload_noninteractive" = "true" ]; then
       true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -111,7 +112,7 @@ upload_files() {
       --dry-run \
       $rsync_opts \
       $file_list \
-      "$server_with_version"
+      "$dist_server_with_upload_location_with_version"
 
    if [ ! "$build_upload_noninteractive" = "true" ]; then
       true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -128,7 +129,7 @@ upload_files() {
       rsync \
          $rsync_opts \
          $file_list \
-         "$server_with_version" \
+         "$dist_server_with_upload_location_with_version" \
          || { rsync_exit_code="$?" ; true; };
 
       if [ "$rsync_exit_code" = "0" ]; then
