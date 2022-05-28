@@ -9,12 +9,6 @@ set -e
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-## disable cmd line parser, since not needed
-export dist_build_one_parsed="1"
-export VMNAME="internalrun"
-
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
 source ../../../../help-steps/pre
@@ -22,7 +16,11 @@ source ../../../../help-steps/colors
 source ../../../../help-steps/variables
 
 show_files() {
-   for file_name in "$dist_binary_build_folder"/* ; do
+   local file_name
+
+   for file_name in "${dist_build_files_to_upload[@]}" ; do
+      true "file_name: $file_name"
+
       if [ "$file_name" == "" ]; then
          continue
       fi
@@ -34,33 +32,6 @@ show_files() {
       ## example file_extension:
       ## xz
 
-      ## White list file extensions.
-      if [ "$file_extension" = "iso" ]; then
-         true
-         iso=true
-      elif [ "$file_extension" = "ova" ]; then
-         true
-      ## XXX: non-ideal, would upload all files named *.xz in $dist_binary_build_folder
-      ##      folder but there should be no other files named like this except
-      ##      libvirt.xz files and therefore good enough for now.
-      elif [ "$file_extension" = "xz" ]; then
-         true
-      elif [ "$file_extension" = "asc" ]; then
-         true
-      elif [ "$file_extension" = "sig" ]; then
-         true
-      elif [ "$file_extension" = "sha256sums" ]; then
-         true
-      elif [ "$file_extension" = "sha512sums" ]; then
-         true
-      elif [ "$file_extension" = "torrent" ]; then
-         true
-      else
-         ## Skip any non-white listed file extensions.
-         true "INFO: Not adding file_name $file_name to upload file list, ok."
-         continue
-      fi
-
       if [ "$file_list" = "" ]; then
          file_list="$file_name"
       else
@@ -69,6 +40,9 @@ show_files() {
    $file_name"
       fi
    done
+
+   true "file_list:"
+   true "$file_list"
 }
 
 upload_files() {
@@ -149,6 +123,10 @@ upload_files() {
 }
 
 main() {
+   if [ ! "$dist_build_image_upload_supported" = "true" ]; then
+      error "upload support for this --target is not yet implemented."
+   fi
+
    if [ "$dist_build_version" = "" ]; then
       error "Variable dist_build_version is empty."
    fi
