@@ -100,38 +100,38 @@ libvirt_compress() {
    ## Not using tar --verbose:
    ## - slows down tar too much.
 
-   local filelist
+   local filelist_full_path
 
    if [ "$dist_build_type_long" = "kicksecure" ]; then
-      filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT") "
-      filelist+=" $(basename "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER") "
+      filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT "
+      filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_DISCLAIMER "
    else
-      filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT") "
-      filelist+=" $(basename "${dist_binary_build_folder}/WHONIX_DISCLAIMER") "
+      filelist_full_path+="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT "
+      filelist_full_path+="${dist_binary_build_folder}/WHONIX_DISCLAIMER "
    fi
 
    if [ "$vm_multiple" = "false" ]; then
-      filelist+=" $(basename "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml") "
+      filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml "
 
       if [ "$dist_build_raw" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
+         filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw "
       fi
       if [ "$dist_build_qcow2" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
+         filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    else
-      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml") "
-      filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml") "
-      filelist+=" $(basename "$libvirt_target_network_file_external") "
-      filelist+=" $(basename "$libvirt_target_network_file_internal") "
+      filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml "
+      filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml "
+      filelist_full_path+="$libvirt_target_network_file_external "
+      filelist_full_path+="$libvirt_target_network_file_internal "
 
       if [ "$dist_build_raw" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw") "
+         filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
+         filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
       fi
       if [ "$dist_build_qcow2" = "true" ]; then
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
-         filelist+=" $(basename "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2") "
+         filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
+         filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    fi
 
@@ -142,11 +142,17 @@ libvirt_compress() {
       xz_archive="$libvirt_target_qcow2_xz_archive"
    fi
 
-   true "filelist: $filelist"
+   true "filelist_full_path: $filelist_full_path"
 
-   local file_name
-   for file_name in $filelist ; do
-      test -f "$file_name"
+   local file_name_item_full_path
+   for file_name_item_full_path in $filelist_full_path ; do
+      test -f "$file_name_item_full_path"
+      filelist_base_name+=" $(basename "$file_name_item_full_path")"
+   done
+
+   local file_name_item_base_name
+   for file_name_item_base_name in $filelist_base_name ; do
+      test -f "$file_name_item_base_name"
    done
 
    ## TODO: add progress meter (using `pv`?)
@@ -162,7 +168,7 @@ libvirt_compress() {
          --xz \
          --directory="${dist_binary_build_folder}" \
          --file "$(basename "$xz_archive")" \
-         $filelist
+         $filelist_base_name
 
    sudo $SUDO_OPTS strip-nondeterminism "$xz_archive"
 
@@ -584,6 +590,10 @@ main() {
    fi
 
    libvirt_compress
+
+   ## TODO
+   exit 0
+
    virtualbox_export
    hashes_create_and_verify
    torrent_create
