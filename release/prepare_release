@@ -191,16 +191,15 @@ virtualbox_export() {
    local producturl vendorurl vendor eulafile description
    if [ "$dist_build_type_long" = "kicksecure" ]; then
       producturl="https://www.${dist_upload_destination_site}"
-      vendorurl="https://www.${dist_upload_destination_site}"
       vendor="Kicksecure"
       eulafile="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
    else
       producturl="https://www.${dist_upload_destination_site}/wiki/Other_Operating_Systems"
-      vendorurl="https://www.${dist_upload_destination_site}"
       vendor="Whonix"
       eulafile="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
    fi
 
+   vendorurl="https://www.${dist_upload_destination_site}"
    description="\
 Build Version [A]: ${dist_build_version}
 
