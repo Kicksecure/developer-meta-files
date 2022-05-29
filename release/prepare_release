@@ -194,22 +194,14 @@ virtualbox_export() {
       vendorurl="https://www.${dist_upload_destination_site}"
       vendor="Kicksecure"
       eulafile="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      description="\
-Build Version [A]: ${dist_build_version}
-
-Stay tuned! [B]
-
-Please donate! [C]
-
-[A] https://www.${dist_upload_destination_site}/wiki/Build_Version
-[B] https://www.${dist_upload_destination_site}/wiki/Stay_Tuned
-[C] https://www.${dist_upload_destination_site}/wiki/Donate"
    else
       producturl="https://www.${dist_upload_destination_site}/wiki/Other_Operating_Systems"
       vendorurl="https://www.${dist_upload_destination_site}"
       vendor="Whonix"
       eulafile="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      description="\
+   fi
+
+   description="\
 Build Version [A]: ${dist_build_version}
 
 Stay tuned! [B]
@@ -219,7 +211,6 @@ Please donate! [C]
 [A] https://www.${dist_upload_destination_site}/wiki/Build_Version
 [B] https://www.${dist_upload_destination_site}/wiki/Stay_Tuned
 [C] https://www.${dist_upload_destination_site}/wiki/Donate"
-   fi
 
    rm --force "$binary_image_ova"
 
