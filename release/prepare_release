@@ -590,10 +590,6 @@ main() {
    fi
 
    libvirt_compress
-
-   ## TODO
-   exit 0
-
    virtualbox_export
    hashes_create_and_verify
    torrent_create
