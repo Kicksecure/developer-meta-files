@@ -1,4 +1,4 @@
-= misc =
+# misc #
 
 * https://whonix.org/wiki/Dev/Build_Documentation
 * https://phabricator.whonix.org/T577#10979
@@ -9,7 +9,7 @@ https://github.com/derivative-maker/derivative-maker/blob/master/help-steps/pars
 
 Assign 4 CPUs and as close to 4GB RAM as possible to avoid the build process erroring out with a cryptic error.
 
-= gpg =
+# gpg #
 
 To get pinentry working during build preparation:
 
@@ -17,7 +17,7 @@ To get pinentry working during build preparation:
 pinentry-gnome3
 ```
 
-= signify =
+# signify #
 
 To create a key for signify-openbsd as user "user":
 
@@ -30,14 +30,14 @@ signify-openbsd -n -G -p keyname.pub -s keyname.sec
 
 Restore folder from backup in VM home dir and rename `signify` -> `.signify`
 
-= ssh key generation =
+# ssh key generation #
 Generating a SSH public key (only needed once initially):
 
 ```
 ssh-keygen -t ed25519
 ```
 
-= Install rsync and SSH to upload =
+# Install rsync and SSH to upload #
 
 ```
 sudo apt-get install rsync ssh
@@ -51,7 +51,7 @@ Set permissions for SSH to work:
 chmod -R og-rwx .ssh
 ```
 
-= source code updates =
+# source code updates #
 In future, source code can be updated as per:
 
 ```
@@ -61,17 +61,24 @@ In future, source code can be updated as per:
 Output of above script needs to be read and understood for security and
 reliability.
 
-= sourceforge upload =
+# sourceforge upload #
+
+Deprecated!
 
 sourceforge is currently not in use.
 
 Upload single file to SSH server:
 
+```
 ssh hulahoop,whonix-kvm@frs.sourceforge.net "/bin/bash -i"
+```
 
-Verify server fingerprint: SHA256:QAAxYkf0iI/tc9oGa0xSsVOAzJBZstcO8HqGKfjpxcY
+Verify server fingerprint:
+
+`SHA256:QAAxYkf0iI/tc9oGa0xSsVOAzJBZstcO8HqGKfjpxcY`
 
 Enter sf.net password
 
+```
 scp [$file in /home/user] hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt
-
+```
