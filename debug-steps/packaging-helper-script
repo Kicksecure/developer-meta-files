@@ -1618,33 +1618,33 @@ do_nothing() {
 
 announcement() {
    echo "\
-Whonix ${version_main_new_short} - for VirtualBox - Point Release!
+$project_name_short ${version_main_new_short} - for VirtualBox - Point Release!
 
 # Testers Wanted!
 
-Download the Testers-Only version of Whonix for VirtualBox:
+Download the Testers-Only version of $project_name_short for VirtualBox:
 
-https://www.whonix.org/wiki/VirtualBox_Testers_Only_Version
-
-----
-
-Alternatively, in-place release upgrade is possible upgrade using [Whonix testers repository](https://www.whonix.org/wiki/Project-APT-Repository).
+https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version
 
 ----
 
-This release would not have been possible without the numerous supporters of Whonix!
+Alternatively, in-place release upgrade is possible upgrade using [$project_name_short repository](https://www.${project_clearnet}/wiki/Project-APT-Repository).
+
+----
+
+This release would not have been possible without the numerous supporters of $project_name_short!
 
 ----
 
 Please Donate!
 
-https://www.whonix.org/wiki/Donate
+https://www.${project_clearnet}/wiki/Donate
 
 ----
 
 Please Contribute!
 
-https://www.whonix.org/wiki/Contribute
+https://www.${project_clearnet}/wiki/Contribute
 
 ----
 
@@ -1652,7 +1652,7 @@ https://www.whonix.org/wiki/Contribute
 
 TODO
 
-https://www.whonix.org/wiki/Testers_Release
+https://www.${project_clearnet}/wiki/Testers_Release
 
 $giant_git_log_file
 
@@ -1665,24 +1665,24 @@ $giant_git_log_file
 ----
 
 (This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
-   tee "$announcements_draft_folder/Whonix_VirtualBox_testers.txt" >/dev/null
+   tee "$announcements_draft_folder/${project_name_short}_VirtualBox_testers.txt" >/dev/null
 
 ####
 
    echo "\
-Whonix ${version_main_new_short} - for VirtualBox - Point Release!
+$project_name_short ${version_main_new_short} - for VirtualBox - Point Release!
 
-# Whonix for VirtualBox
+# $project_name_short for VirtualBox
 
-Download Whonix for VirtualBox:
+Download $project_name_short for VirtualBox:
 
-https://www.whonix.org/wiki/VirtualBox
+https://www.${project_clearnet}/wiki/VirtualBox
 
 ----
 
 This is a point release.
 
-https://www.whonix.org/wiki/Point_Release
+https://www.${project_clearnet}/wiki/Point_Release
 
 ----
 
@@ -1694,23 +1694,23 @@ TODO
 
 # Upgrade
 
-Alternatively, in-place release upgrade is possible upgrade using [Whonix repository](https://www.whonix.org/wiki/Project-APT-Repository).
+Alternatively, in-place release upgrade is possible upgrade using [$project_name_short repository](https://www.${project_clearnet}/wiki/Project-APT-Repository).
 
 ----
 
-This release would not have been possible without the numerous supporters of Whonix!
+This release would not have been possible without the numerous supporters of $project_name_short!
 
 ----
 
 Please Donate!
 
-https://www.whonix.org/wiki/Donate
+https://www.${project_clearnet}/wiki/Donate
 
 ----
 
 Please Contribute!
 
-https://www.whonix.org/wiki/Contribute
+https://www.${project_clearnet}/wiki/Contribute
 
 ----
 
@@ -1718,7 +1718,7 @@ https://www.whonix.org/wiki/Contribute
 
 TODO
 
-https://www.whonix.org/wiki/Stable_Release
+https://www.${project_clearnet}/wiki/Stable_Release
 
 ----
 
@@ -1729,7 +1729,7 @@ https://www.whonix.org/wiki/Stable_Release
 ----
 
 (This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
-   tee "$announcements_draft_folder/Whonix_VirtualBox_point.txt" >/dev/null
+   tee "$announcements_draft_folder/${project_name_short}_VirtualBox_point.txt" >/dev/null
 }
 
 loop_helper_worker() {
