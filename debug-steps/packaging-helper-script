@@ -115,6 +115,8 @@ commit_filter() {
     fi
 
     for text in \
+        "Kicksecure" \
+        "kicksecure" \
         "rename" \
         "split" \
         "split project source code" \
