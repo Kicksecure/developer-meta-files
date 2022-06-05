@@ -1,11 +1,11 @@
-= step based build system =
+# step based build system #
 
 You don't need to use ~/derivative-maker/derivative-maker at all. Each step can be done separately. https://www.whonix.org/wiki/Dev/Source_Code_Intro#Introduction Would be unworkable without that feature.
 These are the build-steps:
 
 ls -la ~/derivative-maker/build-steps.d/
 
-= build =
+# build #
 
 Setup build machine according to pages above then run the following commands to create builds:
 
@@ -21,7 +21,7 @@ Optionally add `--connection onion` to force fetching packages from Onion server
 
 For Kicksecure replace `whonix-gateway-xfce` with: `kicksecure-xfce` / `kicksecure-cli`
 
-= gpg =
+# gpg #
 
 * https://github.com/jessfraz/dotfiles/blob/master/.gnupg/gpg-agent.conf
 * https://www.gnupg.org/documentation/manuals/gnupg/Agent-Options.html
@@ -38,7 +38,7 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/prepare_release --build --target qcow2 --flavor whonix-workstation-xfce
 ```
 
-= Upload to whonix.org =
+# Upload to whonix.org #
 
 (server fingerprint: SHA256:tsvKWEuUwbP0vx+vrePlMqbC4qUXn5fscrm/lZLhVrE)
 (server folder: /home/hulahoop/libvirt/version-number/vm-name....):
@@ -47,7 +47,7 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor whonix-workstation-xfce
 ```
 
-= Upload to kicksecure.com =
+# Upload to kicksecure.com #
 
 (server fingerprint: TODO)
 (server folder: /home/hulahoop/libvirt/version-number/vm-name....):
@@ -56,7 +56,7 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor kicksecure-xfce
 ```
 
-= Upload to sf.net =
+# Upload to sf.net #
 Deprecated!
 
 Don't run this script as root. Type sf.net password when prompted:
@@ -67,7 +67,7 @@ export server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-
 
 `export server` is also deprecated.
 
-= ssh keys =
+# ssh keys #
 Creating SSH server pub key via cli (can be also done manually by saving th contents in a .pub file). May need to delete `~/.ssh/known_hosts` if previous attempts failed. This step is not necessary because the keys are saved in the backed up `.ssh`:
 
 ```
@@ -79,7 +79,7 @@ ssh-keygen -lf ssh_host_ed25519_key.pub
 root@Debian-98-stretch-64-minimal (ED25519)
 ```
 
-= SKIP_SCRIPTS =
+# SKIP_SCRIPTS #
 
 Patrick:
 
@@ -120,7 +120,7 @@ SKIP_SCRIPTS+=" a "
 SKIP_SCRIPTS+=" b "
 ```
 
-= Tor Browser Version Setting =
+# Tor Browser Version Setting #
 Tor Browser Version: We are setting ` tbb_version="8.5.5" `, i.e. instructing tb-updater to download Tor Browser version `8.5.5` because Whonix `15.0.0.4.9` points to a tb-updater version that hardcodes Tor Browser version `8.5.4` which is no longer available for download which would make the build fail. This version number might need to be updated. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
 
 ```
