@@ -1330,7 +1330,7 @@ https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
          committer_person="@${committer_person}"
       elif [ "$committer_person" = "Gavin Pacini" ]; then
          committer_person="@GavinPacini"
-      elif [ "$committer_person" = "Gavin Pacini" ]; then
+      elif [ "$committer_person" = "JeremyRand" ]; then
          committer_person="@JeremyRand"
       elif [ "$committer_person" = "HulaHoop0" ]; then
          committer_person="@HulaHoop"
