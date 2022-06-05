@@ -1250,6 +1250,7 @@ pkg_git_log_giant_make() {
 
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
+      ## TODO: not working with multiple derivatives support yet
       rm -r -f "$giant_git_log_file"
    fi
 
@@ -1777,28 +1778,32 @@ loop_helper_worker() {
 }
 
 loop_helper() {
+   [ -n "$derivative_name_list" ] || derivative_name_list="kicksecure whonix"
+
    this_is_derivative_maker_source_code_folder=false
 
-   for item in ./packages/kicksecure/* ./packages/whonix/* ; do
-      true pwd: $PWD
-      true item: $item
-      if echo "$item" | grep -q packages/kicksecure ; then
-         project_name_short=Kicksecure
-         project_name_short_lowercase=kicksecure
-         project_clearnet="kicksecure.com"
-      elif echo "$item" | grep -q packages/whonix ; then
-         project_name_short=Whonix
-         project_name_short_lowercase=whonix
-         project_clearnet="whonix.org"
-      else
-         echo "ERROR: project name detection failed!"
-         exit 1
-      fi
-      if [ ! -d "$item" ]; then
-         continue
-      fi
-      giant_git_log_file="$announcements_draft_folder/${project_name_short_lowercase}_giant_git_log.txt"
-      loop_helper_worker "$@"
+   for derivative_name_item in $derivative_name_list ; do
+      for item in ./packages/$derivative_name_item/* ; do
+         true pwd: $PWD
+         true item: $item
+         if [ "$derivative_name_item" = "kicksecure" ]; then
+            project_name_short=Kicksecure
+            project_name_short_lowercase=kicksecure
+            project_clearnet="kicksecure.com"
+         elif [ "$derivative_name_item" = "whonix" ]; then
+            project_name_short=Whonix
+            project_name_short_lowercase=whonix
+            project_clearnet="whonix.org"
+         else
+            echo "ERROR: project name detection failed!"
+            exit 1
+         fi
+         if [ ! -d "$item" ]; then
+            continue
+         fi
+         giant_git_log_file="$announcements_draft_folder/${project_name_short_lowercase}_giant_git_log.txt"
+         loop_helper_worker "$@"
+      done
    done
 
    this_is_derivative_maker_source_code_folder=true
@@ -1809,6 +1814,24 @@ loop_helper() {
    item=derivative-maker
 
    loop_helper_worker "$@"
+
+   if [ "$announcement_create" = "true" ]; then
+      for derivative_name_item in $derivative_name_list ; do
+         if [ "$derivative_name_item" = "kicksecure" ]; then
+            project_name_short=Kicksecure
+            project_name_short_lowercase=kicksecure
+            project_clearnet="kicksecure.com"
+         elif [ "$derivative_name_item" = "whonix" ]; then
+            project_name_short=Whonix
+            project_name_short_lowercase=whonix
+            project_clearnet="whonix.org"
+         else
+            echo "ERROR: project name detection failed!"
+            exit 1
+         fi
+         announcement
+      done
+   fi
 }
 
 main() {
@@ -1842,9 +1865,6 @@ main "$@"
 ## ./debug-steps/packaging-helper-script pkg_git_packages_git_log_writer
 ##
 ## Can be found in folder $announcements_draft_folder
-if [ "$announcement_create" = "true" ]; then
-   announcement
-fi
 
 if [ ! "$git_pid_list" = "" ]; then
    wait $git_pid_list
