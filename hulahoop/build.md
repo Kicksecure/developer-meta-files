@@ -86,11 +86,15 @@ Patrick:
 I forgot how the script looks but the general answer is yes, the
 SKIP_SCRIPTS mechanism works too, if done right.
 
+```
 sudo SKIP_SCRIPTS+=" ... "
+```
 
 is different than
 
+```
 SKIP_SCRIPTS+=" ... "
+```
 
 If you set env var SKIP_SCRIPTS as root with sudo, it's lost at the next
 invocation of sudo. If a program runs as sudo and terminates, it does
