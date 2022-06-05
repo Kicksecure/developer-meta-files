@@ -1339,7 +1339,7 @@ pkg_git_packages_git_log_writer() {
       #https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
       #</ref>"
       commit_msg_full_with_link="$commit_msg_full <ref>
-https://github.com/$project_name_short/systemcheck/commit/$commit_hash
+https://github.com/$project_name_short/$reponame/commit/$commit_hash
 </ref>"
 
       if [ "$committer_person" = "madaidan" ]; then
