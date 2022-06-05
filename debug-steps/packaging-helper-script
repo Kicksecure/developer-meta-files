@@ -1230,8 +1230,8 @@ pkg_git_submodule_file_writer() {
    fi
 
    echo "\
-[submodule \"packages/$reponame\"]
-        path = packages/$project_name_short/${reponame}
+[submodule \"packages/${project_name_short}/${reponame}\"]
+        path = packages/${project_name_short}/${reponame}
 $url" \
          | \
          tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
@@ -1282,12 +1282,12 @@ pkg_git_packages_git_log_writer() {
 
    if [ "$this_is_derivative_maker_source_code_folder" = "false" ]; then
       pushd .. >/dev/null
-      if package_version_old="$(git rev-parse "${version_old_main}:packages/${project_name_short_lowercase}_${reponame}")" ; then
+      if package_version_old="$(git rev-parse "${version_old_main}:packages/${project_name_short_lowercase}/${reponame}")" ; then
          new_package=false
       else
          new_package=true
       fi
-      package_version_new="$(git rev-parse "${version_new_main}:packages/${project_name_short_lowercase}_${reponame}")"
+      package_version_new="$(git rev-parse "${version_new_main}:packages/${project_name_short_lowercase}/${reponame}")"
       popd >/dev/null
    else
       new_package=false
