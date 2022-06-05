@@ -40,8 +40,8 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 
 # Upload to whonix.org #
 
-(server fingerprint: SHA256:tsvKWEuUwbP0vx+vrePlMqbC4qUXn5fscrm/lZLhVrE)
-(server folder: /home/hulahoop/libvirt/version-number/vm-name....):
+* (server fingerprint: `SHA256:tsvKWEuUwbP0vx+vrePlMqbC4qUXn5fscrm/lZLhVrE`)
+* (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor whonix-workstation-xfce
@@ -49,8 +49,8 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 
 # Upload to kicksecure.com #
 
-(server fingerprint: TODO)
-(server folder: /home/hulahoop/libvirt/version-number/vm-name....):
+* (server fingerprint: `TODO`)
+* (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor kicksecure-xfce
