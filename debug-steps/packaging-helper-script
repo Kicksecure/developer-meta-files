@@ -84,7 +84,6 @@ version_main_new_short="16.0.5.0"
 
 ## XXX
 announcements_draft_folder="~/derivative-binary/announcements-drafts"
-giant_git_log_file="$announcements_draft_folder/giant_git_log.txt"
 mkdir -p "$announcements_draft_folder"
 
 commit_filter() {
@@ -1241,6 +1240,9 @@ $url" \
 }
 
 pkg_git_log_giant_make() {
+   echo "TODO: giant_git_log_file"
+   exit 1
+
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
       rm -r -f "$giant_git_log_file"
@@ -1267,6 +1269,8 @@ pkg_git_packages_git_log_writer() {
    #repo_skip "derivative-maker" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
+
+   giant_git_log_file="$announcements_draft_folder/${project_name_short}_giant_git_log.txt"
 
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
