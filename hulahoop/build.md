@@ -49,7 +49,7 @@ Run command below to sign and compress. Btw Gateway prepare release command does
 
 # Upload to kicksecure.com #
 
-* (server fingerprint: `TODO`)
+* (server fingerprint: `256 SHA256:NuvDfRYfQiX4MeQZbENPbaenSKatJ2Lwrrmi78jSZtg root@Debian-105-buster-64-minimal (ED25519)`)
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
