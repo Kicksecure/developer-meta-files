@@ -1724,6 +1724,8 @@ TODO
 
 https://www.${project_clearnet}/wiki/Stable_Release
 
+$giant_git_log_file
+
 ----
 
 # Full difference of all changes
