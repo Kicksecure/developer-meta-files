@@ -1332,8 +1332,12 @@ pkg_git_packages_git_log_writer() {
       commit_msg_full="$(echo "$commit_msg_full" | tr "\n" " ")"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
+
+      #commit_msg_full_with_link="$commit_msg_full <ref>
+      #https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
+      #</ref>"
       commit_msg_full_with_link="$commit_msg_full <ref>
-https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
+https://github.com/$project_name_short/systemcheck/commit/$commit_hash
 </ref>"
 
       if [ "$committer_person" = "madaidan" ]; then
@@ -1357,7 +1361,7 @@ https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
 
       if [ "$notable_changes" = "" ]; then
          notable_changes=yes
-         echo "[https://gitlab.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file"
+         echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file"
       fi
 
       echo "* $log_msg" | tee -a "$giant_git_log_file"
