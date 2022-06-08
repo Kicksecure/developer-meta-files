@@ -9,7 +9,7 @@ The Kicksecure / Whonix lead developer who digitally signed this file states the
 
 2.
 
-Definition “artifact”: Kicksecure / Whonix software, Kicksecure / Whonix downloads, Kicksecure / Whonix source code
+Definition "artifact": Kicksecure / Whonix software, Kicksecure / Whonix downloads, Kicksecure / Whonix source code
 
 * The Kicksecure / Whonix Project has never added any backdoor to any artifact.
 * The Kicksecure / Whonix Project has never turned over any signing key.
