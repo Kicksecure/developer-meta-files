@@ -6,48 +6,15 @@
 set -x
 set -e
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+## XXX
+cd ~/sourcesother/qubes-builder
 
-## disable cmd line parser, since not needed
-export dist_build_one_parsed="1"
-export VMNAME="internalrun"
+dm-quickgittagsign
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+echo "16"
+VMs="whonix-gateway-16 whonix-workstation-16"
 
-source ../../../../help-steps/pre
-source ../../../../help-steps/colors
-source ../../../../help-steps/variables
+true "press ctrl + c to abort"
+read question
 
-if [ "$(id -u)" = "0" ]; then
-   echo "${red}${bold}ERROR: Do not run this script as root!${reset}"
-   exit 1
-fi
-
-timestamp=$(date --utc +"%Y%m%d%H%M")
-
-mkdir --parents "$binary_build_folder_dist/qubes-build-commands"
-file_path="$binary_build_folder_dist/qubes-build-commands"
-
-echo "Build-template r4.0 whonix-gateway-14 $timestamp" > "$file_path/r4.0_whonix-gateway-14.txt"
-gpg --yes --clearsign "$file_path/r4.0_whonix-gateway-14.txt"
-rm -f "$file_path/r4.0_whonix-gateway-14.txt"
-gpg --verify "$file_path/r4.0_whonix-gateway-14.txt.asc"
-
-echo "Build-template r4.0 whonix-workstation-14 $timestamp" > "$file_path/r4.0_whonix-workstation-14.txt"
-gpg --yes --clearsign "$file_path/r4.0_whonix-workstation-14.txt"
-rm -f "$file_path/r4.0_whonix-workstation-14.txt"
-gpg --verify "$file_path/r4.0_whonix-workstation-14.txt.asc"
-
-true "Press any key to continue."
-read temp
-
-cat "$file_path/r4.0_whonix-gateway-14.txt.asc"
-true "Press any key to continue."
-read temp
-
-cat "$file_path/r4.0_whonix-workstation-14.txt.asc"
-true "Press any key to continue."
-read temp
-
-true END
+RELEASE=4.1 REPO_PROXY="" make DISTS_VM="$VMs" template-github
