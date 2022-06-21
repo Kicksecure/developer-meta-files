@@ -23,5 +23,5 @@ tar \
    --mtime='2015-10-21 00:00Z' \
    --xz \
    --directory="./" \
-   --file "./Whonix.tar.xz" \
-   ./Whonix
+   --file "./derivative-maker.tar.xz" \
+   ./derivative-maker
