@@ -1131,25 +1131,6 @@ pkg_git_commit_packaging() {
    true
 }
 
-pkg_git_genmkfile_remove() {
-   repo_skip "derivative-maker" || return 0
-   repo_skip "genmkfile" || return 0
-
-   returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
-      true "press enter to continue_not"
-      #read temp
-      return
-   fi
-
-   git add -A
-   msg="remove genmkfile"
-   git commit -m "$msg"
-   git status
-
-   true
-}
-
 pkg_git_commit_all_things() {
    git add -A
    msg="bullseye"
