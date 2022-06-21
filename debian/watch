@@ -3,4 +3,4 @@
 
 version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/developer-meta-files-$1\.tar\.gz/ \
-  https://github.com/Whonix/developer-meta-files/tags .*/v?(\d\S+)\.tar\.gz
+  https://github.com/Kicksecure/developer-meta-files/tags .*/v?(\d\S+)\.tar\.gz
