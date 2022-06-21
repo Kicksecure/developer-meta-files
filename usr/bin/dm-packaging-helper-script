@@ -36,13 +36,8 @@ my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 
 cd "$MYDIR"
 
+cd ~/derivative-maker
 source ~/derivative-maker/help-steps/colors
-
-cd ..
-cd ..
-cd ..
-cd ..
-cd ..
 
 derivative_maker_source_code_folder="$PWD"
 ## example derivative_maker_source_code_folder:
