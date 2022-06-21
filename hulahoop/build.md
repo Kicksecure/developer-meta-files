@@ -34,8 +34,16 @@ echo -e "pinentry-program /usr/bin/pinentry-gnome3\nno-grab\ndefault-cache-ttl 1
 
 Run command below to sign and compress. Btw Gateway prepare release command does nothing as expected and the Workstation prepare release command will do everything (both gw and ws):
 
+16.0.5.3:
+
 ```
 ~/derivative-maker/packages/kicksecure/developer-meta-files/release/prepare_release --build --target qcow2 --flavor whonix-workstation-xfce
+```
+
+16.0.5.4 and above:
+
+```
+dm-prepare-release --build --target qcow2 --flavor whonix-workstation-xfce
 ```
 
 # Upload to whonix.org #
