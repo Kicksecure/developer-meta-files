@@ -9,9 +9,9 @@ set -e
 cd ~/derivative-maker
 
 replace_list=$(echo "\
-' '
-(TM) (TM)
-* *
+git-tag-checkout-latest dm-git-tag-checkout-latest
+reprepro-wrapper dm-reprepro-wrapper
+packaging-helper-script dm-packaging-helper-script
 ")
 
 # total=0
