@@ -42,6 +42,7 @@ cd ..
 cd ..
 cd ..
 cd ..
+cd ..
 
 derivative_maker_source_code_folder="$PWD"
 ## example derivative_maker_source_code_folder:
@@ -53,7 +54,7 @@ if [ ! "$derivative_maker_folder_name" = "derivative-maker" ]; then
 fi
 
 ## Source make-helper.bsh to get function make_get_variables.
-source "$derivative_maker_source_code_folder/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+source ~/derivative-maker/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh
 
 counter=0
 
