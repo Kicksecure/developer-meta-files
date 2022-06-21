@@ -108,6 +108,8 @@ commit_filter() {
        return 1
     fi
 
+    local text
+
     for text in \
         "Kicksecure" \
         "kicksecure" \
