@@ -61,8 +61,6 @@ counter=0
 nothing_to_commit_msg="On branch master
 nothing to commit, working tree clean"
 
-rm -f /tmp/list-of-packages
-
 command -v isutf8 >/dev/null
 
 repo_skip() {
@@ -984,6 +982,7 @@ pkg_packaging_files_diff() {
 #          cp ~/derivative-maker/COPYING "$repo_full_path/COPYING"
 #          cp ~/derivative-maker/COPYING "$repo_full_path/debian/copyright"
 #       else
+#          ## TODO: delete /tmp/list-of-packages
 #          echo "$reponame" | tee -a /tmp/list-of-packages
 #          kate "$repo_full_path/COPYING"
 #          kate "$repo_full_path/debian/copyright"
