@@ -54,8 +54,25 @@ chmod -R og-rwx .ssh
 # source code updates #
 In future, source code can be updated as per:
 
+16.0.5.3:
+
+
 ```
 ~/derivative-maker/packages/kicksecure/developer-meta-files/debug-steps/git-tag-checkout-latest
+```
+
+16.0.5.4:
+
+If developer-meta-packages is already installed:
+
+```
+dm-git-tag-checkout-latest
+```
+
+Otherwise:
+
+```
+~/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-git-tag-checkout-latest
 ```
 
 Output of above script needs to be read and understood for security and

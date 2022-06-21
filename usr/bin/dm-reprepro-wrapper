@@ -4,7 +4,7 @@
 ## See the file COPYING for copying conditions.
 
 ## usage:
-## ./debug-steps/reprepro-wrapper listmatched local "*"
+## dm-reprepro-wrapper listmatched local "*"
 
 set -x
 set -e

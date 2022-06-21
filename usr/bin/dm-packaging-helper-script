@@ -1397,7 +1397,7 @@ allowed_distributions 	= trusty" | tee -a ~/dput.cfg
    true
 }
 
-## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
+## dm-packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
    repo_skip "derivative-maker" || return 0
 
@@ -1414,7 +1414,7 @@ pkg_need_version_bump_show() {
    true
 }
 
-## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
+## dm-packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
    repo_skip "derivative-maker" || return 0
 
@@ -1832,7 +1832,7 @@ fi
 main "$@"
 
 ## To auto generate a release announcement, run:
-## ./debug-steps/packaging-helper-script pkg_git_packages_git_log_writer
+## dm-packaging-helper-script pkg_git_packages_git_log_writer
 ##
 ## Can be found in folder $announcements_draft_folder
 

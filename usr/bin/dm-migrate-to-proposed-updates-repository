@@ -25,8 +25,8 @@ cd "$mydir_backup"
 for derivative_name_item in $derivative_name_list ; do
    export derivative_name_item
 
-   #../debug-steps/reprepro-wrapper copymatched buster-proposed-updates buster-testers "*"
-   ../debug-steps/reprepro-wrapper copymatched bullseye-proposed-updates bullseye-testers "*"
+   #dm-reprepro-wrapper copymatched buster-proposed-updates buster-testers "*"
+   dm-reprepro-wrapper copymatched bullseye-proposed-updates bullseye-testers "*"
 
    true "${cyan}INFO: Done. Migrated testers repository to proposed-updates repository. Do not forget to upload it.${reset}"
 done
