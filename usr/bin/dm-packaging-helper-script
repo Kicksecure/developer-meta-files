@@ -28,7 +28,7 @@ set +e
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ## example MYDIR:
-## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/debug-steps
+## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin
 
 my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 ## example my_pkg_name:
