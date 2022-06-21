@@ -23,7 +23,7 @@ mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 true "INFO $BASH_SOURCE: mydir: $mydir"
 
 ## Example mydir:
-## /home/travis/build/Whonix/developer-meta-files/debug-steps
+## /home/travis/build/Whonix/developer-meta-files/usr/bin
 
 dist_developer_meta_files_folder="$(dirname "$mydir")"
 true "INFO $BASH_SOURCE: dist_developer_meta_files_folder: $dist_developer_meta_files_folder"
