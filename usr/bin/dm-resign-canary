@@ -15,9 +15,9 @@ cd "$MYDIR"
 export dist_build_one_parsed="1"
 export VMNAME="internalrun"
 
-source ../../../../help-steps/pre
-source ../../../../help-steps/colors
-source ../../../../help-steps/variables
+source ~/derivative-maker/help-steps/pre
+source ~/derivative-maker/help-steps/colors
+source ~/derivative-maker/help-steps/variables
 
 if [ "$(id -u)" = "0" ]; then
    true "ERROR: Do not run this as root!"

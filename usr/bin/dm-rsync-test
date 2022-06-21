@@ -18,9 +18,9 @@ cd "$MYDIR"
 ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=961827
 openssl_rsync="$MYDIR/openssl-rsync"
 
-source ../../../../help-steps/pre
-source ../../../../help-steps/colors
-source ../../../../help-steps/variables
+source ~/derivative-maker/help-steps/pre
+source ~/derivative-maker/help-steps/colors
+source ~/derivative-maker/help-steps/variables
 
 trap "exithandler" EXIT
 

@@ -15,9 +15,9 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../../../help-steps/pre
-source ../../../../help-steps/colors
-source ../../../../help-steps/variables
+source ~/derivative-maker/help-steps/pre
+source ~/derivative-maker/help-steps/colors
+source ~/derivative-maker/help-steps/variables
 
 root_check_no() {
    if [ "$(id -u)" = "0" ]; then

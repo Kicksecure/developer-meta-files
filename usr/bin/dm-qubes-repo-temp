@@ -18,9 +18,9 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ../../../../help-steps/pre
-source ../../../../help-steps/colors
-source ../../../../help-steps/variables
+source ~/derivative-maker/help-steps/pre
+source ~/derivative-maker/help-steps/colors
+source ~/derivative-maker/help-steps/variables
 
 #target_vm="sys-whonix-dev"
 #target_vm="sys-whonix"

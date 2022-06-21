@@ -36,7 +36,7 @@ my_pkg_name="$(basename "$(dirname "$MYDIR")")"
 
 cd "$MYDIR"
 
-source ../../../../help-steps/colors
+source ~/derivative-maker/help-steps/colors
 
 cd ..
 cd ..
