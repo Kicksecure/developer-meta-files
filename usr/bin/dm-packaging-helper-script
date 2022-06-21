@@ -243,7 +243,6 @@ commit_filter() {
 
 pkg_readme_creator_commit() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
 #    repo_skip "monero-gui" || return 0
@@ -264,7 +263,6 @@ pkg_readme_creator_commit() {
 
 pkg_readme_creator_do() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
 #    repo_skip "monero-gui" || return 0
@@ -366,7 +364,6 @@ recurse() {
 
 pkg_descr_creator() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    local file_name file_name_without_leading_dot
 
@@ -1113,7 +1110,6 @@ pkg_git_debinstfile() {
 
 pkg_git_commit_packaging() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    returned="$(git status)"
    if [ "$returned" = "$nothing_to_commit_msg" ]; then
@@ -1137,7 +1133,6 @@ pkg_git_commit_packaging() {
 
 pkg_git_genmkfile_remove() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
    repo_skip "genmkfile" || return 0
 
    returned="$(git status)"
@@ -1372,7 +1367,6 @@ https://github.com/$project_name_short/$reponame/commit/$commit_hash
 
 pkg_git_sign_tags() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
    genmkfile git-commit-verify
@@ -1394,7 +1388,6 @@ pkg_git_sign_tags() {
 
 pkg_verify_signed_commit() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    genmkfile git-commit-verify
    true
@@ -1402,7 +1395,6 @@ pkg_verify_signed_commit() {
 
 pkg_verify_signed_commit_and_tag() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    genmkfile git-verify
    true
@@ -1427,7 +1419,6 @@ allowed_distributions 	= trusty" | tee -a ~/dput.cfg
 ## debug-steps/packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1445,7 +1436,6 @@ pkg_need_version_bump_show() {
 ## debug-steps/packaging-helper-script pkg_need_version_bump_do 2>/dev/null
 pkg_need_version_bump_do() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1465,7 +1455,6 @@ pkg_need_version_bump_do() {
 
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
 
@@ -1517,7 +1506,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
 
 pkg_only_build_all() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    export make_lintian=true
    export make_use_cowbuilder=true
@@ -1528,7 +1516,6 @@ pkg_only_build_all() {
 
 pkg_only_reprepro_add() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    export make_use_cowbuilder=true
    genmkfile reprepro-add
@@ -1538,7 +1525,6 @@ pkg_only_reprepro_add() {
 
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
 
    echo "version_numbers_by_upstream: $version_numbers_by_upstream"
 
