@@ -1388,9 +1388,10 @@ pkg_git_sign_tags() {
 }
 
 pkg_verify_signed_commit() {
-   repo_skip "derivative-maker" || return 0
+   #genmkfile git-commit-verify
+   ## Faster.
+   git verify-commit HEAD
 
-   genmkfile git-commit-verify
    true
 }
 
@@ -1430,7 +1431,7 @@ pkg_need_version_bump_show() {
       return 0
    fi
 
-   echo "needs version bump: $item"
+   echo "$reponame"
    true
 }
 
