@@ -1438,6 +1438,7 @@ pkg_need_version_bump_show() {
    fi
 
    pkg_verify_signed_commit
+   pkg_bash_sanity_test
 
    echo "$reponame"
    true
