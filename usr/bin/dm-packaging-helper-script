@@ -1437,6 +1437,8 @@ pkg_need_version_bump_show() {
       return 1
    fi
 
+   pkg_verify_signed_commit
+
    echo "$reponame"
    true
 }
