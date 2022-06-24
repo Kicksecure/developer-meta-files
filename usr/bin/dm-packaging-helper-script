@@ -1188,6 +1188,26 @@ pkg_git_diff_and_commit() {
 
 pkg_debian_control_open() {
    kate "$item/debian/control"
+
+   true
+}
+
+pkg_bash_sanity_test() {
+   local grep_opts
+   grep_opts="\
+      --exclude-dir=.git \
+      --exclude-dir=auto-generated-man-pages \
+      --recursive \
+      -l \
+      "
+
+   if ! grep $grep_opts --quiet '#!/bin/bash$' ; then
+      return 0
+   fi
+
+   grep $grep_opts '#!/bin/bash$' | xargs bash -n
+
+   true
 }
 
 pkg_git_submodule_file_writer() {
