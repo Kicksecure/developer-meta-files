@@ -1431,6 +1431,12 @@ pkg_need_version_bump_show() {
       return 0
    fi
 
+   returned="$(git status)"
+   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
+      true "uncommited changes #1"
+      return 1
+   fi
+
    echo "$reponame"
    true
 }
