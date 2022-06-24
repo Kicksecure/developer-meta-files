@@ -1454,7 +1454,7 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   echo "needs version bump: $item"
+   echo "needs version bump: $reponame"
 
    pkg_upstream_and_debian_changelog_bump
 
