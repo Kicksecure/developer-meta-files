@@ -1461,7 +1461,7 @@ pkg_need_version_bump_do() {
 
    echo "needs version bump: $reponame"
 
-   #pkg_upstream_and_debian_changelog_bump
+   pkg_upstream_and_debian_changelog_bump
 
    true
 }
