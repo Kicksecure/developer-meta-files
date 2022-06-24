@@ -1420,6 +1420,8 @@ allowed_distributions 	= trusty" | tee -a ~/dput.cfg
 
 ## dm-packaging-helper-script pkg_need_version_bump_show 2>/dev/null
 pkg_need_version_bump_show() {
+   needs_version_bump=todo-check
+
    repo_skip "derivative-maker" || return 0
 
    last_log_entry="$(git log --format=%s -1)"
@@ -1440,6 +1442,8 @@ pkg_need_version_bump_show() {
    pkg_verify_signed_commit
    pkg_bash_sanity_test
 
+   needs_version_bump=true
+
    echo "$reponame"
    true
 }
@@ -1448,18 +1452,16 @@ pkg_need_version_bump_show() {
 pkg_need_version_bump_do() {
    repo_skip "derivative-maker" || return 0
 
-   last_log_entry="$(git log --format=%s -1)"
+   ## sets: needs_version_bump
+   pkg_need_version_bump_show
 
-   if [ "bumped changelog version" = "$last_log_entry" ]; then
-      return 0
-   fi
-   if [ "readme" = "$last_log_entry" ]; then
+   if [ ! "$needs_version_bump" = "true" ]; then
       return 0
    fi
 
    echo "needs version bump: $reponame"
 
-   pkg_upstream_and_debian_changelog_bump
+   #pkg_upstream_and_debian_changelog_bump
 
    true
 }
