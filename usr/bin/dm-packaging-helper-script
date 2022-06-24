@@ -1429,9 +1429,6 @@ pkg_need_version_bump_show() {
    if [ "bumped changelog version" = "$last_log_entry" ]; then
       return 0
    fi
-   if [ "readme" = "$last_log_entry" ]; then
-      return 0
-   fi
 
    returned="$(git status)"
    if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
@@ -1439,7 +1436,9 @@ pkg_need_version_bump_show() {
       return 1
    fi
 
+   ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
+
    pkg_bash_sanity_test
 
    needs_version_bump=true
@@ -1459,9 +1458,17 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   echo "needs version bump: $reponame"
+   echo "$FUNCNAME: needs version bump: $reponame"
 
    pkg_upstream_and_debian_changelog_bump
+   ## Verify that the changelog bump commit is signed.
+   pkg_verify_signed_commit
+
+   ## Includes "genmkfile git-commit-verify".
+   pkg_git_sign_tags
+
+   pkg_git_push_remotes
+   pkg_git_push_tags
 
    true
 }
@@ -1469,38 +1476,31 @@ pkg_need_version_bump_do() {
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip "derivative-maker" || return 0
 
-   last_log_entry="$(git log --format=%s -1)"
-
-   if [ "bumped changelog version" = "$last_log_entry" ]; then
-      return 0
-   fi
-   if [ "readme" = "$last_log_entry" ]; then
+   ## sets: needs_version_bump
+   pkg_need_version_bump_show
+   if [ ! "$needs_version_bump" = "true" ]; then
       return 0
    fi
 
-   returned="$(git status)"
-   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
-      true "uncommited changes #1"
-      exit 1
-   fi
-
-   genmkfile git-commit-verify
+   echo "$FUNCNAME: needs version bump: $reponame"
 
    pkg_git_manpages
    pkg_git_debinstfile
+   pkg_readme_creator_do
    pkg_readme_creator_commit
 
-   echo "needs version bump: $item"
-   pkg_upstream_and_debian_changelog_bump
-
-   returned="$(git status)"
-   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
-      true "uncommited changes #2"
-      exit 1
+   ## sets: needs_version_bump
+   pkg_need_version_bump_do
+   if [ ! "$needs_version_bump" = "true" ]; then
+      error "needs_version_bump before true but now not!?"
    fi
 
-   ## Includes "genmkfile git-commit-verify".
-   pkg_git_sign_tags
+   ## At this stage:
+   ## - the commit prior the changelog bump is verified
+   ## - the changelog bump commit is signed and verified
+   ## - the new git tag is signed and verified
+   ## - the new git tag has already been pushed
+   ## - the git branch has already been pushed
 
    export make_lintian=true
    export make_use_cowbuilder=true
@@ -1509,12 +1509,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    genmkfile deb-cleanup
 
    true
-}
-
-pkg_need_version_bump_and_pkg_build_and_reprepro_add_and_push_remotes() {
-   pkg_need_version_bump_and_pkg_build_and_reprepro_add
-   pkg_git_push_remotes
-   pkg_git_push_tags
 }
 
 pkg_only_build_all() {
