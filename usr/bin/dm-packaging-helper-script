@@ -261,6 +261,7 @@ pkg_readme_creator_commit() {
    git commit -m "readme" || true
 }
 
+## TODO
 pkg_readme_creator_do() {
    repo_skip "derivative-maker" || return 0
 
@@ -1487,8 +1488,9 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    pkg_git_manpages
    pkg_git_debinstfile
-   pkg_readme_creator_do
-   pkg_readme_creator_commit
+   ## TODO
+   #pkg_readme_creator_do
+   #pkg_readme_creator_commit
 
    ## sets: needs_version_bump
    pkg_need_version_bump_do
