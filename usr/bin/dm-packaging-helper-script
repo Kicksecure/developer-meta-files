@@ -1102,6 +1102,7 @@ pkg_git_manpages() {
 pkg_git_debinstfile() {
    genmkfile debinstfile
    msg='add debian install file (generated using "genmkfile debinstfile")'
+   echo "PWD: '$PWD'"
    git add "debian/$item.install" || true
    git commit -m "$msg" || true
    git status
