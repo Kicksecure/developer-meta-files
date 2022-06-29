@@ -280,7 +280,7 @@ pkg_readme_creator_do() {
       return
    fi
 
-   generic_readme="$MYDIR/../README_generic.md"
+   generic_readme="$derivative_maker_source_code_folder/packages/kicksecure/developer-meta-files/README_generic.md"
    test -f "$generic_readme"
 
    local line first_word matched headline
