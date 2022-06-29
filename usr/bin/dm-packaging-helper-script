@@ -281,8 +281,8 @@ pkg_readme_creator_do() {
       return
    fi
 
-   generic_readme="$derivative_maker_source_code_folder/packages/kicksecure/developer-meta-files/README_generic.md"
-   test -f "$generic_readme"
+   generic_readme_template_file="$derivative_maker_source_code_folder/packages/kicksecure/developer-meta-files/README_generic.md"
+   test -f "$generic_readme_template_file"
 
    local line first_word matched headline
 
@@ -341,7 +341,7 @@ pkg_readme_creator_do() {
    while read -r line; do
       line="${line/package-name/$reponame}"
       echo "$line" | tee -a "$readme_file" >/dev/null
-   done < "$generic_readme"
+   done < "$generic_readme_template_file"
 
    local search replace
    search="##project_clearnet##"
