@@ -1743,15 +1743,15 @@ $giant_git_log_file
 
 loop_helper_worker() {
    counter=$(( $counter + 1 ))
-   true "item: $item | counter: $counter"
+   true "$FUNCNAME: item: $item | counter: $counter"
 
    reponame="$(basename "$item")"
    reponame_pretty="$reponame"
    repo_full_path="$(realpath "$item")"
 
-   true "${cyan}INFO: reponame: $reponame${reset}"
-   true "${cyan}INFO: project_name_short_lowercase: $project_name_short_lowercase${reset}"
-   true "${cyan}INFO: giant_git_log_file: $giant_git_log_file${reset}"
+   true "${cyan}INFO: $FUNCNAME: reponame: $reponame${reset}"
+   true "${cyan}INFO: $FUNCNAME: project_name_short_lowercase: $project_name_short_lowercase${reset}"
+   true "${cyan}INFO: $FUNCNAME: giant_git_log_file: $giant_git_log_file${reset}"
 
    if [ "$reponame" = "monero-gui" ]; then
       repo_to_push_to=gitlab-$project_name_short_lowercase
@@ -1759,11 +1759,13 @@ loop_helper_worker() {
       repo_to_push_to=github-$project_name_short_lowercase
    fi
 
-   if [ ! "$this_is_derivative_maker_source_code_folder" = "true" ]; then
-      pushd "$item" >/dev/null
-   else
+   true "this_is_derivative_maker_source_code_folder: $this_is_derivative_maker_source_code_folder"
+
+   if [ "$this_is_derivative_maker_source_code_folder" = "true" ]; then
       pushd "$derivative_maker_source_code_folder" >/dev/null
       reponame_pretty="derivative-maker"
+   else
+      pushd "$item" >/dev/null
    fi
 
    "$@"
