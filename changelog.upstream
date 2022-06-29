@@ -1,3 +1,4186 @@
+commit d2b5aefbd0a398282103039628ee3840b59842f4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 29 06:59:37 2022 -0400
+
+    readme
+
+commit ecb48a948bc485f354dc61770b752c33d5ba96ea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 29 06:59:33 2022 -0400
+
+    .
+
+commit caa748c478397bdf2b5a0c70463f6637991cb1d4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 29 06:56:08 2022 -0400
+
+    .
+
+commit 3db84dc9d2fa7d5c36e75638149afe0d74328694
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 06:01:29 2022 -0400
+
+    .
+
+commit 2db89c5f7e85f584cb87192998f36347754c19ed
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:41:54 2022 -0400
+
+    .
+
+commit 3c316ef414ee210834904a60aef157365d3a7143
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:40:54 2022 -0400
+
+    .
+
+commit c56b1d908e9c179c109809b9587b9e22a5de7648
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:36:03 2022 -0400
+
+    .
+
+commit 1db5829de1c363ca3ae1c9fd8cb15f049f241000
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:35:16 2022 -0400
+
+    .
+
+commit fe933a54742452cc44df6d3fcd49081337215964
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:33:35 2022 -0400
+
+    .
+
+commit 7874b88417967b0c399537c25546dd529cf880d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:32:22 2022 -0400
+
+    .
+
+commit 4298149685f3342eb653d81cdfe91d8984f4fa01
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:31:08 2022 -0400
+
+    .
+
+commit 6cbb1377f77eda17eef4bfbc93ebc7bbc871f072
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 24 05:23:20 2022 -0400
+
+    .
+
+commit b0cf7b8808d849049fcfce2a6349b8d5129d7784
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 10:51:20 2022 -0400
+
+    .
+
+commit beb4edf674b3663ac911937e78f2d6662a2a92df
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 10:50:14 2022 -0400
+
+    .
+
+commit f71849c111fa5a1447995b565fcb62bfc790f40f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 09:59:24 2022 -0400
+
+    .
+
+commit a3e85326b7cdf460ed48c9ab94b8096923b5cd66
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 09:55:40 2022 -0400
+
+    .
+
+commit b8cf1c7076cf48019d267593df63c9208a076e89
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 09:50:28 2022 -0400
+
+    .
+
+commit 8815046af238f787807d8a3eb61a1d88a6a9db28
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 09:28:02 2022 -0400
+
+    .
+
+commit 2f2d6ac567e748f6b7080f2f46efa3827c456005
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:54:25 2022 -0400
+
+    .
+
+commit d5f4da7888c6364b049aa7926bb066322d406c8c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:53:50 2022 -0400
+
+    .
+
+commit d1dbfa25d4dffa13f6cfbb0df5926b9f668a90ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:49:18 2022 -0400
+
+    .
+
+commit 27ed21f3697d036d28cb6ceb20d8950fcef49af6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:47:57 2022 -0400
+
+    .
+
+commit ab91df029e1e5b513320020bd3a9a1dd3af2b871
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:47:13 2022 -0400
+
+    .
+
+commit a3653fa8ae22ebf069f93320992c58710449d44e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:45:44 2022 -0400
+
+    .
+
+commit a777dcb413f9ef5e2ab6e81675ed1f2e3d75bd71
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:44:17 2022 -0400
+
+    .
+
+commit f2b25b48256d4c89030dae87d23f5b3de5c4c0b3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:42:15 2022 -0400
+
+    .
+
+commit 8b9693472749e130133a440775ef05b979481fa9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:41:15 2022 -0400
+
+    .
+
+commit eb6e9306c4763496d699893ebe34816e16cbb8c0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:40:08 2022 -0400
+
+    .
+
+commit 107ea7e60c8526171b0addb9487cf6592bd7315d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:38:51 2022 -0400
+
+    .
+
+commit c0bd430c97fe3b9a4c959ea536b7c5c14c1dfb8e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:38:27 2022 -0400
+
+    .
+
+commit 9c57aff5edd314fe4b3e027424a55d1fb11d087d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:33:44 2022 -0400
+
+    .
+
+commit cdaa509c7d347e36e32cc3c4aee5962a1cf73375
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:11:51 2022 -0400
+
+    simplify
+
+commit c29f86a61201c3d344c85293c16452eb6a644b9c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:05:51 2022 -0400
+
+    .
+
+commit 14ef92d90ebc1a3bbaecb9e71f6fff5987b8a43a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:03:37 2022 -0400
+
+    .
+
+commit a46bf60f6fc6eeb1738b247f7682c942f3903351
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:03:09 2022 -0400
+
+    move
+
+commit 7325eeff259821d3c79934110ef0e85ed99e79b5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 08:02:53 2022 -0400
+
+    rename
+
+commit 498c353019807c7b3c6cba736d252c75a1404847
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:56:54 2022 -0400
+
+    rename
+
+commit 619a06738de184aa0b92134e7417a575b43f0895
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:55:32 2022 -0400
+
+    remove no longer used round robin mirror_tester
+    
+    since no longer using round robin mirroring
+
+commit 2e22fdb04d8c8ceb7f6afb32f6604a2f4c5fb7a2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:54:28 2022 -0400
+
+    .
+
+commit 9f91c5d93222fa950d22340c3a5f4a1e8d0f719f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:53:26 2022 -0400
+
+    rename
+
+commit c0714d3f8910a574dc0fd94e19b74fad2545e532
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:52:45 2022 -0400
+
+    rename
+
+commit 6b50133f646fec439d82e63887fd6f2a8b36c4ff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:51:44 2022 -0400
+
+    move
+
+commit 8f6c9c9795d9069c75a86e1ee82e60f812904dee
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:51:18 2022 -0400
+
+    rename
+
+commit 5c7cb863800bb48a1cf9f98ab751ff7c2687e16a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:40:12 2022 -0400
+
+    delete diffp since nowadays replaced by diffoscope
+
+commit abd187828b8a8079ce4fcdd61667a0597a090b2a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:39:04 2022 -0400
+
+    .
+
+commit 9969423e1480bf4ee04e3c3463fec542fd815c5e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:38:37 2022 -0400
+
+    .
+
+commit b24853dcdee1822debd75b08d0fffaca38d672d4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 21 07:33:39 2022 -0400
+
+    remove long time unused whonix_build_twice
+
+commit 179c08c8ed888d7bb9dec76dfd940d89bcbc1289
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 20 09:45:10 2022 -0400
+
+    .
+
+commit bc2bbe6c03f7245b115f86bb337611e43cf2852f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 8 09:01:44 2022 -0400
+
+    remove unicode
+
+commit ba06ee8751d4128b474c0b5b4d5e4046d9e31243
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:45:14 2022 -0400
+
+    .
+
+commit 9fc52e4cfdca1982e3262311f4316010dae9975c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:41:11 2022 -0400
+
+    .
+
+commit cc89e24ade0ba0cbcf09fa545592c0332ed83d35
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:39:51 2022 -0400
+
+    .
+
+commit 6fb6a11148499450a63cf2770c6ff25650a02fff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:38:16 2022 -0400
+
+    .
+
+commit d9070eb7dcadafde4d8350e185026e72e36c5749
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:36:04 2022 -0400
+
+    .
+
+commit 0778107045462536e501b64c8b42565637894e2c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:34:14 2022 -0400
+
+    .
+
+commit 076c843e8578742609b96fa72594476be5391eb4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:19:22 2022 -0400
+
+    .
+
+commit a2994a3c83079828cba90a3067f23893e94228fe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:18:28 2022 -0400
+
+    orig
+
+commit 16353d07ed2ad85905330812a257468229b4bdf8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:17:24 2022 -0400
+
+    .
+
+commit a79a62e6c25b9324e503057a9fd1842d612003df
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:16:52 2022 -0400
+
+    .
+
+commit d3fd56886460f968c29da1d3613d741479afcad5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:12:39 2022 -0400
+
+    orig
+
+commit 8b36405b9e34825c2db839331a30480e6e83124c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:12:04 2022 -0400
+
+    .
+
+commit c2b0e2599560a2f1ddc1a590926d5e8335e9b739
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:09:07 2022 -0400
+
+    .
+
+commit 2f5be7a0eb22dd1b861dfa43d8c6b428a06d3a19
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 10:06:43 2022 -0400
+
+    .
+
+commit 5e231dae61816ed481eb8030b62f4372a0727f00
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 08:48:51 2022 -0400
+
+    .
+
+commit 04031a0d52ed239f374bfe906ff34a1ef0062207
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 08:45:53 2022 -0400
+
+    .
+
+commit ed1950ea729317099ee9d334c38c00688aa85aa3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 08:45:01 2022 -0400
+
+    .
+
+commit 20e3f445c801b6fbef80151bf47d640e1346aa4a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 08:29:07 2022 -0400
+
+    .
+
+commit 87fb94a534ba12794e66aa035ce1861018781230
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 08:16:59 2022 -0400
+
+    .
+
+commit 990b979a5aaae17274ff18538ccf809d1fe29ae0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:52:41 2022 -0400
+
+    .
+
+commit 7f1ae0e617781356cb45e2906fac4db7ad373e4a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:50:21 2022 -0400
+
+    .
+
+commit 3815247512e056a58c58a8e5a977838b824b8544
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:48:14 2022 -0400
+
+    .
+
+commit 595d1018bf7b77c0ac820939e9bd57736e1ecebb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:47:08 2022 -0400
+
+    .
+
+commit d90db6c81cb70beed04c205bad8041d8252d174b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:44:17 2022 -0400
+
+    .
+
+commit 092d506cbf88ef64387af0872f00a2bf786933ce
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:42:24 2022 -0400
+
+    .
+
+commit 56bf31bf476dc198153fc24ce70cbc206965b5c3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 5 07:37:28 2022 -0400
+
+    .
+
+commit 924ba95ea3f61bddd673c3bf66cad182e498db2b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 10:24:44 2022 -0400
+
+    .
+
+commit 1b9a7ecff49a9906d2e9119a0dc68c47caee9bb6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 10:21:23 2022 -0400
+
+    .
+
+commit a6373ac6171c2efbd75b564214c2c1f620dedef1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 10:19:59 2022 -0400
+
+    .
+
+commit 4887ede9de18edaf2ed9ab0e9408ce282f664d67
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 10:16:25 2022 -0400
+
+    .
+
+commit 33a780c44e474579bbd4bf98016a8d56ecaf2ccd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 10:10:49 2022 -0400
+
+    .
+
+commit 9b9c39b45bd3ac5c089227f4422f41301cfcc5b5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 29 09:26:13 2022 -0400
+
+    fix
+
+commit 07120298677cd516b6065b73f1ab141cb89011a4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 14:04:21 2022 -0400
+
+    improve upload script
+
+commit 3d0f1e2b38c500a870e9b76d4ff9e61334074de0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 13:37:00 2022 -0400
+
+    split
+
+commit 7a4a0f2c9a6f798521b628c7c2b466e8d705203c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 12:51:42 2022 -0400
+
+    refactoring
+
+commit 682aa7ee33b22a48a43811e07fd034261575794f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 12:03:24 2022 -0400
+
+    refactoring
+
+commit 39a37abda27e117289debca4dadc1b7f8563463d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 07:54:43 2022 -0400
+
+    .
+
+commit 118e184c1160269e19fc2d5a0f66825756079c69
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 07:53:25 2022 -0400
+
+    refactoring
+
+commit 55fe01a13b12aa9b78b115dd5e8aee1dad2af35d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 28 07:51:07 2022 -0400
+
+    split
+
+commit 3688fb35111c501289d8d8b1d5a1c159237eb462
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 10:13:53 2022 -0400
+
+    .
+
+commit e06b17a9d3210380d2757dcb53946896f45df15c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 10:13:23 2022 -0400
+
+    .
+
+commit 4dc3d172f64c6ff21ae867ff0bfe6fa0ca62110d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 09:25:18 2022 -0400
+
+    .
+
+commit b3d6286298c366d6c2c4d4e359d1a8c11b12b5c7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:52:39 2022 -0400
+
+    .
+
+commit 79fa2afb0b0f9f0f5cae3da394041383765e53a2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:52:13 2022 -0400
+
+    .
+
+commit 3f8dee6dd3d2d9d42e04b919583259fc525ffc31
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:45:53 2022 -0400
+
+    .
+
+commit 327a912b9e5f1f8c1bc93577d606aff8b7cffadd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:45:08 2022 -0400
+
+    refactoring
+
+commit 52648e4ff47b308e127da006f8c5569dd90104d0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:36:00 2022 -0400
+
+    .
+
+commit e9fc9a5a3d786708d4f881efc228b6f392ca5910
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:35:17 2022 -0400
+
+    .
+
+commit 3814938d15e87e40b87ad4cc45ae850c22d3ba9d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:09:13 2022 -0400
+
+    .
+
+commit 03e3c16decd4909f984f0c6b7da8a87e32f713a9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 07:07:38 2022 -0400
+
+    .
+
+commit b5ab94359af2957ac7ab3b22915f7ab75d44b658
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 06:17:46 2022 -0400
+
+    .
+
+commit 9edea69bcb72d7210cb2dfe969685e64fd6cbc16
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 06:17:05 2022 -0400
+
+    .
+
+commit 2a36d2c165acf01f17b15dc5f35b6af3ceef225e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 06:16:48 2022 -0400
+
+    .
+
+commit c28e5564695c142cb0421990016f5311f296d7bc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 06:05:31 2022 -0400
+
+    .
+
+commit 59d1125e28b4a1dd1e39b56079f14d20c565611b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 06:01:45 2022 -0400
+
+    .
+
+commit 97f8dcee2e756974729bae6946383af228b6af67
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 05:49:17 2022 -0400
+
+    .
+
+commit e1a76d3ad59ce457e6e88bc18cba32862691dd9c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 05:45:25 2022 -0400
+
+    split
+
+commit 8611e0e210530df433dcaad67776f1f1e328d4e2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 25 05:40:15 2022 -0400
+
+    .
+
+commit 31823ef2e35bfb018937a258c7067c3bd45efcdc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 21 10:11:58 2022 -0400
+
+    rename
+
+commit 94018430fb3f4e565961b926843a2975836af857
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 21 10:09:41 2022 -0400
+
+    .
+
+commit b0eb6af5f0fc428be0e9339fa491c029e755077e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 21 10:03:14 2022 -0400
+
+    rename
+
+commit 6f373ee6c23eeeaaa212e4826d72bdf395dd6d6d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 20 14:48:25 2022 -0400
+
+    .
+
+commit 9828f89e4dc6e700679cdb279d31e080054dfeea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 20 14:46:32 2022 -0400
+
+    copyright
+
+commit 48e7a423b9b11d74a68590e4bb1ee35a8e01491f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 20 14:40:04 2022 -0400
+
+    .
+
+commit 5df69a6f317fcbf9c193aa524a1dcf0a592033e0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 20 14:37:09 2022 -0400
+
+    .
+
+commit 9c474a43828e2a0038955b14c33e6eabd6089c88
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 19 18:01:11 2022 -0400
+
+    .
+
+commit 2ea2bff8ab8bdbe5bd9b339fbe287d63e57d7194
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 19 17:23:19 2022 -0400
+
+    readme
+
+commit 1796fd03b395cf506bc7dc2256c5b8ee4687313c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 19 16:50:37 2022 -0400
+
+    .
+
+commit bf0654c09f76b18c6ef4cff205c311931c3e1410
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 18 12:34:27 2022 -0400
+
+    .
+
+commit b92213c8ec125619242d67d337473838301b3121
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 18 12:00:07 2022 -0400
+
+    .
+
+commit d3a350569683b28c3fbb83cf5b85eda92df74065
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 18 11:56:54 2022 -0400
+
+    .
+
+commit df51488578aa8ae0760c287f46a7ef44512b973a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 18 11:49:02 2022 -0400
+
+    .
+
+commit 2b54ad177f7a1aecb2657807050d2d67cef76b8d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 19 07:31:30 2022 -0400
+
+    .
+
+commit c6cb023ddb6882791f1b94147b5f2cede693df32
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 19 07:26:01 2022 -0400
+
+    .
+
+commit c86fa90cb48019fe6f9957b8af98a5928fac7dea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 19 07:17:24 2022 -0400
+
+    .
+
+commit e3adbc29d129acf720598a7856a38e2f2ed04c38
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 19 07:11:41 2022 -0400
+
+    .
+
+commit 9015ca4eb6a526781500f85ab5e5ed7420086de3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 13:47:19 2022 -0400
+
+    .
+
+commit 8f1fba0fb22ec1a5e6055b85055b0a0fc54a71a2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 13:09:25 2022 -0400
+
+    .
+
+commit 03f29feddb126aadf25db3f07a069216a11d833c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 13:02:40 2022 -0400
+
+    .
+
+commit d3fbb7d9213e9483b925dc8c5ccbbb3e316d509f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:59:30 2022 -0400
+
+    .
+
+commit 6c0e2fa8c84b9b2620ee0bc31fd9ae4a259352f7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:56:38 2022 -0400
+
+    .
+
+commit f948a190bc0f6a6f5feb84105d0945b471c42322
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:53:46 2022 -0400
+
+    .
+
+commit ef35d6bdd8a65b6e7393222950fe2f385cb57297
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:53:29 2022 -0400
+
+    .
+
+commit 3176abee810af5a7e4ae4c94cef813a943f53967
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:39:07 2022 -0400
+
+    readme
+
+commit 5274421c9f902da18bf9b1ef5353caff60034c56
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:32:26 2022 -0400
+
+    .
+
+commit 0afa66cb3bc5b38330417809dea7aacbcea72ceb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:27:14 2022 -0400
+
+    .
+
+commit 422cd709fb735b80f3aadf12f7250754ebcea16b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:26:25 2022 -0400
+
+    .
+
+commit 6352e20e6df41343c60f1ef7aba704f4bfeb0560
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:23:48 2022 -0400
+
+    .
+
+commit 140b549d780687f18c0f6eaabc167b927229891f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:22:24 2022 -0400
+
+    .
+
+commit ccde533f9f009605961a083a2ef7d95d9a75faf3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:21:41 2022 -0400
+
+    .
+
+commit 331b69c5d8a2bd24a2ea984a6ee2b4fdfdfe9070
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:20:18 2022 -0400
+
+    .
+
+commit bae26a5f5869dd6d5a840ed69fec70b7701432c0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:17:07 2022 -0400
+
+    .
+
+commit 5a8a6fd0f6ff4d9b54f6a48a3085e2977443a06e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:08:10 2022 -0400
+
+    .
+
+commit 30f3c0e0a72c5c8bef85b3dad26f5d2119d1fb79
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:06:58 2022 -0400
+
+    .
+
+commit d42f15bd8b8212113ba8531801b465e96e7a8a66
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:05:24 2022 -0400
+
+    .
+
+commit 942537acaa9d7a1d31364acaf6a02cf0607eb640
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:02:59 2022 -0400
+
+    .
+
+commit 6b09d68d18523e100ecdc60a142dbea1320e638b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 12:01:00 2022 -0400
+
+    .
+
+commit 955fb26158cc7e7bfed151f7a701ba21539f9ceb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 11:54:20 2022 -0400
+
+    .
+
+commit 095269ad496d55a62fe4107cab7f8e63cfdb7891
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 11:52:35 2022 -0400
+
+    .
+
+commit c1aefaee6d3c4a647b3c1c7f7336781b4b59be69
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 10 11:46:39 2022 -0400
+
+    .
+
+commit 701163cfd46934b09e2f445c2c14c01ccb141800
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 8 09:36:13 2022 -0400
+
+    .
+
+commit eafdb86c2c0574f5588ec5626ac5217b5595db1d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 8 09:18:33 2022 -0400
+
+    .
+
+commit 754587fcc9c393de4e3a1e988a1f9b7bb1d5376a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Mar 26 05:01:06 2022 -0400
+
+    .
+
+commit 24acc435acf6adf2f23395241ced0035fb6f91b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:33:55 2022 -0400
+
+    .
+
+commit 375f92f5579346d9c6a1955b31461c4b327f90c7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:24:52 2022 -0400
+
+    .
+
+commit 782ccb73bc247722b3aeb38dbeb888e29cbdb5f8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:23:12 2022 -0400
+
+    .
+
+commit 7e7ea1603523b7080ce36f4db559ec803199a730
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:20:10 2022 -0400
+
+    .
+
+commit 387fdd4956930a5524b7486102a969522563a843
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:16:30 2022 -0400
+
+    .
+
+commit fb3b0405ad6568c3178b1b819a675a0050ae62a2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:13:57 2022 -0400
+
+    .
+
+commit d1956c0f0523afcfc921d4839d6680dbcc668209
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:11:32 2022 -0400
+
+    .
+
+commit 5f4585d0025d0351a8715183f629a3769fe4c76d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 12:08:31 2022 -0400
+
+    .
+
+commit 633738b42a33dcf1cd50250426944923dd2dc77a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 11:55:30 2022 -0400
+
+    variables
+
+commit 557b10ec55c157725a9143b6a3ba6f330a1f1888
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 11:16:43 2022 -0400
+
+    .
+
+commit d4c3c499920ae025236b0359eb1e5cb07a5cf039
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 11:15:54 2022 -0400
+
+    .
+
+commit cf0d38ed4aa372fae12b35685dc17862ef330666
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 11:11:09 2022 -0400
+
+    .
+
+commit 8fd18d7a7a521cc8433c5f375a2514fbd5b4adb3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Mar 22 06:40:27 2022 -0400
+
+    .
+
+commit 743b10cdc9db434318c6dc52bec47770154f6276
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 18 10:29:42 2022 -0500
+
+    .
+
+commit eda7667a2168a0679f588f39de2a48ab67af468d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 18 09:50:30 2022 -0500
+
+    .
+
+commit 595bdd382481cec031d71441e3b0ed2e4469ac74
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Feb 10 14:57:31 2022 -0500
+
+    .
+
+commit 7811b9fef8afe172aff6f05064657c8f2a4369ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 27 08:39:32 2022 -0500
+
+    .
+
+commit f28e242648e5ec6a80233d4d2244f0f4ec432411
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 27 08:36:13 2022 -0500
+
+    .
+
+commit ec64b5218521c7dfb0260507351acf33ae6a4048
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 27 08:29:15 2022 -0500
+
+    .
+
+commit 5255f90ca88974086a83d825988e47b933234582
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 27 08:28:51 2022 -0500
+
+    .
+
+commit be5c0f984e3745f3a7361bd345c25d5bdf967ddb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jan 7 03:25:54 2022 -0500
+
+    disable buster
+
+commit c47672486c5a7b86b067206787ffe9e9ca5d5e8d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jan 7 03:24:35 2022 -0500
+
+    delete unused release/new_release
+
+commit 812dd00037a4d02bb8ed10d425a1b0f0eb35da2a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jan 7 03:24:12 2022 -0500
+
+    remove old Whonix news files
+
+commit d7d07a729ef28467bcdb348bcd4514067433d293
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jan 7 03:21:32 2022 -0500
+
+    disable buster
+
+commit 8da9fac06e1f3799bf267bbc63a997802b013631
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 6 16:14:08 2022 -0500
+
+    whonixdevelopermetafiles -> developer-meta-files
+
+commit 99e2726a2e36bfdda5572fb03a5647a54747b32a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Dec 4 16:03:10 2021 -0500
+
+    use `curl` with `--cert-status`
+    
+    Thanks for @yodawins for the suggestion!
+    
+    https://forums.whonix.org/t/scurl-secure-curl-wrapper/7125/8
+
+commit f36b3550f849f6cef3fd372276973c82c98107ce
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Dec 3 09:42:23 2021 -0500
+
+    deleted:    release/upload_whonix_news_v4
+
+commit 9af0fd941b3ec7a7befcdbdf12442197a90e1e5d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Dec 3 09:26:40 2021 -0500
+
+    include kicksecure
+
+commit 021dcc363dfebcaa1a1944555c32132695a32f28
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 30 15:03:57 2021 -0500
+
+    .
+
+commit 31a0e2089d9bd5700b62f4cf816662eb359220d8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 24 13:51:17 2021 -0500
+
+    .
+
+commit a36cafda8512c4b1131d202e4db208a5b0667e2e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 24 13:49:35 2021 -0500
+
+    .
+
+commit 2e7e077d4fe70e64c4ea0fe03501c76ae1ed4d0b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 24 13:37:35 2021 -0500
+
+    .
+
+commit 60f78e2afcce497b50518d938365db56c09788b2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 9 14:40:34 2021 -0500
+
+    .
+
+commit 4f34f19c5f3c89016b161327a8d4a3c2dae766e6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 9 14:38:14 2021 -0500
+
+    .
+
+commit 1de4f31bbf0a595ffe5f59df3e74563d8524c461
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 9 14:21:46 2021 -0500
+
+    readme
+
+commit e877420649c49d3ff0bf6f95bc72ec15c5fa7c90
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Sep 20 11:20:49 2021 -0400
+
+    .
+
+commit e3085e47d433181920c65643880e734827a49b6d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Sep 19 13:34:24 2021 -0400
+
+    .
+
+commit ecc3594aa475ccfc98c3c7d931af5979b5927fc4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 11 16:33:29 2021 -0400
+
+    readme
+
+commit 68b1d2ef8a46505587a616f9555e4cb2c9e943e8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Sep 10 12:43:46 2021 -0400
+
+    .
+
+commit dffe31386b6203bb12a584ec70b6506be85b64e2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 29 16:57:28 2021 -0400
+
+    .
+
+commit 4ddd478fb62fa15fafd0e947ed35226405b13ece
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 13:40:02 2021 -0400
+
+    .
+
+commit a41b5d7a7b2e0a2771009176109933d6d008c694
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 12:14:05 2021 -0400
+
+    .
+
+commit e15a5df2e49c60c27118ddd15baca47bceeb6c77
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 12:12:38 2021 -0400
+
+    .
+
+commit 4a12add7373cc6951bd1b1f57559873c523e1cad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 12:09:15 2021 -0400
+
+    .
+
+commit d7beafe3e9e6228effee1924d03c2c3ef5e1b38f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:57:30 2021 -0400
+
+    .
+
+commit c3001406e95d1354ff838c02fac99b11a22b597a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:55:17 2021 -0400
+
+    .
+
+commit 42122d94533fe03295e0f025ae685720100c4d2d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:32:00 2021 -0400
+
+    .
+
+commit 5928eb80a5bed8dac7faa9c850877380acf9674c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:30:45 2021 -0400
+
+    .
+
+commit 23d0fa8ae11478275d252f675225c0bc407640dd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:24:52 2021 -0400
+
+    .
+
+commit 8283c58e775809675f3e44059775c8b2570b50be
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:24:09 2021 -0400
+
+    .
+
+commit 12b3d8768b68d60e25163fbdb836da82adae2855
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 28 11:10:50 2021 -0400
+
+    .
+
+commit 1a7d0156753cf8f9f2161616dcfd20c9841719d0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 22 05:20:08 2021 -0400
+
+    .
+
+commit fa45313297fbd1adf6d3f49a7697b9cdae65f8e3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 22 05:17:50 2021 -0400
+
+    .
+
+commit e034b8b5966db8ddb30c4d7226deec11de9a031c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 22 05:13:56 2021 -0400
+
+    .
+
+commit f1590ec9bb0e9df701ea9c8feb2958b797041756
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Aug 16 15:04:24 2021 -0400
+
+    .
+
+commit 51c6dc9646d6a20bdfbe3c42cffa270ea0d42a8b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 14 16:54:16 2021 -0400
+
+    .
+
+commit 76e7b76aad505280d84ba90f9c229572c33ff6b3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 4 15:19:10 2021 -0400
+
+    .
+
+commit 932af9cc472e01f97efbbaa5e7bb9abe3bed57d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 4 15:00:07 2021 -0400
+
+    .
+
+commit 01b60352830042a2ce8c65ab245fcb5cc6ed8180
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 4 07:43:49 2021 -0400
+
+    .
+
+commit 21abc693400c62d011a272731fb6b042961b411d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 4 06:42:13 2021 -0400
+
+    move /usr/lib/msgcollector to /usr/libexec/msgcollector as per lintian FHS
+
+commit 449156f0ec2ecde430f2fafb41b90782bd36ea4f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 12:56:31 2021 -0400
+
+    move /usr/lib/security-misc to /usr/libexec/security-misc as per lintian FHS
+
+commit e3deb9727ad04ce0daf0e73149e0bbfc7700ca89
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 12:49:00 2021 -0400
+
+    move /usr/lib/helper-scripts and /usr/lib/curl-scripts to /usr/libexec/helper-scripts as per lintian FHS
+
+commit b3fa8e0141137ec94dae4150f514e6569c3d7130
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 12:45:12 2021 -0400
+
+    .
+
+commit 70422b4f456ed749fdd490c5331e7029eb782e7c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 11:48:50 2021 -0400
+
+    .
+
+commit eb0204fa429a72410ad6baa5f92d1944ee1ed4da
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 11:39:57 2021 -0400
+
+    .
+
+commit 4d26a4c1997233aefb9115c815cf38318750aafa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 05:48:00 2021 -0400
+
+    .
+
+commit 22537c737a5228a2b6c6f203660a67ee189564b3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 05:47:03 2021 -0400
+
+    .
+
+commit 5014bdee5e31c04caddfd1d6b874508964020fb2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 05:36:18 2021 -0400
+
+    .
+
+commit 8b9cabb00a2fdccb50dcfe61beea492e0e9d87c9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 3 03:29:51 2021 -0400
+
+    .
+
+commit edc4d1348a1f546b60e15b9e39ce7bea113478b5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 1 16:29:04 2021 -0400
+
+    .
+
+commit f5ba9241d1e76e074ffcb440588bd5b73bc2c7c1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 1 16:21:59 2021 -0400
+
+    bullseye
+
+commit 12024d63725f3fdf383b7d70ead55fe36b25efef
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 1 14:40:59 2021 -0400
+
+    bullseye
+
+commit 126c8592c92fa4b78b71867b471f63508ed51325
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 1 14:38:25 2021 -0400
+
+    renamed:    migrate_to_buster_proposed_updates_repository -> migrate_to_proposed_updates_repository
+    renamed:    migrate_to_buster_repository -> migrate_to_stable_repository
+    renamed:    migrate_to_buster_testers_repository -> migrate_to_testers_repository
+
+commit a6289a8b5e0b3db83b9c00f1df5818f6a2c7d2b6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 16 17:17:53 2021 -0400
+
+    modify warrant canary text as per:
+    
+    https://www.whonix.org/w/index.php?title=Dev/Warrant_Canary_Draft&oldid=65156
+    
+    https://forums.whonix.org/t/whonix-warrant-canary/3208/29
+
+commit 5309d32b871b3743e18bbf6d08324777e6028b14
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 25 09:23:59 2021 -0400
+
+    .
+
+commit 7d7abb14277be4f03a7330227b2a690abb8d3f80
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 25 09:20:02 2021 -0400
+
+    .
+
+commit cbbfa160147554a6a294e021ba884226930b3408
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 25 09:19:57 2021 -0400
+
+    .
+
+commit 2299bb915b0dfbb876f37a87a5fa9b717595351d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jun 24 15:48:51 2021 -0400
+
+    .
+
+commit 1010af3c33fc7e12015de7bc9fcb103b5594b936
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 1 07:37:27 2021 -0400
+
+    .
+
+commit 6f0b129d38a22a8ee60f3ebccac1b4d1f7b8d36e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 26 06:34:48 2021 -0400
+
+    comment
+
+commit 1a8f1c6916683f76c611895cb9f3349a66fa0e29
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 6 10:59:37 2021 -0400
+
+    prepare_release: add libvirt raw image support and multiple platform support
+
+commit ae6074133c1e04df94a74a94c1ece08d6108ded6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 6 09:44:41 2021 -0400
+
+    refactoring
+
+commit e8db6d61b6671676433cc99c705df2ca73eb76ae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 5 08:28:30 2021 -0400
+
+    .
+
+commit a6436a6ed9624d69fb3deac336ef7f2de199887a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 2 08:42:17 2021 -0400
+
+    comment
+
+commit d6133c8c306976549424c5fb12ae586dbcc9f80d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 2 01:26:04 2021 -0400
+
+    .
+
+commit 25bce5540ec70f288bca43ecce24456d7633e42b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 2 01:25:56 2021 -0400
+
+    .
+
+commit 598fa658fb0e24d7db1017c5b2b3be0ea8187379
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 23 12:52:58 2021 -0400
+
+    .
+
+commit 96e26ee02734493437097d4bf812010481868c16
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 23 12:50:21 2021 -0400
+
+    .
+
+commit 55d86b1b56fdea9a5ff8ebfc2035820ddae6c218
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 23 12:48:40 2021 -0400
+
+    .
+
+commit 25b14b7a09429d6a08230af5756dfa505e2758b8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 23 12:25:04 2021 -0400
+
+    .
+
+commit a8794e018b7fdc14dd5fc87d2ab7a6706231ebc0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 11 13:14:58 2021 -0400
+
+    .
+
+commit 2d8d1bd4e9ac8b6c2052e39899027c771bc855bf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Mar 29 13:18:45 2021 -0400
+
+    .
+
+commit f3962a0eb0f32214ce83bad55d44e00a49c6275b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 12:15:35 2021 -0400
+
+    .
+
+commit a6480e4d96c3dd91298cd6bef0dc2c23d0a2931f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 09:45:25 2021 -0400
+
+    copyright
+
+commit e52402837bfe9cb5d6dbbaac0ee3e9c156c5b4b8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 09:10:39 2021 -0400
+
+    .
+
+commit 29641e3ae0a6f21f8921d296bdaded0adc1b03bf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 09:09:59 2021 -0400
+
+    .
+
+commit aed83ec6eda08c3010089ffb444eec6bde32d9e0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 09:08:47 2021 -0400
+
+    .
+
+commit 6d5f0f11db631fac66afaaa7780b9b8b845685a3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 09:02:15 2021 -0400
+
+    .
+
+commit 819963f3dd16a30dc27ccc4673dbcd7334ba8b88
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 08:27:01 2021 -0400
+
+    .
+
+commit ab480b507451f48970c03e47e1ae168325d5df8a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 17 07:08:10 2021 -0400
+
+    renamed:    release/qubes-templates-offical-build-commands -> release/qubes-templates-official-build-commands
+
+commit d9ba34e57faa457d3a3f45f68d0376b56867f4d7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Mar 11 14:26:18 2021 -0500
+
+    stop using apt-key since deprecated
+    
+    https://forums.whonix.org/t/apt-2-2-changes/11240/1
+
+commit b2ae42a7a82cd225c1d20b3ff5aa4eaf450a8d4b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 02:54:01 2021 -0500
+
+    re-create canary folder every time
+
+commit e0540e52ed4bab3997f4e2a9d4dd206117593305
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 02:52:41 2021 -0500
+
+    add canary.txt.embed.sig to upload script
+
+commit 48b2354b9610babef8678ebcf8d2909062ba1c4f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 02:51:08 2021 -0500
+
+    create embed signify-openbsd canary.txt.embed.sig
+
+commit f405eff3c12b04d545aa6937e97e546eea61ea43
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:52:42 2021 -0500
+
+    re-enable bbc in proof_of_freshness_generator since available again
+
+commit fe9c0738b64c2bb7d950c3234a287b211da52300
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:48:38 2021 -0500
+
+    add unixtime to proof_of_freshness_generator
+
+commit 12c806e08473cea752c3c73b928e3bbf13b91adf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:45:13 2021 -0500
+
+    fix
+
+commit ef80c33110e01ad5285d60ccea5616f87a6ccff1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:41:35 2021 -0500
+
+    add `gpg` `--clearsign`ed and `openbsd-signify` signed version to canary upload script
+
+commit 948077c70e81457c16c36e5baa6f3e4a41134f05
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:34:10 2021 -0500
+
+    refactoring
+
+commit b2772671ac39e2eaf91256f2b1cf819bdc2cd5ee
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:26:04 2021 -0500
+
+    refactoring
+
+commit 86aa691ce8ec13489f4853eb4ee087b8b674eae4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:13:49 2021 -0500
+
+    refactoring
+
+commit 38a3b11a74b8382cc6281648defc76f2bfd0a72a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:11:55 2021 -0500
+
+    create signify signature for canary
+
+commit 8fe35e40b517a234a57fe4ef7be80c463634943e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Feb 28 01:06:39 2021 -0500
+
+    create additional canary.txt.clearsign.asc
+
+commit d8ef0dd13f03ecc8d9a40bb458daeb88a228fcd2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 8 05:29:56 2021 -0500
+
+    update path
+
+commit 8a9c91ce02fcdf667ac11954f9e36515153e589b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 8 05:24:46 2021 -0500
+
+    update link
+
+commit bd238fc037028c8b2d23b431b99b623869938fff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 8 05:23:36 2021 -0500
+
+    update path
+
+commit 2d2dc96b68b5c565e6ba2dae4a6e3ff587792ad3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 8 05:18:49 2021 -0500
+
+    update path
+
+commit 35333709c283017ef37ae8ff15fb1a480e3b5cf1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Feb 6 06:27:54 2021 -0500
+
+    readme
+
+commit c60fc960ac79eb9911abf25f0f63f8e2e992b5d0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 5 01:27:45 2021 -0500
+
+    .
+
+commit bcf86cbd1a978f7862a7e1cbc9b9238189af1293
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 5 01:25:35 2021 -0500
+
+    .
+
+commit cd456904aca50a55a39d1511a3990865514fded2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 3 09:06:15 2021 -0500
+
+    .
+
+commit 84588e68f30e7ad5c5241a991b92c747ceefa2c2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 26 07:09:00 2021 -0500
+
+    whonixcheck -> systemcheck migration
+
+commit cc02fdfa9fb4fc384322f10a3844502505782c18
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 12 03:29:00 2021 -0500
+
+    .
+
+commit 6ac944c891e2da8f570114f1baff36a5fbca17e8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 24 09:28:21 2020 -0500
+
+    .
+
+commit be779a963ae062781273ac9b8b388c711f85872a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Nov 13 08:44:07 2020 -0500
+
+    update for https://blockchain.info API change
+
+commit bf218d4f3db1c507d72cee9acef2aa177b25d1cc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 29 16:14:02 2020 -0400
+
+    --tlsv1.3
+
+commit 69d6ae357e0cbbb18cd9f47785013660356e83d5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 6 08:27:45 2020 -0400
+
+    .
+
+commit 5cba0e1f835e4eeb11b524c2405dab0e2019377d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 3 04:23:59 2020 -0400
+
+    fix https://github.com/Whonix/tb-updater/issues/12
+
+commit 82574beb351e76f1f8e259209a2abdf2f8ce36b0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 10:45:01 2020 -0400
+
+    .
+
+commit 9b055050347ca9d96e81cb8606e18abcbdfca331
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 29 06:30:44 2020 -0400
+
+    .
+
+commit f39fc14627c47061729407cfc8ff629d09e97ca5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 11 08:07:22 2020 -0400
+
+    .
+
+commit bd17566ff59ee7ede7e9d48d41f3dda5b5e38179
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jul 2 15:55:09 2020 -0400
+
+    reuters rss offline
+
+commit 82f10712378ce5974112d6cafe19b38701341227
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 14 12:54:08 2020 -0400
+
+    .
+
+commit f46383db6686e02c08dce4fa7c4b40d6fef8571f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 13 11:30:08 2020 -0400
+
+    .
+
+commit c2699bc14c00da274d6b26082a8d5484ae760338
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 10 11:46:51 2020 -0400
+
+    fix upload of libvirt.xz
+
+commit ab9fa04b5e80780fc1c82c027a5620bc11f13cf9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jun 7 11:29:02 2020 -0400
+
+    .
+
+commit 305d2e70726993c9cf425431c8472671fa63c14c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 4 12:01:22 2020 -0400
+
+    .
+
+commit bb7108ab67a961f8e87a2e6811c506a0fcdfd2af
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 4 11:53:56 2020 -0400
+
+    .
+
+commit 4f56dc86f1372c1ef3e720d85fff7b1cc1b8d897
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 3 15:15:33 2020 -0400
+
+    .
+
+commit 56ee7bed63789d952d6d2b4b5a7b5dd22c0d8b92
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 3 15:11:17 2020 -0400
+
+    .
+
+commit 05ea88ec7eaa4e5c817e8455aab6fcc2339e6257
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 3 14:16:18 2020 -0400
+
+    .
+
+commit 1ff910712b0af13a4158fd10b80c5c9fe0e71c86
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat May 30 15:27:08 2020 -0400
+
+    comment
+
+commit 5d6b6826cf6ce12b9cf4759fb71b12f263a63f1f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 29 18:50:24 2020 -0400
+
+    rsync-test: rsync over TLS and onion
+
+commit 5db65f0cb6f702ebe6d7b8616328c4993a1a28d3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 20 11:33:56 2020 -0400
+
+    .
+
+commit 948f4b5e72083ca57585033ecd49058bdc3d6490
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 20 11:30:01 2020 -0400
+
+    fix
+
+commit 291787edf1c1735f09a09e6f0e53a9e31586903a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 1 13:20:49 2020 -0400
+
+    .
+
+commit b2882407da00d56b0aa4e11ea96bb28202540c73
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 20 14:21:03 2020 -0400
+
+    add release/upload-canary
+
+commit ce1837dd05d434cffa6b03dda67fa75cc5a3034b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 18 12:28:40 2020 -0400
+
+    fix rsync
+
+commit 8d9dee7680918ae517f216df9965df8df694be97
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 16 11:46:48 2020 -0400
+
+    anon_dist_build_version -> dist_build_version
+
+commit e256f569e06fc045103e19d05e0526a126f1ad58
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 13:02:12 2020 -0400
+
+    readme
+
+commit c2e8830be540dfd598b0dacd66a0feeaeea8c40c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 13:01:42 2020 -0400
+
+    readme
+
+commit 07d59f51e0a6c779a2daed6faa2d7a89193405ae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 12:46:44 2020 -0400
+
+    readme
+
+commit 0d4d6f5fcd4ea7d1904913bfe80c8c1d7af21d36
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 12:39:54 2020 -0400
+
+    append iso to hashfile
+
+commit 294f547768571f2f97c9a4824393db0dbbf552da
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 08:42:18 2020 -0400
+
+    iso upload support
+
+commit bc524f0f97ed118665d7799dc71ccba8e317ea35
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 08:35:03 2020 -0400
+
+    refactoring
+
+commit 8fe1f6e9411cd4d2d237079f7b5c30f43c2b58eb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 06:02:00 2020 -0400
+
+    refactoring
+
+commit 32bef7319cec6b8a376f426c532c21dc9a4760e1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 15 05:59:29 2020 -0400
+
+    refactoring
+
+commit f741bd84411e5ae8e76f2161b8b9cbc2ddfda432
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 8 18:29:07 2020 +0000
+
+    .
+
+commit 6fa9b4784cc38d32feec978156e1879e3d558108
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 8 18:17:30 2020 +0000
+
+    .
+
+commit f5e8cdd430fb4c345dcdf9cc48dcaec95799a136
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 8 18:00:47 2020 +0000
+
+    .
+
+commit 6e0e7b247817d461b17c7c7d2b3814d58a77c3f3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 8 17:59:05 2020 +0000
+
+    .
+
+commit 5343b432346f577b00bc89d90d1e3605c1a56832
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 8 11:56:11 2020 +0000
+
+    .
+
+commit c7532fccf92f244f5f7cf515bff2f356522bfb84
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 2 18:12:29 2020 -0400
+
+    .
+
+commit 203912bb2a43c8b7dd94c528be7f77afd63be2d5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 2 12:29:46 2020 -0400
+
+    .
+
+commit 60a4763789d6da69f8b84a3672fdb04a6c0c6132
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 2 07:04:43 2020 -0400
+
+    readme
+
+commit 064f98da20b385a760c7752cd0fbff9460ea6ea3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 17:35:48 2020 -0400
+
+    .
+
+commit fae7c5de29de46c333d624e2ef46276dfc34f842
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 16:59:37 2020 -0400
+
+    .
+
+commit 8109051bba9beecdd734f44b9bf547f9d1df0529
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 16:34:51 2020 -0400
+
+    .
+
+commit 030f9aa0be60047949e021f05d5fe55fd9cf5185
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 16:24:46 2020 -0400
+
+    .
+
+commit 90f38c34777ce14f8e2c9b10754ff7513a566bc0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:56:40 2020 -0400
+
+    .
+
+commit 72caafe83d9c34a9666a29dc06a0fd521ad35276
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:54:12 2020 -0400
+
+    .
+
+commit 4769f9c23010e098ad6ff70f4148a9aaa7278c0d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:51:41 2020 -0400
+
+    .
+
+commit 03ef971850e28003a2591d6323b2fd54c24ea3da
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:50:28 2020 -0400
+
+    no longer create man pages during build process
+    use pre-created man pages
+
+commit c6834d5ad346f31c052229462aa98e85fa20d860
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:43:10 2020 -0400
+
+    change path to auto generated man pages
+
+commit a48236809faf975e3e15cfb499a1cf76e5861453
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 15:10:31 2020 -0400
+
+    .
+
+commit 09b11e2843a4cee00c6c0f5961e12ecc83be1780
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 09:15:16 2020 -0400
+
+    copyright
+
+commit b28da98486fbc453ac6fda99bf624020b6f6c05d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 09:04:01 2020 -0400
+
+    update copyright year
+
+commit 24fb5e7b1f13f9644d2d8c1fed0e1f220f4c2570
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 1 08:50:02 2020 -0400
+
+    update copyright year
+
+commit 24a03ef6960c2a20a30edd7b8c474cb6caf9971d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Mar 21 06:28:29 2020 -0400
+
+    fix
+
+commit dbba23c48024997d1aa294f693d4332ff0a534ae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 13 08:38:59 2020 -0500
+
+    .
+
+commit ca23762c0e9ca275409ebba0e0cf18e450b38172
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jan 1 03:23:00 2020 -0500
+
+    .
+
+commit 234febf1cc9098888e76e149f15ff57832e1a74f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 31 06:03:07 2019 -0500
+
+    .
+
+commit 4df404a0a84f8e8f4e626159327b1061bcec012e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 31 05:56:37 2019 -0500
+
+    .
+
+commit d797199f4e53801a0e56d4ce4553ab4fda991cc9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 31 05:22:26 2019 -0500
+
+    .
+
+commit d5ae7a2ed90395e72d36cef729be93b5fd0ee54c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 31 04:39:34 2019 -0500
+
+    start work on VirtualBox automated testing
+
+commit df6c6a04f588531134c3e7bc04d631717fe2d5ef
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 28 10:44:07 2019 -0500
+
+    .
+
+commit 0caa8741ca913fa7c5671bae22cd2a2ad15906e0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 28 10:35:54 2019 -0500
+
+    .
+
+commit 0cf2dc233fec7bc63663a4ddf99e02f7988fc6f2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 28 10:18:53 2019 -0500
+
+    .
+
+commit 131450eba204a31d7fed5c8c7764d4802904b8a0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 28 10:05:41 2019 -0500
+
+    .
+
+commit abc01159f703868e2c908faa62f5dd7bf0d068ec
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 28 09:49:26 2019 -0500
+
+    .
+
+commit 615ea6020e4c9be9815cacfb805c9bf2bdaaab12
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 18 09:49:34 2019 +0000
+
+    use /usr/share/genmkfile/make-helper.bsh rather than make
+
+commit 34256221d8f38e5904bff9269d19cf15e46c0f14
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 18 09:33:53 2019 +0000
+
+    .
+
+commit 56f897e2fafc0e0157dd2388e004947967541af8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 18 09:31:03 2019 +0000
+
+    improve pkg_readme_creator
+
+commit 36b59d1583a24e80cebb08ad1f3d6e74afe37be7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 31 07:18:40 2019 +0000
+
+    fix compression of KVM images
+
+commit 9b62cfea9cb79235f544e1ac4229cd85d551eec4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 09:29:15 2019 +0000
+
+    .
+
+commit 6e1ec242781df16d000fea94ed8a59eda96f50dc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 09:27:11 2019 +0000
+
+    .
+
+commit d9a9294e92713e9d1a8f0b8bf38b6ab65fded24b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 09:19:53 2019 +0000
+
+    .
+
+commit b8ae251911d13295f287cdfd933823ea0f040a9d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 09:05:44 2019 +0000
+
+    .
+
+commit b070d55c234b9bacc5af9937a60b768c0880b00b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 08:49:43 2019 +0000
+
+    .
+
+commit 79a748f6d0111affe49a3baac82e94505bf1a386
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 08:49:16 2019 +0000
+
+    .
+
+commit 49fd33e37cb330aa5b551136522ab1911cf9221d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 08:48:36 2019 +0000
+
+    .
+
+commit 744aa5f853e7b83ffd985e39b6242ccc3789734d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 08:44:22 2019 +0000
+
+    .
+
+commit 76f1546d63ccca95c981616f1ef09b88a485f6c3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 08:42:23 2019 +0000
+
+    .
+
+commit 78ec4b38c4e97a7999b1d97dd9072ef349768f97
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Oct 19 04:08:15 2019 -0400
+
+    .
+
+commit 30ed6673ebd434d54704321da7e97ff000eedb81
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 13:28:58 2019 +0000
+
+    code documentation
+
+commit 2f00fe8beec3c6cc52621b179783f805b1dd01a2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 13:01:08 2019 +0000
+
+    code documentation
+
+commit 37c57ee214805cf92bf2e3f0f9a1a3ad109024b4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 12:59:12 2019 +0000
+
+    .
+
+commit ff1564371f21bbce1cf89205aa6ed68417359b4a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 12:59:00 2019 +0000
+
+    .
+
+commit 0ac0cf4804e41834537076988d5f6af3b1d1da4f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 12:57:46 2019 +0000
+
+    .
+
+commit 29d96d815edab316e34684dd4106497e7ae0d866
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 12:44:35 2019 +0000
+
+    code documentation
+
+commit 6cdb4c679a1d9b097399a7085aee2bb370bf6b05
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 12:32:55 2019 +0000
+
+    .
+
+commit 4f38bb25582fc2a4010c6c24639a681c6f22dbbf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 11:56:51 2019 +0000
+
+    .
+
+commit c2c189fba9575e56f0f75ebe7edd3d5435983603
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 11:55:33 2019 +0000
+
+    .
+
+commit 2557ce4f6e4452844804be90a6c737f6f5de8af7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 11:55:10 2019 +0000
+
+    .
+
+commit dd4e29748d5d9d46d775a2048f47f2f804dbe9b1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Oct 8 07:25:14 2019 -0400
+
+    .
+
+commit 2def4ffdeee3855232bda18508b6829e6d64da89
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 10:53:51 2019 +0000
+
+    code documentation
+
+commit be0dfd01f760c010c0bba24a56143e6b462fa647
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 10:15:09 2019 +0000
+
+    code documentation
+
+commit 17de1adccbb1139555577877e401e85419f02cc9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 09:37:08 2019 +0000
+
+    code documentation
+
+commit 0792f0b5474636c73c78f60a30cde74b95e7d091
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 08:53:18 2019 +0000
+
+    code documentation
+
+commit cad693e66c3ec8c92f0721886afeb9cd1e41384a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 05:54:09 2019 +0000
+
+    code documentation
+
+commit bd5db4e83f81b2ae3e50ff9115e6d2693dc2bab0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Oct 7 05:49:40 2019 +0000
+
+    .
+
+commit f123dde90d241243d61c6ffb62d6a75b7b6bf1b1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 19 18:56:06 2019 +0000
+
+    fix iso verification
+
+commit cb21d82f446638817266929f59ed819351c2ce6a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 19 08:50:58 2019 -0400
+
+    fix, add multiple hashsums to hashsums file
+
+commit 0e0d86bda56837198dee2f2dc9cc6eec1de7278b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 19 08:42:16 2019 -0400
+
+    iso support
+
+commit 5cc884d01d4fb41fdb8843e1f3a80414729aaa2f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Sep 17 13:38:31 2019 +0000
+
+    fix
+
+commit b436ca07d5356b84ed16e1d20e38bfd7cece803e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Sep 16 13:40:28 2019 +0000
+
+    optional build_upload_noninteractive=true
+
+commit f80f1e8e23efcdb3a3e88181afd9b06e7650d8df
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 15 11:57:17 2019 +0000
+
+    remove stretch
+
+commit 0d1e96a5653fbbc76862f810311499d2d7ae7ee0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Sep 14 01:14:23 2019 -0400
+
+    fix path
+
+commit 795649e4f51d46a7aa0a5fd36bb64792b081b914
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 13 23:39:28 2019 -0400
+
+    comment
+
+commit 058d35246dbf41bbe6a7f731282fa976a284bea4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 13 13:20:53 2019 +0000
+
+    kicksecure
+
+commit af3b02bfa3cb38dc4c9dac3813f645701077d372
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 13 07:42:01 2019 +0000
+
+    minor
+
+commit 5335a8078182fb419e29fd8e0d4cf6c21eab0e94
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 13 07:17:21 2019 +0000
+
+    kicksecure
+
+commit ca2e398cbcfa26fb18c6dfeff2b5a4141a4a019b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Sep 13 06:53:46 2019 +0000
+
+    url
+
+commit 088ab89df25446a2ce204c37449a065260422a97
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 12 14:45:11 2019 +0000
+
+    kicksecure
+
+commit 8524fa303af6b16e81ed196fba238b1d8ee6079d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 28 11:35:45 2019 +0000
+
+    use properly override_dh_installman
+
+commit 4ecf103cc9c1a38ac2c90da6c58d03a6416c280a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 9 08:08:26 2019 +0000
+
+    .
+
+commit 809d17cf91cf4c5e45688b95da1eab459b559e3e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 9 08:06:30 2019 +0000
+
+    .
+
+commit 4b5c7d23dc1180df2e65c418871449a482beb0d7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 9 05:32:42 2019 +0000
+
+    .
+
+commit 9f38ab652fecea8d99e817847922f9f1310fb52c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 9 03:00:22 2019 +0000
+
+    .
+
+commit 56c073469320e222ffed4ba66400c6b10dcf9a76
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Aug 9 02:59:15 2019 +0000
+
+    .
+
+commit 7022c7c01639934b498fa5c1e63b72ac97fd9b52
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Aug 7 23:28:51 2019 +0000
+
+    fix signify-openbsd signing and verification
+
+commit 1f9fb22b894a714b26dfe771c7d2f97f1ac62080
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 6 17:57:44 2019 +0000
+
+    deprecate stretch
+
+commit 22c81803935f59cf700d8239befd81a5cfc729db
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 1 10:42:30 2019 +0000
+
+    fix instructions for adding Whonix repository
+    
+    no longer rely on gpg key servers since unreliable
+
+commit 7024013f899270e919108053ead6e37f09f38fd8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 1 06:30:19 2019 -0400
+
+    https by default
+
+commit d60f4371c8762caa36d8d22d165a219bf3d0e350
+Merge: 715decc c3ab575
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 1 06:29:22 2019 -0400
+
+    Merge remote-tracking branch 'origin/master'
+
+commit c3ab5755d340747877f31bf5d7aa100185a97f6c
+Merge: 715decc fbfe8a5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 1 10:28:37 2019 +0000
+
+    Merge pull request #2 from 0brand/master
+    
+    Fix numbering
+
+commit fbfe8a529e5d09653639402023eb76576af11581
+Author: 0brand <0brand@mailbox.org>
+Date:   Thu Aug 1 09:52:56 2019 +0000
+
+    Fix numbering
+
+commit 715decca4084380e31868433c6f67254d15f9f2d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 15:15:45 2019 +0000
+
+    .
+
+commit 206ce67c913d6e1ee05fa68496a8974247f470fd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 03:15:05 2019 -0400
+
+    .
+
+commit c68548dfafae078456d102320b9b0045a2a87ea1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 03:14:31 2019 -0400
+
+    /var/run -> /run
+
+commit e32fd9a2bbc8437540ac457be92928b0830285f8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 03:03:26 2019 -0400
+
+    .
+
+commit 978ce42b3afeab0288f311b275ec2fe11094ded7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 03:03:08 2019 -0400
+
+    .
+
+commit 152c06852155bcfc8319d2f88662fadcb4ff5a29
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 31 03:01:48 2019 -0400
+
+    /var/run -> /run
+
+commit 3d0cf5cd52d442dfc2291ee99eeef8f455b8aae3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jul 29 11:57:52 2019 +0000
+
+    comment
+
+commit d8b6a179a2e78e858ca7886635ba990e397b957f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jul 29 11:52:28 2019 +0000
+
+    sign releases using signify-openbsd
+    
+    https://forums.whonix.org/t/signify-openbsd/7842
+
+commit 7da84d4e6fbf1603fa047dc732ea179c63a1ccaa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 29 13:45:32 2019 +0000
+
+    .
+
+commit fbdf7f1a4704ec57d94bbfb86cd671a304a3f157
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 29 13:07:57 2019 +0000
+
+    .
+
+commit 73227a927ff95d406fbfce593c0cb8d499df28a3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 29 13:06:51 2019 +0000
+
+    .
+
+commit c56817e5ba193b4f0c94c4b4ba113eb1839b4ca9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 29 13:06:40 2019 +0000
+
+    .
+
+commit fbadf410391f11931c6bc8d4900cfe72d7ff3ec7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 8 00:06:05 2019 -0400
+
+    .
+
+commit 7456335c1ad2dc89693f859054f8a4ed60ac34d0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jun 8 00:05:38 2019 -0400
+
+    fix debian/watch lintian warning debian-watch-contains-dh_make-template
+
+commit ad80ae4aa6659b828d30ff66dc7c6fc9cbfaa7d6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 24 11:35:04 2019 -0400
+
+    .
+
+commit 391332ee3bfa64570fd3be227fe4b9359f09c0ce
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon May 13 08:00:50 2019 +0000
+
+    allow networking during debug-steps/interactive-chroot-raw
+
+commit cc44e8e2d44fc7233110245c33c9c632f3803629
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun May 12 03:10:27 2019 -0400
+
+    minor
+
+commit fafe67d64c4c493dd23ddd32dc976f71a95c5f02
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun May 12 03:05:36 2019 -0400
+
+    minor
+
+commit 2c91f092d883cd226b1493111830ab9c50a3e9d4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun May 12 02:58:46 2019 -0400
+
+    update path to pre.bsh
+
+commit 9a2253aa782a305116865a929505043c63f3648f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun May 12 02:50:16 2019 -0400
+
+    anon-shared-helper-scripts -> helper-scripts
+
+commit 265723d9e887b7b9c8144406b1d8a4117395a3af
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon May 6 09:04:58 2019 -0400
+
+    fix torrent libvirt
+
+commit 17f1d2a7ff38ab5fc5f5de50158931302f42571f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon May 6 09:03:42 2019 -0400
+
+    fix torrent
+
+commit b074383d378a60d8ad491096d3179ae342f549d3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 3 10:58:39 2019 +0000
+
+    .
+
+commit fca8b672c44ce19d1939a5da6dd94177f0a03e06
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri May 3 10:56:58 2019 +0000
+
+    update
+
+commit b4fe09d8c6952c358c697c244bdc4e4b51b8cf3b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Apr 23 11:52:01 2019 +0000
+
+    sanity test
+
+commit 00a7f5f85a0e5ae9c80adeebc051096b7bb5eda9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 15 12:57:35 2019 +0000
+
+    sudo
+
+commit 568233cac375ffb546d5421d1e7e32ae365a3c09
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 15 12:56:12 2019 +0000
+
+    sudo
+
+commit a56f663eb8e2d77c2623149d5c01efe6df894e66
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 13 13:18:20 2019 +0000
+
+    .
+
+commit 6497050c98d99bca23507aa21a6566aef4d64a24
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 13 09:05:58 2019 +0000
+
+    fix
+
+commit 2a0064f4214e04a0f454fd1b29fe9f14c6629d2e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Apr 12 09:42:53 2019 -0400
+
+    add --description to VirtualBox images
+    
+    https://phabricator.whonix.org/T825
+
+commit a6c153b2557328a1b7569e5ac330e96995c42e94
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Apr 12 09:31:54 2019 -0400
+
+    add --producturl
+
+commit 8233cdf8f4cc16c8b8c29c8f4bd13433ce4ef79d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 11 12:37:08 2019 +0000
+
+    .
+
+commit f5b26b117886c15f00cb48a3af92d1b6615305a7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 11 12:31:53 2019 +0000
+
+    .
+
+commit 86fb9b301beb592d39f0c1e100862875b90b459c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 11 12:31:17 2019 +0000
+
+    .
+
+commit bc02d18c5fe607e696c456edac1403aedd2836ad
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 10 16:40:33 2019 -0400
+
+    .
+
+commit 9057c79b577bb97060e44abf06b6e47799ed70c2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 8 05:58:19 2019 -0400
+
+    readme
+
+commit b657cf7734a2d11b9c8c96a0218d80a8976fff29
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 6 13:05:40 2019 +0000
+
+    .
+
+commit 4330ed0ed912b521ae45ca84ea6588986787b47e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 6 10:20:12 2019 +0000
+
+    .
+
+commit 7528dfb2cd0fce430b6bdd79f71f38d9b7f8d865
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Apr 5 17:02:54 2019 -0400
+
+    gksudo
+
+commit 7a31416020365430eb2d94fe834f157f85dfcad0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 08:35:23 2019 -0400
+
+    .
+
+commit 9196e815a3781ba7c65111f9c5c38f37e4a093ac
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 06:04:34 2019 -0400
+
+    .
+
+commit 6c8017f343e89052776b8b42e5e93b9326f30d8c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 05:56:14 2019 -0400
+
+    .
+
+commit bc9d8055b7eea1ab96a80c3f89d7bcbefdc45d02
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 05:51:22 2019 -0400
+
+    .
+
+commit 6e70023621a06cecec66e10b41c4e4b6e3c637e9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 05:51:09 2019 -0400
+
+    port to debian buster
+
+commit 639e8b40eceef2f1ab32a9be5bec08054f800063
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 4 05:48:38 2019 -0400
+
+    .
+
+commit 242bd2a259d07d078dfb3ffe1b4e0278e00a9157
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 3 18:13:22 2019 -0400
+
+    buster
+
+commit 0b4f81fdc54138daf0811baf37f7731430bbf1eb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 3 18:12:39 2019 -0400
+
+    buster
+
+commit cde32903d39823e59400338ad2b5fbf597f42745
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 3 18:10:31 2019 -0400
+
+    .
+
+commit bcb4b5cdbd821b79f798b87c53900ddfa59d9b15
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 3 18:06:11 2019 -0400
+
+    readme
+
+commit 26622cf0e8b62dc3c045c0700acab988906c0b2f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Apr 1 13:06:12 2019 +0000
+
+    .
+
+commit fc4eebf166b0a54c9ff19c75c191d474aab0b0ec
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 29 09:11:59 2019 +0000
+
+    disclaimer
+
+commit a52d2686933a69a48ed9dd9004cf8fe0b8d96459
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 29 09:06:03 2019 +0000
+
+    .
+
+commit d3d5cc5c13793fecb946a4647c0973061d40e831
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 29 09:03:20 2019 +0000
+
+    https://www.whonix.org/wiki/Dev/Licensing
+
+commit ae4b938afb98464c3613779582ad40f11dc5f9af
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Mar 21 11:51:57 2019 -0400
+
+    .
+
+commit 20262ce029aeaed632841f7ec82865424d950f52
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Mar 21 11:51:04 2019 -0400
+
+    fix
+
+commit 67e5734898cb55e8c0b9fe7dbfc9f4aab2a995fd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 17 06:15:22 2019 -0400
+
+    fix
+
+commit c55740fc4a40b2bbae7d3c399b4b212d0100f673
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 17 05:59:54 2019 -0400
+
+    .
+
+commit b56f04ff6a7def694ac0aaa41b30379ae3a439cf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Mar 17 05:14:19 2019 -0400
+
+    .
+
+commit f8e5c53ab2a6d20e7532e1d35c4f2b825238ae06
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Mar 14 06:33:27 2019 +0000
+
+    fix path
+
+commit 5c3ca6381d6bb4757dd92bcfa959cb0ceb386329
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 13 21:20:14 2019 +0000
+
+    .
+
+commit de08611604897ed1dc76b052aa745a8848af856f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 13 08:40:03 2019 -0400
+
+    simplify
+
+commit e5a9c03635b2948fe792f03efd12a4dcbde3659c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 12 11:28:36 2019 +0000
+
+    canary
+
+commit b70732ba76b0354726656328f893c259f513cf65
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 12 11:24:52 2019 +0000
+
+    canary
+
+commit b63af34f3eb073187a7617bac2d98e6c966f9cd8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 12 11:23:58 2019 +0000
+
+    minor
+
+commit b95798ca7ffeaf4331e6b72cdc49d539914e4ae0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 12 11:23:35 2019 +0000
+
+    minor
+
+commit 757df54b76e630434737e5147dbd33f3d0dd07f0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 11:46:32 2019 +0000
+
+    WHONIX_BINARY_LICENSE_AGREEMENT
+
+commit 6e0865c8fffebdfdb758a4b0e51f17e8b7b6611f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 11:28:18 2019 +0000
+
+    fix
+
+commit 1b52f106ff97fd6ada3a7d9f56d2ff2122adf551
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 10:51:51 2019 +0000
+
+    fix
+
+commit 21118d5fa595d7c57118eca02acf5ca19891856a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 09:47:18 2019 +0000
+
+    fix
+
+commit 6f1d0cc1cd564caaa17500dc4e63b01fe0029bb5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 09:03:52 2019 +0000
+
+    add enhancements by @torjunkie
+    
+    https://forums.whonix.org/t/whonix-warrant-canary/3208/12
+
+commit 4aeb617cf3bd309bb69ab6a4f16aacf2dc506ddc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 00:50:29 2019 -0500
+
+    idempotent
+
+commit aab1e09a52cabd6e4a952c9f83b0c5088f6baea4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 00:40:23 2019 -0500
+
+    sudo
+
+commit 09732539a0bf148ca9d7c1ab3ba386e373fbc913
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 8 00:13:15 2019 -0500
+
+    unified
+
+commit aea43c4c9d2139838d2e7aae8bc8ec39f48b027b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 6 07:47:02 2019 -0500
+
+    refactoring
+
+commit 1a1dad5e845ab0a2f58a0d950a0580af540fec91
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 6 07:24:53 2019 -0500
+
+    add copyright file COPYING to downloadable images
+
+commit e55e5306e24fb216493c2c0946eb6b03a1e07da9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 6 07:20:58 2019 -0500
+
+    fix
+
+commit 5f7769d9ed61627f71e1eb808fcb6802302dcde0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Mar 6 07:17:48 2019 -0500
+
+    fix
+
+commit 8cbfd4565a036f4e76a5d7e63a7c0ff48ba42533
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 5 22:56:19 2019 +0000
+
+    fix
+
+commit 4714eade33acdfd3df11672fc7f1f6c1b52ee103
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 5 22:54:35 2019 +0000
+
+    canary
+
+commit 624c99bec9ead623b890da9c2e8fcf106b5fcb08
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 14:34:45 2019 +0000
+
+    .
+
+commit 4fa7d1feac5e41969cb4d63c43b9d38cbc219774
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 14:32:43 2019 +0000
+
+    add improved legal protections clauses
+    
+    The license for software created by Whonix is the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version with additional terms applicable per GNU GPL version 3 section 7.
+    
+    The additional terms are based on the Doom 3 license which is Debian refers to as `GPL-3+-with-id-software-additional-terms`, which is Debian DFSG [1] (The Debian Free Software Guidelines) approved and which is therefore suitable for Debian `main`. Whonix made applied minimal changes to it:
+    
+    * Rewrite `The Doom 3 BFG Edition GPL Source Code` to the more common `this program` which is used throughout the GPL.
+    * Added a "trump clause" [2], in other words, any conflicts or disputes between the additional terms and the GPLv3 shall be resolved in favor of the GPLv3 by adding `Notwithstanding any other provision of this License` (as mentioned in GPL FAQ [3]) at the beginning of the additional terms.
+    
+    [1] https://www.debian.org/social_contract#guidelines
+    [2] https://www.fsf.org/news/canonical-updated-licensing-terms
+    [3] https://www.gnu.org/licenses/gpl-faq.html#v3Notwithstanding
+    
+    For more considerations, see also:
+    https://www.whonix.org/wiki/Dev/Licensing
+
+commit 01cd97755c94dbc97f9a4affaa0586cb7725d22d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 09:32:10 2019 +0000
+
+    .
+
+commit b6b130d74ca15c04f5b8626982291553e0b5158f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 09:23:51 2019 +0000
+
+    cleanup
+
+commit 696af93295c08f88322df30bed6d03843866b59f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 09:23:19 2019 +0000
+
+    .
+
+commit 70d1e26a8cc3b7551e92e287c0bfa8ce9da0decd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 09:10:03 2019 +0000
+
+    .
+
+commit 2a7b06827e95052d137f173f6dbb9d10c39eb508
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 09:07:19 2019 +0000
+
+    .
+
+commit c129b8d33f523229a31b3a58347872ec65a7b772
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 1 08:53:21 2019 +0000
+
+    fix
+
+commit 238d0f6165518f407e15814491146c7ff6fb1936
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 18 10:58:22 2019 +0000
+
+    work on unified gateway/workstation ova
+
+commit bc9f577ca629df0d8104c3821912c59ea4a5b2d4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 11 01:25:05 2018 -0500
+
+    .
+
+commit 4e792b10fb4acf6b27bd3bcea7f797c31d10c050
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 10 00:13:19 2018 -0500
+
+    .
+
+commit 46e3e24f7fe6d86e5a10f8722d203aaea1122e96
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 28 06:38:24 2018 +0000
+
+    drop jessie
+
+commit bf527c39affd42a90bf535aa8c6996d221438c6d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 14 02:40:53 2018 -0500
+
+    .
+
+commit 0ff04bb4d508067ca6f977485e119ff4e27d6b4d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 8 09:49:00 2018 +0000
+
+    .
+
+commit 57b2542793782f48f833d9d6756e2350f7c64183
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Sep 11 03:20:59 2018 -0400
+
+    .
+
+commit 59bf1bef867450e48311ae9f4f5cb4c622b20664
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 27 19:25:17 2018 +0000
+
+    .
+
+commit 2f0bff08a0d382bc83f062a59ddf08ea2285ab9c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 27 19:01:17 2018 +0000
+
+    .
+
+commit f59409f629c4a445d58599b008c67318bc607bda
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 21 05:15:46 2018 +0800
+
+    .
+
+commit a5216483d0f2bbcf53d04f53d7d3114b4c2fe7fa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 21 05:15:23 2018 +0800
+
+    readme
+
+commit 5b6902b8ff1c2610cf17ff5b211e34ae72f05a90
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 21 05:04:08 2018 +0800
+
+    readme
+
+commit 6ce5ef0c62fe9ed88970cf4da6dbeb42a5852a4f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 21 05:01:33 2018 +0800
+
+    readme
+
+commit e5a0ab4dcb1647a848f744915785dff917035bae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 21 05:00:26 2018 +0800
+
+    readme
+
+commit 498eb993dbf31eabd27f7427fa578cc657810baf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Aug 18 02:01:00 2018 +0800
+
+    readme
+
+commit 45b746f3a20ffced8dd42cfef652dc3022b7f65b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 7 18:32:42 2018 +0800
+
+    news
+
+commit 14542e94009df0f09d782efb6e5892b52c6c4de2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jul 19 14:53:42 2018 +0800
+
+    .
+
+commit fa002a1c38409f3bba1bbf0ee17b45e9f2d89ccd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jul 13 23:44:37 2018 +0800
+
+    .
+
+commit 31e5b3412f2f97d566c8389d0b7a300a389fdc63
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jul 13 22:59:09 2018 +0800
+
+    .
+
+commit 892ca8ecfbd59217ea27a0c9936608d14c0fb50d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu May 10 12:12:12 2018 +0000
+
+    git commit -a -m "fix apt-cacher-ng / fix quotes handling for apt-get use"
+
+commit b2ba0910de0065d640a4b5c304414ebaaf5e4834
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 14 10:10:41 2018 +0200
+
+    .
+
+commit ee14c7b341410c834f577096a0156911dffc5cf4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Feb 11 00:42:36 2018 +0000
+
+    .
+
+commit 5ff3eba4f92279cc3b1d16196ebeb498d3708d49
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 9 14:14:42 2018 +0100
+
+    try fix torrent downloads
+
+commit 83c99f565a3283f08509356a57e39a7816e741ad
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 9 14:13:48 2018 +0100
+
+    .
+
+commit 300e09129cd3135a435402476408b07b92cdf59d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 6 11:49:56 2018 +0000
+
+    .
+
+commit 00a7304355996bc0a04ad945f045ae690c9ddd9b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 6 11:41:56 2018 +0000
+
+    .
+
+commit 7c1cbd76fa9b3ee075074285333dbc25f1889de6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 6 11:35:51 2018 +0000
+
+    .
+
+commit 8657a212b57babbbed71721518546a2a27efef00
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 6 10:59:52 2018 +0000
+
+    .
+
+commit 55fd534171a6915ee9f74f8de5fb2d33b1790622
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:51:25 2018 +0000
+
+    .
+
+commit a654be238db9fc1976909c7dc3cabc1a9be76ec7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:48:32 2018 +0000
+
+    readme
+
+commit b2d8e384d5acf49b8826dd1292628abbd895fb4c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:46:11 2018 +0000
+
+    .
+
+commit c6f85d56ff28b109d6de41e688d82f226c9a53f8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:39:03 2018 +0000
+
+    update copyright
+
+commit cc43bbb4482088fbeb31f310f9b4ee3ca6867fae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:22:11 2018 +0000
+
+    update copyright
+
+commit 70a4152aeb3be74d41fdb04c2958832fe8323403
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:15:23 2018 +0000
+
+    update copyright
+
+commit 51dda755e1cb29a3e8373fba184a21dfe0b50c6b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 29 15:09:48 2018 +0000
+
+    update copyright
+
+commit b5158b98d2e117315b3c18b7652342f3c2e3fffd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 29 18:48:33 2017 +0000
+
+    .
+
+commit 7c0493f2703cc49d3ff74c775348c8529a9f228d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Dec 27 18:24:45 2017 +0000
+
+    .
+
+commit c3adce1567792b7de93ba34969cf97098dbef9e1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 21 21:14:06 2017 +0000
+
+    .
+
+commit 18038a9c8bbbbc058accadf60ec80ae3d8f2cccf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 21 20:26:49 2017 +0000
+
+    .
+
+commit d3a54ced0355b083111489d25575aee4f8e3a209
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 21 20:26:30 2017 +0000
+
+    readme
+
+commit ff5f0edfe30b364593a75b5361a5457c091b141a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 21 14:56:28 2017 +0000
+
+    .
+
+commit 8ea6048ed9fd9967fcae7670800ae8adbcd02634
+Merge: bbf200e 8c66041
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Dec 20 15:35:05 2017 +0000
+
+    Merge remote-tracking branch 'origin/master'
+
+commit bbf200ea462b7d04e0e0774d057b2cd01720a2a2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Dec 20 15:34:29 2017 +0000
+
+    .
+
+commit 8c660419810c0eed48758ed4afbaaeccc0fdf530
+Merge: 02acfb8 d90a9b5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 30 21:36:11 2017 +0100
+
+    Merge pull request #1 from Algernon-01/master
+    
+    Patches for Whonix live
+
+commit d90a9b58c8f1e581f65a0a9b24f36a847d4f4771
+Author: user <33966997+Algernon-01@users.noreply.github.com>
+Date:   Mon Nov 27 15:30:43 2017 -0500
+
+    Patches for Whonix live
+
+commit 02acfb823768e8a05300f475722d52849f588de3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 21 14:47:37 2017 +0000
+
+    .
+
+commit 649e0a26c8e03cc605acf6cd163d0010616d5eaf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 21 14:46:08 2017 +0000
+
+    delete no longer needed readme upload scripts
+
+commit 2fd2092dadccf2bf870397d14aa50a92cd2e6092
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 21 14:44:48 2017 +0000
+
+    .
+
+commit d7acae2652ca17607bc0249000a2cd81f216b95d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 21 14:39:41 2017 +0000
+
+    .
+
+commit 4710d908aa99c9654dab5e82766186a40b913057
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 20 06:52:16 2017 +0000
+
+    Qubes split-gpg compatibility
+
+commit 061fc702291ee1452ba2b1887b5b6b3d4813138e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Sep 24 12:39:50 2017 +0200
+
+    .
+
+commit 28c6407726a6800b03fa31a108e47691dfdeabbf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Sep 12 03:03:16 2017 +0200
+
+    .
+
+commit 19be05bb06f98870f4b7212c3617ccf8176207d1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 26 15:40:40 2017 +0000
+
+    .
+
+commit 69d95a2dfe0ce37367134cf50eda120a54b416c7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jul 26 14:03:42 2017 +0000
+
+    .
+
+commit 9abfd0a4b6d27708e70262386aa5c51d28ccccf9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 6 01:56:50 2017 +0200
+
+    .
+
+commit d118b1d78cf1161920ab88f01a3ec937852c4440
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jun 6 01:56:15 2017 +0200
+
+    .
+
+commit 0a55d9e63dc10bde4d3482ceab63f594d11b7755
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Mar 7 01:28:10 2017 +0000
+
+    .
+
+commit 787fa549a5e31abfbf591bed0803da4a84a0199b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 21:31:59 2017 +0000
+
+    .
+
+commit 544b3c4d758d4ab333a596ec6f32ce232f08c05b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 15:05:20 2017 +0000
+
+    .
+
+commit bb1907e319acda314a1c57df200ff1696f979971
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 14:56:17 2017 +0000
+
+    "$@"
+
+commit f9cb6c80cc47ae9c9484d1f16fdb6e18df707c1d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 14:29:52 2017 +0000
+
+    .
+
+commit db83153403ea3c7d560b8b4a5ded7031998ec722
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 05:28:47 2017 +0000
+
+    .
+
+commit d452b4b6ccf58b5216e902e65c31f6742a47a9b2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 05:14:58 2017 +0000
+
+    .
+
+commit c4dca289d44a24b48e67b94ee7d3bcd60ac77217
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 06:02:03 2017 +0100
+
+    .
+
+commit dc2829f4c17d1f801bef3de12a11205a509c73bd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 6 05:26:51 2017 +0100
+
+    .
+
+commit 73905ae78d6c1a9850642625e9d45d867a98511f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 27 20:39:48 2017 +0000
+
+    git-tag-checkout-latest
+
+commit 91bc3cc121da8614914903f3bef42a9dc5150d2c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 23 18:23:06 2017 +0000
+
+    .
+
+commit e96410e7d1d1542910306261e16f6aaaac7dc057
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 21 22:19:46 2017 +0000
+
+    use systemctl --no-pager to prevent blocking due to systemctl interactivity
+    
+    https://phabricator.whonix.org/T637
+
+commit ebf91c915b584736738ccaa844f76b3386e529cb
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 17 15:24:23 2017 +0000
+
+    .
+
+commit eb7df259353706dc64050b47410f17dde154f2c2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Feb 16 22:09:30 2017 +0100
+
+    .
+
+commit 6d994b8ca8c315f2fced7fc93475d397972142cd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 15 20:46:27 2017 +0000
+
+    Debian stretch / kde plasma5 fix: KDEDIRS -> XDG_CONFIG_DIRS
+    
+    https://phabricator.whonix.org/T633
+
+commit 4914e1fe7bcd729727459a295d91df87128a497d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 14 21:06:09 2017 +0000
+
+    .
+
+commit 022799de4ad64f8cb0a786cf35ce8d48fe44a9bf
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 14 19:27:27 2017 +0000
+
+    replace $apt_timeout_opts $apt_verify_opts $apt_misc_opts with "${APTGETOPT[@]}"
+
+commit 8f4b9ce0b5ca738575539819fb5c7e68d6a6eb12
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 14 17:30:31 2017 +0000
+
+    "$@"
+
+commit ed4601ca1683c8bdb641461e97dd5c9014ac01e9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 14 17:26:13 2017 +0000
+
+    "$@"
+
+commit 6886a3546aa0cef1bd5a22897eb15093284cb32b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 13 22:06:44 2017 +0000
+
+    .
+
+commit b7f3720cef4286f39cc66b072007bb732b140690
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 13 22:00:12 2017 +0000
+
+    .
+
+commit 8fa8ab7a83e62fa676d27f9491b399b3219d287f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 13 17:36:46 2017 +0000
+
+    .
+
+commit 4479e965564fee4b5f137ac8bb8759c84bf72cb6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 18:21:56 2017 +0000
+
+    .
+
+commit b20a8c3140e9ebbb389469af39f53e7bb4227ce7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 18:09:58 2017 +0000
+
+    .
+
+commit ac5971a4870ff290522d8e63be8eb755a9e9520b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 17:32:27 2017 +0000
+
+    .
+
+commit 01849929343ad1545cecda42a8dd6d16d10f7e66
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 15:34:33 2017 +0000
+
+    remove debian/gain-root-command workaround
+
+commit 1be1eaa0f01c7da6d31e7846a233f77caace84bc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 15:29:50 2017 +0000
+
+    .
+
+commit d528f1f38abdfda54bfe94abb5049d832c9ce284
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 15:27:52 2017 +0000
+
+    .
+
+commit 03a181ed079ddaeef60307c41790a6c552e27bcc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Feb 10 15:20:44 2017 +0000
+
+    .
+
+commit f424861d25814e2295ab644f8f041c5f158ba1c3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 7 23:43:21 2017 +0000
+
+    .
+
+commit ec3d27c0ac47440baed6781418f2443465f9d08d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 7 20:26:34 2017 +0000
+
+    .
+
+commit 876a207c648b8df60f3bcf4731643c95c04336ae
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Feb 6 02:23:09 2017 +0000
+
+    .
+
+commit c5dda61112aeb17c8dbf279a939ad43aaca89bbd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 31 19:18:46 2017 +0100
+
+    .
+
+commit 490b37900197c2b05f497900ca5121be57004dc0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 29 16:35:57 2017 +0000
+
+    use tar --owner=0 --group=0 for deterministic results
+    
+    Thanks to anonymous1 for the suggestion!
+    
+    https://forums.whonix.org/t/testing-whonix-installer-for-windows
+
+commit 7fcd96f59bb624e861c86ff380954d8593c289e4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 29 16:10:04 2017 +0000
+
+    .
+
+commit 402ddc6fcac19b9735edbe3dc051b2d53f0b83aa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 29 15:36:31 2017 +0000
+
+    add debug-steps/qubes-repo-temp
+    
+    a script to quickly install from apt-get update from local repository
+
+commit ec10ff6b9d4563c11be3267eecab3f2116cb9c30
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 27 12:48:18 2017 +0000
+
+    set reprepro base folder dynamically
+
+commit 0a4f72d0221082b2b79ffa5644d3e510394a4cb8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 20 14:10:20 2017 +0100
+
+    use strip-nondeterminism on libvirt.xz
+
+commit dd74f986f8a7dbb7582fba12133328ca6cfe7db9
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 20 14:08:40 2017 +0100
+
+    add more tar options to make libvirt.xz deterministic
+
+commit 697649e05ca1a1f9e769d4f268f95fc1c41607a7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 20 13:50:44 2017 +0100
+
+    add more options to make Whonix news file generation deterministic
+
+commit dbf50ba3ef000903c3e5f1ced78458a6f5ac0900
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 19 08:42:54 2017 +0000
+
+    .
+
+commit 1694b8972d1983c9ebf742d5e7f57dce0772fd07
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jan 18 11:13:19 2017 +0000
+
+    add kvm internal / external network file support
+    
+    https://forums.whonix.org/t/whonix-14-build-script-changes-alternative
+
+commit 54a2451b82956556e391f50b644aa919ff3fdd5b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Jan 17 08:43:17 2017 +0100
+
+    .
+
+commit 2fc0d472675f427afff7f95a5924c769ed1df66f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 16 16:45:01 2017 +0100
+
+    .
+
+commit 923dacb476adf4f19b81155cb6455d3a034b90fc
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 15 08:32:41 2017 +0100
+
+    .
+
+commit 935ef03147a78b6e4bf75c52ebc97ed24fba552b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 15 06:29:22 2017 +0000
+
+    .
+
+commit ac8c19807fb891c6c59bc938ce1ced8876f0a2ff
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 12 21:16:13 2017 +0000
+
+    .
+
+commit cc6a0bca89a7f6e70afebe7dc1f5471f5e7298b0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 12 02:46:46 2017 +0000
+
+    .
+
+commit c93e018f13329062933432d918ad0af20cddad77
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jan 9 03:51:30 2017 +0000
+
+    .
+
+commit 2eb16a8ff387c05642292b4978129f006cd410d0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 8 06:31:10 2017 +0000
+
+    .
+
+commit 829d390c2977d21881f2a75364f1554f09330904
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Jan 8 05:59:00 2017 +0000
+
+    .
+
+commit c5d49fb61bdf075e2efbba907fe3c658d5151f40
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 23 18:48:39 2016 +0100
+
+    .
+
+commit c04a5a7ea638e8a60df65c07a26d41423177cc49
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 23 00:42:55 2016 +0100
+
+    .
+
+commit dc54b92c6f24fc9ea4d43cbf28b38081e3c384be
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Dec 23 00:37:57 2016 +0100
+
+    .
+
+commit d3cffc2fb78ada8c6d68da975f01a779cdde4eb3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 22 23:12:25 2016 +0100
+
+    news
+
+commit c156bd693f48103c296ad9f30ec1340b11c6b88a
+Merge: d67bc6a d2ea29b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 22 23:10:33 2016 +0100
+
+    Merge remote-tracking branch 'origin/master'
+
+commit d67bc6a6968970803912e155ee804ba407cba012
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Dec 22 23:09:51 2016 +0100
+
+    .
+
+commit d2ea29b59e3e7e993890c0fe706d97ce9807cf72
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 20 22:59:10 2016 +0100
+
+    .
+
+commit 2d08fac6a46758b1ef329f8da171a3506afb4bb5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 20 22:33:49 2016 +0100
+
+    .
+
+commit 785fa1116f50c173af2fd89d369b252e88fce691
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Dec 3 19:16:46 2016 +0000
+
+    .
+
+commit 275d45483bc302a47517bbeb024f8d318720577a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Dec 3 19:16:06 2016 +0000
+
+    .
+
+commit 57a5d66fb6d5944f88e4e5de5454cc2e3fe27cd5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Dec 3 19:15:11 2016 +0000
+
+    .
+
+commit 13754931c4ab8663fdedbdfc339ba56c77d21a2f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 30 22:48:57 2016 +0100
+
+    news
+
+commit 776359b83e56e334e0d8d2c0812ee311f41a7f24
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Nov 30 11:51:40 2016 +0000
+
+    .
+
+commit a3cd646f9bcb85b80a0f1baee7f5b19997c5f1a2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 28 22:28:50 2016 +0100
+
+    .
+
+commit 312611978f8c6e56930dd809476df6626755ea0e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 21 17:37:52 2016 +0000
+
+    .
+
+commit 4aa37f8144fa2d0afd613b6cd3d5b5caa314b287
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Nov 21 17:30:51 2016 +0000
+
+    update Whonix repository URI in generic readme
+
+commit 3f8dcf83853d648eb1279334339a8a5ad63705b6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sun Oct 2 16:52:21 2016 +0200
+
+    .
+
+commit 735ae05f9c342b3536616b0efcc460c6c4fc670a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 1 21:27:20 2016 +0000
+
+    .
+
+commit fb6a3e0643d9200b33daab8853019598b2d91782
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 30 21:15:24 2016 +0000
+
+    sudo --non-interactive
+    
+    https://phabricator.whonix.org/T549
+
+commit 6f7e543b23cff9e72de70076d2349f28cfb50458
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Aug 13 01:36:23 2016 +0200
+
+    comment
+
+commit 76cb8789dadfb618e5e039738da6863e61a61e07
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 4 16:57:26 2016 +0000
+
+    removed sourceforge as upload mirror for Whonix apt deb repository and Whonix news
+
+commit f3854599d1653e1add47e38c30e070c5e17ac07a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 2 02:58:27 2016 +0000
+
+    .
+
+commit cadfc46025a71c6f401f1eab17dbe3da765bad99
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Jul 11 13:26:16 2016 +0000
+
+    add corridor support to packaging sanity test
+
+commit 7b0f598a95f17e7302ee68c3ddfa22d80929c60d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Jul 2 20:33:34 2016 +0200
+
+    .
+
+commit 86f8c0b48df3946e9a7465c53416f7b6de0e0fe6
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Jun 29 23:25:43 2016 +0000
+
+    .
+
+commit 209e02e408655f8f900944b23c067cca8b9023f3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 2 22:02:46 2016 +0000
+
+    .
+
+commit 48df33ee828e831b2f14dbac25260c59b0b7cae1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jun 2 14:28:12 2016 +0000
+
+    improved gtk2-engines-pixbuf package documentation
+
+commit f87a46a9628c75bbae10e0cc75c36cc84b4bb53c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon May 16 02:19:55 2016 +0200
+
+    news
+
+commit 657a19c45c627fe50f470a8776af2a455d4fd9cd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 11 16:31:18 2016 +0200
+
+    news
+
+commit d4505d3d0a738a0f3de679f3df55d8007bf86ad2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu May 5 01:44:43 2016 +0000
+
+    news
+
+commit 5a4b9cc92d2d626c493d23485c6296c62a0250d8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 4 22:01:27 2016 +0000
+
+    .
+
+commit 843cc9cb882d8f24a4a5fd5eb8c756b18592305c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed May 4 19:53:06 2016 +0200
+
+    .
+
+commit 0d6d551b57425b9ab5c8401b73ddacda9ac9b307
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon May 2 19:14:35 2016 +0200
+
+    .
+
+commit 08c2f0c01daf11134183c14604a09cdc82ad1cc5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 27 19:13:24 2016 +0000
+
+    .
+
+commit 8ff76b6306e144756b5bf3f329b681215d0b1bc0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 20 04:15:08 2016 +0000
+
+    .
+
+commit a3e035af6392b7ca228335a8f8555f09ee02bca8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Apr 20 01:39:50 2016 +0000
+
+    .
+
+commit b19c327834c56f52512df347d30a5e1bdb592300
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Apr 15 00:38:59 2016 +0000
+
+    work on install-from-local-repository
+    
+    https://phabricator.whonix.org/T461
+
+commit e74c277fd8cb56f120b44f7136cf986f148781d5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Apr 15 00:20:21 2016 +0000
+
+    .
+
+commit 976b7131002ddae909382236ccc907ae676345e5
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 14 23:36:30 2016 +0000
+
+    added install-from-local-repository script
+    
+    https://phabricator.whonix.org/T461
+
+commit 9838ff22d6033dc79e2ca5486ed6a14623d187fa
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 14 21:14:19 2016 +0000
+
+    .
+
+commit 2dc69b940f477993c7a3dbe51270602cc4f17f16
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Apr 7 23:33:18 2016 +0000
+
+    removed dependency on packages with chroot scripts
+    
+    https://phabricator.whonix.org/T461
+
+commit fcbb6fdfd9f0cf9e335ab8ce1acec67d0e4e2ead
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Sat Apr 2 15:30:54 2016 +0000
+
+    .
+
+commit bddd181d597c5b3903331e4c683d2cce7dad405e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 21 13:57:01 2016 +0100
+
+    .
+
+commit 538ecba4734bf30a1d63d921215a236d7034c2c2
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Mar 21 12:40:15 2016 +0100
+
+    .
+
+commit 9161c2f1ebcd8d335663aaa1fcd1a737f698aa9e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Mar 4 17:03:35 2016 +0100
+
+    .
+
+commit a4f467b507c54ea87975db237777c07d6226a314
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 24 07:20:42 2016 +0100
+
+    .
+
+commit 06e5ae783cd59db6009863500eb8cdaa58092b9f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Feb 10 17:58:13 2016 +0100
+
+    .
+
+commit 8a4c1cbc2b43acf1f9695831422511be10058e51
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Feb 9 17:23:53 2016 +0100
+
+    .
+
+commit 1c181e96589f750d332592f647bb3a77ab32811c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 28 20:53:45 2016 +0100
+
+    .
+
+commit a4646868fbaad270855d882fb7c0a2ba610f0543
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Jan 28 20:53:25 2016 +0100
+
+    .
+
+commit a0933aab7b272a047c0c787da7b6120f9fae542a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Jan 8 17:35:44 2016 +0000
+
+    .
+
+commit fc91873e67882bd044745a2ad18a2a6d3eb44e94
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 21 22:01:33 2015 +0100
+
+    .
+
+commit 9042222d99e9c23b6807c8caa35ad0d8aebea11a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Dec 15 21:12:42 2015 +0000
+
+    .
+
+commit 486773313b9c24f63bc08299e4fd5d1e1a3746a0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 14 21:41:25 2015 +0000
+
+    .
+
+commit 5d3fec9741c112cda43caeb65fd88d6cf79fafdd
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 14 20:18:34 2015 +0000
+
+    .
+
+commit d594cafa53296ba594adfc06df27374d534d801e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Dec 9 18:36:17 2015 +0000
+
+    .
+
+commit bc7d7407b5d339875ae056750c757401c60960e1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Dec 7 14:30:13 2015 +0000
+
+    fixed / updated function pkg_packaging_files_diff
+
+commit 95aad68c646001d002779190137164130fce11d3
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Nov 20 17:22:20 2015 +0100
+
+    .
+
+commit a8013a5e87ab71ca22a8b109b91fdeb635fa0432
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 19 20:32:01 2015 +0100
+
+    .
+
+commit 9e4cc6c168cdd1bfb302a1817da54bc9c18bcd6d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 19 20:31:28 2015 +0100
+
+    .
+
+commit 1fb643452413ee1c60bf02dcbe101b3f0acefb41
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 19 20:00:48 2015 +0100
+
+    sha256sums upload script fix
+
+commit 1c17ec65202c37ddedfcc952bb59445700e1421b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 19 19:57:34 2015 +0100
+
+    .
+
+commit edbae1367a7298580deac1db5a820592f12854df
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 19 17:51:58 2015 +0100
+
+    .
+
+commit 3aa08213b11705539f369ef8e156103edba35b3e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 12 21:12:14 2015 +0000
+
+    news
+
+commit 6ae26b2424050c3e7f6c55eaf980938c48dd968c
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Nov 12 17:52:06 2015 +0000
+
+    https://github.com/QubesOS/qubes-issues/issues/1410
+
+commit bd5e7d005814e038061e0b30b5a07af32dc2dc1a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Nov 6 11:32:21 2015 +0000
+
+    .
+
+commit 3322bbfa66e83d2c55a20a292fd1a3521a7d52a8
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Nov 6 11:30:19 2015 +0000
+
+    news
+
+commit ca0b8fb74b83842db840b09b9905230ceb881685
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Nov 3 23:18:04 2015 +0000
+
+    news
+
+commit b1c0b1525cd5e068d278ed5a57cdcf7ec320f488
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 22 23:18:45 2015 +0000
+
+    news
+
+commit 6fd5ff6b5c8ea1e6f2a25378c23cf8c7847d92ac
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 22 23:18:35 2015 +0000
+
+    .
+
+commit 1d65fca1a6e76c7cddb3e0dd9032899db9777f50
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 22 23:10:12 2015 +0000
+
+    .
+
+commit e65b5554cea80f1bcf7edb1117dce3352f0ac258
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 16 17:49:55 2015 +0000
+
+    refactoring
+
+commit dd341cc0e0133dd72630e170cfaee74bd30ddfb4
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 16 17:49:22 2015 +0000
+
+    refactoring
+
+commit db5686482d4c51a3a1f239213a8a440ad8872d3f
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 16 17:47:14 2015 +0000
+
+    debug-steps/whonix_build_twice: updated for Whonix 12 build script syntax
+
+commit 47d77e9eea0e065b0575df3b56e657ea1e9f593d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Fri Oct 16 17:46:26 2015 +0000
+
+    debug-steps/whonix_build_twice: added '--report true'
+
+commit 0f45d60eb5ba0f8ce49b208c93f82a1ff9053867
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 8 18:52:00 2015 +0000
+
+    news
+
+commit 5933341720ecd4ecc835e11a30cc23b69fc1a236
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Oct 8 11:48:52 2015 +0000
+
+    .
+
+commit 5104b6096ff54a24d6a06c99f3eb6316ff172bd0
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 30 16:02:46 2015 +0000
+
+    .
+
+commit 3cc82d1a99ba7bfd31917e975c9c97602f795e2e
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Sep 21 18:18:57 2015 +0000
+
+    news
+
+commit 26b47f3884db06f81335ac8da0107f320382340a
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Wed Sep 16 12:16:26 2015 +0000
+
+    news
+
+commit ab797d1b942ea6ede2b50f95b77346f5847cfc06
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 3 22:18:52 2015 +0200
+
+    .
+
+commit 4a4ebf84deba002b9fccd9187757319ea3c0a51d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Sep 3 22:18:11 2015 +0200
+
+    .
+
+commit 49e5e9e6ef20ab9e7b5b10ddf6ffaf4163281e6b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 27 13:11:27 2015 +0000
+
+    .
+
+commit 7e0613c38359e0a9e035a532ee83d7e4928932c7
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Thu Aug 27 13:08:20 2015 +0000
+
+    .
+
+commit 5946ffb1adc59b485156d92090006260771b082d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 21:50:08 2015 +0000
+
+    news
+
+commit ada73719c5d78851e99b2813a9e261aadac3f576
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 14:07:15 2015 +0000
+
+    .
+
+commit b6e4296d6d0f027100fb0fb73d2fa6afc7fc85f1
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 13:46:39 2015 +0000
+
+    .
+
+commit 88fd2187d10d4ef8878394c6f89a19a032125718
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 13:38:06 2015 +0000
+
+    .
+
+commit a035a773cbe0e7707a4bf5a429909498ab82529d
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Aug 25 13:37:32 2015 +0000
+
+    deleted:    release/migrate_to_stable_repository
+    deleted:    release/migrate_to_wheezy_repository
+
+commit 355bbdc22d17de37fb763e674face09d4dce2876
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 24 18:35:36 2015 +0000
+
+    .
+
+commit 1f4b5d1fd8b6cdb512a0d3f52fd31cd01229670b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 24 18:05:36 2015 +0000
+
+    .
+
+commit 47e6c1cb285da0aec0b5432a2d0a9d58bd470253
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 24 17:48:05 2015 +0000
+
+    .
+
+commit 7082bc36535c86e12b1eb9850b7a6c0120c04009
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Mon Aug 24 17:47:31 2015 +0000
+
+    bumped changelog version
+
 commit cbb0dfdcb2647dd764becb9cb749f63c437b9be5
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Mon Aug 24 17:44:33 2015 +0000
