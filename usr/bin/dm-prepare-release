@@ -156,7 +156,7 @@ libvirt_compress() {
    done
 
    ## TODO: add progress meter (using `pv`?)
-   sudo $SUDO_OPTS \
+   $SUDO_TO_USER \
       tar \
          --create \
          --verbose \
@@ -170,7 +170,7 @@ libvirt_compress() {
          --file "$(basename "$xz_archive")" \
          $filelist_base_name
 
-   sudo $SUDO_OPTS strip-nondeterminism "$xz_archive"
+   $SUDO_TO_USER strip-nondeterminism "$xz_archive"
 
    sync
 
@@ -216,7 +216,7 @@ Please donate! [C]
    ## --vsys needs to precede --eulafile.
 
    if [ "$vm_multiple" = "false" ]; then
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             export "$VMNAME" \
             --vsys "0" \
@@ -230,7 +230,7 @@ Please donate! [C]
             --version "${dist_build_version}" \
             --output "$binary_image_ova"
    else
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             export $vm_names_to_be_exported \
             --output "$binary_image_ova" \
@@ -265,14 +265,14 @@ Please donate! [C]
    ## A different --vmname is required, because $VMNAME does already exist
    ## in the list of imported VirtualBox machines.
    if [ "$vm_multiple" = "false" ]; then
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             import "$binary_image_ova" \
             --vsys "0" \
             --eula show \
             --vmname "$VMNAME-${dist_build_version}"
 
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             import "$binary_image_ova" \
             --vsys "0" \
@@ -280,7 +280,7 @@ Please donate! [C]
             --vmname "$VMNAME-${dist_build_version}" \
             --dry-run
    else
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             import "$binary_image_ova" \
             --vsys "0" \
@@ -290,7 +290,7 @@ Please donate! [C]
                --eula show \
                --vmname "Whonix-Workstation-${dist_build_version}" \
 
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          VBoxManage \
             import "$binary_image_ova" \
             --vsys "0" \
@@ -316,7 +316,7 @@ torrent_create() {
    ## Multi file webseeds do not work
    ##     https://trac.transmissionbt.com/ticket/4437
    ## (fixed upstream, but takes a while to propagate to Debian stable)
-   #sudo $SUDO_OPTS mktorrent \
+   #$SUDO_TO_USER mktorrent \
    #   --verbose \
    #   --announce="$TRACKERS" \
    #   --web-seed "https://download.${dist_upload_destination_site}/Whonix-Gateway-7.ova" \
@@ -329,7 +329,7 @@ torrent_create() {
 
    if [ "$dist_build_virtualbox" = "true" ]; then
       rm --force "$binary_image_ova_torrent"
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
@@ -340,7 +340,7 @@ torrent_create() {
 
    if [ "$dist_build_raw" = "true" ]; then
       rm --force "$libvirt_target_raw_xz_archive_torrent"
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
@@ -351,7 +351,7 @@ torrent_create() {
 
    if [ "$dist_build_qcow2" = "true" ]; then
       rm --force "$libvirt_target_qcow2_xz_archive_torrent"
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
@@ -362,7 +362,7 @@ torrent_create() {
 
    if [ "$dist_build_iso" = "true" ]; then
       rm --force "$binary_image_iso_torrent"
-      sudo $SUDO_OPTS \
+      $SUDO_TO_USER \
          mktorrent \
             --verbose \
             --announce="$TRACKERS" \
@@ -404,25 +404,25 @@ hashes_create_and_verify() {
       ## Using `basename` so we end up with relative paths in hash sums file.
 
       if [ "$dist_build_virtualbox" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_ova")" | sudo $SUDO_OPTS tee --append "$hash_file"
+         $SUDO_TO_USER $hash_sum "$(basename "$binary_image_ova")" | $SUDO_TO_USER tee --append "$hash_file"
       fi
 
       if [ "$dist_build_raw" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | sudo $SUDO_OPTS tee --append "$hash_file"
+         $SUDO_TO_USER $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | $SUDO_TO_USER tee --append "$hash_file"
       fi
 
       if [ "$dist_build_qcow2" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | sudo $SUDO_OPTS tee --append "$hash_file"
+         $SUDO_TO_USER $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | $SUDO_TO_USER tee --append "$hash_file"
       fi
 
       if [ "$dist_build_iso" = "true" ]; then
-         sudo $SUDO_OPTS $hash_sum "$(basename "$binary_image_iso")" | sudo $SUDO_OPTS tee --append "$hash_file"
+         $SUDO_TO_USER $hash_sum "$(basename "$binary_image_iso")" | $SUDO_TO_USER tee --append "$hash_file"
       fi
 
       sync
 
       ## Sanity test.
-      sudo $SUDO_OPTS $hash_sum --check "$hash_file"
+      $SUDO_TO_USER $hash_sum --check "$hash_file"
    done
 }
 
@@ -431,7 +431,7 @@ sign_cmd_gpg() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   sudo $SUDO_OPTS $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   $SUDO_TO_USER $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 }
 
 sign_cmd_signify() {
@@ -442,17 +442,17 @@ sign_cmd_signify() {
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   sudo $SUDO_OPTS signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
+   $SUDO_TO_USER signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
    ## Sanity test.
    test -f "$2"
 }
 
 verify_cmd_gpg() {
-   sudo $SUDO_OPTS $gpg_bin --verify-options show-notations --verify "$1"
+   $SUDO_TO_USER $gpg_bin --verify-options show-notations --verify "$1"
 }
 
 verify_cmd_signinfy() {
-   sudo $SUDO_OPTS signify-openbsd -V -p "$signify_public_key" -m "$1" -x "$2"
+   $SUDO_TO_USER signify-openbsd -V -p "$signify_public_key" -m "$1" -x "$2"
 }
 
 signatures_create() {
@@ -554,11 +554,11 @@ main() {
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+      $SUDO_TO_USER cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      $SUDO_TO_USER cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      sudo $SUDO_OPTS cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      $SUDO_TO_USER cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      $SUDO_TO_USER cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
    if [ "$dist_build_type_long" = "gateway" ]; then
