@@ -125,7 +125,7 @@ invocation of sudo. If a program runs as sudo and terminates, it does
 not modify the env of the calling program (shell).
 
 If you set SKIP_SCRIPTS+=" ... " as user and then use 'sudo -E' (which
-stands for preserve environment) that should work.
+stands for preserve environment (`--preserve-env`)) that should work.
 
 If you use one long command 'sudo SKIP_SCRIPTS+=" something something-else " derivative-maker ...'
 
