@@ -7,12 +7,21 @@ set -x
 set -e
 
 ### XXX: hardcoded
-grep_find_unicode_wrapper_output="$(~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper \
+folder=~/derivative-maker
+wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper
+
+test -d "$folder"
+test -x "$wrapper"
+
+grep_find_unicode_wrapper_output="$("$wrapper" \
    --recursive \
    --exclude=control.authcookie \
-   ~/derivative-maker)"
+   "$folder")" \
+   || true
 
-if [ ! "$grep_find_unicode_wrapper_output" = "" ]; then
+if [ "$grep_find_unicode_wrapper_output" = "" ]; then
+   true "INFO: grep_find_unicode_wrapper_output empty, good, OK."
+else
    true "\
 $0: ERROR: Unicode found!
 
