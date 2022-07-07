@@ -3,17 +3,22 @@
 ## Copyright (C) 2022 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+set -x
+set -e
+
 ### XXX: hardcoded
-if ~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper \
+grep_find_unicode_wrapper_output="$(~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper \
    --recursive \
    --exclude=control.authcookie \
-   ~/derivative-maker \
-; then
-   echo "\
+   ~/derivative-maker)"
+
+if [ ! "$grep_find_unicode_wrapper_output" = "" ]; then
+   true "\
 $0: ERROR: Unicode found!
 
 See also:
-https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754" >&2
+https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
+"
    exit 1
 fi
 
