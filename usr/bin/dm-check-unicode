@@ -6,6 +6,8 @@
 set -x
 set -e
 
+true "$0: START."
+
 ### XXX: hardcoded
 folder=~/derivative-maker
 wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper
