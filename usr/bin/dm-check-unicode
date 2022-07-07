@@ -15,6 +15,7 @@ wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-
 test -d "$folder"
 test -x "$wrapper"
 
+## overwrite with '|| true' because `grep` exits non-zero if no match was found.
 grep_find_unicode_wrapper_output="$("$wrapper" \
    --recursive \
    --exclude=control.authcookie \
