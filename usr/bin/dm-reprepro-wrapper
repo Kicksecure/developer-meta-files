@@ -33,7 +33,7 @@ reprepro_wrap() {
       true "INFO: Not added. Because is already registered with different checksums, ok."
       return 0
    fi
-   true "INFO: Added."
+   true "INFO: Ok."
 
    return "$reprepro_exit_code"
 }
