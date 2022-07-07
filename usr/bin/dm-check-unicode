@@ -9,7 +9,7 @@ if ~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unico
    --exclude=control.authcookie \
    ~/derivative-maker \
 ; then
-   error "unicode found!"
+   echo "$0: ERROR: Unicode found!" >&2
    exit 1
 fi
 
