@@ -1855,6 +1855,8 @@ main() {
 # pkg_descr_creator
 # exit
 
+dm-check-unicode
+
 if [ "$@" = "commit_filter" ]; then
    commit_filter
    exit 0

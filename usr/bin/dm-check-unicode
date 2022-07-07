@@ -1,0 +1,16 @@
+#!/bin/bash
+
+## Copyright (C) 2022 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+### XXX: hardcoded
+if ~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper \
+   --recursive \
+   --exclude=control.authcookie \
+   ~/derivative-maker \
+; then
+   error "unicode found!"
+   exit 1
+fi
+
+true "$0: END."
