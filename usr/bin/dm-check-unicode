@@ -9,7 +9,10 @@ if ~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unico
    --exclude=control.authcookie \
    ~/derivative-maker \
 ; then
-   echo "$0: ERROR: Unicode found!" >&2
+   echo "\
+$0: ERROR: Unicode found!
+See also:
+https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754" >&2
    exit 1
 fi
 
