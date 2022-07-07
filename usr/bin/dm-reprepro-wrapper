@@ -29,9 +29,11 @@ reprepro_wrap() {
       "$@" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
 
-   if echo "$reprepro_output" | grep "is already registered with different checksums!" ; then
+   if echo "$reprepro_output" | grep -q "is already registered with different checksums!" ; then
+      true "INFO: Not added. Because is already registered with different checksums, ok."
       return 0
    fi
+   true "INFO: Added."
 
    return "$reprepro_exit_code"
 }
