@@ -22,6 +22,8 @@ source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
+do_not_run_as_root_simple_test
+
 #target_vm="sys-whonix-dev"
 #target_vm="sys-whonix"
 
@@ -42,21 +44,21 @@ source_vm="$(qubesdb-read /name)"
 
 ## Get rid of the huge '.git' folder.
 rm -r -f "$binary_build_folder_dist/aptrepo_temp_copy/"
-$SUDO_TO_USER mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
-$SUDO_TO_USER cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
-$SUDO_TO_USER cp -r "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
+mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
+cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
+cp -r "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
 
-echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $dist_build_apt_codename main" > "$binary_build_folder_dist/whonix_repo_temp.list"
-cat "$binary_build_folder_dist/whonix_repo_temp.list"
+echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $dist_build_apt_codename main" > "$binary_build_folder_dist/derivative_repo_temp.list"
+cat "$binary_build_folder_dist/derivative_repo_temp.list"
 
 qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
-qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list"
-qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/whonix_repo_temp.list"
+qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/derivative_repo_temp.list"
+qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/derivative_repo_temp.list"
 
-qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/whonix_repo_temp.list"
+qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/derivative_repo_temp.list"
 qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/aptrepo_temp_copy/"
 
-qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/whonix_repo_temp.list /etc/apt/sources.list.d/whonix_repo_temp.list"
+qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/derivative_repo_temp.list /etc/apt/sources.list.d/derivative_repo_temp.list"
 
 qvm-run "$target_vm" "sudo rm -r -f /var/cache/aptrepo_temp_copy"
 qvm-run "$target_vm" "sudo cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"

@@ -26,11 +26,11 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 mount_vdi() {
    trap "error_handler_mount-vdi" ERR INT TERM
 
-   sync
+   $SUDO_TO_ROOT sync
 
    ## Ensure powered is off. Otherwise disk corruption is at high risk.
-   $SUDO_TO_USER VBoxManage controlvm "$VMNAME" poweroff || true
-   sync
+   VBoxManage controlvm "$VMNAME" poweroff || true
+   $SUDO_TO_ROOT sync
 
    ## Find name of .vdi file. New:
    local vdi_file
@@ -41,14 +41,15 @@ mount_vdi() {
    ## When restoring the VMClone to VM, the VDI may have another name.
 
    ## Folder has to exist to mount the image.
-   $SUDO_TO_USER mkdir --parents "$CHROOT_FOLDER"
-   sync
+   mkdir --parents "$CHROOT_FOLDER"
+   $SUDO_TO_ROOT sync
 
-   guestmount -o allow_other -a "$vdi_file" -m /dev/sda1 "$CHROOT_FOLDER"
-   sync
+   $SUDO_TO_ROOT guestmount -o allow_other -a "$vdi_file" -m /dev/sda1 "$CHROOT_FOLDER"
+   $SUDO_TO_ROOT sync
 }
 
 main() {
+   root_check
    if [ "$BARE_METAL" = "1" ]; then
       true "${green}INFO: Skipping script, because BARE_METAL=1: $BASH_SOURCE${reset}"
       exit 0

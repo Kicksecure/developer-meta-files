@@ -25,7 +25,9 @@ backup-raw-after-package-install() {
       exit 0
    fi
 
-   $SUDO_TO_USER cp "$binary_image_raw" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
+   do_not_run_as_root_simple_test
+
+   cp "$binary_image_raw" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
 }
 
 main() {

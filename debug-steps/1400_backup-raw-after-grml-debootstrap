@@ -30,15 +30,14 @@ source variables
 
 backup-raw-after-grml-debootstrap() {
    ## If derivative-maker is run with --fast1 switch.
-
-   root_check
-
    if [ "$dist_build_fast1" = "1" ]; then
       echo "${bold}${cyan}INFO: run with --fast1 switch, skipping $BASH_SOURCE. ${reset}"
       exit 0
    fi
 
-   $SUDO_TO_USER cp "$binary_image_raw" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-grml-debootstrap.raw"
+   do_not_run_as_root_simple_test
+
+   cp "$binary_image_raw" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-grml-debootstrap.raw"
 }
 
 main() {

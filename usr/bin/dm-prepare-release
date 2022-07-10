@@ -156,21 +156,20 @@ libvirt_compress() {
    done
 
    ## TODO: add progress meter (using `pv`?)
-   $SUDO_TO_USER \
-      tar \
-         --create \
-         --verbose \
-         --owner=0 --group=0 --numeric-owner \
-         --mode=go=rX,u+rw,a-s \
-         --sort=name \
-         --sparse \
-         --mtime='2015-10-21 00:00Z' \
-         --xz \
-         --directory="${dist_binary_build_folder}" \
-         --file "$(basename "$xz_archive")" \
-         $filelist_base_name
+   tar \
+      --create \
+      --verbose \
+      --owner=0 --group=0 --numeric-owner \
+      --mode=go=rX,u+rw,a-s \
+      --sort=name \
+      --sparse \
+      --mtime='2015-10-21 00:00Z' \
+      --xz \
+      --directory="${dist_binary_build_folder}" \
+      --file "$(basename "$xz_archive")" \
+      $filelist_base_name
 
-   $SUDO_TO_USER strip-nondeterminism "$xz_archive"
+   strip-nondeterminism "$xz_archive"
 
    sync
 
@@ -216,42 +215,40 @@ Please donate! [C]
    ## --vsys needs to precede --eulafile.
 
    if [ "$vm_multiple" = "false" ]; then
-      $SUDO_TO_USER \
-         VBoxManage \
-            export "$VMNAME" \
-            --vsys "0" \
-            --eulafile "$eulafile" \
+      VBoxManage \
+         export "$VMNAME" \
+         --vsys "0" \
+         --eulafile "$eulafile" \
+         --description "$description" \
+         --manifest \
+         --product "$VMNAME" \
+         --producturl "$producturl" \
+         --vendor "$vendor" \
+         --vendorurl "$vendorurl" \
+         --version "${dist_build_version}" \
+         --output "$binary_image_ova"
+   else
+      VBoxManage \
+         export $vm_names_to_be_exported \
+         --output "$binary_image_ova" \
+         --vsys '0' \
+            --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
             --description "$description" \
             --manifest \
-            --product "$VMNAME" \
-            --producturl "$producturl" \
-            --vendor "$vendor" \
-            --vendorurl "$vendorurl" \
+            --product "Whonix-Gateway" \
+            --producturl "https://www.${dist_upload_destination_site}/wiki/Whonix-Gateway" \
+            --vendor "Whonix" \
+            --vendorurl "https://www.${dist_upload_destination_site}" \
             --version "${dist_build_version}" \
-            --output "$binary_image_ova"
-   else
-      $SUDO_TO_USER \
-         VBoxManage \
-            export $vm_names_to_be_exported \
-            --output "$binary_image_ova" \
-            --vsys '0' \
-               --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
-               --description "$description" \
-               --manifest \
-               --product "Whonix-Gateway" \
-               --producturl "https://www.${dist_upload_destination_site}/wiki/Whonix-Gateway" \
-               --vendor "Whonix" \
-               --vendorurl "https://www.${dist_upload_destination_site}" \
-               --version "${dist_build_version}" \
-            --vsys '1' \
-               --eulafile "$binary_image_text" \
-               --description "$description" \
-               --manifest \
-               --product "Whonix-Workstation" \
-               --producturl "https://www.${dist_upload_destination_site}/wiki/Whonix-Workstation" \
-               --vendor "Whonix" \
-               --vendorurl "https://www.${dist_upload_destination_site}" \
-               --version "${dist_build_version}"
+         --vsys '1' \
+            --eulafile "$binary_image_text" \
+            --description "$description" \
+            --manifest \
+            --product "Whonix-Workstation" \
+            --producturl "https://www.${dist_upload_destination_site}/wiki/Whonix-Workstation" \
+            --vendor "Whonix" \
+            --vendorurl "https://www.${dist_upload_destination_site}" \
+            --version "${dist_build_version}"
    fi
 
    ## Only important for redistribution.
@@ -265,42 +262,38 @@ Please donate! [C]
    ## A different --vmname is required, because $VMNAME does already exist
    ## in the list of imported VirtualBox machines.
    if [ "$vm_multiple" = "false" ]; then
-      $SUDO_TO_USER \
-         VBoxManage \
-            import "$binary_image_ova" \
-            --vsys "0" \
-            --eula show \
-            --vmname "$VMNAME-${dist_build_version}"
+      VBoxManage \
+         import "$binary_image_ova" \
+         --vsys "0" \
+         --eula show \
+         --vmname "$VMNAME-${dist_build_version}"
 
-      $SUDO_TO_USER \
-         VBoxManage \
-            import "$binary_image_ova" \
-            --vsys "0" \
-            --eula accept \
-            --vmname "$VMNAME-${dist_build_version}" \
-            --dry-run
+      VBoxManage \
+         import "$binary_image_ova" \
+         --vsys "0" \
+         --eula accept \
+         --vmname "$VMNAME-${dist_build_version}" \
+         --dry-run
    else
-      $SUDO_TO_USER \
-         VBoxManage \
-            import "$binary_image_ova" \
-            --vsys "0" \
-               --eula show \
-               --vmname "Whonix-Gateway-${dist_build_version}" \
-            --vsys "1" \
-               --eula show \
-               --vmname "Whonix-Workstation-${dist_build_version}" \
+      VBoxManage \
+         import "$binary_image_ova" \
+         --vsys "0" \
+            --eula show \
+            --vmname "Whonix-Gateway-${dist_build_version}" \
+         --vsys "1" \
+            --eula show \
+            --vmname "Whonix-Workstation-${dist_build_version}" \
 
-      $SUDO_TO_USER \
-         VBoxManage \
-            import "$binary_image_ova" \
-            --vsys "0" \
-               --eula accept \
-               --vmname "Whonix-Gateway-${dist_build_version}" \
-               --dry-run \
-            --vsys "1" \
-               --eula accept \
-               --vmname "Whonix-Workstation-${dist_build_version}" \
-               --dry-run
+      VBoxManage \
+         import "$binary_image_ova" \
+         --vsys "0" \
+            --eula accept \
+            --vmname "Whonix-Gateway-${dist_build_version}" \
+            --dry-run \
+         --vsys "1" \
+            --eula accept \
+            --vmname "Whonix-Workstation-${dist_build_version}" \
+            --dry-run
    fi
 }
 
@@ -316,7 +309,7 @@ torrent_create() {
    ## Multi file webseeds do not work
    ##     https://trac.transmissionbt.com/ticket/4437
    ## (fixed upstream, but takes a while to propagate to Debian stable)
-   #$SUDO_TO_USER mktorrent \
+   #mktorrent \
    #   --verbose \
    #   --announce="$TRACKERS" \
    #   --web-seed "https://download.${dist_upload_destination_site}/Whonix-Gateway-7.ova" \
@@ -329,46 +322,42 @@ torrent_create() {
 
    if [ "$dist_build_virtualbox" = "true" ]; then
       rm --force "$binary_image_ova_torrent"
-      $SUDO_TO_USER \
-         mktorrent \
-            --verbose \
-            --announce="$TRACKERS" \
-            --web-seed "https://download.${dist_upload_destination_site}/ova/${dist_build_version}/$(basename "$binary_image_ova")" \
-            -o "$binary_image_ova_torrent" \
-            "$binary_image_ova"
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "https://download.${dist_upload_destination_site}/ova/${dist_build_version}/$(basename "$binary_image_ova")" \
+         -o "$binary_image_ova_torrent" \
+         "$binary_image_ova"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
       rm --force "$libvirt_target_raw_xz_archive_torrent"
-      $SUDO_TO_USER \
-         mktorrent \
-            --verbose \
-            --announce="$TRACKERS" \
-            --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive")" \
-            -o "$libvirt_target_raw_xz_archive_torrent" \
-            "$libvirt_target_raw_xz_archive"
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive")" \
+         -o "$libvirt_target_raw_xz_archive_torrent" \
+         "$libvirt_target_raw_xz_archive"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
       rm --force "$libvirt_target_qcow2_xz_archive_torrent"
-      $SUDO_TO_USER \
-         mktorrent \
-            --verbose \
-            --announce="$TRACKERS" \
-            --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$libvirt_target_qcow2_xz_archive")" \
-            -o "$libvirt_target_qcow2_xz_archive_torrent" \
-            "$libvirt_target_qcow2_xz_archive"
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$libvirt_target_qcow2_xz_archive")" \
+         -o "$libvirt_target_qcow2_xz_archive_torrent" \
+         "$libvirt_target_qcow2_xz_archive"
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
       rm --force "$binary_image_iso_torrent"
-      $SUDO_TO_USER \
-         mktorrent \
-            --verbose \
-            --announce="$TRACKERS" \
-            --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$binary_image_iso")" \
-            -o "$binary_image_iso_torrent" \
-            "$binary_image_iso"
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "https://download.${dist_upload_destination_site}/libvirt/${dist_build_version}/$(basename "$binary_image_iso")" \
+         -o "$binary_image_iso_torrent" \
+         "$binary_image_iso"
    fi
 
    ## Working.
@@ -404,25 +393,25 @@ hashes_create_and_verify() {
       ## Using `basename` so we end up with relative paths in hash sums file.
 
       if [ "$dist_build_virtualbox" = "true" ]; then
-         $SUDO_TO_USER $hash_sum "$(basename "$binary_image_ova")" | $SUDO_TO_USER tee --append "$hash_file"
+         $hash_sum "$(basename "$binary_image_ova")" | tee --append "$hash_file"
       fi
 
       if [ "$dist_build_raw" = "true" ]; then
-         $SUDO_TO_USER $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | $SUDO_TO_USER tee --append "$hash_file"
+         $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | tee --append "$hash_file"
       fi
 
       if [ "$dist_build_qcow2" = "true" ]; then
-         $SUDO_TO_USER $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | $SUDO_TO_USER tee --append "$hash_file"
+         $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
       fi
 
       if [ "$dist_build_iso" = "true" ]; then
-         $SUDO_TO_USER $hash_sum "$(basename "$binary_image_iso")" | $SUDO_TO_USER tee --append "$hash_file"
+         $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
       fi
 
       sync
 
       ## Sanity test.
-      $SUDO_TO_USER $hash_sum --check "$hash_file"
+      $hash_sum --check "$hash_file"
    done
 }
 
@@ -431,7 +420,7 @@ sign_cmd_gpg() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   $SUDO_TO_USER $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 }
 
 sign_cmd_signify() {
@@ -442,17 +431,17 @@ sign_cmd_signify() {
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   $SUDO_TO_USER signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
+   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
    ## Sanity test.
    test -f "$2"
 }
 
 verify_cmd_gpg() {
-   $SUDO_TO_USER $gpg_bin --verify-options show-notations --verify "$1"
+   $gpg_bin --verify-options show-notations --verify "$1"
 }
 
 verify_cmd_signinfy() {
-   $SUDO_TO_USER signify-openbsd -V -p "$signify_public_key" -m "$1" -x "$2"
+   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "$2"
 }
 
 signatures_create() {
@@ -550,15 +539,16 @@ signatures_verify() {
 }
 
 main() {
+   do_not_run_as_root_simple_test
    sanity_tests
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
-      $SUDO_TO_USER cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      $SUDO_TO_USER cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+      cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      $SUDO_TO_USER cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      $SUDO_TO_USER cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
    if [ "$dist_build_type_long" = "gateway" ]; then
