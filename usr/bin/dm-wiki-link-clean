@@ -122,5 +122,8 @@ fi
 if [ "$link_result_cleaned" = "http://" ]; then
    exit 0
 fi
+if [ "$link_result_cleaned" = "()" ]; then
+   exit 0
+fi
 
 echo "$link_result_cleaned"
