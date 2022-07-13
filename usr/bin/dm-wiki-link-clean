@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#set -x
+set -e
+
+## TODO: no root check
+
+## NOTE: does not support spaces
+replace_list=$(echo "\
+([https:// https://
+([http:// http://
+[https:// https://
+[http:// http://
+<ref>http:// http://
+<ref>https:// https://
+</ref>
+")
+
+link_result_cleaned="$1"
+if [ "$link_result_cleaned" = "" ]; then
+   echo "$0: ERROR: No link given!"
+   exit 1
+fi
+
+while read -r replace_config_line ; do
+   if [ "$replace_config_line" = "" ]; then
+      echo "ERROR! replace_config_line is empty!"
+      exit 1
+   fi
+
+   true "replace_config_line: '$replace_config_line'"
+   read -r first second <<< "$replace_config_line"
+
+   true "first: $first"
+   true "second: $second"
+
+   if [ "$first" = "" ]; then
+      echo "ERROR! first is empty!"
+      exit 1
+   fi
+   #if [ "$second" = "" ]; then
+      #echo "ERROR! second is empty!"
+      #exit 1
+   #fi
+
+   link_result_cleaned=$(echo "$link_result_cleaned" | LANG=C str_replace "$first" "$second" 2>/dev/null)
+done < <( echo "$replace_list" )
+
+echo "$link_result_cleaned"

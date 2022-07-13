@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#set -x
+set -e
+
+## TODO: no root check
+
+files_list=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
+
+## TODO
+#test -d "$folder"
+
+for file_name in $files_list ; do
+   true "file_name: '$file_name'"
+   test -r "$file_name"
+
+   web_links_list=$(dm-file-to-weblinks "$file_name")
+   for web_link_item in $web_links_list ; do
+      dm-wiki-link-clean "$web_link_item"
+   done
+
+done
