@@ -5,6 +5,12 @@ set -e
 
 ## TODO: no root check
 
+link_result_cleaned="$1"
+if [ "$link_result_cleaned" = "" ]; then
+   echo "$0: ERROR: No link given!"
+   exit 1
+fi
+
 ## NOTE: does not support spaces
 replace_list=$(echo "\
 ([https:// https://
@@ -13,14 +19,14 @@ replace_list=$(echo "\
 [http:// http://
 <ref>http:// http://
 <ref>https:// https://
+<code>http:// http://
+<code>https:// https://
+{{Code2|http:// http://
+{{Code2|https:// https://
 </ref>
+{{link|link=
+{{Link|link=
 ")
-
-link_result_cleaned="$1"
-if [ "$link_result_cleaned" = "" ]; then
-   echo "$0: ERROR: No link given!"
-   exit 1
-fi
 
 while read -r replace_config_line ; do
    if [ "$replace_config_line" = "" ]; then
@@ -45,5 +51,43 @@ while read -r replace_config_line ; do
 
    link_result_cleaned=$(echo "$link_result_cleaned" | LANG=C str_replace "$first" "$second" 2>/dev/null)
 done < <( echo "$replace_list" )
+
+while read -r replace_config_line ; do
+   if [ "$replace_config_line" = "" ]; then
+      echo "ERROR! replace_config_line is empty!"
+      exit 1
+   fi
+
+   true "replace_config_line: '$replace_config_line'"
+   read -r first second <<< "$replace_config_line"
+
+   true "first: $first"
+   true "second: $second"
+
+   if [ "$first" = "" ]; then
+      echo "ERROR! first is empty!"
+      exit 1
+   fi
+   #if [ "$second" = "" ]; then
+      #echo "ERROR! second is empty!"
+      #exit 1
+   #fi
+
+   link_result_cleaned=$(echo "$link_result_cleaned" | LANG=C str_replace "$first" "$second" 2>/dev/null)
+done < <( echo "$replace_list" )
+
+## NOTE: does not support spaces?
+grep_skip_fixed_string_list=$(echo "\
+|image=
+https://web.archive.org
+{{Stable
+{{project
+")
+
+for grep_skip_fixed_string_item in $grep_skip_fixed_string_list ; do
+   if echo "$link_result_cleaned" | grep --quiet --fixed-string --ignore-case "$grep_skip_fixed_string_item" ; then
+      exit 0
+   fi
+done
 
 echo "$link_result_cleaned"

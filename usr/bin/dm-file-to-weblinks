@@ -5,17 +5,6 @@ set -e
 
 ## TODO: no root check
 
-## NOTE: does not support spaces
-replace_list=$(echo "\
-([https:// https://
-([http:// http://
-[https:// https://
-[http:// http://
-<ref>http:// http://
-<ref>https:// https://
-</ref>
-")
-
 file_name="$1"
 test -r "$file_name"
 
@@ -27,13 +16,6 @@ tr -s '[:blank:]' '[\n*]' < "$file_name" | while IFS= read -r word; do
    fi
 
    if link_result_orig=$(echo "$word" | grep --fixed-string 'https://') ; then
-      if echo "$word" | grep --quiet --fixed-string '|image=' ; then
-         continue
-      fi
-      if echo "$word" | grep --quiet --fixed-string 'https://web.archive.org' ; then
-         continue
-      fi
       echo "$link_result_orig"
    fi
 done
-
