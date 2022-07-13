@@ -33,41 +33,7 @@ tr -s '[:blank:]' '[\n*]' < "$file_name" | while IFS= read -r word; do
       if echo "$word" | grep --quiet --fixed-string 'https://web.archive.org' ; then
          continue
       fi
-
-      #echo "orig: $link_result_orig"
-
-      link_result_cleaned="$link_result_orig"
-
-      if [ "$link_result_cleaned" = "" ]; then
-         error
-      fi
-
-      while read -r replace_config_line ; do
-         if [ "$replace_config_line" = "" ]; then
-            echo "ERROR! replace_config_line is empty!"
-            exit 1
-         fi
-
-         true "replace_config_line: '$replace_config_line'"
-         read -r first second <<< "$replace_config_line"
-
-         true "first: $first"
-         true "second: $second"
-
-         if [ "$first" = "" ]; then
-            echo "ERROR! first is empty!"
-            exit 1
-         fi
-         #if [ "$second" = "" ]; then
-            #echo "ERROR! second is empty!"
-            #exit 1
-         #fi
-
-         link_result_cleaned=$(echo "$link_result_cleaned" | LANG=C str_replace "$first" "$second" 2>/dev/null)
-      done < <( echo "$replace_list" )
-
-      echo "clean: '$link_result_cleaned'"
-
+      echo "$link_result_orig"
    fi
 done
 
