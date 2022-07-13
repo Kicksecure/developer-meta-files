@@ -10,8 +10,15 @@ files_list=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
 ## TODO
 #test -d "$folder"
 
+total=0
 for file_name in $files_list ; do
-   echo "file_name: '$(basename "$file_name")'"
+   total=$(( total + 1 ))
+done
+
+counter=0
+for file_name in $files_list ; do
+   counter=$(( counter + 1 ))
+   echo "$counter / $total | file_name: '$(basename "$file_name")'"
    test -r "$file_name"
 
    web_links_list=$(dm-file-to-weblinks "$file_name")
@@ -20,7 +27,22 @@ for file_name in $files_list ; do
       if [ "$web_link_cleaned" = "" ]; then
          continue
       fi
-      echo "$web_link_cleaned"
+
+      #echo "$web_link_cleaned"
+
+      ## Thanks to:
+      ## Dennis Williamson
+      ## https://stackoverflow.com/users/26428/dennis-williamson
+      ## https://stackoverflow.com/a/3184819/2605155
+      regex='(https?)://[-[:alnum:]\+&@#/%?=~_|!:,.;]*[-[:alnum:]\+&@#/%=~_|]'
+      string="$web_link_cleaned"
+      if [[ $string =~ $regex ]]
+      then
+         true "Link valid: $web_link_cleaned"
+      else
+         echo "Link not valid: $web_link_cleaned"
+      fi
+
    done
    echo ""
 
