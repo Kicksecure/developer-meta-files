@@ -18,7 +18,7 @@ done
 counter=0
 for file_name in $files_list ; do
    counter=$(( counter + 1 ))
-   echo "$counter / $total | file_name: '$(basename "$file_name")'"
+   #echo "$counter / $total | file_name: '$(basename "$file_name")'"
    test -r "$file_name"
 
    web_links_list=$(dm-file-to-weblinks "$file_name")
@@ -40,10 +40,10 @@ for file_name in $files_list ; do
       then
          true "Link valid: $web_link_cleaned"
       else
-         echo "Link not valid: $web_link_cleaned"
+         echo "$counter / $total | file_name: '$(basename "$file_name")' | Link not valid: $web_link_cleaned"
       fi
 
    done
-   echo ""
+   #echo ""
 
 done
