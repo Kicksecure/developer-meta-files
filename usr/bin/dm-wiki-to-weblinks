@@ -5,6 +5,8 @@ set -e
 
 ## TODO: no root check
 
+## TODO
+files_list=~/sourcesown/wiki-backup/whonix-wiki-backup/*.mw
 files_list=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
 
 ## TODO
