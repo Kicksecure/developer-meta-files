@@ -1,3 +1,71 @@
+commit 44db23fc27e43227b721a60d7a1a79408d2130c0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 08:22:39 2022 -0400
+
+    .
+
+commit 911a2925481342e99214bd7470a7d71fc1390c59
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 07:27:28 2022 -0400
+
+    .
+
+commit 51c26e6cb0fc617a66247d8541c4a06ec947142c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 07:11:36 2022 -0400
+
+    .
+
+commit 42236ebe5d7417ab832e648a7bfe3c67da06f0d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 06:39:24 2022 -0400
+
+    .
+
+commit e366fbb424fa3d2d049fcac57e0504db2effe4eb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 06:33:24 2022 -0400
+
+    .
+
+commit 207b9ef70c5aca928488cb5209fc4af9c4499a15
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 06:00:25 2022 -0400
+
+    .
+
+commit 81a85ba9207d901c53f38e33431f1c42e54c4b9d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 05:39:13 2022 -0400
+
+    .
+
+commit fca22d59d58829ce4bcb5089956b408a8a75c5e3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 04:40:00 2022 -0400
+
+    add scripts to extract all external links from wiki
+    
+    `dm-wiki-to-weblinks` / `dm-file-to-weblinks` / `dm-wiki-link-clean`
+
+commit e9bf843e5fe9ce1188c48f7ee8155390c9d7ecb5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 04:28:30 2022 -0400
+
+    .
+
+commit 9af165845206424b5eea9adc98ed7cf5c0c2a8e7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 10 08:36:17 2022 -0400
+
+    .
+
+commit 55b3f77f81d093a80a4635d1dec8a7967cd733ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 7 17:40:00 2022 -0400
+
+    bumped changelog version
+
 commit 9a5d2da2beb578aabc40ea459cfdda87045e14bf
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Jul 7 16:27:22 2022 -0400
