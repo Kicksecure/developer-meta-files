@@ -13,8 +13,17 @@ fi
 
 ## NOTE: does not support spaces
 replace_list=$(echo "\
+<pre>http:// http://
+<pre>https:// https://
+<nowiki>http:// http://
+<nowiki>https:// https://
+<u>[http:// http://
+<u>[https:// https://
+\"[https:// https://
 ([https:// https://
 ([http:// http://
+(http:// http://
+(https:// https://
 [https:// https://
 [http:// http://
 <ref>http:// http://
@@ -82,6 +91,15 @@ grep_skip_fixed_string_list=$(echo "\
 https://web.archive.org
 {{Stable
 {{project
+tor+https
+tor+http
+https://www.gnu.org/licenses
+load.php
+?useformat=mobile
+?action=purge
+https://www.whonix.org
+https://www.kicksecure.com
+GPLv3
 ")
 
 for grep_skip_fixed_string_item in $grep_skip_fixed_string_list ; do
@@ -89,5 +107,11 @@ for grep_skip_fixed_string_item in $grep_skip_fixed_string_list ; do
       exit 0
    fi
 done
+
+## '<ref name=f_secure>https://blog.f-secure.com/cold-boot-attacks/'
+if echo "$link_result_cleaned" | grep --quiet --fixed-string --ignore-case "name=" ; then
+   longest_match_after_character=">"
+   link_result_cleaned="${link_result_cleaned#*$longest_match_after_character}"
+fi
 
 echo "$link_result_cleaned"

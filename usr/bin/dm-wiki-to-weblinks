@@ -11,12 +11,17 @@ files_list=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
 #test -d "$folder"
 
 for file_name in $files_list ; do
-   true "file_name: '$file_name'"
+   echo "file_name: '$(basename "$file_name")'"
    test -r "$file_name"
 
    web_links_list=$(dm-file-to-weblinks "$file_name")
    for web_link_item in $web_links_list ; do
-      dm-wiki-link-clean "$web_link_item"
+      web_link_cleaned=$(dm-wiki-link-clean "$web_link_item")
+      if [ "$web_link_cleaned" = "" ]; then
+         continue
+      fi
+      echo "$web_link_cleaned"
    done
+   echo ""
 
 done
