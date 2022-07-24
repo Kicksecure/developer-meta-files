@@ -214,6 +214,20 @@ Please donate! [C]
 
    ## --vsys needs to precede --eulafile.
 
+   ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
+   TAR_OPTIONS="\
+      $TAR_OPTIONS
+      --owner=0 --group=0 --numeric-owner \
+      --mode=go=rX,u+rw,a-s \
+      --sort=name \
+      --sparse \
+      --mtime='2015-10-21 00:00Z' \
+      --xz \
+      "
+   export TAR_OPTIONS
+   XZ_OPT="$XZ_OPT -9"
+   export XZ_OPT
+
    if [ "$vm_multiple" = "false" ]; then
       VBoxManage \
          export "$VMNAME" \
