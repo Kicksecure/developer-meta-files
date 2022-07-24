@@ -1,3 +1,17 @@
+commit 428fecb18ecd4a0b1085a8e58ea26bfeed2ce466
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 24 07:26:10 2022 -0400
+
+    try higher compression of VirtualBox `.ova` images
+    
+    https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
+
+commit 1677ee15c6960549d680373a9a1ed08b04110725
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 13 08:27:34 2022 -0400
+
+    bumped changelog version
+
 commit 44db23fc27e43227b721a60d7a1a79408d2130c0
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jul 13 08:22:39 2022 -0400
