@@ -24,8 +24,10 @@ if [ "$(id -u)" = "0" ]; then
    exit 1
 fi
 
-true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"
-read temp
+if [ ! "$build_upload_noninteractive" = "true" ]; then
+   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary github.${reset}"
+   read temp
+fi
 
 pushd ~/sourcesown/canary/
 git push github-kicksecure master
