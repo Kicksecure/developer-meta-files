@@ -35,8 +35,11 @@ popd
 
 for upload_location in root@whonix.org root@kicksecure.com ; do
 
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary --dry-run.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary --dry-run.${reset}"
+      read temp
+   fi
+
    true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
    rsync \
       --dry-run \
@@ -50,8 +53,10 @@ for upload_location in root@whonix.org root@kicksecure.com ; do
       "$binary_build_folder_dist/canary/canary.txt.embed.sig" \
       "${upload_location}:/var/rsync/developer-meta-files/canary"
 
-   true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
-   read temp
+   if [ ! "$build_upload_noninteractive" = "true" ]; then
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue canary.${reset}"
+      read temp
+   fi
 
    true "${cyan}INFO $BASH_SOURCE: Uploading canary...${reset}"
    rsync \
