@@ -5,12 +5,13 @@ set -e
 
 ## TODO: no root check
 
-## TODO
-files_list=~/sourcesown/wiki-backup/whonix-wiki-backup/*.mw
-files_list=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
+test -d ~/sourcesown/wiki-backup/kicksecure-wiki-backup
+test -d ~/sourcesown/wiki-backup/whonix-wiki-backup
 
-## TODO
-#test -d "$folder"
+files_list=""
+files_list+=~/sourcesown/wiki-backup/kicksecure-wiki-backup/*.mw
+files_list+=" "
+files_list+=~/sourcesown/wiki-backup/whonix-wiki-backup/*.mw
 
 total=0
 for file_name in $files_list ; do
