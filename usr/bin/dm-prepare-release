@@ -553,7 +553,6 @@ signatures_verify() {
 }
 
 main() {
-   do_not_run_as_root_simple_test
    sanity_tests
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"

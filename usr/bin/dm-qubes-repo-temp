@@ -22,8 +22,6 @@ source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
-do_not_run_as_root_simple_test
-
 #target_vm="sys-whonix-dev"
 #target_vm="sys-whonix"
 
