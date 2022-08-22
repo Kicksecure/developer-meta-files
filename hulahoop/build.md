@@ -46,7 +46,7 @@ Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt i
 
 # Tor Browser Version Setting #
 
-Tor Browser Version: If needed in the future, a builder could set `tbb_version="8.5.5" `, i.e. instructing `tb-updater` to download Tor Browser version `8.5.5`. This can be useful because, for example `tb-updater` for the Whonix `15.0.0.4.9` build pointed a hardcoded Tor Browser version `8.5.4` which was no longer available for download at time of the build which resulted in the build failing.
+Tor Browser Version: If needed in the future, a builder could set `tbb_version="8.5.5" `, i.e. instructing `tb-updater` to download Tor Browser version `8.5.5`. This can be useful because, for example `tb-updater` for the Whonix `15.0.0.4.9` build pointed hardcoded Tor Browser version `8.5.4` which was no longer available for download at time of the build which resulted in the build failing.
 
 Example usage...
 
