@@ -83,47 +83,12 @@ root@Debian-98-stretch-64-minimal (ED25519)
 
 # SKIP_SCRIPTS #
 
-Patrick:
-
-I forgot how the script looks but the general answer is yes, the
-SKIP_SCRIPTS mechanism works too, if done right.
-
 ```
 SKIP_SCRIPTS+=" ... "
 ```
 
-is different than
-
 ```
-SKIP_SCRIPTS+=" ... "
-```
-
-If you set env var SKIP_SCRIPTS as root with sudo, it's lost at the next
-invocation of sudo. If a program runs as and terminates, it does
-not modify the env of the calling program (shell).
-
-If you set SKIP_SCRIPTS+=" ... " as user and then use '-E' (which
-stands for preserve environment (`--preserve-env`)) that should work.
-
-If you use one long command 'SKIP_SCRIPTS+=" something something-else " derivative-maker ...'
-
-starting bash:
-
-```
-$ SKIP_SCRIPTS+=" a " bash
-$ SKIP_SCRIPTS+=" a " SKIP_SCRIPTS+=" b " bash
-```
-
-but env var SKIP_SCRIPTS is empty.
-
-Limitation of linux/posix/shell/bash/whomever to blame.
-
-I don't recommend 'SKIP_SCRIPTS+='. The += syntax is a bash
-built-in feature for variables. It's not a linux shell thing.
-
-```
-SKIP_SCRIPTS+=" a "
-SKIP_SCRIPTS+=" b "
+export SKIP_SCRIPTS
 ```
 
 # Tor Browser Version Setting #
