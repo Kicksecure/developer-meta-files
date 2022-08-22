@@ -52,8 +52,6 @@ dm-upload-images --build --target qcow2 --flavor whonix-workstation-xfce
 * (server fingerprint: `256 SHA256:NuvDfRYfQiX4MeQZbENPbaenSKatJ2Lwrrmi78jSZtg root@Debian-105-buster-64-minimal (ED25519)`)
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
-16.0.5.4 and above:
-
 ```
 dm-upload-images --build --target qcow2 --flavor kicksecure-xfce
 ```
