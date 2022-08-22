@@ -93,7 +93,12 @@ export SKIP_SCRIPTS
 
 # Tor Browser Version Setting #
 
-Tor Browser Version: We are setting ` tbb_version="8.5.5" `, i.e. instructing tb-updater to download Tor Browser version `8.5.5` because Whonix `15.0.0.4.9` points to a tb-updater version that hardcodes Tor Browser version `8.5.4` which is no longer available for download which would make the build fail. This version number might need to be updated. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
+Tor Browser Version: If needed in the future, a builder could set `tbb_version="8.5.5" `, i.e. instructing `tb-updater` to download Tor Browser version `8.5.5`. This can be useful because, for example `tb-updater` for the Whonix `15.0.0.4.9` build pointed a hardcoded Tor Browser version `8.5.4` which was no longer available for download at time of the build which resulted in the build failing.
+
+Example usage...
+
+Note: The version number `8.5.5` needs to be updated if needed. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
+
 
 ```
 tbb_version="8.5.5" ~/derivative-maker/derivative-maker --flavor whonix-workstation-xfce --target qcow2 --build
