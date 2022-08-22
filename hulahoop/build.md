@@ -1,4 +1,4 @@
-# build #
+# Build #
 
 Setup build machine according to pages above then run the following commands to create builds:
 
