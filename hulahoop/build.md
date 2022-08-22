@@ -23,16 +23,7 @@ Optionally add `--connection onion` to force fetching packages from Onion server
 
 For Kicksecure replace `whonix-gateway-xfce` with: `kicksecure-xfce` / `kicksecure-cli`
 
-# gpg #
-
-* https://github.com/jessfraz/dotfiles/blob/master/.gnupg/gpg-agent.conf
-* https://www.gnupg.org/documentation/manuals/gnupg/Agent-Options.html
-
-Increase GPG timeout limit to avoid signing failure. Password rentry required after compression. Press 'c' to ignore and continue the signing process during the prepare release step:
-
-```
-echo -e "pinentry-program /usr/bin/pinentry-gnome3\nno-grab\ndefault-cache-ttl 18000\nmax-cache-ttl 86400\nignore-cache-for-signing\npinentry-timeout 86400" | tee ~/.gnupg/gpg-agent.conf
-```
+# Sign and Compress #
 
 Run command below to sign and compress. Btw Gateway prepare release command does nothing as expected and the Workstation prepare release command will do everything (both gw and ws):
 
