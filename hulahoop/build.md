@@ -34,14 +34,6 @@ echo -e "pinentry-program /usr/bin/pinentry-gnome3\nno-grab\ndefault-cache-ttl 1
 
 Run command below to sign and compress. Btw Gateway prepare release command does nothing as expected and the Workstation prepare release command will do everything (both gw and ws):
 
-16.0.5.3:
-
-```
-~/derivative-maker/packages/kicksecure/developer-meta-files/release/prepare_release --build --target qcow2 --flavor whonix-workstation-xfce
-```
-
-16.0.5.4 and above:
-
 ```
 dm-prepare-release --build --target qcow2 --flavor whonix-workstation-xfce
 ```
@@ -50,14 +42,6 @@ dm-prepare-release --build --target qcow2 --flavor whonix-workstation-xfce
 
 * (server fingerprint: `SHA256:tsvKWEuUwbP0vx+vrePlMqbC4qUXn5fscrm/lZLhVrE`)
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
-
-16.0.5.3:
-
-```
-~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor whonix-workstation-xfce
-```
-
-16.0.5.4 and above:
 
 ```
 dm-upload-images --build --target qcow2 --flavor whonix-workstation-xfce
@@ -68,12 +52,6 @@ dm-upload-images --build --target qcow2 --flavor whonix-workstation-xfce
 * (server fingerprint: `256 SHA256:NuvDfRYfQiX4MeQZbENPbaenSKatJ2Lwrrmi78jSZtg root@Debian-105-buster-64-minimal (ED25519)`)
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
-16.0.5.3:
-
-```
-~/derivative-maker/packages/kicksecure/developer-meta-files/release/upload_images --build --target qcow2 --flavor kicksecure-xfce
-```
-
 16.0.5.4 and above:
 
 ```
@@ -81,6 +59,7 @@ dm-upload-images --build --target qcow2 --flavor kicksecure-xfce
 ```
 
 # Upload to sf.net #
+
 Deprecated!
 
 Don't run this script as root. Type sf.net password when prompted:
@@ -92,6 +71,7 @@ export server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-
 `export server` is also deprecated.
 
 # ssh keys #
+
 Creating SSH server pub key via cli (can be also done manually by saving th contents in a .pub file). May need to delete `~/.ssh/known_hosts` if previous attempts failed. This step is not necessary because the keys are saved in the backed up `.ssh`:
 
 ```
@@ -149,6 +129,7 @@ SKIP_SCRIPTS+=" b "
 ```
 
 # Tor Browser Version Setting #
+
 Tor Browser Version: We are setting ` tbb_version="8.5.5" `, i.e. instructing tb-updater to download Tor Browser version `8.5.5` because Whonix `15.0.0.4.9` points to a tb-updater version that hardcodes Tor Browser version `8.5.4` which is no longer available for download which would make the build fail. This version number might need to be updated. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
 
 ```

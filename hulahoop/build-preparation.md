@@ -31,6 +31,7 @@ signify-openbsd -n -G -p keyname.pub -s keyname.sec
 Restore folder from backup in VM home dir and rename `signify` -> `.signify`
 
 # ssh key generation #
+
 Generating a SSH public key (only needed once initially):
 
 ```
@@ -52,16 +53,6 @@ chmod -R og-rwx .ssh
 ```
 
 # source code updates #
-In future, source code can be updated as per:
-
-16.0.5.3:
-
-
-```
-~/derivative-maker/packages/kicksecure/developer-meta-files/debug-steps/git-tag-checkout-latest
-```
-
-16.0.5.4:
 
 If developer-meta-packages is already installed:
 
