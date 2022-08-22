@@ -44,10 +44,21 @@ Restore folder from backup in VM home dir and rename `signify` -> `.signify`
 
 # ssh key generation #
 
-Generating a SSH public key (only needed once initially):
+Generating a SSH public key (only needed once initially!):
 
 ```
 ssh-keygen -t ed25519
+```
+
+Creating SSH server pub key via cli (can be also done manually by saving the contents in a `.pub` file). May need to delete `~/.ssh/known_hosts` if previous attempts failed. This step is not necessary because the keys are saved in the backed up `.ssh`:
+
+```
+ssh-keygen -lf ssh_host_ed25519_key.pub
+```
+
+```
+256 SHA256:tsvKWEuUwbP0vx+vrePlMqbC4qUXn5fscrm/lZLhVrE
+root@Debian-98-stretch-64-minimal (ED25519)
 ```
 
 # Install rsync and SSH to upload #
