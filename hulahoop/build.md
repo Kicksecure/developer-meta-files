@@ -10,11 +10,11 @@ ls -la ~/derivative-maker/build-steps.d/
 Setup build machine according to pages above then run the following commands to create builds:
 
 ```
-sudo ./derivative-maker --flavor whonix-gateway-xfce --build --arch amd64 --repo true --target qcow2
+./derivative-maker --flavor whonix-gateway-xfce --build --arch amd64 --repo true --target qcow2
 ```
 
 ```
-sudo SKIP_SCRIPTS+=" 1100_prepare-build-machine 1200_create-debian-packages " ./derivative-maker --flavor whonix-workstation-xfce --build --arch amd64 --repo true --target qcow2
+SKIP_SCRIPTS+=" 1100_prepare-build-machine 1200_create-debian-packages " ./derivative-maker --flavor whonix-workstation-xfce --build --arch amd64 --repo true --target qcow2
 ```
 
 Optionally add `--connection onion` to force fetching packages from Onion servers.
@@ -89,7 +89,7 @@ I forgot how the script looks but the general answer is yes, the
 SKIP_SCRIPTS mechanism works too, if done right.
 
 ```
-sudo SKIP_SCRIPTS+=" ... "
+SKIP_SCRIPTS+=" ... "
 ```
 
 is different than
@@ -99,26 +99,26 @@ SKIP_SCRIPTS+=" ... "
 ```
 
 If you set env var SKIP_SCRIPTS as root with sudo, it's lost at the next
-invocation of sudo. If a program runs as sudo and terminates, it does
+invocation of sudo. If a program runs as and terminates, it does
 not modify the env of the calling program (shell).
 
-If you set SKIP_SCRIPTS+=" ... " as user and then use 'sudo -E' (which
+If you set SKIP_SCRIPTS+=" ... " as user and then use '-E' (which
 stands for preserve environment (`--preserve-env`)) that should work.
 
-If you use one long command 'sudo SKIP_SCRIPTS+=" something something-else " derivative-maker ...'
+If you use one long command 'SKIP_SCRIPTS+=" something something-else " derivative-maker ...'
 
 starting bash:
 
 ```
-$ sudo SKIP_SCRIPTS+=" a " bash
-$ sudo SKIP_SCRIPTS+=" a " SKIP_SCRIPTS+=" b " bash
+$ SKIP_SCRIPTS+=" a " bash
+$ SKIP_SCRIPTS+=" a " SKIP_SCRIPTS+=" b " bash
 ```
 
 but env var SKIP_SCRIPTS is empty.
 
-Limitation of linux/posix/shell/bash/sudo whomever to blame.
+Limitation of linux/posix/shell/bash/whomever to blame.
 
-I don't recommend 'sudo SKIP_SCRIPTS+='. The += syntax is a bash
+I don't recommend 'SKIP_SCRIPTS+='. The += syntax is a bash
 built-in feature for variables. It's not a linux shell thing.
 
 ```
@@ -131,5 +131,5 @@ SKIP_SCRIPTS+=" b "
 Tor Browser Version: We are setting ` tbb_version="8.5.5" `, i.e. instructing tb-updater to download Tor Browser version `8.5.5` because Whonix `15.0.0.4.9` points to a tb-updater version that hardcodes Tor Browser version `8.5.4` which is no longer available for download which would make the build fail. This version number might need to be updated. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
 
 ```
-sudo tbb_version="8.5.5" ~/derivative-maker/derivative-maker --flavor whonix-workstation-xfce --target qcow2 --build
+tbb_version="8.5.5" ~/derivative-maker/derivative-maker --flavor whonix-workstation-xfce --target qcow2 --build
 ```
