@@ -25,6 +25,8 @@ SKIP_SCRIPTS+=" 1100_prepare-build-machine 1200_create-debian-packages " ./deriv
 
 Deprecated!
 
+sourceforge is currently not in use.
+
 Don't run this script as root. Type sf.net password when prompted:
 
 ```
@@ -32,3 +34,19 @@ export server="hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-
 ```
 
 `export server` is also deprecated.
+
+Upload single file to SSH server:
+
+```
+ssh hulahoop,whonix-kvm@frs.sourceforge.net "/bin/bash -i"
+```
+
+Verify server fingerprint:
+
+`SHA256:QAAxYkf0iI/tc9oGa0xSsVOAzJBZstcO8HqGKfjpxcY`
+
+Enter sf.net password
+
+```
+scp [$file in /home/user] hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt
+```

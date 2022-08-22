@@ -90,25 +90,3 @@ Otherwise:
 ```
 
 Output of above script needs to be read and understood for security and reliability.
-
-# sourceforge upload #
-
-Deprecated!
-
-sourceforge is currently not in use.
-
-Upload single file to SSH server:
-
-```
-ssh hulahoop,whonix-kvm@frs.sourceforge.net "/bin/bash -i"
-```
-
-Verify server fingerprint:
-
-`SHA256:QAAxYkf0iI/tc9oGa0xSsVOAzJBZstcO8HqGKfjpxcY`
-
-Enter sf.net password
-
-```
-scp [$file in /home/user] hulahoop,whonix-kvm@frs.sourceforge.net:/home/frs/project/whonix-kvm/libvirt
-```
