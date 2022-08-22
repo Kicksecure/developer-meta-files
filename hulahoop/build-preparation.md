@@ -54,7 +54,7 @@ chmod -R og-rwx .ssh
 
 # source code updates #
 
-If developer-meta-packages is already installed:
+If package `developer-meta-packages` is already installed:
 
 ```
 dm-git-tag-checkout-latest
