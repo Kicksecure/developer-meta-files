@@ -12,7 +12,7 @@ For Kicksecure replace `whonix-gateway-xfce` with: `kicksecure-xfce` / `kicksecu
 
 # Sign and Compress #
 
-Run command below to sign and compress. Btw Whonix-Gateway prepare release command does nothing as expected and the Workstation prepare release command will do everything (both gateway and workstation):
+Run command below to sign and compress.
 
 ```
 dm-prepare-release --build --target qcow2 --flavor kicksecure-xfce
@@ -21,6 +21,8 @@ dm-prepare-release --build --target qcow2 --flavor kicksecure-xfce
 ```
 dm-prepare-release --build --target qcow2 --flavor whonix-workstation-xfce
 ```
+
+Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt images.
 
 # Upload Command
 
