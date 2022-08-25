@@ -26,8 +26,7 @@ main() {
    "$dist_source_help_steps_folder/mount-raw"
    #"$dist_source_help_steps_folder/prevent-daemons-from-starting"
 
-   export dist_chroot_mount_resolv_conf="0"
-   "$dist_source_help_steps_folder/chroot-raw"
+   dist_chroot_mount_resolv_conf="0" "$dist_source_help_steps_folder/chroot-raw"
 
    sync
 

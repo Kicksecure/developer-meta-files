@@ -51,8 +51,7 @@ main() {
    "$dist_source_help_steps_folder"/prevent-daemons-from-starting || true
 
    ## Networking should be available. Otherwise use the following.
-   #export dist_chroot_mount_resolv_conf="0"
-
+   #export dist_chroot_mount_resolv_conf="0" "$dist_source_help_steps_folder"/chroot-raw
    "$dist_source_help_steps_folder"/chroot-raw
 
    sync
