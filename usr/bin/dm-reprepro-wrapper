@@ -17,9 +17,16 @@ VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ~/derivative-maker/help-steps/pre
-source ~/derivative-maker/help-steps/colors
-source ~/derivative-maker/help-steps/variables
+## XXX
+if test -d "$dist_source_help_steps_folder" ; then
+   source "$dist_source_help_steps_folder/pre"
+   source "$dist_source_help_steps_folder/colors"
+   source "$dist_source_help_steps_folder/variables"
+else
+   source ~/derivative-maker/help-steps/pre
+   source ~/derivative-maker/help-steps/colors
+   source ~/derivative-maker/help-steps/variables
+fi
 
 reprepro_wrap() {
    reprepro_exit_code="0"
