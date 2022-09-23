@@ -10,9 +10,7 @@ cd ~/derivative-maker
 
 ## NOTE: does not support spaces
 replace_list=$(echo "\
-git-tag-checkout-latest dm-git-tag-checkout-latest
-reprepro-wrapper dm-reprepro-wrapper
-packaging-helper-script dm-packaging-helper-script
+D_FORTIFY_SOURCE=2 D_FORTIFY_SOURCE=3
 ")
 
 # total=0
