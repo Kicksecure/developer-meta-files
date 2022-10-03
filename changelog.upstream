@@ -1,3 +1,17 @@
+commit fe409cb87340d4bccc9d006cdf1a778deaaacb0f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Oct 3 08:08:20 2022 -0400
+
+    exclude files from unicode check
+    
+    https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754/17
+
+commit 4d962dc80342a3be691399b081065f5a42c79edd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 24 09:21:47 2022 -0400
+
+    bumped changelog version
+
 commit b4e1d82a1a15e9d7696f8a5c8878025b5770af29
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Sep 24 09:19:49 2022 -0400
