@@ -16,9 +16,19 @@ test -d "$folder"
 test -x "$wrapper"
 
 ## overwrite with '|| true' because `grep` exits non-zero if no match was found.
+##
+## Using because a real name contains a special character.
+## XXX: This is clearly a non-ideal solution but fixing this is an issue for
+##      whole Free and Open Source community. See also:
+##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
+## --exclude=LICENSE
+## --exclude=lkrg-openrc.sh
 grep_find_unicode_wrapper_output="$("$wrapper" \
    --recursive \
    --exclude=control.authcookie \
+   --exclude=control.authcookie \
+   --exclude=LICENSE \
+   --exclude=lkrg-openrc.sh \
    "$folder")" \
    || true
 
