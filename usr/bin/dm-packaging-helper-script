@@ -790,27 +790,24 @@ pkg_git_remotes_add() {
 
       #git remote add     gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
       #git remote set-url gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
-
-      git remote rm github-kicksecure || true
-      git remote rm gitlab-kicksecure || true
    elif [ "$project_name_short_lowercase" = "kicksecure" ]; then
       git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
       git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
 
       #git remote add     gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
       #git remote set-url gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
-
-      git remote rm github-whonix || true
-      git remote rm gitlab-whonix || true
    elif [ "$project_name_short_lowercase" = "derivative-maker" ]; then
       git remote add     github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
       git remote set-url github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
 
+      git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
+      git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
+
+      git remote add     github-whonix git@github.com:Whonix/$reponame.git || true
+      git remote set-url github-whonix git@github.com:Whonix/$reponame.git || true
+
       #git remote add     gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
       #git remote set-url gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
-
-      git remote rm github-whonix || true
-      git remote rm gitlab-whonix || true
    else
       echo "ERROR: project_name_short_lowercase wrong! (1)"
    fi
@@ -1023,18 +1020,21 @@ internal_git_diff() {
 }
 
 pkg_git_fetch_remotes() {
-   git fetch $repo_to_push_to &
-
+   for repo_to_push_to_item in $repo_to_push_to_list ; do
+      git fetch $repo_to_push_to_item &
+   done
    true
 }
 
 pkg_git_push_remotes() {
-   if internal_git_diff master $repo_to_push_to/master ; then
-      git push $repo_to_push_to master &
-      git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
-   fi
+   for repo_to_push_to_item in $repo_to_push_to_list ; do
+      if internal_git_diff master $repo_to_push_to_item/master ; then
+         git push $repo_to_push_to_item master &
+         git_pid="$!"
+         #wait "$git_pid"
+         git_pid_list="$git_pid_list $git_pid"
+      fi
+   done
 
    true
 }
@@ -1043,12 +1043,13 @@ pkg_git_push_tags() {
    make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
 
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-   #if internal_git_diff $make_git_tag_latest $repo_to_push_to/$make_git_tag_latest ; then
-      git push $repo_to_push_to $make_git_tag_latest &
+
+   for repo_to_push_to_item in $repo_to_push_to_list ; do
+      git push $repo_to_push_to_item $make_git_tag_latest &
       git_pid="$!"
       #wait "$git_pid"
       git_pid_list="$git_pid_list $git_pid"
-   #fi
+   done
 
    true
 }
@@ -1755,10 +1756,12 @@ loop_helper_worker() {
    true "${cyan}INFO: $FUNCNAME: project_name_short_lowercase: $project_name_short_lowercase${reset}"
    true "${cyan}INFO: $FUNCNAME: giant_git_log_file: $giant_git_log_file${reset}"
 
+   repo_to_push_to_list=""
+
    if [ "$reponame" = "monero-gui" ]; then
-      repo_to_push_to=gitlab-$project_name_short_lowercase
+      repo_to_push_to_list+=" gitlab-$project_name_short_lowercase"
    else
-      repo_to_push_to=github-$project_name_short_lowercase
+      repo_to_push_to_list+=" github-$project_name_short_lowercase"
    fi
 
    true "this_is_derivative_maker_source_code_folder: $this_is_derivative_maker_source_code_folder"
@@ -1766,10 +1769,13 @@ loop_helper_worker() {
    if [ "$this_is_derivative_maker_source_code_folder" = "true" ]; then
       pushd "$derivative_maker_source_code_folder" >/dev/null
       reponame_pretty="derivative-maker"
+      repo_to_push_to_list+=" github-kicksecure"
+      repo_to_push_to_list+=" github-whonix"
    else
       pushd "$item" >/dev/null
    fi
 
+   ## TODO:
    "$@"
 
    popd >/dev/null
