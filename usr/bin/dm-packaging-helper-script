@@ -332,7 +332,7 @@ pkg_readme_creator_do() {
 #    if [ -d "man" ]; then
 #       echo "# Manual Page #" | tee -a "$readme_file"
 #       echo "" | tee -a "$readme_file" >/dev/null
-#       echo 'See also `man` folder for more information.' | tee -a "$readme_file"
+#       echo 'See also `man` folder for more information.' | tee -a "$readme_file" >/dev/null
 #       echo "" | tee -a "$readme_file" >/dev/null
 #    fi
 
@@ -558,10 +558,10 @@ internal_descr_writer() {
             touch "$description_write_to_file"
 
             echo "== $reponame ==" | tee -a "$description_write_to_file"
-            echo "" | tee -a "$description_write_to_file"
+            echo "" | tee -a "$description_write_to_file" >/dev/null
 
             echo "* $repo_web_link" | tee -a "$description_write_to_file"
-            echo "* [$debian_control_web_link debian/control]" | tee -a "$description_write_to_file"
+            echo "* [$debian_control_web_link debian/control]" | tee -a "$description_write_to_file" >/dev/null
 
             local control_file
             control_file="$repo_full_path/debian/control"
@@ -571,45 +571,45 @@ internal_descr_writer() {
                read -r first_word _ <<< "$line"
                if [ "$matched" = "true" ]; then
                   if [ "$line" = "." ]; then
-                     echo "" | tee -a "$description_write_to_file"
+                     echo "" | tee -a "$description_write_to_file" >/dev/null
                   else
-                     echo "$line" | tee -a "$description_write_to_file"
+                     echo "$line" | tee -a "$description_write_to_file" >/dev/null
                   fi
                fi
                if [ "$first_word" = "Description:" ]; then
                   matched="true"
                   line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
-                  echo "=== $line_with_keyword ===" | tee -a "$description_write_to_file"
+                  echo "=== $line_with_keyword ===" | tee -a "$description_write_to_file" >/dev/null
                   echo "" | tee -a "$description_write_to_file"
                fi
             done < "$control_file"
          fi
 
          if [ ! "${file_header_done["${file_name_without_leading_dot}_${project}_${category}"]}" = "true" ]; then
-            echo "=== $file_name_without_reponame ===" | tee -a "$description_write_to_file"
+            echo "=== $file_name_without_reponame ===" | tee -a "$description_write_to_file" >/dev/null
             echo "" | tee -a "$description_write_to_file"
-            echo "* [$web_link $file_name_without_reponame]" | tee -a "$description_write_to_file"
-            echo "* <code>$file_name_to_open</code>" | tee -a "$description_write_to_file"
+            echo "* [$web_link $file_name_without_reponame]" | tee -a "$description_write_to_file" >/dev/null
+            echo "* <code>$file_name_to_open</code>" | tee -a "$description_write_to_file" >/dev/null
             if [ "$gateway_only" = "yes" ]; then
-               echo "* gateway only<!--gateway-only-->" | tee -a "$description_write_to_file"
+               echo "* gateway only<!--gateway-only-->" | tee -a "$description_write_to_file" >/dev/null
             fi
             if [ "$workstation_only" = "yes" ]; then
-               echo "* workstation only<!--workstation-only-->" | tee -a "$description_write_to_file"
+               echo "* workstation only<!--workstation-only-->" | tee -a "$description_write_to_file" >/dev/null
             fi
             if [ "$non_qubes_whonix_only" = "yes" ]; then
-               echo "* Non-Qubes-Whonix only" | tee -a "$description_write_to_file"
+               echo "* Non-Qubes-Whonix only" | tee -a "$description_write_to_file" >/dev/null
             fi
             if [ "$qubes_whonix_only" = "yes" ]; then
-               echo "* Qubes-Whonix only" | tee -a "$description_write_to_file"
+               echo "* Qubes-Whonix only" | tee -a "$description_write_to_file" >/dev/null
             fi
             if [ "$installed_by_default" = "no" ]; then
-               echo "* Not installed by default." | tee -a "$description_write_to_file"
+               echo "* Not installed by default." | tee -a "$description_write_to_file" >/dev/null
             fi
 
-            echo "" | tee -a "$description_write_to_file"
+            echo "" | tee -a "$description_write_to_file" >/dev/null
             file_header_done["${file_name_without_leading_dot}_${project}_${category}"]=true
          fi
-         echo "$@" | tee -a "$description_write_to_file"
+         echo "$@" | tee -a "$description_write_to_file" >/dev/null
       done
    #done
 }
@@ -659,7 +659,7 @@ pkg_descr_merger() {
          file_deleted_already["${package_documentation_merged_file}"]=true
       fi
 
-      cat "$file_name_full_path" | tee -a "$package_documentation_merged_file"
+      cat "$file_name_full_path" | tee -a "$package_documentation_merged_file" >/dev/null
    done
 }
 
@@ -678,16 +678,16 @@ pkg_descr_merge_all() {
       true "package_documentation_all_merged_file: $package_documentation_all_merged_file"
 
       if [ "$machine" = "gateway" ]; then
-         echo "= Whonix-Gateway =" | tee -a "$package_documentation_all_merged_file"
+         echo "= Whonix-Gateway =" | tee -a "$package_documentation_all_merged_file" >/dev/null
       fi
       if [ "$machine" = "workstation" ]; then
-         echo "= Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file"
+         echo "= Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file" >/dev/null
       fi
       if [ "$machine" = "shared" ]; then
-         echo "= Shared by Whonix-Gateway and Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file"
+         echo "= Shared by Whonix-Gateway and Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file" >/dev/null
       fi
 
-      cat "$file_name_full_path" | tee -a "$package_documentation_all_merged_file"
+      cat "$file_name_full_path" | tee -a "$package_documentation_all_merged_file" >/dev/null
    done
 
    exit
@@ -975,7 +975,7 @@ pkg_packaging_files_diff() {
 #          cp ~/derivative-maker/COPYING "$repo_full_path/debian/copyright"
 #       else
 #          ## TODO: delete /tmp/list-of-packages
-#          echo "$reponame" | tee -a /tmp/list-of-packages
+#          echo "$reponame" | tee -a /tmp/list-of-packages >/dev/null
 #          kate "$repo_full_path/COPYING"
 #          kate "$repo_full_path/debian/copyright"
 #       fi
@@ -1145,7 +1145,7 @@ pkg_git_commit_all_things() {
 pkg_add_dh_changelogs_override_to_debian_rules() {
    echo "
 override_dh_installchangelogs:
-	dh_installchangelogs changelog.upstream upstream" | tee -a "debian/rules"
+	dh_installchangelogs changelog.upstream upstream" | tee -a "debian/rules" >/dev/null
    true
 }
 
@@ -1248,15 +1248,17 @@ pkg_git_log_giant_make() {
 
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
-      ## TODO: not working with multiple derivatives support yet
-      rm -r -f "$giant_git_log_file"
+      announcement_create=true
+      rm -f "$announcements_draft_folder/derivative-maker_giant_git_log.txt"
+      rm -f "$announcements_draft_folder/kicksecure_giant_git_log.txt"
+      rm -f "$announcements_draft_folder/whonix_giant_git_log.txt"
    fi
 
-   echo "########################################" | tee -a "$giant_git_log_file"
-   echo "" | tee -a "$giant_git_log_file"
-   echo "https://github.com/$project_name_short/$reponame" | tee -a "$giant_git_log_file"
+   echo "########################################" | tee -a "$giant_git_log_file" >/dev/null
+   echo "" | tee -a "$giant_git_log_file" >/dev/null
+   echo "https://github.com/$project_name_short/$reponame" | tee -a "$giant_git_log_file" >/dev/null
 
-   git --no-pager shortlog "${version_old}..${version_new}" | tee -a "$giant_git_log_file"
+   git --no-pager shortlog "${version_old}..${version_new}" | tee -a "$giant_git_log_file" >/dev/null
 
    ## TODO
    #$(git describe)..master
@@ -1270,23 +1272,22 @@ pkg_git_main_git_log_writer() {
 }
 
 pkg_git_packages_git_log_writer() {
-   #repo_skip "derivative-maker" || return 0
    repo_skip "lkrg" || return 0
    repo_skip "hardened_malloc" || return 0
 
    if [ "$giant_git_log_delete_once" = "" ]; then
       giant_git_log_delete_once=done
       announcement_create=true
-      rm -r -f "$giant_git_log_file"
+      rm -f "$announcements_draft_folder/derivative-maker_giant_git_log.txt"
+      rm -f "$announcements_draft_folder/kicksecure_giant_git_log.txt"
+      rm -f "$announcements_draft_folder/whonix_giant_git_log.txt"
    fi
 
    notable_changes=""
 
    if [ "$this_is_derivative_maker_source_code_folder" = "false" ]; then
       pushd .. >/dev/null
-      ## TODO: legacy
-      if package_version_old="$(git rev-parse "${version_old_main}:packages/${reponame}")" ; then
-      #if package_version_old="$(git rev-parse "${version_old_main}:packages/${project_name_short_lowercase}/${reponame}")" ; then
+      if package_version_old="$(git rev-parse "${version_old_main}:packages/${project_name_short_lowercase}/${reponame}")" ; then
          new_package=false
       else
          new_package=true
@@ -1301,17 +1302,18 @@ pkg_git_packages_git_log_writer() {
 
    if [ "$new_package" = "false" ]; then
       if [ "${package_version_old}" = "${package_version_new}" ]; then
+         true "skipping because package_version_old = package_version_new"
          return 0
       else
          commit_msg_short_list="$(git --no-pager log --pretty="%H %s" "${package_version_old}..${package_version_new}")"
-         #echo "git --no-pager log ${package_version_old}..${package_version_new}" | tee -a "$giant_git_log_file"
+         #echo "git --no-pager log ${package_version_old}..${package_version_new}" | tee -a "$giant_git_log_file" >/dev/null
          #echo ""
       fi
    else
       commit_msg_short_list="$(git --no-pager log --pretty="%H %s")"
-      #echo "git --no-pager log" | tee -a "$giant_git_log_file"
+      #echo "git --no-pager log" | tee -a "$giant_git_log_file" >/dev/null
       #echo ""
-      return 0
+      #return 0
    fi
 
    while read -r commit_hash commit_msg_short ; do
@@ -1359,10 +1361,10 @@ https://github.com/$project_name_short/$reponame/commit/$commit_hash
 
       if [ "$notable_changes" = "" ]; then
          notable_changes=yes
-         echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file"
+         echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file" >/dev/null
       fi
 
-      echo "* $log_msg" | tee -a "$giant_git_log_file"
+      echo "* $log_msg" | tee -a "$giant_git_log_file" >/dev/null
 
    done <<< "$commit_msg_short_list"
 
@@ -1416,7 +1418,7 @@ fqdn			= ppa.launchpad.net
 method			= sftp
 incoming                = ~${launchpad_name}/${reponame}/ubuntu/
 login			= ${launchpad_name}
-allowed_distributions 	= trusty" | tee -a ~/dput.cfg
+allowed_distributions 	= trusty" | tee -a ~/dput.cfg >/dev/null
 
    true
 }
@@ -1670,7 +1672,7 @@ $giant_git_log_file
 
 # Full difference of all changes
 
-[https://github.com/$project_name_short/$project_name_short/compare/${version_old_main}...${version_new_main}](https://github.com/$project_name_short/$project_name_short/compare/${version_old_main}...${version_new_main})
+[https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}](https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main})
 
 ----
 
