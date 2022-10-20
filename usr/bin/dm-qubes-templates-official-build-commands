@@ -7,9 +7,11 @@ set -x
 set -e
 
 ## XXX
-cd ~/sourcesother/qubes-builder
+cd ~/sourcesown/qubes-template-whonix
 
 dm-quickgittagsign
+
+cd ~/sourcesother/qubes-builder
 
 echo "16"
 VMs="whonix-gateway-16 whonix-workstation-16"
