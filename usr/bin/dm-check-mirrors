@@ -1,0 +1,89 @@
+#!/bin/bash
+
+#set -x
+set -e
+
+curl_built_in_args="\
+      --location \
+      --show-error \
+      --retry-connrefused \
+      --retry 3 \
+      --retry-delay 3 \
+      --retry-max-time 120 \
+      --max-time 180 \
+      --no-buffer"
+
+mirror_list="
+   https://download.whonix.org/ova/
+   https://mirrors.dotsrc.org/whonix/ova
+   https://mirror.koljasagorski.de/whonix/ova
+   https://ftp.icm.edu.pl/pub/Linux/dist/whonix/ova
+"
+
+## has no TLS v1.3:
+## https://quantum-mirror.hu/mirrors/pub/whonix/ova
+## https://mirrors.gigenet.com/whonix/ova
+
+## TODO: remove
+# mirror_list="
+#    https://download.whonix.org/ova/
+# "
+
+adduser --home /tmp/check-mirrors --no-create-home --quiet --system --group checkmirrors || true
+
+mkdir --parents /tmp/check-mirrors
+chown --recursive checkmirrors:checkmirrors /tmp/check-mirrors
+
+as_user="sudo --non-interactive -u checkmirrors"
+
+$as_user touch /tmp/check-mirrors/version.txt
+
+$as_user scurl $curl_built_in_args --url "https://www.whonix.org/w/index.php?title=Template:VersionNew&stable=0&action=raw" --output /tmp/check-mirrors/version.txt --silent
+
+$as_user str_replace "<noinclude>[[Category:MultiWiki]]</noinclude>" "" /tmp/check-mirrors/version.txt >/dev/null
+
+version=$(cat /tmp/check-mirrors/version.txt)
+
+#echo "version: '$version'"
+
+for mirror_item in $mirror_list ; do
+   ## for prettier xtrace only
+   mirror_item="$mirror_item"
+
+   link="${mirror_item}/${version}/Whonix-XFCE-${version}.ova"
+   echo "link: $link"
+
+   curl_exit_code=0
+
+   ## TODO: --max-time
+
+   ## 2> /tmp/check-mirrors/stderr.txt \
+
+   scurl \
+      $curl_built_in_args \
+      --write-out "%{speed_download}" \
+      --url "$link" \
+      --retry 0 \
+      --max-time 30 \
+      --output /dev/null \
+      1> /tmp/check-mirrors/stdout.txt \
+      || { curl_exit_code=$? ; true; };
+
+   stdout=$(cat /tmp/check-mirrors/stdout.txt)
+   #stderr=$(cat /tmp/check-mirrors/stderr.txt)
+
+   echo "stdout: '$stdout'"
+   echo "stderr: '$stderr'"
+
+   ## Curl return bytes per second as per curl default.
+   bytes_per_second="$stdout"
+   kb_per_second="$(( $bytes_per_second / 1024 ))"
+
+   mb_per_second="$(( $bytes_per_second / 1024 / 1024 ))"
+
+   echo "kb_per_second: '$kb_per_second'"
+   echo "mb_per_second: '$mb_per_second'"
+done
+
+echo ""
+true ""
