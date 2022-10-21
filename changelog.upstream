@@ -1,3 +1,15 @@
+commit f7590d0061c757cfea0241662d8dceb2ca3320c1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 21 08:57:43 2022 -0400
+
+    dm-check-mirrors
+
+commit 0e6bc163502da09cdda65da43ad0103cb8fbbf37
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 20 18:32:27 2022 -0400
+
+    bumped changelog version
+
 commit c778f6109aebdcca5ef0bec55811415de7093e2b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Oct 20 18:04:49 2022 -0400
