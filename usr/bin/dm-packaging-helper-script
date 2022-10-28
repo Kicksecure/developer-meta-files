@@ -1233,8 +1233,8 @@ pkg_git_submodule_file_writer() {
    fi
 
    echo "\
-[submodule \"packages/${project_name_short}/${reponame}\"]
-        path = packages/${project_name_short}/${reponame}
+[submodule \"${reponame}\"]
+        path = packages/${project_name_short_lowercase}/${reponame}
 $url" \
          | \
          tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
