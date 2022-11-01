@@ -18,7 +18,7 @@ export SKIP_SCRIPTS
 ```
 
 ```
-SKIP_SCRIPTS+=" 1100_prepare-build-machine 1200_create-debian-packages " ./derivative-maker --flavor whonix-workstation-xfce --build --arch amd64 --repo true --target qcow2
+SKIP_SCRIPTS+=" 1100_prepare-build-machine 1130_cowbuilder-setup 1140_local-dependencies 1200_create-debian-packages " ./derivative-maker --flavor whonix-workstation-xfce --build --arch amd64 --repo true --target qcow2
 ```
 
 # Upload to sf.net #
