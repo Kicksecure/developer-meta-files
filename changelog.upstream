@@ -1,3 +1,21 @@
+commit b007b12c6656a4bd8e253916fb7ddafcea3f3087
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 23 00:32:01 2022 -0500
+
+    rsync-ssl
+
+commit cb162ed437e640b395d9b781a0f910c67f40d42d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 23 00:30:31 2022 -0500
+
+    rsync-ssl
+
+commit c919f5d3bc1d6507da1dcb028061287a5213abb0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 2 13:18:41 2022 -0400
+
+    bumped changelog version
+
 commit fbaf54464cbcfbac2eae399ade06a5270fe25a94
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Nov 1 13:40:43 2022 -0400
