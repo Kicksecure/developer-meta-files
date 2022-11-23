@@ -14,10 +14,6 @@ export VMNAME="internalrun"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-## please add openssl-rsync script for use of encrypted rsync over TLS
-## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=961827
-openssl_rsync="$MYDIR/openssl-rsync"
-
 source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
@@ -26,36 +22,14 @@ trap "exithandler" EXIT
 
 true "${cyan}INFO: rsync test...${reset}"
 
-test -x "$openssl_rsync"
-
-## package ftpsync provides rsync-ssl-tunnel but `Depends:` on default-mta (exim)
-## Too heavy a dependency.
-#command -v rsync-ssl-tunnel >/dev/null
-
-## sudo apt install ftpsync stunnel socat
-command -v stunnel >/dev/null
-command -v socat >/dev/null
-
-## Unencrypted rsync default port is 874.
-rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
-
 ## Cannot use subdomain.
 
-## openssl-rsync uses by default port 874.
-rsync --rsh="$openssl_rsync" --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
 
-## sudo apt install socat ftpsync
-#RSYNC_SSL_PORT=874 RSYNC_SSL_METHOD=socat rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
-
-## sudo apt install stunnel ftpsync
-#RSYNC_SSL_PORT=874 rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+rsync-ssl --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 
 ## XXX: hardcoded
 onion="dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion"
 torsocks rsync --dry-run --recursive --times --quiet "rsync://${onion}/whonix"
-
-## sudo apt install stunnel ftpsync
-## rsync-ssl-tunnel uses by default port 1874.
-#rsync --rsh=rsync-ssl-tunnel --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 
 true "${cyan}INFO: Done with rsync test.${reset}"
