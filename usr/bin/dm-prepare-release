@@ -38,6 +38,9 @@ libvirt_compress() {
    if [ "$dist_build_iso" = "true" ]; then
       continue_maybe=no
    fi
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      continue_maybe=no
+   fi
    if [ "$continue_maybe" = "no" ]; then
       return 0
    fi
@@ -184,6 +187,9 @@ virtualbox_export() {
       return 0
    fi
    if [ "$dist_build_iso" = "true" ]; then
+      return 0
+   fi
+   if [ "$dist_build_installer_dist" = "true" ]; then
       return 0
    fi
 
@@ -374,6 +380,10 @@ torrent_create() {
          "$binary_image_iso"
    fi
 
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      return 0
+   fi
+
    ## Working.
    #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${dist_upload_destination_site}/ova/Whonix-Gateway-7.ova");' "$2")"
    #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${dist_upload_destination_site}/ova/Whonix-Workstation-7.ova");' "$2")"
@@ -420,6 +430,11 @@ hashes_create_and_verify() {
 
       if [ "$dist_build_iso" = "true" ]; then
          $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
+      fi
+
+      if [ "$dist_build_installer_dist" = "true" ]; then
+         #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
+         return 0
       fi
 
       sync
@@ -500,6 +515,11 @@ signatures_create() {
       sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signature"
    fi
 
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      sign_cmd_gpg "$binary_image_installer_dist_image"
+      sign_cmd_signify "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
+   fi
+
    sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
    sign_cmd_gpg "$sha_five_hundredth_twelve_hash_file"
 
@@ -542,7 +562,12 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$binary_image_iso_signature"
-      verify_cmd_signinfy "$binary_image_iso_torrent" "$binary_image_iso_torrent_signature"
+      verify_cmd_signinfy "$binary_image_iso_torrent" "$binary_image_ova_torrent_signify"
+   fi
+
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      verify_cmd_gpg "$binary_image_installer_dist_signature"
+      verify_cmd_signinfy "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
