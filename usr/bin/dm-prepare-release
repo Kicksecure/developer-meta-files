@@ -22,6 +22,7 @@ sanity_tests() {
    command -v signify-openbsd >/dev/null
    test -f "$signify_public_key"
    test -f "$signify_private_key"
+   test -f "$binary_image_installer_dist_source"
 
    "$dist_source_help_steps_folder/gpg_test_sign"
 }
@@ -394,6 +395,11 @@ torrent_create() {
 }
 
 hashes_create_and_verify() {
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
+      return 0
+   fi
+
    for hash_sum in sha256sum sha512sum; do
       case "$hash_sum" in
          "sha256sum")
@@ -430,11 +436,6 @@ hashes_create_and_verify() {
 
       if [ "$dist_build_iso" = "true" ]; then
          $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
-      fi
-
-      if [ "$dist_build_installer_dist" = "true" ]; then
-         #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
-         return 0
       fi
 
       sync
@@ -518,6 +519,8 @@ signatures_create() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       sign_cmd_gpg "$binary_image_installer_dist_image"
       sign_cmd_signify "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
+      ## Skip creation of hash sum files.
+      return 0
    fi
 
    sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
@@ -568,6 +571,8 @@ signatures_verify() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       verify_cmd_gpg "$binary_image_installer_dist_signature"
       verify_cmd_signinfy "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
+      ## Skip verification of hash sum files since not created for installer-dist.
+      return 0
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
@@ -579,6 +584,11 @@ signatures_verify() {
 
 main() {
    sanity_tests
+
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      mkdir --parents "$binary_image_installer_dist_folder"
+      cp "$binary_image_installer_dist_source" "$binary_image_installer_dist_image"
+   fi
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
