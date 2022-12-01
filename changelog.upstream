@@ -1,3 +1,33 @@
+commit a76ebcce3e6b2e4bf3a12c0a01e71bbdb85f5ac1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Dec 1 09:52:22 2022 -0500
+
+    installer-dist
+
+commit beb36f096ad3d54a19bf9201f902ca86e06ac8b2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Dec 1 09:49:38 2022 -0500
+
+    installer-dist
+
+commit ab745f10508f6088a7583353ef5c880811a013d8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Dec 1 09:41:46 2022 -0500
+
+    installer-dist
+
+commit 6bc60822308df8dc531daefe127e4a32f431aab1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Dec 1 09:30:39 2022 -0500
+
+    installer-dist
+
+commit 184ad0ccd852cceedfb2fac620cbaf1b5778d031
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 29 04:20:25 2022 -0500
+
+    bumped changelog version
+
 commit edf38019f7c56a47cfc684e7d175915d1880ec99
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 28 07:31:42 2022 -0500
