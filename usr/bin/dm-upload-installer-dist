@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "$0: INFO: Currently running script: $BASH_SOURCE $@"
+
+dm-upload-images --target installer-dist --flavor kicksecure-xfce --build
+dm-upload-images --target installer-dist --flavor whonix-workstation-xfce --build
+
+true "$0: INFO: OK."
