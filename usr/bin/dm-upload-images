@@ -45,8 +45,12 @@ upload_files() {
       error "Variable dist_server_with_upload_location is empty."
    fi
 
-   dist_server_with_upload_location_with_version="${dist_server_with_upload_location}/${dist_build_version}/"
-   true "dist_server_with_upload_location_with_version: $dist_server_with_upload_location_with_version"
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      dist_server_with_upload_location_with_version_maybe="${dist_server_with_upload_location}/"
+   else
+      dist_server_with_upload_location_with_version_maybe="${dist_server_with_upload_location}/${dist_build_version}/"
+   fi
+   true "dist_server_with_upload_location_with_version_maybe: $dist_server_with_upload_location_with_version_maybe"
 
    if [ ! "$build_upload_noninteractive" = "true" ]; then
       true "${cyan}INFO: Press any enter to continue.${reset}"
@@ -72,7 +76,7 @@ upload_files() {
          $rsync_dry_run_maybe \
          $rsync_opts \
          $file_list \
-         "$dist_server_with_upload_location_with_version" \
+         "$dist_server_with_upload_location_with_version_maybe" \
          || { rsync_exit_code="$?" ; true; };
 
       if [ "$rsync_exit_code" = "0" ]; then
