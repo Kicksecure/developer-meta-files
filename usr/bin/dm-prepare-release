@@ -588,6 +588,17 @@ main() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       mkdir --parents "$binary_image_installer_dist_folder"
       cp "$binary_image_installer_dist_source" "$binary_image_installer_dist_image"
+
+      installer_dist_source_folder="$(dirname "$binary_image_installer_dist_source")"
+      pushd "$installer_dist_source_folder"
+      git_tag_current="$(git describe --always --abbrev=1000000000)"
+      git describe --always --abbrev=1000000000
+      popd
+
+      search="commit-hash-replace-me"
+      replace="$git_tag_current"
+      file_name="$binary_image_installer_dist_image"
+      str_replace "$search" "$replace" "$file_name"
    fi
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
