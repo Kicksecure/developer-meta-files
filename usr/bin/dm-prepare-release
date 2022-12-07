@@ -37,7 +37,6 @@ installer_dist() {
    installer_dist_source_folder="$(dirname "$binary_image_installer_dist_source")"
    pushd "$installer_dist_source_folder"
    git_tag_current="$(git describe --always --abbrev=1000000000)"
-   git describe --always --abbrev=1000000000
    popd
 
    search="commit-hash-replace-me"
