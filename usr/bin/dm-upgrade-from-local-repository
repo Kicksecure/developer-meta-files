@@ -16,7 +16,7 @@ source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
 main() {
-   trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
+   trap "exception_handler_unchroot_unmount" ERR INT TERM
 
    ## Lockfile for systemcheck.
    touch "/run/package_manager_lock"

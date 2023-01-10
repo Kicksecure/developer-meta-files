@@ -20,7 +20,7 @@ source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
 main() {
-   trap "errorhandlerunchrootunpreventunmount" ERR INT TERM
+   trap "exception_handler_unchroot_unmount" ERR INT TERM
 
    ## Move existing /etc/apt/sources.list out of the way.
    if ! test -e /etc/apt/sources.list.backup ; then
