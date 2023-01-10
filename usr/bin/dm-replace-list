@@ -10,7 +10,7 @@ cd ~/derivative-maker
 
 ## NOTE: does not support spaces
 replace_list=$(echo "\
-errorhandlersetup exception_handler_setup
+errorhandlerunchrootunpreventunmount exception_handler_unchroot_unmount
 ")
 
 # total=0
