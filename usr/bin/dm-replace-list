@@ -12,7 +12,7 @@ cd ~/derivative-maker
 replace_list=$(echo "\
 errorhandlershell exception_handler_shell
 errorhandlerretry exception_handler_retry
-errorhandlerprocessshared exception_handler_processshared
+errorhandlerprocessshared exception_handler_process_shared
 errorhandlermaybeexit exception_handler_maybe_exit
 errorhandlergeneral exception_handler_general
 errorhandlerunmount exception_handler_unmount
