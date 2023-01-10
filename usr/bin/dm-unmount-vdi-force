@@ -15,7 +15,7 @@ source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
-errorhandlerunmount-vdi-force() {
+exception_handler_unmount-vdi-force() {
    : echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
 ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
@@ -24,7 +24,7 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 }
 
 unmount_vdi_force() {
-   trap "errorhandlerunmount-vdi-force" ERR INT TERM
+   trap "exception_handler_unmount-vdi-force" ERR INT TERM
 
    sync || true
 

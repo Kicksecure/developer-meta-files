@@ -10,12 +10,12 @@ cd ~/derivative-maker
 
 ## NOTE: does not support spaces
 replace_list=$(echo "\
-errorhandlershell exception_handler_shell
-errorhandlerretry exception_handler_retry
-errorhandlerprocessshared exception_handler_process_shared
-errorhandlermaybeexit exception_handler_maybe_exit
-errorhandlergeneral exception_handler_general
-errorhandlerunmount exception_handler_unmount
+exception_handler_shell exception_handler_shell
+exception_handler_retry exception_handler_retry
+exception_handler_process_shared exception_handler_process_shared
+exception_handler_maybe_exit exception_handler_maybe_exit
+exception_handler_general exception_handler_general
+exception_handler_unmount exception_handler_unmount
 ")
 
 # total=0
@@ -32,6 +32,9 @@ while IFS= read -r -d $'\0' file_name; do
    basename_file_name="${file_name##*/}"
 
    if [ "$basename_file_name" = "changelog.upstream" ]; then
+      continue
+   fi
+   if [ "$basename_file_name" = "dm-replace-list" ]; then
       continue
    fi
 
@@ -67,4 +70,4 @@ while IFS= read -r -d $'\0' file_name; do
 
 done < <( find . -type f -not -iwholename '*.git*' -print0 )
 
-true "$0: END."
+echo "$0: END."
