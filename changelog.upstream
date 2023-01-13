@@ -1,3 +1,15 @@
+commit b2da83535c05efdb8f78fa9221a2f489737722e7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jan 13 08:29:04 2023 -0500
+
+    rsync
+
+commit f9a4bfbef416736127b628cab65a03d5d527f685
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jan 10 07:08:13 2023 -0500
+
+    bumped changelog version
+
 commit 85638b7c162e1d4f5d63a743a97a05c62cbe0dc6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jan 10 06:39:07 2023 -0500
