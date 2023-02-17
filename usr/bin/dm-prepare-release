@@ -50,7 +50,29 @@ installer_dist() {
 }
 
 windows_installer() {
-   true "TODO"
+   ## based on:
+   ## https://github.com/Whonix/Whonix-Installer/blob/main/build.sh
+
+   ## TODO
+   FILE_VBOX_INST_EXE="../deps/vbox.exe"
+
+   if ! [ -x "$(command -v wixl)" ]; then
+      echo "$0: ERROR: wixl is not installed." >&2
+      exit 1
+   fi
+
+   rm -f "$binary_image_windows_installer_exe"
+
+   wixl -v --arch x64 \
+      -D whonixVersion="${dist_build_version}" \
+      -D whonixInstallerVersion="200" \
+      -D whonixManufacturer="ENCRYPTED SUPPORT LP" \
+      -D whonixDescription="Whonix Starter" \
+      -D whonixFileLicense="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
+      -D whonixFileOva="$binary_image_ova" \
+      -D whonixFileMainExe="$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe" \
+      -D whonixFileVboxExe="$FILE_VBOX_INST_EXE" \
+      "$binary_image_windows_installer_exe"
 }
 
 libvirt_compress() {
