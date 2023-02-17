@@ -68,6 +68,7 @@ windows_installer() {
    fi
 
    rm -f "$binary_image_windows_installer_exe"
+   mkdir --parents "$binary_image_windows_installer_folder"
 
    wixl -v --arch x64 \
       -D whonixVersion="${dist_build_version}" \
