@@ -670,13 +670,6 @@ signatures_verify() {
 main() {
    sanity_tests
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
-      installer_dist
-   fi
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      windows_installer
-   fi
-
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
       cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
@@ -702,6 +695,13 @@ main() {
    fi
    if [ "$dist_build_type_long" = "kicksecure" ]; then
       vm_names_to_be_exported="$VMNAME"
+   fi
+
+   if [ "$dist_build_installer_dist" = "true" ]; then
+      installer_dist
+   fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      windows_installer
    fi
 
    libvirt_compress
