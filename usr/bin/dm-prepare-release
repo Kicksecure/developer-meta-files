@@ -70,16 +70,23 @@ windows_installer() {
    rm -f "$binary_image_windows_installer_exe"
    mkdir --parents "$binary_image_windows_installer_folder"
 
-   wixl -v --arch x64 \
-      -D whonixVersion="${dist_build_version}" \
-      -D whonixInstallerVersion="200" \
-      -D whonixManufacturer="ENCRYPTED SUPPORT LP" \
-      -D whonixDescription="Whonix Starter" \
-      -D whonixFileLicense="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
-      -D whonixFileOva="$binary_image_ova" \
-      -D whonixFileMainExe="$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe" \
-      -D whonixFileVboxExe="$FILE_VBOX_INST_EXE" \
-      "$binary_image_windows_installer_exe"
+   pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
+
+   wixl \
+      --verbose \
+      --arch x64 \
+      --define whonixVersion="${dist_build_version}" \
+      --define whonixInstallerVersion="200" \
+      --define whonixManufacturer="ENCRYPTED SUPPORT LP" \
+      --define whonixDescription="Whonix Starter" \
+      --define whonixFileLicense="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
+      --define whonixFileOva="$binary_image_ova" \
+      --define whonixFileMainExe="$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe" \
+      --define whonixFileVboxExe="$FILE_VBOX_INST_EXE" \
+      --output "$binary_image_windows_installer_exe" \
+      "Whonix.wxs"
+
+   popd >/dev/null
 }
 
 libvirt_compress() {
