@@ -53,8 +53,13 @@ windows_installer() {
    ## based on:
    ## https://github.com/Whonix/Whonix-Installer/blob/main/build.sh
 
-   ## TODO
-   FILE_VBOX_INST_EXE="../deps/vbox.exe"
+   test -d ~/VirtualBox-Windows-Installer-Binary
+   FILE_VBOX_INST_EXE=~/VirtualBox-Windows-Installer-Binary/*.exe
+
+   test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+   test -f "$binary_image_ova"
+   test -f "$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe"
+   test -f "$FILE_VBOX_INST_EXE"
 
    if ! [ -x "$(command -v wixl)" ]; then
       echo "$0: ERROR: wixl is not installed." >&2
