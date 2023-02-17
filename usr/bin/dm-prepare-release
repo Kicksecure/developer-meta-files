@@ -55,7 +55,7 @@ windows_installer() {
 
    ## https://gitlab.com/whonix/virtualbox-windows-installer-binary
    test -d ~/virtualbox-windows-installer-binary
-   FILE_VBOX_INST_EXE=~/virtualbox-windows-installer-binary/*.exe
+   FILE_VBOX_INST_EXE="$(ls ~/virtualbox-windows-installer-binary/*.exe)"
 
    test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
    test -f "$binary_image_ova"
