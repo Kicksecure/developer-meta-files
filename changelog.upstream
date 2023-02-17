@@ -1,3 +1,39 @@
+commit c872c0d68ddaceaf890a01d02062d254e0ccbe10
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:58:17 2023 -0500
+
+    .
+
+commit 0140276ed8cf4716556c6efa31a85f69d1e9d5e8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:46:17 2023 -0500
+
+    Windows Installer
+
+commit 82043bad90a3b84a56e6bf50bc610a47c261198d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:31:58 2023 -0500
+
+    Windows Installer
+
+commit 48c9cc0e6575839409fe421c4cc9d9ac6fca931b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:11:41 2023 -0500
+
+    Windows Installer
+
+commit 9e1aa2025fec150043c739a0e1d72504b365373d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:01:43 2023 -0500
+
+    .
+
+commit 9c5e5cff9b93e6781a2f5a1bbd96d662ae339d1b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Feb 16 08:40:10 2023 -0500
+
+    bumped changelog version
+
 commit 729460bc2660c155ed353d9f96c97bc7997b46a9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Feb 16 08:40:00 2023 -0500
