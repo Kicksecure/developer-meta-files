@@ -470,6 +470,10 @@ hashes_create_and_verify() {
       #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
       return 0
    fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      #$hash_sum "$(basename "$binary_image_windows_installer_exe")" | tee --append "$hash_file"
+      return 0
+   fi
 
    for hash_sum in sha256sum sha512sum; do
       case "$hash_sum" in
