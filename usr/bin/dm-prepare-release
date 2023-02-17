@@ -53,8 +53,9 @@ windows_installer() {
    ## based on:
    ## https://github.com/Whonix/Whonix-Installer/blob/main/build.sh
 
-   test -d ~/VirtualBox-Windows-Installer-Binary
-   FILE_VBOX_INST_EXE=~/VirtualBox-Windows-Installer-Binary/*.exe
+   ## https://gitlab.com/whonix/virtualbox-windows-installer-binary
+   test -d ~/virtualbox-windows-installer-binary
+   FILE_VBOX_INST_EXE=~/virtualbox-windows-installer-binary/*.exe
 
    test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
    test -f "$binary_image_ova"
