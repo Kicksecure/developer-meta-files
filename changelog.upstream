@@ -1,3 +1,27 @@
+commit 5f4a94a7b75000868129d9984fbafda03cd3a2a4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 10:30:37 2023 -0500
+
+    Windows Installer
+
+commit c717f7a537b887cb03ec6762a6fd8d9e86e5e78c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 10:20:42 2023 -0500
+
+    fix
+
+commit 27082e0bfd628cb450b3b697831336f4741b9436
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 10:18:45 2023 -0500
+
+    fix
+
+commit b32d8d3269f13bef44fcf4b5b72350c88200c3f3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 17 09:58:31 2023 -0500
+
+    bumped changelog version
+
 commit c872c0d68ddaceaf890a01d02062d254e0ccbe10
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Feb 17 09:58:17 2023 -0500
