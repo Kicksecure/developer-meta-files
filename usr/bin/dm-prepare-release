@@ -49,6 +49,10 @@ installer_dist() {
    str_replace "$search" "$replace" "$file_name"
 }
 
+windows_installer() {
+   true "TODO"
+}
+
 libvirt_compress() {
    local continue_maybe
    continue_maybe=no
@@ -62,6 +66,9 @@ libvirt_compress() {
       continue_maybe=no
    fi
    if [ "$dist_build_installer_dist" = "true" ]; then
+      continue_maybe=no
+   fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
       continue_maybe=no
    fi
    if [ "$continue_maybe" = "no" ]; then
@@ -213,6 +220,9 @@ virtualbox_export() {
       return 0
    fi
    if [ "$dist_build_installer_dist" = "true" ]; then
+      return 0
+   fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
       return 0
    fi
 
@@ -406,6 +416,9 @@ torrent_create() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       return 0
    fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      return 0
+   fi
 
    ## Working.
    #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${dist_upload_destination_site}/ova/Whonix-Gateway-7.ova");' "$2")"
@@ -545,6 +558,13 @@ signatures_create() {
       return 0
    fi
 
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      sign_cmd_gpg "$binary_image_windows_installer_exe"
+      sign_cmd_signify "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
+      ## Skip creation of hash sum files.
+      return 0
+   fi
+
    sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
    sign_cmd_gpg "$sha_five_hundredth_twelve_hash_file"
 
@@ -597,6 +617,13 @@ signatures_verify() {
       return 0
    fi
 
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      verify_cmd_gpg "$binary_image_windows_installer_exe"
+      verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_installer_dist_signify"
+      ## Skip verification of hash sum files since not created for installer-dist.
+      return 0
+   fi
+
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
    verify_cmd_gpg "$sha_five_hundredth_twelve_hash_file_signature"
 
@@ -609,6 +636,9 @@ main() {
 
    if [ "$dist_build_installer_dist" = "true" ]; then
       installer_dist
+   fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      windows_installer
    fi
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
