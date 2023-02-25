@@ -1,0 +1,52 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+set -o pipefail
+set -o errtrace
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+build_all_error_handler() {
+   : echo "
+${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
+${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+"
+   exit 1
+}
+
+trap "build_all_error_handler" ERR
+set +e
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd "$MYDIR"
+
+cd ../../../
+
+if [ "$(id -u)" = "0" ]; then
+   error "Do not run this as root!"
+fi
+
+if [ ! "$(git status --porcelain)" = "" ]; then
+   error "Command git status --porcelain failed at the beginning!"
+fi
+
+git fetch --jobs=200
+
+git verify-commit "origin/master"
+
+git merge --ff-only "origin/master"
+
+git submodule sync --recursive >/dev/null
+
+git submodule update --init --recursive --jobs=200 >/dev/null
+
+if [ ! "$(git status --porcelain)" = "" ]; then
+   error "Command git status --porcelain failed at the end!"
+fi
+
+git describe
