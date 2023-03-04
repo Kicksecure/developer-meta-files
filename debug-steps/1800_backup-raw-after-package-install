@@ -29,8 +29,8 @@ backup-raw-after-package-install() {
 }
 
 main() {
-   if [ "$dist_build_install_to_root" = "1" ]; then
-      true "${green}INFO: Skipping $BASH_SOURCE, because dist_build_install_to_root is set to 1.${reset}"
+   if [ "$dist_build_install_to_root" = "true" ]; then
+      true "${green}INFO: Skipping $BASH_SOURCE, because dist_build_install_to_root is set to true.${reset}"
    else
       if [ "$dist_build_type_long" = "gateway" ]; then
          backup-raw-after-package-install
