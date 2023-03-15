@@ -245,7 +245,6 @@ pkg_readme_creator_commit() {
    repo_skip "derivative-maker" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
-#    repo_skip "monero-gui" || return 0
 #    repo_skip "lkrg" || return 0
 
    ## global readme_file
@@ -266,7 +265,6 @@ pkg_readme_creator_do() {
    repo_skip "derivative-maker" || return 0
 
 #    repo_skip "anon-meta-packages" || return 0
-#    repo_skip "monero-gui" || return 0
 #    repo_skip "lkrg" || return 0
 
    ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
@@ -1239,15 +1237,9 @@ pkg_git_submodule_file_writer() {
    fi
 
    local url
-   if [ "$reponame" = "monero-gui" ]; then
-      url="\
-        ## monero-gui on gitlab instead of github due to github git space restrictions.
-        url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git"
-   else
-      url="\
+   url="\
         url = https://github.com/${project_name_short}/${reponame}.git
         #url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git"
-   fi
 
    echo "\
 [submodule \"${reponame}\"]
@@ -1777,11 +1769,7 @@ loop_helper_worker() {
 
    repo_to_push_to_list=""
 
-   if [ "$reponame" = "monero-gui" ]; then
-      repo_to_push_to_list+=" gitlab-$project_name_short_lowercase"
-   else
-      repo_to_push_to_list+=" github-$project_name_short_lowercase"
-   fi
+   repo_to_push_to_list+=" github-$project_name_short_lowercase"
 
    true "this_is_derivative_maker_source_code_folder: $this_is_derivative_maker_source_code_folder"
 
