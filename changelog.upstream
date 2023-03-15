@@ -1,3 +1,33 @@
+commit e3d52d152f1da8c8b1bf7019a590ccf154111e17
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Mar 15 11:57:52 2023 -0400
+
+    remove monero-gui
+
+commit c008ac13c11a1c9ee4c9165d8c7faaafc1ed7c15
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Mar 4 10:09:00 2023 -0500
+
+    .
+
+commit b4cc71c00c03cbc9725763708c92754d380360c6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Feb 25 10:16:02 2023 -0500
+
+    dm-git-commit-checkout-latest
+
+commit 78b439e5241ab167876d466dd2b750b18dee358d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Feb 25 06:32:54 2023 -0500
+
+    .
+
+commit 1f75c464fdabfddb789e7645a03a6a1b5ba6d3a1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Feb 22 08:02:20 2023 -0500
+
+    bumped changelog version
+
 commit 234fb6844e9b67b51de4521891ed9e11780041aa
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Feb 17 10:44:40 2023 -0500
