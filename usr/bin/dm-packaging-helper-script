@@ -1747,7 +1747,7 @@ $giant_git_log_file
 
 # Full difference of all changes
 
- https://github.com/$project_name_short/$project_name_short/compare/${version_old_main}...${version_new_main}
+ https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}
 
 ----
 
