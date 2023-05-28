@@ -25,7 +25,11 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$MYDIR"
 
-cd ../../../
+## XXX
+cd ~/derivative-maker
+
+## Debugging.
+pwd
 
 if [ "$(id -u)" = "0" ]; then
    error "Do not run this as root!"
@@ -37,9 +41,9 @@ fi
 
 git fetch --jobs=200
 
-git verify-commit "origin/master"
+git verify-commit "github-derivative-maker/master"
 
-git merge --ff-only "origin/master"
+git merge --ff-only "github-derivative-maker/master"
 
 git submodule sync --recursive >/dev/null
 
