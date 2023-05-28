@@ -39,7 +39,7 @@ if [ ! "$(git status --porcelain)" = "" ]; then
    error "Command git status --porcelain failed at the beginning!"
 fi
 
-git fetch --jobs=200
+git fetch --jobs=200 github-derivative-maker
 
 git verify-commit "github-derivative-maker/master"
 
