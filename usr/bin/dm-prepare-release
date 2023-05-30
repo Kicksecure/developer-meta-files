@@ -54,7 +54,10 @@ windows_installer() {
    ## https://github.com/Whonix/Whonix-Installer/blob/main/build.sh
 
    ## https://gitlab.com/whonix/virtualbox-windows-installer-binary
+
+   ## TODO: check and fail early for official builds if missing
    test -d ~/virtualbox-windows-installer-binary
+
    FILE_VBOX_INST_EXE="$(ls ~/virtualbox-windows-installer-binary/*.exe)"
 
    test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
@@ -62,29 +65,23 @@ windows_installer() {
    test -f "$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe"
    test -f "$FILE_VBOX_INST_EXE"
 
-   if ! [ -x "$(command -v wixl)" ]; then
-      echo "$0: ERROR: wixl is not installed." >&2
-      exit 1
-   fi
-
    rm -f "$binary_image_windows_installer_exe"
    mkdir --parents "$binary_image_windows_installer_folder"
 
    pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
 
-   wixl \
-      --verbose \
-      --arch x64 \
-      --define whonixVersion="${dist_build_version}" \
-      --define whonixInstallerVersion="200" \
-      --define whonixManufacturer="ENCRYPTED SUPPORT LP" \
-      --define whonixDescription="Whonix Starter" \
-      --define whonixFileLicense="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
-      --define whonixFileOva="$binary_image_ova" \
-      --define whonixFileMainExe="$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe" \
-      --define whonixFileVboxExe="$FILE_VBOX_INST_EXE" \
-      --output "$binary_image_windows_installer_exe" \
-      "Whonix.wxs"
+   export VERSION="${dist_build_version}"
+   ## TODO: OK?
+   export INSTALLER_VERSION="${dist_build_version}"
+   export MANUFACTURE="ENCRYPTED SUPPORT LP"
+   export DESCRIPTION="Whonix-Starter"
+   export FILE_LICENSE="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+   export FILE_WHONIX_OVA="$binary_image_ova"
+   export FILE_WHONIX_EXE="$source_code_folder_dist/windows/Whonix-Starter-Binary/Whonix.exe"
+   export FILE_VBOX_INST_EXE="$FILE_VBOX_INST_EXE"
+   export FILE_INSTALLER_BINARY_WITH_APPENDED_OVA="$binary_image_windows_installer_exe"
+
+   "$source_code_folder_dist/windows/Whonix-Installer/build.sh"
 
    popd >/dev/null
 }
