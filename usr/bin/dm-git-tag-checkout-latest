@@ -25,7 +25,11 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$MYDIR"
 
-cd ../../../
+## XXX
+cd ~/derivative-maker
+
+## Debugging.
+pwd
 
 if [ "$(id -u)" = "0" ]; then
    error "Do not run this as root!"
@@ -35,7 +39,7 @@ if [ ! "$(git status --porcelain)" = "" ]; then
    error "Command git status --porcelain failed at the beginning!"
 fi
 
-git fetch --jobs=200
+git fetch --jobs=200 github-derivative-maker
 
 git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
 
