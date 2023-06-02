@@ -1,3 +1,21 @@
+commit 2937074c708e71dbb8834aec5b76cee1e80703d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 31 13:12:52 2023 +0000
+
+    import from Whonix-Installer
+
+commit b2fb6c0ddf1b18b120cdfc2464c31cc7a4687efa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 30 20:24:18 2023 +0000
+
+    .
+
+commit f8d71e503a459146f2b609d47f306917aa091164
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 30 14:27:47 2023 +0000
+
+    bumped changelog version
+
 commit 2404d00aa010f8cf85dd2d08ee58a700715c9a34
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue May 30 10:30:36 2023 +0000
