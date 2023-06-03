@@ -24,6 +24,27 @@ install_dependencies() {
 
 install_ppcross() {
   install_ppcross_using_git_from_upstream
+  #install_ppcross_using_debian_source_package
+}
+
+install_ppcross_using_debian_source_package() {
+  rm --force --recursive /tmp/fpc-compile-temp
+
+  mkdir --parents /tmp/fpc-compile-temp
+
+  cd /tmp/fpc-compile-temp
+
+  apt-get source fpc
+
+  cd fpc-*
+
+  ## regenerate Makefile.fpc
+  ## https://wiki.freepascal.org/Fpcmake
+  fpcmake -w -Tall
+
+  make clean all OS_TARGET="$OS_TARGET" CPU_TARGET="$CPU_TARGET"
+  make crossinstall OS_TARGET=$OS_TARGET CPU_TARGET="$CPU_TARGET" INSTALL_PREFIX=/usr
+  ln -sf "$fpc_version_path/$COMPILER" "/usr/bin/$COMPILER"
 }
 
 install_ppcross_using_git_from_upstream() {
