@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
 FPC_VERSION=3.2.2
 FPC_COMMIT_FOR_VERSION=0d122c49534b480be9284c21bd60b53d99904346 # 3.2.2
 
