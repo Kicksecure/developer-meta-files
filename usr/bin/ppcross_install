@@ -22,8 +22,11 @@ install_dependencies() {
 	apt-get install --yes --no-install-recommends make git fpc lazarus
 }
 
-# clone fpcsrc from repo, build and install ppcross
 install_ppcross() {
+	install_ppcross_using_git_from_upstream
+}
+
+install_ppcross_using_git_from_upstream() {
 	if [ ! -d "/usr/share/fpcsrc" ]; then
 		echo "$0: ERROR: Cannot find fpc source dir!"
 		exit 1
