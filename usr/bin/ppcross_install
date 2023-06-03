@@ -13,64 +13,64 @@ echo "$0: START"
 
 # check if script run as root
 if [ "$(id -u)" != "0" ]; then
-	echo "$0: ERROR: This must be run as root!"
-	exit 1
+  echo "$0: ERROR: This must be run as root!"
+  exit 1
 fi
 
 # optional! install requirements
 install_dependencies() {
-	apt-get install --yes --no-install-recommends make git fpc lazarus
+  apt-get install --yes --no-install-recommends make git fpc lazarus
 }
 
 install_ppcross() {
-	install_ppcross_using_git_from_upstream
+  install_ppcross_using_git_from_upstream
 }
 
 install_ppcross_using_git_from_upstream() {
-	if [ ! -d "/usr/share/fpcsrc" ]; then
-		echo "$0: ERROR: Cannot find fpc source dir!"
-		exit 1
-	else
-		cd /usr/share/fpcsrc
+  if [ ! -d "/usr/share/fpcsrc" ]; then
+    echo "$0: ERROR: Cannot find fpc source dir!"
+    exit 1
+  else
+    cd /usr/share/fpcsrc
 
-		fpc_version_path="/usr/lib/fpc/$FPC_VERSION"
-		rm --recursive --force "$fpc_version_path"
-		mkdir --parents "$fpc_version_path"
-		cd "$fpc_version_path"
+    fpc_version_path="/usr/lib/fpc/$FPC_VERSION"
+    rm --recursive --force "$fpc_version_path"
+    mkdir --parents "$fpc_version_path"
+    cd "$fpc_version_path"
 
-		git init
-		git remote add origin https://gitlab.com/freepascal.org/fpc/source.git
-		git fetch --depth 1 origin "$FPC_COMMIT_FOR_VERSION"
-		git checkout FETCH_HEAD
+    git init
+    git remote add origin https://gitlab.com/freepascal.org/fpc/source.git
+    git fetch --depth 1 origin "$FPC_COMMIT_FOR_VERSION"
+    git checkout FETCH_HEAD
 
-		make clean all OS_TARGET="$OS_TARGET" CPU_TARGET="$CPU_TARGET"
-		make crossinstall OS_TARGET=$OS_TARGET CPU_TARGET="$CPU_TARGET" INSTALL_PREFIX=/usr
-		ln -sf "$fpc_version_path/$COMPILER" "/usr/bin/$COMPILER"
-	fi
+    make clean all OS_TARGET="$OS_TARGET" CPU_TARGET="$CPU_TARGET"
+    make crossinstall OS_TARGET=$OS_TARGET CPU_TARGET="$CPU_TARGET" INSTALL_PREFIX=/usr
+    ln -sf "$fpc_version_path/$COMPILER" "/usr/bin/$COMPILER"
+  fi
 }
 
 # add searchpath for fpc compiler
 add_searchpath() {
-	if grep "Fu/usr/lib/fpc" /etc/fpc.cfg; then
-		echo "$0: INFO: /etc/fpc.cfg already contains Fu/usr/lib/fpc"
-	else
-		sed -i '/^# searchpath for units.*/a -Fu/usr/lib/fpc/$fpcversion/units/$fpctarget/*' /etc/fpc.cfg
-	fi
+  if grep "Fu/usr/lib/fpc" /etc/fpc.cfg; then
+    echo "$0: INFO: /etc/fpc.cfg already contains Fu/usr/lib/fpc"
+  else
+    sed -i '/^# searchpath for units.*/a -Fu/usr/lib/fpc/$fpcversion/units/$fpctarget/*' /etc/fpc.cfg
+  fi
 }
 
 case "$1" in
-	install_dependencies) install_dependencies;;
-	install_ppcross) install_ppcross;;
-	add_searchpath) add_searchpath;;
-	all)
-		install_dependencies
-		install_ppcross
-		add_searchpath
-	;;
-	*)
-		echo "$0: ERROR: choose either install_dependencies, install_ppcross, add_searchpath or all"
-		exit 1
-	;;
+  install_dependencies) install_dependencies;;
+  install_ppcross) install_ppcross;;
+  add_searchpath) add_searchpath;;
+  all)
+    install_dependencies
+    install_ppcross
+    add_searchpath
+  ;;
+  *)
+    echo "$0: ERROR: choose either install_dependencies, install_ppcross, add_searchpath or all"
+  exit 1
+  ;;
 esac
 
 echo "$0: INFO: END: OK".
