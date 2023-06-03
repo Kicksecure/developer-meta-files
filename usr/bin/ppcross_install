@@ -3,6 +3,7 @@
 ## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+set -x
 set -e
 
 FPC_VERSION=3.2.2
