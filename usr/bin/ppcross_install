@@ -13,11 +13,11 @@ CPU_TARGET=x86_64
 OS_TARGET=win64
 COMPILER=ppcrossx64
 
-echo "$0: START"
+true "$0: START"
 
 # check if script run as root
 if [ "$(id -u)" != "0" ]; then
-  echo "$0: ERROR: This must be run as root!"
+  true "$0: ERROR: This must be run as root!"
   exit 1
 fi
 
@@ -53,7 +53,7 @@ install_ppcross_using_debian_source_package() {
 
 install_ppcross_using_git_from_upstream() {
   if [ ! -d "/usr/share/fpcsrc" ]; then
-    echo "$0: ERROR: Cannot find fpc source dir!"
+    true "$0: ERROR: Cannot find fpc source dir!"
     exit 1
   else
     cd /usr/share/fpcsrc
@@ -77,7 +77,7 @@ install_ppcross_using_git_from_upstream() {
 # add searchpath for fpc compiler
 add_searchpath() {
   if grep "Fu/usr/lib/fpc" /etc/fpc.cfg; then
-    echo "$0: INFO: /etc/fpc.cfg already contains Fu/usr/lib/fpc"
+    true "$0: INFO: /etc/fpc.cfg already contains Fu/usr/lib/fpc"
   else
     sed -i '/^# searchpath for units.*/a -Fu/usr/lib/fpc/$fpcversion/units/$fpctarget/*' /etc/fpc.cfg
   fi
@@ -93,11 +93,11 @@ case "$1" in
     add_searchpath
   ;;
   *)
-    echo "$0: ERROR: choose either install_dependencies, install_ppcross, add_searchpath or all"
+    true "$0: ERROR: choose either install_dependencies, install_ppcross, add_searchpath or all"
   exit 1
   ;;
 esac
 
-echo "$0: INFO: END: OK".
+true "$0: INFO: END: OK".
 
 exit 0
