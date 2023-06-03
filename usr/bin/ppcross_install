@@ -44,7 +44,8 @@ install_ppcross_using_debian_source_package() {
 
   ## regenerate Makefile.fpc
   ## https://wiki.freepascal.org/Fpcmake
-  fpcmake -w -Tall
+  #fpcmake -w -Tall
+  fpcmake -w -Tx86_64-win64
 
   make clean all OS_TARGET="$OS_TARGET" CPU_TARGET="$CPU_TARGET"
   make crossinstall OS_TARGET=$OS_TARGET CPU_TARGET="$CPU_TARGET" INSTALL_PREFIX=/usr
