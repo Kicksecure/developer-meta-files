@@ -1,3 +1,63 @@
+commit a8f8ae7df50fbae14e08a3365932ad96dfb1daaf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 09:11:22 2023 +0000
+
+    .
+
+commit 10ff8251d200c12c754bdd3dfd9f51e78e59a4b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:51:18 2023 +0000
+
+    output
+
+commit 73b488d347994083c059754f2c837f592e8f45fe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:50:51 2023 +0000
+
+    debugging
+
+commit a991af73eaf902acf901e7d864995abe99c0ca49
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:50:38 2023 +0000
+
+    refactoring
+
+commit eed4ccd9259e57af447e81ec52a9311a3d994e0a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:50:13 2023 +0000
+
+    minor
+
+commit 6767423ff2da677f6d0279f50aa58a308cb68b41
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:49:56 2023 +0000
+
+    copyright
+
+commit 36ae3d156fcaeca1d12466ea56f5f112df7ababe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:47:20 2023 +0000
+
+    towards install_ppcross_using_debian_source_package
+
+commit 03aff400e6d851185fb5af1753dad1f47dd863ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:38:29 2023 +0000
+
+    refactoring
+
+commit 9dd2f6c02b621a2a7c2025c3e3faba84cb888295
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 3 08:35:15 2023 +0000
+
+    refactoring
+
+commit b3d59a9b4663b198dc92c3218bd1625e6b798ecc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jun 2 13:36:41 2023 +0000
+
+    bumped changelog version
+
 commit 2937074c708e71dbb8834aec5b76cee1e80703d9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 31 13:12:52 2023 +0000
