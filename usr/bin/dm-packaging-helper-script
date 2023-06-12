@@ -813,23 +813,8 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_project16() {
-   git checkout master
-   git branch ${project_name_short_lowercase}16 || true
-   true
-}
-
-pkg_git_diff_branch_project16() {
-   git checkout master
-   git diff ${project_name_short_lowercase}16 || true
-   true
-}
-
-pkg_git_update_branch_project16() {
-   git checkout master
-   git checkout ${project_name_short_lowercase}16
-   git merge --ff-only master
-   git checkout master
+pkg_git_branch_bullseye() {
+   git branch bullseye || true
    true
 }
 
@@ -838,8 +823,8 @@ pkg_git_branch_checkout_master() {
    true
 }
 
-pkg_git_branch_checkout_project16() {
-   git checkout ${project_name_short_lowercase}16
+pkg_git_branch_checkout_bullseye() {
+   git checkout bullseye
    true
 }
 
