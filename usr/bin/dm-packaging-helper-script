@@ -202,6 +202,7 @@ commit_filter() {
         "description" \
         "buster" \
         "bullseye" \
+        "bookworm" \
         "cleanup" \
         "license" \
         "update path to pre.bsh" \
@@ -813,8 +814,8 @@ pkg_git_remotes_add() {
    true
 }
 
-pkg_git_branch_bullseye() {
-   git branch bullseye || true
+pkg_git_branch_bookworm() {
+   git branch bookworm || true
    true
 }
 
@@ -825,6 +826,11 @@ pkg_git_branch_checkout_master() {
 
 pkg_git_branch_checkout_bullseye() {
    git checkout bullseye
+   true
+}
+
+pkg_git_branch_checkout_bookworm() {
+   git checkout bookworm
    true
 }
 
@@ -902,7 +908,7 @@ pkg_debhelper_bump() {
    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/rules"
 
    git add "$repo_full_path/debian/rules"
-   git commit -m "port to debian bullseye" || true
+   git commit -m "port to debian bookworm" || true
 }
 
 pkg_packaging_files_diff() {
@@ -1111,7 +1117,7 @@ pkg_git_commit_packaging() {
    #git add debian/*.install
    git add debian/control
    #git add -A
-   msg="bullseye"
+   msg="bookworm"
    git commit -m "$msg"
    git status
    true
@@ -1119,7 +1125,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="bullseye"
+   msg="bookworm"
    git commit -m "$msg" || true
    git status
    true
