@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Copyright (C) 2012 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 set -x
@@ -1125,8 +1125,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="abolish /rw/config parsing
-(Does not influence Qubes specific /rw/config parsing.)"
+   msg="update copyright year"
    git commit -m "$msg" || true
    git status
    true
@@ -1599,7 +1598,7 @@ debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
 }
 
 debian_watch_file_create() {
-   echo "## Copyright (C) 2012 - 2022 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+   echo "## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
