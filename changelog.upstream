@@ -1,3 +1,46 @@
+commit f7d29dde008be8f9fd50978a60355c6fe3f2f975
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 14:51:57 2023 +0000
+
+    update copyright year
+
+commit 799909522c964ffbd352f752ca9327ae5b27762b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 14:48:02 2023 +0000
+
+    abolish /rw/config parsing
+    (Does not influence Qubes specific /rw/config parsing.)
+
+commit 74314f7310fd165fde4824d30654d5568f5afadc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 14:21:10 2023 +0000
+
+    bookworm
+
+commit fdfb1c7b68fb7fdd858af55f62530ac8f66cb397
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 14:20:12 2023 +0000
+
+    bookworm
+
+commit 4c23b2b18b7566c4c699376ba30aafa053ea90fa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 11:17:35 2023 +0000
+
+    bookworm
+
+commit 6c2ec1885f60870740e70475fcadb5f541f5c14b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 11:05:16 2023 +0000
+
+    .
+
+commit edb575ea1156fc00dd3758261590cb34429df7b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 12 10:57:20 2023 +0000
+
+    bumped changelog version
+
 commit 92424fb503b20cc0642e396a7af2b4c40bac0ceb
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Jun 10 21:38:55 2023 +0000
