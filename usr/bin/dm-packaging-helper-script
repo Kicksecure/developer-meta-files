@@ -1125,7 +1125,8 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="bookworm"
+   msg="abolish /rw/config parsing
+(Does not influence Qubes specific /rw/config parsing.)"
    git commit -m "$msg" || true
    git status
    true
