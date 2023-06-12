@@ -61,6 +61,6 @@ while read -r line; do
          "$file_name" "$deb" ; then
       continue
    fi
-done < ./dists/bullseye-testers/main/binary-amd64/Packages
+done < ./dists/bookworm-testers/main/binary-amd64/Packages
 
-# ./dists/bullseye-developers/main/binary-amd64/Packages
+# ./dists/bookworm-developers/main/binary-amd64/Packages
