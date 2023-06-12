@@ -887,7 +887,7 @@ pkg_debhelper_bump() {
 #    LANG=C str_replace "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
-#    two="Standards-Version: 4.5.1
+#    two="Standards-Version: 4.6.1.0
 
 #    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
@@ -1125,7 +1125,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="update copyright year"
+   msg="Standards-Version: 4.6.1.0"
    git commit -m "$msg" || true
    git status
    true
