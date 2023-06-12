@@ -33,7 +33,7 @@ Upload to whonix.org
 
 Upload to kicksecure.com
 
-* (server fingerprint: `256 SHA256:NuvDfRYfQiX4MeQZbENPbaenSKatJ2Lwrrmi78jSZtg root@Debian-105-buster-64-minimal (ED25519)`)
+* (server fingerprint: `256 SHA256:NuvDfRYfQiX4MeQZbENPbaenSKatJ2Lwrrmi78jSZtg root@Debian-105-bookworm-64-minimal (ED25519)`)
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
