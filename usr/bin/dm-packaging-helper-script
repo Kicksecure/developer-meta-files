@@ -1127,7 +1127,7 @@ pkg_git_commit_packaging() {
 
 pkg_git_commit_all_things() {
    git add -A
-   msg="Standards-Version: 4.6.1.0"
+   msg="copyright"
    git commit -m "$msg" || true
    git status
    true
