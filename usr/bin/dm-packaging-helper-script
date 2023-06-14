@@ -1063,7 +1063,9 @@ pkg_git_commmit_readme() {
 
 pkg_git_commit_changelog() {
    git add debian/changelog
-   git add changelog.upstream
+   if test -f changelog.upstream ; then
+      git add changelog.upstream
+   fi
    msg="bumped changelog version"
    git commit -m "$msg"
    git status

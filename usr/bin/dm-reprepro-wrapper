@@ -46,11 +46,17 @@ reprepro_wrap() {
 }
 
 main() {
+   ## Old:
    ## For now add all packages to both distributions.
-   for derivative_name_item in $derivative_name_list ; do
-      set_dist_build_reprepro_folder_options
-      reprepro_wrap "$@"
-   done
+   #for derivative_name_item in $derivative_name_list ; do
+      #derivative_repository_name="$derivative_name_item"
+      #set_dist_build_reprepro_folder_options
+      #reprepro_wrap "$@"
+   #done
+
+   ## New:
+   set_dist_build_reprepro_folder_options
+   reprepro_wrap "$@"
 }
 
 main "$@"
