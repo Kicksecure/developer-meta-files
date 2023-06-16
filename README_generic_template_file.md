@@ -8,7 +8,7 @@ wget https://www.kicksecure.com/keys/derivative.asc
 
 Users can [check the Signing Key](https://www.kicksecure.com/wiki/Signing_Key) for better security.
 
-2\. Add the APT Signing Key..
+2\. Add the APT Signing Key.
 
 ```
 sudo cp ~/derivative.asc /usr/share/keyrings/derivative.asc
@@ -50,7 +50,7 @@ NOTE: Replace `generic-package` with the actual name of this package `package-na
 ## Contact ##
 
 * [Free Forum Support](https://forums.kicksecure.com)
-* [Professional Support](https://www.kicksecure.com/wiki/Professional_Support)
+* [Premium Support](https://www.kicksecure.com/wiki/Premium_Support)
 
 ## Donate ##
 
