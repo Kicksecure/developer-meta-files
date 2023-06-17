@@ -23,7 +23,8 @@ source ~/derivative-maker/help-steps/variables
 cd "$mydir_backup"
 
 for derivative_name_item in $derivative_name_list ; do
-   export derivative_name_item
+   derivative_repository_name="$derivative_name_item"
+   export derivative_repository_name
 
    #dm-reprepro-wrapper copymatched bullseye-testers bullseye-developers "*"
    dm-reprepro-wrapper copymatched bookworm-testers bookworm-developers "*"
