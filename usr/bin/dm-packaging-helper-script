@@ -887,12 +887,12 @@ pkg_debhelper_bump() {
 #    LANG=C str_replace "$one" "$two" COPYING
 
 #    one="Standards-Version: 3.9.8"
-#    two="Standards-Version: 4.6.1.0
+#    two="Standards-Version: 4.6.2
 
 #    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
-#    two="debian-watch-does-not-check-gpg-signature"
+#    two="debian-watch-does-not-check-openpgp-signature"
 #    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
 #
 #    one="ruby-ronn"
@@ -1582,14 +1582,14 @@ pkg_add_lintian_watch_gpg_override() {
    mkdir --parents "./debian/source"
    echo "\
 ## https://phabricator.whonix.org/T277
-debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
+debian-watch-does-not-check-openpgp-signature" > "./debian/source/lintian-overrides"
 }
 
 pkg_git_commit_lintian_watch_gpg_override() {
    git add "./debian/source/lintian-overrides"
    local msg
    msg="\
-added debian/source/lintian-overrides with debian-watch-does-not-check-gpg-signature to fix lintian warning - https://phabricator.whonix.org/T277"
+added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning - https://phabricator.whonix.org/T277"
    git commit -m "$msg"
    true
 }
@@ -1598,7 +1598,7 @@ pkg_add_lintian_watch_gpg_override() {
    mkdir --parents "./debian/source"
    echo "\
 ## https://phabricator.whonix.org/T277
-debian-watch-does-not-check-gpg-signature" > "./debian/source/lintian-overrides"
+debian-watch-does-not-check-openpgp-signature" > "./debian/source/lintian-overrides"
 }
 
 debian_watch_file_create() {
