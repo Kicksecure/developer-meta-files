@@ -26,7 +26,7 @@ benchmark_time_end() {
 }
 
 variables() {
-   vmname="Whonix-Gateway-XFCE"
+   vmname="Whonix-Gateway-Xfce"
    vmname_with_quotes='"$vmname"'
    user_name="user"
    password="changeme"
@@ -44,7 +44,7 @@ vm_is_running_test() {
    running_vms_list="$($vboxmanage_cmd list runningvms)" || true
 
    ## example running_vms_list:
-   ## "Whonix-Workstation-XFCE" {c504a345-8217-4954-8864-a5270a661b11}
+   ## "Whonix-Workstation-Xfce" {c504a345-8217-4954-8864-a5270a661b11}
 
    vm_running=false
    for word in $running_vms_list ; do
@@ -143,7 +143,7 @@ install_packages() {
 }
 
 snapshot_vm_create() {
-   #VBoxManage snapshot Whonix-Gateway-XFCE list --machinereadable
+   #VBoxManage snapshot Whonix-Gateway-Xfce list --machinereadable
 
    #SnapshotName="before-dev-upgrade"
    #SnapshotUUID="23f0703b-79e7-436b-9a5e-67e8cc6aace0"

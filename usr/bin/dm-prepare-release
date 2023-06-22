@@ -688,7 +688,7 @@ main() {
    vm_multiple=false
    if [ "$dist_build_type_long" = "workstation" ]; then
       vm_multiple=true
-      ## dist_build_desktop could be KDE, CLI, XFCE, RPi or CUSTOM
+      ## dist_build_desktop could be KDE, CLI, Xfce, RPi or CUSTOM
       vm_names_to_be_exported="Whonix-Gateway-${dist_build_desktop} Whonix-Workstation-${dist_build_desktop}"
    fi
    if [ "$dist_build_type_long" = "custom-workstation" ]; then
