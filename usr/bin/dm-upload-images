@@ -41,10 +41,6 @@ show_files() {
 }
 
 upload_files() {
-   if [ "$dist_server_with_upload_location_item" = "" ]; then
-      error "Variable dist_server_with_upload_location_item is empty."
-   fi
-
    if [ "$dist_build_installer_dist" = "true" ]; then
       dist_server_with_upload_location_item_with_version_maybe="${dist_server_with_upload_location_item}/"
    else
@@ -112,8 +108,15 @@ main() {
       error "Variable dist_build_version is empty."
    fi
 
+   if [ "$dist_server_with_upload_location_list" = "" ]; then
+      error "Variable dist_server_with_upload_location_list is empty."
+   fi
+
    show_files "$@"
-   upload_files "$@"
+
+   for dist_server_with_upload_location_item in $dist_server_with_upload_location_list ; do
+      upload_files "$@"
+   done
 
    true
 }
