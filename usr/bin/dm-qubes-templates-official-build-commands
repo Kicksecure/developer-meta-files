@@ -13,10 +13,12 @@ dm-quickgittagsign
 
 cd ~/sourcesother/qubes-builder
 
-echo "16"
-VMs="whonix-gateway-16 whonix-workstation-16"
+whonix_version="17"
+qubes_release="4.2"
+
+VMs="whonix-gateway-${whonix_version} whonix-workstation-${whonix_version}"
 
 true "press ctrl + c to abort"
 read question
 
-RELEASE=4.1 REPO_PROXY="" make DISTS_VM="$VMs" template-github
+RELEASE="$qubes_release" REPO_PROXY="" make DISTS_VM="$VMs" template-github
