@@ -7,9 +7,7 @@ set -x
 true "INFO: Currently running script: $BASH_SOURCE $@"
 set -o pipefail
 
-## disable cmd line parser, since not needed
-export dist_build_one_parsed="1"
-export VMNAME="internalrun"
+dist_build_internal_run="true"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"

@@ -11,9 +11,7 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-## disable cmd line parser, since not needed
-export dist_build_one_parsed="1"
-export VMNAME="internalrun"
+dist_build_internal_run="true"
 
 source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
