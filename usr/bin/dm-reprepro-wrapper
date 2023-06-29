@@ -12,6 +12,7 @@ set -e
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
 dist_build_internal_run="true"
+dist_build_one_parsed="true"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
