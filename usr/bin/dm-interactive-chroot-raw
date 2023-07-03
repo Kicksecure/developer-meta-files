@@ -29,9 +29,9 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 Unchrooting.. Unpreventing daemons from starting... Unmounting raw...
 "
 
-   "$dist_source_help_steps_folder"/unchroot-raw
-   "$dist_source_help_steps_folder"/unprevent-daemons-from-starting
-   "$dist_source_help_steps_folder"/unmount-raw
+   "$dist_source_help_steps_folder"/unchroot-raw "$@"
+   "$dist_source_help_steps_folder"/unprevent-daemons-from-starting "$@"
+   "$dist_source_help_steps_folder"/unmount-raw "$@"
 
    echo "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
@@ -44,15 +44,15 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 main() {
    trap "error_handler_interactive-chroot-raw" ERR INT TERM
 
-   "$dist_source_help_steps_folder"/mount-raw
+   "$dist_source_help_steps_folder"/mount-raw "$@"
 
    echo "${cyan}INFO: Trying to prevent daemons from starting, if /usr/sbin/ folder already exist (will fail open, if not)...${reset}"
 
-   "$dist_source_help_steps_folder"/prevent-daemons-from-starting || true
+   "$dist_source_help_steps_folder"/prevent-daemons-from-starting "$@" || true
 
    ## Networking should be available. Otherwise use the following.
    #export dist_chroot_mount_resolv_conf="0" "$dist_source_help_steps_folder"/chroot-raw
-   "$dist_source_help_steps_folder"/chroot-raw
+   "$dist_source_help_steps_folder"/chroot-raw "$@"
 
    sync
 
@@ -64,7 +64,7 @@ main() {
 
    echo "${cyan}INFO: Trying to make local APT repository available inside chroot, if already available (will fail open, if not)...${reset}"
 
-   "$dist_source_help_steps_folder"/create-local-temp-apt-repo || true
+   "$dist_source_help_steps_folder"/create-local-temp-apt-repo "$@" || true
 
    sync
 
@@ -79,14 +79,14 @@ main() {
 
    echo "${green}INFO: Exited (0) interactive shell.${reset}"
 
-   "$dist_source_help_steps_folder"/remove-local-temp-apt-repo
+   "$dist_source_help_steps_folder"/remove-local-temp-apt-repo "$@"
 
    $CHROOT sync
    sync
 
-   "$dist_source_help_steps_folder"/unchroot-raw
-   "$dist_source_help_steps_folder"/unprevent-daemons-from-starting
-   "$dist_source_help_steps_folder"/unmount-raw
+   "$dist_source_help_steps_folder"/unchroot-raw "$@"
+   "$dist_source_help_steps_folder"/unprevent-daemons-from-starting "$@"
+   "$dist_source_help_steps_folder"/unmount-raw "$@"
 
    sync
 

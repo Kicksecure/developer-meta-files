@@ -32,7 +32,7 @@ main() {
    ## This file doesn't include Whonix's APT repository.
    cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
-   "$dist_source_help_steps_folder/create-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 
    ## Reading local repository containing Whonix's packages.
    $CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
@@ -60,7 +60,7 @@ main() {
 
    #$CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
 
-   "$dist_source_help_steps_folder/remove-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/remove-local-temp-apt-repo" "$@"
 
    ## Forget about local repository containing Whonix's packages.
    $CHROOT apt-get --no-download --list-cleanup update

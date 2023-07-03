@@ -29,7 +29,7 @@ sanity_tests() {
 
    command -v rsstail
 
-   "$dist_source_help_steps_folder/gpg_test_sign"
+   "$dist_source_help_steps_folder/gpg_test_sign" "$@"
 }
 
 sign_cmd() {

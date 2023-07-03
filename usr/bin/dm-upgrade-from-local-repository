@@ -23,10 +23,10 @@ main() {
 
    sync
 
-   "$dist_source_help_steps_folder/mount-raw"
+   "$dist_source_help_steps_folder/mount-raw" "$@"
    #"$dist_source_help_steps_folder/prevent-daemons-from-starting"
 
-   dist_chroot_mount_resolv_conf="0" "$dist_source_help_steps_folder/chroot-raw"
+   dist_chroot_mount_resolv_conf="0" "$dist_source_help_steps_folder/chroot-raw" "$@"
 
    sync
 
@@ -62,7 +62,7 @@ main() {
    #$CHROOT apt-get ${APTGETOPT[@]} update
    #$CHROOT apt-get ${APTGETOPT[@]} --yes dist-upgrade
 
-   "$dist_source_help_steps_folder/create-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 
    ## Check if we are running on a Whonix-Gateway.
    if [ -f "/usr/share/anon-gw-base-files/gateway" ]; then
@@ -93,7 +93,7 @@ main() {
 
    #$CHROOT apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
 
-   "$dist_source_help_steps_folder/remove-local-temp-apt-repo"
+   "$dist_source_help_steps_folder/remove-local-temp-apt-repo" "$@"
 
    ## Forget about local repository containing Whonix's packages.
    $CHROOT apt-get --no-download --list-cleanup update
@@ -104,9 +104,9 @@ main() {
    ## Remove lockfile for systemcheck.
    rm --force "/run/package_manager_lock"
 
-   "$dist_source_help_steps_folder/unchroot-raw"
+   "$dist_source_help_steps_folder/unchroot-raw" "$@"
    #"$dist_source_help_steps_folder/unprevent-daemons-from-starting"
-   "$dist_source_help_steps_folder/unmount-raw"
+   "$dist_source_help_steps_folder/unmount-raw" "$@"
 
    sync
 }

@@ -24,7 +24,7 @@ sanity_tests() {
    test -f "$signify_private_key"
    test -f "$binary_image_installer_dist_source"
 
-   "$dist_source_help_steps_folder/gpg_test_sign"
+   "$dist_source_help_steps_folder/gpg_test_sign" "$@"
 }
 
 installer_dist() {
@@ -669,7 +669,7 @@ signatures_verify() {
 }
 
 main() {
-   sanity_tests
+   sanity_tests "$@"
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "$dist_build_type_long" = "kicksecure" ]; then
