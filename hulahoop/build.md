@@ -3,7 +3,7 @@
 Setup build machine according to pages above then run the following commands to create builds:
 
 ```
-./derivative-maker --build --target qcow2 --flavor whonix-gateway-xfce --repo true
+./derivative-maker --target qcow2 --flavor whonix-gateway-xfce --repo true
 ```
 
 Optionally add `--connection onion` to force fetching packages from `.onion` servers.
@@ -15,11 +15,11 @@ For Kicksecure replace `whonix-gateway-xfce` with: `kicksecure-xfce` / `kicksecu
 Run command below to sign and compress.
 
 ```
-dm-prepare-release --build --target qcow2 --flavor kicksecure-xfce
+dm-prepare-release --target qcow2 --flavor kicksecure-xfce
 ```
 
 ```
-dm-prepare-release --build --target qcow2 --flavor whonix-workstation-xfce
+dm-prepare-release --target qcow2 --flavor whonix-workstation-xfce
 ```
 
 Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt images.
@@ -37,11 +37,11 @@ Upload to kicksecure.com
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
-dm-upload-images --build --target qcow2 --flavor kicksecure-xfce
+dm-upload-images --target qcow2 --flavor kicksecure-xfce
 ```
 
 ```
-dm-upload-images --build --target qcow2 --flavor whonix-workstation-xfce
+dm-upload-images --target qcow2 --flavor whonix-workstation-xfce
 ```
 
 Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt images.
@@ -55,5 +55,5 @@ Example usage...
 Note: The version number `8.5.5` needs to be updated if needed. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
 
 ```
-tbb_version="8.5.5" ~/derivative-maker/derivative-maker --build --target qcow2 --flavor whonix-workstation-xfce
+tbb_version="8.5.5" ~/derivative-maker/derivative-maker --target qcow2 --flavor whonix-workstation-xfce
 ```
