@@ -20,12 +20,12 @@ trap "build_all_error_handler" ERR
 
 pushd "$derivative_maker_main_source_code"
 
-./derivative-maker --clean --flavor whonix-gateway-xfce "$@"
-./build-steps.d/2500_convert-raw-to-vdi --build --flavor whonix-gateway-xfce "$@"
-./build-steps.d/2600_create-vbox-vm --build  --flavor whonix-gateway-xfce "$@"
-./build-steps.d/2700_export-vbox-vm --build  --flavor whonix-gateway-xfce "$@"
+./derivative-maker --flavor whonix-gateway-xfce "$@"
+./build-steps.d/2500_convert-raw-to-vdi --flavor whonix-gateway-xfce "$@"
+./build-steps.d/2600_create-vbox-vm --flavor whonix-gateway-xfce "$@"
+./build-steps.d/2700_export-vbox-vm --flavor whonix-gateway-xfce "$@"
 
-./derivative-maker --clean --flavor whonix-workstation-xfce "$@"
-./build-steps.d/2500_convert-raw-to-vdi --build --flavor whonix-workstation-xfce "$@"
-./build-steps.d/2600_create-vbox-vm --build --flavor whonix-workstation-xfce "$@"
-./build-steps.d/2700_export-vbox-vm --build --flavor whonix-workstation-xfce "$@"
+./derivative-maker --flavor whonix-workstation-xfce "$@"
+./build-steps.d/2500_convert-raw-to-vdi --flavor whonix-workstation-xfce "$@"
+./build-steps.d/2600_create-vbox-vm --flavor whonix-workstation-xfce "$@"
+./build-steps.d/2700_export-vbox-vm --flavor whonix-workstation-xfce "$@"
