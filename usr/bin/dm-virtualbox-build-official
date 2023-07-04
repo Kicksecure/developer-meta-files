@@ -22,6 +22,10 @@ flavors_list=(
 )
 
 for flavor_item in "${flavors_list[@]}"; do
+  ./derivative-delete "${official_args[@]}" --flavor "$flavor_item" "${debug_args_maybe[@]}"
+done
+
+for flavor_item in "${flavors_list[@]}"; do
   ./build-steps.d/1100_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "${debug_args_maybe[@]}"
 done
 
