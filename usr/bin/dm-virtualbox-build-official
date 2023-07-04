@@ -23,6 +23,9 @@ flavors_list=(
   kicksecure-cli
 )
 
+build_upload_noninteractive=true
+export build_upload_noninteractive
+
 for flavor_item in "${flavors_list[@]}"; do
   ./derivative-delete "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
@@ -49,6 +52,29 @@ export SKIP_SCRIPTS
 
 for flavor_item in "${flavors_list[@]}"; do
   ./derivative-maker "${official_args[@]}" --flavor "$flavor_item" "$@"
+done
+
+for flavor_item in "${flavors_list[@]}"; do
+  if echo "$flavor_item" | grep --quiet "gateway" ; then
+    ## Not needed for gateway due to unified images.
+    continue
+  fi
+  dm-prepare-release "${official_args[@]}" --flavor "$flavor_item" "$@"
+done
+
+for flavor_item in "${flavors_list[@]}"; do
+  if echo "$flavor_item" | grep --quiet "gateway" ; then
+    ## Not needed for gateway due to unified images.
+    continue
+  fi
+
+  if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
+    ## Skip upload of debug images.
+    echo dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
+    continue
+  fi
+
+  dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 true "$0: END"
