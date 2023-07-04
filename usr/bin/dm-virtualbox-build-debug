@@ -1,0 +1,24 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+debug_args_maybe=""
+debug_args_maybe+="--remote-derivative-packages true"
+export debug_args_maybe
+
+mkdir --parents ~/cached
+
+cached_binary_image_raw=~/cached/cached.raw
+export cached_binary_image_raw
+
+## 1. create a raw image
+#~/derivative-maker/build-steps.d/1300_create-raw-image --target raw --flavor kicksecure-xfce
+## 2. copy the created raw image to ~/cached/cached.raw
+
+test -r "$cached_binary_image_raw"
+
+dm-virtualbox-build-official

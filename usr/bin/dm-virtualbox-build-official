@@ -1,0 +1,47 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+## debug_args_maybe=""
+## debug_args_maybe+="--remote-derivative-packages true"
+
+official_args=""
+official_args+="--target virtualbox"
+official_args+="--repo true"
+
+flavors_list=(
+  whonix-workstation-xfce
+  whonix-gateway-xfce
+  kicksecure-xfce
+  whonix-workstation-cli
+  whonix-gateway-cli
+  kicksecure-cli
+)
+
+for flavor_item in "${flavors_list[@]}"; do
+  ./build-steps.d/1100_sanity-tests $official_args --flavor "$flavor_item" $debug_args_maybe
+done
+
+./build-steps.d/1120_prepare-build-machine $official_args --flavor internal $debug_args_maybe
+./build-steps.d/1130_cowbuilder-setup $official_args --flavor internal $debug_args_maybe
+./build-steps.d/1140_local-dependencies $official_args --flavor internal $debug_args_maybe
+./build-steps.d/1200_create-debian-packages $official_args --flavor internal $debug_args_maybe
+
+for flavor_item in "${flavors_list[@]}"; do
+  ./build-steps.d/1100_sanity-tests $official_args --flavor "$flavor_item" $debug_args_maybe
+done
+
+SKIP_SCRIPTS+=" 1100_sanity-tests "
+SKIP_SCRIPTS+=" 1120_prepare-build-machine "
+SKIP_SCRIPTS+=" 1130_cowbuilder-setup "
+SKIP_SCRIPTS+=" 1140_local-dependencies "
+SKIP_SCRIPTS+=" 1200_create-debian-packages "
+export SKIP_SCRIPTS
+
+for flavor_item in "${flavors_list[@]}"; do
+  ./derivative-maker $official_args --flavor "$flavor_item" $debug_args_maybe
+done
