@@ -6,7 +6,7 @@
 set -x
 set -e
 
-debug_args_maybe=""
+debug_args_maybe=()
 debug_args_maybe+=(--remote-derivative-packages true)
 
 mkdir --parents ~/cached
