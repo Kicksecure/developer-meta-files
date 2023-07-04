@@ -6,6 +6,8 @@
 set -x
 set -e
 
+true "$0: START"
+
 official_args=()
 official_args+=(--target virtualbox)
 official_args+=(--repo true)
@@ -48,3 +50,5 @@ export SKIP_SCRIPTS
 for flavor_item in "${flavors_list[@]}"; do
   ./derivative-maker "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
+
+true "$0: END"
