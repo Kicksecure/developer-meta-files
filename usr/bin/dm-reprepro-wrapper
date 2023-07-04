@@ -47,6 +47,7 @@ reprepro_wrap() {
 
 main() {
    ## Variable derivative_repository_name gets set by packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh
+   true "derivative_repository_name: $derivative_repository_name"
    set_dist_build_reprepro_folder_options
    reprepro_wrap "$@"
 }
