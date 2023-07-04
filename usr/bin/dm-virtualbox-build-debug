@@ -7,8 +7,7 @@ set -x
 set -e
 
 debug_args_maybe=""
-debug_args_maybe+="--remote-derivative-packages true"
-export debug_args_maybe
+debug_args_maybe+=(--remote-derivative-packages true)
 
 mkdir --parents ~/cached
 
@@ -21,4 +20,4 @@ export cached_binary_image_raw
 
 test -r "$cached_binary_image_raw"
 
-dm-virtualbox-build-official
+dm-virtualbox-build-official "${debug_args_maybe[@]}"

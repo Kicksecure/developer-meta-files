@@ -6,12 +6,11 @@
 set -x
 set -e
 
-## debug_args_maybe=""
-## debug_args_maybe+="--remote-derivative-packages true"
-
 official_args=""
-official_args+="--target virtualbox"
-official_args+="--repo true"
+official_args+=(--target virtualbox)
+official_args+=(--repo true)
+
+cd ~/derivative-maker
 
 flavors_list=(
   whonix-workstation-xfce
@@ -23,16 +22,16 @@ flavors_list=(
 )
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/1100_sanity-tests $official_args --flavor "$flavor_item" $debug_args_maybe
+  ./build-steps.d/1100_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "${debug_args_maybe[@]}"
 done
 
-./build-steps.d/1120_prepare-build-machine $official_args --flavor internal $debug_args_maybe
-./build-steps.d/1130_cowbuilder-setup $official_args --flavor internal $debug_args_maybe
-./build-steps.d/1140_local-dependencies $official_args --flavor internal $debug_args_maybe
-./build-steps.d/1200_create-debian-packages $official_args --flavor internal $debug_args_maybe
+./build-steps.d/1120_prepare-build-machine "${official_args[@]}" --flavor internal "${debug_args_maybe[@]}"
+./build-steps.d/1130_cowbuilder-setup "${official_args[@]}" --flavor internal "${debug_args_maybe[@]}"
+./build-steps.d/1140_local-dependencies "${official_args[@]}" --flavor internal "${debug_args_maybe[@]}"
+./build-steps.d/1200_create-debian-packages "${official_args[@]}" --flavor internal "${debug_args_maybe[@]}"
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/1100_sanity-tests $official_args --flavor "$flavor_item" $debug_args_maybe
+  ./build-steps.d/1100_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "${debug_args_maybe[@]}"
 done
 
 SKIP_SCRIPTS+=" 1100_sanity-tests "
@@ -43,5 +42,5 @@ SKIP_SCRIPTS+=" 1200_create-debian-packages "
 export SKIP_SCRIPTS
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-maker $official_args --flavor "$flavor_item" $debug_args_maybe
+  ./derivative-maker "${official_args[@]}" --flavor "$flavor_item" "${debug_args_maybe[@]}"
 done
