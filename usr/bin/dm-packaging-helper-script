@@ -1638,78 +1638,38 @@ do_nothing() {
 }
 
 announcement() {
-   echo "\
-$project_name_short ${version_main_new_short} - for VirtualBox - Point Release!
+   local temp
+   temp="$version_old_main"
+   temp=$(echo "$temp" | str_replace "-developers-only" "")
+   temp=$(echo "$temp" | str_replace "-testers-only" "")
+   temp=$(echo "$temp" | str_replace "-stable-only" "")
 
-# Testers Wanted!
+   version_main_new_short="$temp"
+   #release_type_short="point"
+   release_type_short="testers"
+
+   if [ "$release_type_short" = "testers" ]; then
+      release_type_long="Testers Wanted"
+      header_text="# Testers Wanted!
 
 Download the Testers-Only version of $project_name_short for VirtualBox:
 
-https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version
+https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version"
+      end_text="(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)"
+   elif [ "$release_type_short" = "point" ]; then
+      release_type_long="Point Release"
+      header_text="Download $project_name_short for VirtualBox:
 
-----
-
-Alternatively, in-place release upgrade is possible upgrade using [$project_name_short repository](https://www.${project_clearnet}/wiki/Project-APT-Repository).
-
-----
-
-This release would not have been possible without the numerous supporters of $project_name_short!
-
-----
-
-Please Donate!
-
-https://www.${project_clearnet}/wiki/Donate
-
-----
-
-Please Contribute!
-
-https://www.${project_clearnet}/wiki/Contribute
-
-----
-
-# Changelog
-
-TODO
-
-https://www.${project_clearnet}/wiki/Testers_Release
-
-$giant_git_log_file
-
-----
-
-# Full difference of all changes
-
-[https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}](https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main})
-
-----
-
-(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)" | \
-   tee "$announcements_draft_folder/${project_name_short}_VirtualBox_testers.txt" >/dev/null
-
-####
+https://www.${project_clearnet}/wiki/VirtualBox"
+      end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
+   else
+      error "invalid release_type_short!"
+   fi
 
    echo "\
-$project_name_short ${version_main_new_short} - for VirtualBox - Point Release!
+$project_name_short ${version_main_new_short} - for VirtualBox - $release_type!
 
-# $project_name_short for VirtualBox
-
-Download $project_name_short for VirtualBox:
-
-https://www.${project_clearnet}/wiki/VirtualBox
-
-----
-
-This is a point release.
-
-https://www.${project_clearnet}/wiki/Point_Release
-
-----
-
-# Major Changes
-
-TODO
+$header_text
 
 ----
 
@@ -1740,6 +1700,7 @@ https://www.${project_clearnet}/wiki/Contribute
 TODO
 
 https://www.${project_clearnet}/wiki/Stable_Release
+https://www.${project_clearnet}/wiki/Testers_Release
 
 $giant_git_log_file
 
@@ -1747,12 +1708,13 @@ $giant_git_log_file
 
 # Full difference of all changes
 
- https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}
+[https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}](https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main})
 
 ----
 
-(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)" | \
-   tee "$announcements_draft_folder/${project_name_short}_VirtualBox_point.txt" >/dev/null
+$end_text
+" | \
+   tee "$announcements_draft_folder/${project_name_short}.txt" >/dev/null
 }
 
 loop_helper_worker() {
@@ -1798,8 +1760,8 @@ loop_helper() {
 
    for derivative_name_item in $derivative_name_list ; do
       for item in ./packages/$derivative_name_item/* ; do
-         true pwd: $PWD
-         true item: $item
+         true "pwd: $PWD"
+         true "item: $item"
          if [ "$derivative_name_item" = "kicksecure" ]; then
             project_name_short=Kicksecure
             project_name_short_lowercase=kicksecure
@@ -1824,7 +1786,7 @@ loop_helper() {
    project_name_short=derivative-maker
    project_name_short_lowercase=derivative-maker
    project_clearnet="kicksecure.com"
-   giant_git_log_file="$announcements_draft_folder/${project_name_short_lowercase}_giant_git_log.txt"
+   giant_git_log_file="$announcements_draft_folder/kicksecure_giant_git_log.txt"
    item=derivative-maker
 
    loop_helper_worker "$@"
