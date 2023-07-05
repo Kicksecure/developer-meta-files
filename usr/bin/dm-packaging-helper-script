@@ -107,10 +107,15 @@ commit_filter() {
        set -x
        return 1
     fi
+    if echo "$commit_msg_short" | grep -i -q "Standards-Version" ; then
+       set -x
+       return 1
+    fi
 
     local text
 
     for text in \
+        "aa-logprof" \
         "Kicksecure" \
         "kicksecure" \
         "rename" \
@@ -231,6 +236,7 @@ commit_filter() {
         "style" \
         "upgrade license from GPLv2+ to GPLv3+" \
         "CI fix" \
+        "CI" \
         "."
         do
         if [ "$text" = "$commit_msg_short" ]; then
@@ -1667,7 +1673,7 @@ https://www.${project_clearnet}/wiki/VirtualBox"
    fi
 
    echo "\
-$project_name_short ${version_main_new_short} - for VirtualBox - $release_type!
+$project_name_short ${version_main_new_short} - for VirtualBox - $release_type_long!
 
 $header_text
 
@@ -1699,8 +1705,7 @@ https://www.${project_clearnet}/wiki/Contribute
 
 TODO
 
-https://www.${project_clearnet}/wiki/Stable_Release
-https://www.${project_clearnet}/wiki/Testers_Release
+https://www.${project_clearnet}/wiki/Changelog
 
 $giant_git_log_file
 
