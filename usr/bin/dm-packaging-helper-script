@@ -1703,13 +1703,15 @@ https://www.${project_clearnet}/wiki/Contribute
 
 ----
 
-# Changelog
+# Major Changes
 
 TODO
 
-https://www.${project_clearnet}/wiki/Changelog
-
 $giant_git_log_file
+
+# Changelog
+
+https://www.${project_clearnet}/wiki/Changelog
 
 ----
 
