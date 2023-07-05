@@ -116,6 +116,8 @@ commit_filter() {
 
     for text in \
         "aa-logprof" \
+        "bookworm aa-logprof" \
+        "release-upgrade" \
         "Kicksecure" \
         "kicksecure" \
         "rename" \
