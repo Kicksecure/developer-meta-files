@@ -1645,7 +1645,7 @@ do_nothing() {
 
 announcement() {
    local temp
-   temp="$version_old_main"
+   temp="$version_new_main"
    temp=$(echo "$temp" | str_replace "-developers-only" "")
    temp=$(echo "$temp" | str_replace "-testers-only" "")
    temp=$(echo "$temp" | str_replace "-stable-only" "")
