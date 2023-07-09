@@ -307,6 +307,7 @@ pkg_readme_creator_do() {
 
    matched=0
 
+   ## Start writing readme_file based on debian/control.
    while read -r line; do
       read -r first_word _ <<< "$line"
       if [ "$first_word" = "Description:" ]; then
@@ -345,14 +346,19 @@ pkg_readme_creator_do() {
 
    echo "" | tee -a "$readme_file" >/dev/null
 
+   ## Append readme_file based on generic_readme_template_file.
    while read -r line; do
-      line="${line/package-name/$reponame}"
       echo "$line" | tee -a "$readme_file" >/dev/null
    done < "$generic_readme_template_file"
 
    local search replace
-   search="##project_clearnet##"
+
+   search="%%project_clearnet%%"
    replace="$project_clearnet"
+   str_replace "$search" "$replace" "$readme_file"
+
+   search="%%package-name%%"
+   replace="$reponame"
    str_replace "$search" "$replace" "$readme_file"
 
    true "Done: $readme_file"
