@@ -14,7 +14,7 @@ official_args+=(--repo true)
 
 cd ~/derivative-maker
 
-flavors_list=(
+[ -n "$flavors_list" ] || flavors_list=(
   whonix-workstation-xfce
   whonix-gateway-xfce
   kicksecure-xfce
