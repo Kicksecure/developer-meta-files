@@ -70,7 +70,7 @@ for flavor_item in "${flavors_list[@]}"; do
 
   if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
     ## Skip upload of debug images.
-    echo dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
+    echo simulate-echo-only: dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
     continue
   fi
 
