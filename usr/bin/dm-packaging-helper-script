@@ -72,9 +72,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="16.1.1.5-developers-only"
-version_new_main="17.0.1.9-developers-only"
-version_main_new_short="17.0.1.9"
+version_old_main="17.0.1.9-developers-only"
+version_new_main="17.0.3.0-developers-only"
 
 ## XXX
 announcements_draft_folder=~/derivative-binary/announcements-drafts
@@ -1263,30 +1262,6 @@ $url" \
    echo "" | tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
 }
 
-pkg_git_log_giant_make() {
-   echo "TODO: giant_git_log_file"
-   exit 1
-
-   if [ "$giant_git_log_delete_once" = "" ]; then
-      giant_git_log_delete_once=done
-      announcement_create=true
-      rm -f "$announcements_draft_folder/derivative-maker_giant_git_log.txt"
-      rm -f "$announcements_draft_folder/kicksecure_giant_git_log.txt"
-      rm -f "$announcements_draft_folder/whonix_giant_git_log.txt"
-   fi
-
-   echo "########################################" | tee -a "$giant_git_log_file" >/dev/null
-   echo "" | tee -a "$giant_git_log_file" >/dev/null
-   echo "https://github.com/$project_name_short/$reponame" | tee -a "$giant_git_log_file" >/dev/null
-
-   git --no-pager shortlog "${version_old}..${version_new}" | tee -a "$giant_git_log_file" >/dev/null
-
-   ## TODO
-   #$(git describe)..master
-
-   true
-}
-
 pkg_git_main_git_log_writer() {
    pushd .. >/dev/null
    pushd .. >/dev/null
@@ -1651,7 +1626,15 @@ do_nothing() {
    true "INFO: Doing nothing."
 }
 
+## To auto generate a release announcement, run:
+## dm-packaging-helper-script pkg_git_packages_git_log_writer
+##
+## Can be found in folder $announcements_draft_folder
 announcement() {
+   if [ "$project_name_short" = "derivative-maker" ]; then
+      return 0
+   fi
+
    local temp
    temp="$version_new_main"
    temp=$(echo "$temp" | str_replace "-developers-only" "")
@@ -1853,11 +1836,6 @@ if [ "$@" = "commit_filter" ]; then
 fi
 
 main "$@"
-
-## To auto generate a release announcement, run:
-## dm-packaging-helper-script pkg_git_packages_git_log_writer
-##
-## Can be found in folder $announcements_draft_folder
 
 if [ ! "$git_pid_list" = "" ]; then
    wait $git_pid_list
