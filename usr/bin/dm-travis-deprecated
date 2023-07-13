@@ -50,7 +50,7 @@ if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    sudo --non-interactive --preserve-env ./derivative-maker --flavor whonix-gateway -- --target root --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
-   sudo --non-interactive --preserve-env ./build-steps.d/1100_prepare-build-machine --allow-untagged true
+   sudo --non-interactive --preserve-env ./build-steps.d/*_prepare-build-machine --allow-untagged true
    ./build-steps.d/1200_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-gateway --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
@@ -58,8 +58,8 @@ elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
    sudo --non-interactive --preserve-env ./derivative-maker --flavor whonix-workstation -- --target root --allow-untagged true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
-   sudo --non-interactive --preserve-env ./build-steps.d/1100_prepare-build-machine --allow-untagged true
-   ./build-steps.d/1200_create-debian-packages --allow-untagged true
+   sudo --non-interactive --preserve-env ./build-steps.d/*_prepare-build-machine --allow-untagged true
+   ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation --allow-untagged true
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."
@@ -87,24 +87,24 @@ git tag 101 -m "."
 export dist_build_version="101"
 
 if [ "$TRAVIS_BRANCH" = "travis-gateway" ]; then
-   ./build-steps.d/1200_create-debian-packages  --allow-untagged true
+   ./build-steps.d/*_create-debian-packages  --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-minimal" ]; then
    #./build-steps.d/1200_create-debian-packages --allow-untagged true
    #sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-gateway
    true
 elif [ "$TRAVIS_BRANCH" = "travis-gateway-pkg-only" ]; then
-   ./build-steps.d/1200_create-debian-packages --allow-untagged true
+   ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-gateway
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-minimal" ]; then
-   #./build-steps.d/1200_create-debian-packages --allow-untagged true
+   #./build-steps.d/*_create-debian-packages --allow-untagged true
    #sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation
    true
 elif [ "$TRAVIS_BRANCH" = "travis-workstation" ]; then
-   ./build-steps.d/1200_create-debian-packages --allow-untagged true
+   ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation
 elif [ "$TRAVIS_BRANCH" = "travis-workstation-pkg-only" ]; then
-   ./build-steps.d/1200_create-debian-packages --allow-untagged true
+   ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation
 else
    error "Unknown $TRAVIS_BRANCH branch, check $BASH_SOURCE."

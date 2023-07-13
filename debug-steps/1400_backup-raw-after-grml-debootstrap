@@ -9,7 +9,7 @@
 
 ## jessie - untested
 #ln -r -s ./packages/kicksecure/developer-meta-files/debug-steps/1400_backup-raw-after-grml-debootstrap ./build-steps.d/
-#./build-steps.d/1400_backup-raw-after-grml-debootstrap
+#./build-steps.d/*_backup-raw-after-grml-debootstrap
 
 ## }}
 

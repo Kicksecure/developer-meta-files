@@ -31,23 +31,23 @@ for flavor_item in "${flavors_list[@]}"; do
 done
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/1100_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
 
-./build-steps.d/1120_prepare-build-machine "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/1130_cowbuilder-setup "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/1140_local-dependencies "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/1200_create-debian-packages "${official_args[@]}" --flavor internal "$@"
+./build-steps.d/*_prepare-build-machine "${official_args[@]}" --flavor internal "$@"
+./build-steps.d/*_cowbuilder-setup "${official_args[@]}" --flavor internal "$@"
+./build-steps.d/*_local-dependencies "${official_args[@]}" --flavor internal "$@"
+./build-steps.d/*_create-debian-packages "${official_args[@]}" --flavor internal "$@"
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/1100_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
 
-SKIP_SCRIPTS+=" 1100_sanity-tests "
-SKIP_SCRIPTS+=" 1120_prepare-build-machine "
-SKIP_SCRIPTS+=" 1130_cowbuilder-setup "
-SKIP_SCRIPTS+=" 1140_local-dependencies "
-SKIP_SCRIPTS+=" 1200_create-debian-packages "
+SKIP_SCRIPTS+=" sanity-tests "
+SKIP_SCRIPTS+=" prepare-build-machine "
+SKIP_SCRIPTS+=" cowbuilder-setup "
+SKIP_SCRIPTS+=" local-dependencies "
+SKIP_SCRIPTS+=" create-debian-packages "
 export SKIP_SCRIPTS
 
 for flavor_item in "${flavors_list[@]}"; do
