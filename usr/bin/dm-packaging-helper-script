@@ -1158,8 +1158,7 @@ pkg_git_reset() {
 }
 
 pkg_git_diff_and_commit() {
-   #git reset --hard
-   #continue
+   repo_skip "derivative-maker" || return 0
 
    ## Remove extra new lines.
    ## Thanks to llua http://unix.stackexchange.com/a/81689
@@ -1178,8 +1177,9 @@ pkg_git_diff_and_commit() {
    git add -A
 
    git diff --cached
-   true "press enter to continue"
-   read temp
+
+   #true "press enter to continue"
+   #read temp
 
    git commit -m "$commit_message"
 
