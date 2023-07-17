@@ -1172,15 +1172,14 @@ pkg_git_diff_and_commit() {
       return
    fi
 
+   git diff
+
    commit_message="Kicksecure"
-
-   git add -A
-
-   git diff --cached
 
    #true "press enter to continue"
    #read temp
 
+   git add -A
    git commit -m "$commit_message"
 
    returned="$(git status)"
