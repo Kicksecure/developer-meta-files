@@ -1173,7 +1173,7 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   commit_message="LANG=C str_replace"
+   commit_message="Kicksecure"
 
    git add -A
 
