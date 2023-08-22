@@ -650,14 +650,14 @@ signatures_verify() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       verify_cmd_gpg "$binary_image_installer_dist_signature"
       verify_cmd_signinfy "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
-      ## Skip verification of hash sum files since not created for installer-dist.
+      ## Skip verification of hash sum files since not created for dist-installer-cli.
       return 0
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
       verify_cmd_gpg "$binary_image_windows_installer_exe"
       verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
-      ## Skip verification of hash sum files since not created for installer-dist.
+      ## Skip verification of hash sum files since not created for dist-installer-cli.
       return 0
    fi
 
