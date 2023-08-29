@@ -1198,7 +1198,7 @@ pkg_git_diff_and_commit() {
 
    git diff
 
-   commit_message="add symlinks from /etc/profile.d to /etc/zprofile.d"
+   commit_message="tmpfiles.d syntax fix"
 
    #true "press enter to continue"
    #read temp
