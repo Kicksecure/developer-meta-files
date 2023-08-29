@@ -867,7 +867,7 @@ pkg_profile_d_zsh_creator() {
    basename_symlink_without_file_extension="${basename_symlink_with_file_extension%.*}"
    package_links_file="debian/${reponame}.links"
    z_profile_d_symlink="/etc/zprofile.d/${basename_symlink_without_file_extension}.zsh"
-   symlink_config_entry="$z_profile_d_symlink $profile_d_symlink"
+   symlink_config_entry="$profile_d_symlink $z_profile_d_symlink"
    if test -f "$package_links_file" ; then
       if grep --quiet "$symlink_config_entry" "$package_links_file" ; then
          true "already exists."
