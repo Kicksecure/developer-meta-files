@@ -874,7 +874,7 @@ pkg_profile_d_zsh_creator() {
          return 0
       fi
    fi
-   echo "$symlink_config_entry" | tee "$package_links_file" >/dev/null
+   echo "$symlink_config_entry" | tee --append "$package_links_file" >/dev/null
    true
 }
 
