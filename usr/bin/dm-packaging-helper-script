@@ -1198,7 +1198,7 @@ pkg_git_diff_and_commit() {
 
    git diff
 
-   commit_message="tmpfiles.d syntax fix"
+   commit_message="tmpfiles.d improvement"
 
    #true "press enter to continue"
    #read temp
