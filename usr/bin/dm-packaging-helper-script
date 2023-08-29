@@ -1175,6 +1175,8 @@ override_dh_installchangelogs:
 }
 
 pkg_git_reset() {
+   repo_skip "derivative-maker" || return 0
+   repo_skip "developer-meta-files" || return 0
    git reset --hard
 }
 
