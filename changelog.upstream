@@ -1,3 +1,21 @@
+commit f79be4adda350e4ddbe87070764cf19418bb4b69
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 29 16:01:32 2023 -0400
+
+    tmpfiles.d improvement
+
+commit 1818fd1c3fa55af683f59122836bc465bb5a9f5e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 29 15:00:39 2023 -0400
+
+    tmpfiles.d syntax fix
+
+commit 1140ac8217beb3a8c7d6b3849f5280b97739ab27
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 29 08:16:23 2023 -0400
+
+    bumped changelog version
+
 commit 60bfd1e11fe10c896c3ddd7afb68032a42ae2e2e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Aug 29 08:14:15 2023 -0400
