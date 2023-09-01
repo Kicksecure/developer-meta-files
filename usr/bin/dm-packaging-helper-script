@@ -72,8 +72,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="17.0.1.9-developers-only"
-version_new_main="17.0.3.0-developers-only"
+version_old_main="17.0.3.0-developers-only"
+version_new_main="17.0.4.5-developers-only"
 
 ## XXX
 announcements_draft_folder=~/derivative-binary/announcements-drafts
@@ -1665,8 +1665,8 @@ announcement() {
    temp=$(echo "$temp" | str_replace "-stable-only" "")
 
    version_main_new_short="$temp"
-   #release_type_short="point"
-   release_type_short="testers"
+   release_type_short="point"
+   #release_type_short="testers"
 
    if [ "$release_type_short" = "testers" ]; then
       release_type_long="Testers Wanted"
