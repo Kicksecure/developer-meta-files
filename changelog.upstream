@@ -1,3 +1,15 @@
+commit 28973522f0646268a2bdf1a104122836040d20f1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 6 13:58:49 2023 -0400
+
+    update dm-proof-of-freshness-generator rss feeds list
+
+commit 95a7812ecc7c774c663f6622a23ebc117afd46d3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 5 08:23:27 2023 -0400
+
+    bumped changelog version
+
 commit 5f5adba632459366b75fecfe06bdbdc1de2ec796
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Sep 1 18:21:08 2023 -0400
