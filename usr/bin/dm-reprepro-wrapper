@@ -36,10 +36,16 @@ reprepro_wrap() {
       "$@" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
 
-   if echo "$reprepro_output" | grep -q "is already registered with different checksums!" ; then
+   if echo "$reprepro_output" | grep --quiet --ignore-case "is already registered with different checksums!" ; then
       true "INFO: Not added. Because is already registered with different checksums, ok."
       return 0
    fi
+
+   if echo "$reprepro_output" | grep --quiet --ignore-case "Will not copy as not found" ; then
+      true "ERROR: Will not copy as not found!"
+      exit 1
+   fi
+
    true "INFO: Ok."
 
    return "$reprepro_exit_code"
