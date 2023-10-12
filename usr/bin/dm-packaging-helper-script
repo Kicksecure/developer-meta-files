@@ -705,20 +705,6 @@ pkg_descr_merge_all() {
    exit
 }
 
-etc_x11_session_migration() {
-   if ! test -d ./etc/profile.d ; then
-      return 0
-   fi
-
-   files=./etc/profile.d/*
-
-   for file_name in $files ; do
-      file_name=$(echo "$file_name" | str_replace "./" "/")
-      base_name=$(basename "$file_name")
-      echo "$file_name /etc/X11/Xsession.d/$base_name" | tee -a debian/$reponame.links >/dev/null
-   done
-}
-
 pkg_links_echo() {
    echo "https://github.com/$project_name_short/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
@@ -1128,6 +1114,14 @@ pkg_git_commit_copyright() {
    true
 }
 
+pkg_git_commit_all() {
+   msg='refactoring environment variables loading mechanism'
+   git add -A
+   git commit -m "$msg" || true
+   git status
+   true
+}
+
 pkg_git_manpages() {
    if ! test -d "man" ; then
       return 0
@@ -1169,14 +1163,6 @@ pkg_git_commit_packaging() {
    #git add -A
    msg="bookworm"
    git commit -m "$msg"
-   git status
-   true
-}
-
-pkg_git_commit_all_things() {
-   git add -A
-   msg="bookworm"
-   git commit -m "$msg" || true
    git status
    true
 }
