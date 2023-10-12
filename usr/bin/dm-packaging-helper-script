@@ -706,17 +706,16 @@ pkg_descr_merge_all() {
 }
 
 etc_x11_session_migration() {
-   if ! test -d ./etc/X11/Xsession.d ; then
+   if ! test -d ./etc/profile.d ; then
       return 0
    fi
 
-   files=./etc/X11/Xsession.d/*
+   files=./etc/profile.d/*
 
    for file_name in $files ; do
-      echo "file_name: '$file_name'"
-      git rm "$file_name"
       file_name=$(echo "$file_name" | str_replace "./" "/")
-      echo "rm_conffile $file_name" | tee -a debian/$reponame.maintscript >/dev/null
+      base_name=$(basename "$file_name")
+      echo "$file_name /etc/X11/Xsession.d/$base_name" | tee -a debian/$reponame.links >/dev/null
    done
 }
 
