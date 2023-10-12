@@ -705,6 +705,21 @@ pkg_descr_merge_all() {
    exit
 }
 
+etc_x11_session_migration() {
+   if ! test -d ./etc/X11/Xsession.d ; then
+      return 0
+   fi
+
+   files=./etc/X11/Xsession.d/*
+
+   for file_name in $files ; do
+      echo "file_name: '$file_name'"
+      git rm "$file_name"
+      file_name=$(echo "$file_name" | str_replace "./" "/")
+      echo "rm_conffile $file_name" | tee -a debian/$reponame.maintscript >/dev/null
+   done
+}
+
 pkg_links_echo() {
    echo "https://github.com/$project_name_short/$reponame"
    #echo "https://github.com/adrelanos/$reponame"
