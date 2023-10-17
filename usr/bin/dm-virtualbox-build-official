@@ -9,7 +9,10 @@ set -e
 true "$0: START"
 
 official_args=()
+## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
 official_args+=(--target virtualbox)
+## Also build the Whonix Windows Installer.
+official_args+=(--target windows)
 official_args+=(--repo true)
 
 cd ~/derivative-maker
