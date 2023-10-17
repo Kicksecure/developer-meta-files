@@ -392,9 +392,18 @@ torrent_create() {
    ## Thanks to:
    ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
 
-   #[ -n "$TRACKERS" ] || TRACKERS=="udp://tracker.openbittorrent.com:80/announce,udp://tracker.publicbt.com:80/announce,http://tracker.openbittorrent.com:80/announce,http://tracker.publicbt.com:80/announce,udp://tracker.ccc.de/announce"
-
-   [ -n "$TRACKERS" ] || TRACKERS="http://announce.torrentsmd.com:6969/announce"
+   TRACKERS=""
+   ## https://fosstorrents.com/tracker/
+   TRACKERS+="http://fosstorrents.com:6969/announce"
+   TRACKERS+=","
+   TRACKERS+="udp://fosstorrents.com:6969/announce"
+   TRACKERS+=","
+   ## https://opentrackr.org/
+   TRACKERS+="udp://tracker.opentrackr.org:1337/announce"
+   TRACKERS+=","
+   ## https://torrent.eu.org/
+   TRACKERS+="udp://tracker.torrent.eu.org:451"
+   true "TRACKERS: $TRACKERS"
 
    ## Not well supported by BitTorrent clients.
    ## Multi file webseeds do not work
@@ -419,6 +428,7 @@ torrent_create() {
          --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "$binary_image_ova")" \
          -o "$binary_image_ova_torrent" \
          "$binary_image_ova"
+      transmission-show "$binary_image_ova_torrent"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
@@ -429,6 +439,7 @@ torrent_create() {
          --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive")" \
          -o "$libvirt_target_raw_xz_archive_torrent" \
          "$libvirt_target_raw_xz_archive"
+      transmission-show "$libvirt_target_raw_xz_archive_torrent"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
@@ -439,6 +450,7 @@ torrent_create() {
          --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$libvirt_target_qcow2_xz_archive")" \
          -o "$libvirt_target_qcow2_xz_archive_torrent" \
          "$libvirt_target_qcow2_xz_archive"
+      transmission-show "$libvirt_target_qcow2_xz_archive_torrent"
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
@@ -449,6 +461,7 @@ torrent_create() {
          --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$binary_image_iso")" \
          -o "$binary_image_iso_torrent" \
          "$binary_image_iso"
+      transmission-show "$binary_image_iso_torrent"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
