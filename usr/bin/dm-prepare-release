@@ -464,10 +464,19 @@ torrent_create() {
       transmission-show "$binary_image_iso_torrent"
    fi
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
-      return 0
-   fi
    if [ "$dist_build_windows_installer" = "true" ]; then
+      rm --force "$binary_image_windows_installer_torrent"
+      mktorrent \
+         --verbose \
+         --announce="$TRACKERS" \
+         --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "$binary_image_windows_installer_exe")" \
+         -o "$binary_image_windows_installer_torrent" \
+         "$binary_image_windows_installer_exe"
+      transmission-show "$binary_image_windows_installer_torrent"
+      exit
+   fi
+
+   if [ "$dist_build_installer_dist" = "true" ]; then
       return 0
    fi
 
