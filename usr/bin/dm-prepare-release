@@ -493,10 +493,6 @@ hashes_create_and_verify() {
       #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
       return 0
    fi
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      #$hash_sum "$(basename "$binary_image_windows_installer_exe")" | tee --append "$hash_file"
-      return 0
-   fi
 
    for hash_sum in sha256sum sha512sum; do
       case "$hash_sum" in
@@ -534,6 +530,10 @@ hashes_create_and_verify() {
 
       if [ "$dist_build_iso" = "true" ]; then
          $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
+      fi
+
+      if [ "$dist_build_windows_installer" = "true" ]; then
+         $hash_sum "$(basename "$binary_image_windows_installer_exe")" | tee --append "$hash_file"
       fi
 
       sync
@@ -624,8 +624,8 @@ signatures_create() {
    if [ "$dist_build_windows_installer" = "true" ]; then
       sign_cmd_gpg "$binary_image_windows_installer_exe"
       sign_cmd_signify "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
-      ## Skip creation of hash sum files.
-      return 0
+      sign_cmd_gpg "$binary_image_windows_installer_torrent"
+      sign_cmd_signify "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
    fi
 
    sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
@@ -682,9 +682,9 @@ signatures_verify() {
 
    if [ "$dist_build_windows_installer" = "true" ]; then
       verify_cmd_gpg "$binary_image_windows_installer_signature"
+      verify_cmd_gpg "$binary_image_windows_installer_torrent_signature"
       verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
-      ## Skip verification of hash sum files since not created for dist-installer-cli.
-      return 0
+      verify_cmd_signinfy "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
