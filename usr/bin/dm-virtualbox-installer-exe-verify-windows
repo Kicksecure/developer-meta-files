@@ -17,6 +17,8 @@
 set -x
 set -e
 
+true "$0: START"
+
 pwd
 
 for file_name in ./VirtualBox-*.exe ; do
