@@ -3,6 +3,17 @@
 ## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+#### meta start
+#### project Kicksecure
+#### category security
+#### description
+
+## Verifies the integrity of VirtualBox.exe.
+## This script assumes that the calling script previously changed directory
+## into the folder which contains the VirtualBox.exe.
+
+#### meta end
+
 set -x
 set -e
 
