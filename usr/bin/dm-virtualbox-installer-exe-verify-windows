@@ -1,0 +1,21 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+pwd
+
+for file_name in ./VirtualBox-*.exe ; do
+  break
+done
+
+test -r "$file_name"
+
+osslsigncode verify -in "$file_name"
+
+sha256sum --ignore-missing --strict --check SHA256SUMS
+
+true "$0: SUCCESS"
