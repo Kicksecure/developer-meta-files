@@ -473,7 +473,6 @@ torrent_create() {
          -o "$binary_image_windows_installer_torrent" \
          "$binary_image_windows_installer_exe"
       transmission-show "$binary_image_windows_installer_torrent"
-      exit
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
