@@ -1,3 +1,99 @@
+commit 47524f5586dcea28005045622e632b43413094fa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 18 10:24:31 2023 -0400
+
+    .
+
+commit 0e15c9f423d3167f5cf40576b5c7adea8a07edae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 18 09:17:59 2023 -0400
+
+    .
+
+commit b8ce191b11eb8c798d16992e9438a056920349d1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 18 09:16:01 2023 -0400
+
+    .
+
+commit a96d3d17bb37ff5aa5e2c0c046f8806d47431adc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 18 09:03:27 2023 -0400
+
+    .
+
+commit 704050a3caa4d0943ce593df83199eef123525e1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 12:36:21 2023 -0400
+
+    Windows Installer
+
+commit 61d1918e81d7e432cd36f898d6932051f5296885
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 12:29:35 2023 -0400
+
+    .
+
+commit 6da1e1327db044dc6ef48903f195e78d6e2918ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 12:27:58 2023 -0400
+
+    torrent
+
+commit d568cc067060a0faf088c97c723f68c32eff998a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 12:19:00 2023 -0400
+
+    torrent
+
+commit f779e2f9589497ece756b1471d5f74d3346adcae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 11:34:03 2023 -0400
+
+    .
+
+commit e091512a9fe66773ae6c29eec9b4eb535089d1bd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 09:05:17 2023 -0400
+
+    Windows Installer
+
+commit c01f9c76e3415f1b7796826cc7be3d8a3270cc8b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 06:33:21 2023 -0400
+
+    .
+
+commit d7b9593a022abbd9e7fb3fc32a2ee316c38095ec
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 06:31:49 2023 -0400
+
+    .
+
+commit e0d348d2c9e882c612ac99c5dbd2b5f336b672b0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 06:24:33 2023 -0400
+
+    .
+
+commit 76fb399c26d7b7301e61d78a38e4a8b69498e6e7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Oct 17 01:35:39 2023 -0400
+
+    .
+
+commit 33df91da4c6cfcf6cd760d14908eb0a85443fd24
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Oct 16 10:19:33 2023 -0400
+
+    .
+
+commit ec53c021ed118137cbdcfff4a58a392a1b831456
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 12 10:42:39 2023 -0400
+
+    bumped changelog version
+
 commit ef16505fcc43a8164a492e7c284050c88dfe4eb1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Oct 12 10:40:26 2023 -0400
