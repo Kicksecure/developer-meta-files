@@ -34,7 +34,7 @@ for flavor_item in "${flavors_list[@]}"; do
 done
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" --target "windows" "$@"
+  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 ./build-steps.d/*_prepare-build-machine "${official_args[@]}" --flavor internal "$@"
