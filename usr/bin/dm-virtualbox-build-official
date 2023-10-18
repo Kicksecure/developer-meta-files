@@ -8,6 +8,10 @@ set -e
 
 true "$0: START"
 
+true "$0: checklist..."
+ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
+read press_enter_to_continue
+
 official_args=()
 ## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
 official_args+=(--target virtualbox)
