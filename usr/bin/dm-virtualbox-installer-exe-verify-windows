@@ -23,11 +23,11 @@ pwd
 
 counter=0
 for file_name in ./VirtualBox-*.exe ; do
-  true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
   counter=$((counter + 1))
 done
 
 if [ "$counter" -gt "1" ]; then
+  true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
   exit 1
 fi
 
