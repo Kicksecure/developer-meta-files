@@ -23,12 +23,15 @@ test -x "$wrapper"
 ##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
+## https://github.com/grml/grml-debootstrap/issues/219
+## --exclude=/home/user/derivative-maker/grml-debootstrap/debian/changelog
 grep_find_unicode_wrapper_output="$("$wrapper" \
    --recursive \
    --exclude=control.authcookie \
    --exclude=control.authcookie \
    --exclude=LICENSE \
    --exclude=lkrg-openrc.sh \
+   --exclude=/home/user/derivative-maker/grml-debootstrap/debian/changelog \
    "$folder")" \
    || true
 
