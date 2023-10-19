@@ -50,14 +50,20 @@ installer_dist() {
 }
 
 windows_installer() {
-   ## TODO: check and fail early for official builds if missing
    test -d ~/virtualbox-windows-installer-binary
-
    pushd ~/virtualbox-windows-installer-binary >/dev/null
 
+   local counter
+   counter=0
    for file_name in ./VirtualBox-*.exe ; do
-      break
+      counter=$((counter + 1))
    done
+
+   if [ "$counter" -gt "1" ]; then
+      true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
+      exit 1
+   fi
+
    test -r "$file_name"
    FILE_VBOX_INST_EXE=$(realpath "$file_name")
    test -r "$FILE_VBOX_INST_EXE"
