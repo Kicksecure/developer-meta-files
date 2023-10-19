@@ -19,6 +19,7 @@ cd "${dist_binary_build_folder}"
 
 sanity_tests() {
    command -v mktorrent >/dev/null
+   command -v transmission-show >/dev/null
    command -v signify-openbsd >/dev/null
    test -f "$signify_public_key"
    test -f "$signify_private_key"
