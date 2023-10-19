@@ -304,8 +304,7 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   ## Makes testing more complicated.
-   #rm --force "$binary_image_ova"
+   rm --force "$binary_image_ova"
 
    ## --vsys needs to precede --eulafile.
 
