@@ -99,7 +99,7 @@ windows_installer() {
    ./build_on_linux_for_win64
    popd >/dev/null
 
-   rm -f "$binary_image_windows_installer_exe"
+   rm --force "$binary_image_windows_installer_exe"
    mkdir --parents "$binary_image_windows_installer_folder"
 
    pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
@@ -304,7 +304,8 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   rm --force "$binary_image_ova"
+   ## Makes testing more complicated.
+   #rm --force "$binary_image_ova"
 
    ## --vsys needs to precede --eulafile.
 
@@ -745,9 +746,9 @@ main() {
       installer_dist
    fi
 
-   windows_installer
    libvirt_compress
    virtualbox_export
+   windows_installer
    hashes_create_and_verify
    torrent_create
    signatures_create
