@@ -713,7 +713,7 @@ main() {
    fi
 
    if [ "$dist_build_type_long" = "gateway" ]; then
-      ## skip, to unify gateway image with workstation image
+      true "$0: INFO: Skip, because dist_build_type_long is gateway. Not needed because of unified Whonix-Gateway and Whonix-Workstation images."
       return 0
    fi
 
