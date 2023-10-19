@@ -1,3 +1,83 @@
+commit 9a2ef9e31396d8d80fccd29e17816685bef7e27e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 13:11:01 2023 -0400
+
+    unicode
+
+commit 71ecb352e469594f2d8c48f2f3ed72d70518f843
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 12:45:30 2023 -0400
+
+    exclude grml-debootstrap/debian/changelog from unicode check
+    
+    https://github.com/grml/grml-debootstrap/issues/219
+
+commit be2c401409935ca3bae6ac4a6a5a6321f99f9cbd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 12:07:05 2023 -0400
+
+    .
+
+commit 5c5248d1d7194f7dd735de5822af92c4d676cfe7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 11:24:39 2023 -0400
+
+    .
+
+commit 95d238b0fc1f9ab2056fa3ff8075e79e8a8d103a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 11:22:05 2023 -0400
+
+    .
+
+commit 780c004450505fabc221a8770f30e995b4da718d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 11:14:53 2023 -0400
+
+    .
+
+commit 9f8abb45e0de10cede675a5b4941b829488ac16e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:41:34 2023 -0400
+
+    Windows Installer
+
+commit 9abc78bad9101d98f9e06cd3dc21c39a904c8639
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:31:31 2023 -0400
+
+    .
+
+commit 0cc74dbd021b18ea936ab0bed7f386f1d7d45792
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:30:41 2023 -0400
+
+    .
+
+commit c363dff4ac1f45f0944b29a4a9392d8481c9bb07
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:11:41 2023 -0400
+
+    fix
+
+commit 5ea5fd4758d257702cde978abe9ebca8dc54c4dd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:10:09 2023 -0400
+
+    .
+
+commit 09b6a45e6b355db9a298fcb1daaf1de7e79c31b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 19 10:09:52 2023 -0400
+
+    grml-debootstrap
+
+commit 361c9244de17f40341a12ea675194668d84a0a6a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 18 10:26:32 2023 -0400
+
+    bumped changelog version
+
 commit 47524f5586dcea28005045622e632b43413094fa
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Oct 18 10:24:31 2023 -0400
