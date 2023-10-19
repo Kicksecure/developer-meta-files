@@ -51,14 +51,11 @@ installer_dist() {
 }
 
 windows_installer() {
-   if [ ! "$dist_build_type_short" = "whonix" ]; then
-      true "$0: INFO: Skip $FUNCNAME, because dist_build_type_short is not Whonix. Creating Whonix Windows Installer only Whonix Xfce.."
+   if [ ! "$dist_build_windows_installer" = "true" ]; then
+      true "$0: INFO: Skip $FUNCNAME, because not using --target windows."
       return 0
    fi
-   if [ ! "$dist_build_desktop" = "Xfce" ]; then
-      true "$0: INFO: Skip $FUNCNAME, because dist_build_desktop is not Xfce. Creating Whonix Windows Installer only for Xfce not for CLI."
-      return 0
-   fi
+
    if ! test -r "$binary_image_ova" ; then
       error "$0: binary_image_ova $binary_image_ova does not exist!"
    fi
@@ -747,10 +744,8 @@ main() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       installer_dist
    fi
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      windows_installer
-   fi
 
+   windows_installer
    libvirt_compress
    virtualbox_export
    hashes_create_and_verify
