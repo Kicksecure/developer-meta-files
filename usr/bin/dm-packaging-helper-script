@@ -1252,7 +1252,7 @@ pkg_git_submodule_file_writer() {
 ## BEGIN hardcoded part BEGIN ##
 
 [submodule "grml-debootstrap"]
-        path = windows/grml-debootstrap
+        path = grml-debootstrap
         url = https://github.com/Kicksecure/grml-debootstrap.git
         #url =https://gitlab.com/Kicksecure/grml-debootstrap.git
 
