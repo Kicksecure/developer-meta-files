@@ -51,6 +51,18 @@ installer_dist() {
 }
 
 windows_installer() {
+   if [ ! "$dist_build_type_short" = "whonix" ]; then
+      true "$0: INFO: Skip $FUNCNAME, because dist_build_type_short is not Whonix. Creating Whonix Windows Installer only Whonix Xfce.."
+      return 0
+   fi
+   if [ ! "$dist_build_desktop" = "Xfce" ]; then
+      true "$0: INFO: Skip $FUNCNAME, because dist_build_desktop is not Xfce. Creating Whonix Windows Installer only for Xfce not for CLI."
+      return 0
+   fi
+   if ! test -r "$binary_image_ova" ; then
+      error "$0: binary_image_ova $binary_image_ova does not exist!"
+   fi
+
    test -d ~/virtualbox-windows-installer-binary
    pushd ~/virtualbox-windows-installer-binary >/dev/null
 
@@ -113,6 +125,7 @@ libvirt_compress() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       continue_maybe=no
    fi
+   ## TODO: Maybe an issue when attempting to build for libvirt and windows at the same time. Unlikely.
    if [ "$dist_build_windows_installer" = "true" ]; then
       continue_maybe=no
    fi
@@ -267,9 +280,9 @@ virtualbox_export() {
    if [ "$dist_build_installer_dist" = "true" ]; then
       return 0
    fi
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      return 0
-   fi
+   #if [ "$dist_build_windows_installer" = "true" ]; then
+   #   return 0
+   #fi
 
    local producturl vendorurl vendor eulafile description
    if [ "$dist_build_type_long" = "kicksecure" ]; then
