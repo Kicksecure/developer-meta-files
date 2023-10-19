@@ -3,7 +3,7 @@
 ## Copyright (C) 2022 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-set -x
+#set -x
 set -e
 
 true "$0: START."
@@ -24,20 +24,26 @@ test -x "$wrapper"
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
 ## https://github.com/grml/grml-debootstrap/issues/219
-## --exclude=/home/user/derivative-maker/grml-debootstrap/debian/changelog
-grep_find_unicode_wrapper_output="$("$wrapper" \
-   --recursive \
-   --exclude=control.authcookie \
-   --exclude=control.authcookie \
-   --exclude=LICENSE \
-   --exclude=lkrg-openrc.sh \
-   --exclude=/home/user/derivative-maker/grml-debootstrap/debian/changelog \
-   "$folder")" \
+## TODO: remove
+## https://github.com/grml/grml-debootstrap/pull/220
+## --exclude=chroot-script
+grep_find_unicode_wrapper_output="$(\
+   "$wrapper" \
+      --recursive \
+      --exclude=control.authcookie \
+      --exclude=LICENSE \
+      --exclude=lkrg-openrc.sh \
+      --exclude=changelog \
+      --exclude=chroot-script \
+      "$folder"\
+   )" \
    || true
 
 if [ "$grep_find_unicode_wrapper_output" = "" ]; then
    true "INFO: grep_find_unicode_wrapper_output empty, good, OK."
 else
+   echo "$grep_find_unicode_wrapper_output" >&2
+
    true "\
 $0: ERROR: Unicode found!
 
