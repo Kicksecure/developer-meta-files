@@ -525,6 +525,9 @@ hashes_create_and_verify() {
             ;;
       esac
 
+      ## Debugging.
+      pwd
+
       if [ "$dist_build_iso" = "true" ]; then
          true "INFO: Not deleting hash_file '$hash_file'. Appending."
       else
