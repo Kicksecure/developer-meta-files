@@ -642,7 +642,8 @@ signatures_create() {
 
    if [ "$dist_build_windows_installer" = "true" ]; then
       sign_cmd_gpg "$binary_image_windows_installer_exe"
-      sign_cmd_signify "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
+      ## Too big.
+      #sign_cmd_signify "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
       sign_cmd_gpg "$binary_image_windows_installer_torrent"
       sign_cmd_signify "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
    fi
@@ -702,7 +703,8 @@ signatures_verify() {
    if [ "$dist_build_windows_installer" = "true" ]; then
       verify_cmd_gpg "$binary_image_windows_installer_signature"
       verify_cmd_gpg "$binary_image_windows_installer_torrent_signature"
-      verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
+      ## Too big.
+      #verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
       verify_cmd_signinfy "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
    fi
 
