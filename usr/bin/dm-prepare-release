@@ -100,7 +100,6 @@ windows_installer() {
    popd >/dev/null
 
    rm --force "$binary_image_windows_installer_exe"
-   mkdir --parents "$binary_image_windows_installer_folder"
 
    pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
    "$source_code_folder_dist/windows/Whonix-Installer/build.sh"
