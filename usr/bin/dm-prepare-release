@@ -96,12 +96,15 @@ windows_installer() {
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
    pushd "$source_code_folder_dist/windows/Whonix-Starter" >/dev/null
+   ## Creates WhonixStarterInstaller.msi
    ./build_on_linux_for_win64
    popd >/dev/null
 
    rm --force "$binary_image_windows_installer_exe"
 
    pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
+   ## Requires already existing WhonixStarterInstaller.msi
+   ## Creates $binary_image_windows_installer_exe
    "$source_code_folder_dist/windows/Whonix-Installer/build.sh"
    popd >/dev/null
 }
