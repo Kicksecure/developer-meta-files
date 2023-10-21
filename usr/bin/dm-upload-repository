@@ -101,10 +101,10 @@ main() {
    show_dists
    show_pool
 
-   rsync_dry_run_maybe="--dry-run" upload_dists
+   #rsync_dry_run_maybe="--dry-run" upload_dists
    upload_dists
 
-   rsync_dry_run_maybe="--dry-run" upload_pool
+   #rsync_dry_run_maybe="--dry-run" upload_pool
    upload_pool
 }
 
