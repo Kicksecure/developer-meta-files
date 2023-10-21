@@ -574,11 +574,8 @@ sign_cmd_gpg() {
 }
 
 sign_cmd_signify() {
-   ## To create a key for signify-openbsd:
-   ## as user "user"
-   ## mkdir -p ~/.signify
-   ## cd ~/.signify
-   ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
+   ## To create a key for signify-openbsd, see:
+   ## derivative-maker help-steps/signing-key-create
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
    signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
