@@ -60,66 +60,36 @@ show_pool() {
    set -x
 }
 
-upload_dry_dists() {
-   if [ ! "$build_upload_noninteractive" = "true" ]; then
-      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with dists with --dry-run.${reset}"
-      read temp
-   fi
-   true "${cyan}INFO $BASH_SOURCE: Running dists with --dry-run...${reset}"
-   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists"
-   rsync \
-      --dry-run \
-      $rsync_opts \
-      --recursive \
-      $rsync_delete_maybe \
-      --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
-      "${upload_location}/dists/"
-}
-
-upload_dry_pool() {
-   if [ ! "$build_upload_noninteractive" = "true" ]; then
-      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue with pool with --dry-run.${reset}"
-      read temp
-   fi
-   true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
-   test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
-   rsync \
-      --dry-run \
-      $rsync_opts \
-      --recursive \
-      $rsync_delete_maybe \
-      --rsh ssh \
-      "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
-      "${upload_location}/pool/"
-}
-
 upload_real_ask() {
    if [ ! "$build_upload_noninteractive" = "true" ]; then
-      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading dists and pool.${reset}"
+      true "${cyan}INFO $BASH_SOURCE: Please press enter to continue to uploading. $rsync_dry_run_maybe${reset}"
       read temp
    fi
 }
 
-upload_real_dists() {
-   true "${cyan}INFO $BASH_SOURCE: Uploading dists...${reset}"
+upload_dists() {
+   true "${cyan}INFO $BASH_SOURCE: Uploading dists... $rsync_dry_run_maybe${reset}"
    test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists"
+   rsync_dry_run_maybe="$rsync_dry_run_maybe" upload_real_ask
    rsync \
       $rsync_opts \
       --recursive \
       $rsync_delete_maybe \
+      $rsync_dry_run_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/dists/"* \
       "${upload_location}/dists/"
 }
 
-upload_real_pool() {
-   true "${cyan}INFO $BASH_SOURCE: Uploading pool...${reset}"
+upload_pool() {
+   true "${cyan}INFO $BASH_SOURCE: Uploading pool... $rsync_dry_run_maybe${reset}"
    test -d "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool"
+   rsync_dry_run_maybe="$rsync_dry_run_maybe" upload_real_ask
    rsync \
       $rsync_opts \
       --recursive \
       $rsync_delete_maybe \
+      $rsync_dry_run_maybe \
       --rsh ssh \
       "$binary_build_folder_dist/aptrepo_remote/$derivative_name_item/pool/"* \
       "${upload_location}/pool/"
@@ -130,11 +100,12 @@ main() {
    preparation
    show_dists
    show_pool
-   upload_dry_dists
-   upload_dry_pool
-   upload_real_ask
-   upload_real_dists
-   upload_real_pool
+
+   rsync_dry_run_maybe="--dry-run" upload_dists
+   upload_dists
+
+   rsync_dry_run_maybe="--dry-run" upload_pool
+   upload_pool
 }
 
 ## used to work very well
