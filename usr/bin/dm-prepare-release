@@ -86,8 +86,8 @@ windows_installer() {
    FILE_WHONIX_OVA="$binary_image_ova"
    FILE_WHONIX_STARTER_MSI="$source_code_folder_dist/windows/Whonix-Starter/WhonixStarterInstaller.msi"
    #FILE_VBOX_INST_EXE="$FILE_VBOX_INST_EXE"
-   FILE_INSTALLER_BINARY_WITH_APPENDED_OVA="$binary_image_windows_installer_exe"
-   export FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_WITH_APPENDED_OVA
+   FILE_INSTALLER_BINARY_FINAL="$binary_image_windows_installer_exe"
+   export FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
    VERSION="${dist_build_version}"
    VERSION_FULL=$(basename "$binary_image_ova")
