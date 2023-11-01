@@ -25,7 +25,7 @@ sanity_tests() {
    test -f "$signify_private_key"
    test -f "$binary_image_installer_dist_source"
 
-   "$dist_source_help_steps_folder/gpg_test_sign" "$@"
+   "$dist_source_help_steps_folder/signing-key-test" "$@"
 }
 
 installer_dist() {
