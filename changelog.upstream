@@ -1,3 +1,15 @@
+commit f57e83d11f55ed58afffdb13a47612f472bf725f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Nov 2 12:48:50 2023 -0400
+
+    Windows Installer
+
+commit 00a35107fbaedf25c19e414c0ef6c96afe5711d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Nov 1 14:56:08 2023 -0400
+
+    bumped changelog version
+
 commit 6a95926a1caced78524e572cb9c7bf06f0214e59
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Nov 1 14:53:43 2023 -0400
