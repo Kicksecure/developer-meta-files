@@ -1586,11 +1586,7 @@ pkg_upstream_and_debian_changelog_bump() {
       genmkfile deb-uachl-bumpup-major
    fi
 
-   if test -f changelog.upstream ; then
-      git add changelog.upstream
-   fi
-   git add debian/changelog
-   git commit -m "bumped changelog version"
+   genmkfile make_deb-uachl-commit-changelog
 
    true
 }
