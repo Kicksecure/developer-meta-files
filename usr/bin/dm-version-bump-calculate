@@ -1,5 +1,8 @@
 #!/usr/bin/python3 -u
 
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
 import sys
 
 def bump_version(version):
