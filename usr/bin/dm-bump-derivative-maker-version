@@ -3,6 +3,9 @@
 ## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## NOTE: Relies on derivative-maker debian/make-helper-overrides.bsh
+##       for environment variables.
+
 #set -x
 set -e
 
@@ -10,16 +13,7 @@ cd ~/derivative-maker
 
 genmkfile deb-uachl-bumpup-major
 
-source /usr/share/genmkfile/make-helper-one.bsh
-make_init
-make_get_variables
-
 appendix="developers-only"
-
-make_git_tag_version_number="${make_pkg_version}-${appendix}"
-## Disable check.
-make_git_describe_output="$make_git_tag_version_number"
-export make_git_tag_version_number make_git_describe_output
 
 genmkfile make_deb-uachl-commit-changelog
 
