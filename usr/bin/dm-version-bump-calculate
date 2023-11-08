@@ -1,40 +1,32 @@
-#!/bin/bash
+#!/usr/bin/python3 -u
 
-## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
-## See the file COPYING for copying conditions.
+def bump_version(version):
+    parts = list(map(int, version.split('.')))
 
-# The version string from 'git describe'
-git_version="$1"
-# example:
-#git_version="17.0.5.9-developers-only-129-g41421e68"
+    # If the last part is not 9, increment it and we're done.
+    if parts[-1] < 9:
+        parts[-1] += 1
+    else:
+        # If the last part is 9, we have to increment the next part.
+        for i in range(len(parts) - 1, -1, -1):
+            if parts[i] < 9:
+                parts[i] += 1
+                # Reset all parts after the one we just incremented.
+                for j in range(i + 1, len(parts)):
+                    parts[j] = 0
+                break
+            # If we reached the first part and it's 9, we increment it to 10
+            # This is a simplistic handling and assumes no version part has a limit higher than 9
+            if i == 0:
+                parts[i] += 1
+                for j in range(1, len(parts)):
+                    parts[j] = 0
 
-# Extract the base version without the build and commit details
-base_version="${git_version%-*-*}"
+    return '.'.join(map(str, parts))
 
-# Split the version into an array using '.' as delimiter
-IFS='.' read -r -a version_parts <<< "$base_version"
+# Re-test the function with corrected logic
+bumped_version_1_corrected = bump_version("16.0.5.9")
+bumped_version_2_corrected = bump_version("16.9.9.9")
 
-# Function to increment version
-increment_version() {
-  local i=$(( ${#version_parts[@]} - 1 ))  # start with the last part of the version
-  while [[ $i -ge 0 ]]; do
-    if [[ ${version_parts[$i]} -lt 9 ]]; then
-      # If part of the version is less than 9, increment it
-      ((version_parts[$i]++))
-      break
-    else
-      # If part of the version is 9, set it to 0 and move to the next part
-      version_parts[$i]=0
-      ((i--))
-    fi
-  done
-}
-
-# Call the function to increment version
-increment_version
-
-# Construct the new version
-new_version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}.${version_parts[3]}"
-
-# Output the new version
-echo "$new_version"
+print(bumped_version_1_corrected)
+print(bumped_version_2_corrected)
