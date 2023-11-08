@@ -1,6 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 qemu-system-x86_64 \
     -m 1024 \
     -drive format=raw,file="$@"
-

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 qemu-system-x86_64 \
     -bios /usr/share/ovmf/OVMF.fd \
     -m 1024 \
