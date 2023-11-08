@@ -1,5 +1,7 @@
 #!/usr/bin/python3 -u
 
+import sys
+
 def bump_version(version):
     parts = list(map(int, version.split('.')))
 
@@ -24,9 +26,11 @@ def bump_version(version):
 
     return '.'.join(map(str, parts))
 
-# Re-test the function with corrected logic
-bumped_version_1_corrected = bump_version("16.0.5.9")
-bumped_version_2_corrected = bump_version("16.9.9.9")
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: {} <version>".format(sys.argv[0]))
+        sys.exit(1)
 
-print(bumped_version_1_corrected)
-print(bumped_version_2_corrected)
+    version_input = sys.argv[1]
+    bumped_version = bump_version(version_input)
+    print(bumped_version)
