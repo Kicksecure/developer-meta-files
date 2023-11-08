@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+#set -x
+set -e
+
+cd ~/derivative-maker
+
+source /usr/share/genmkfile/make-helper-one.bsh
+make_init
+make_get_variables
+
+make_git_tag_version_number="$make_pkg_version"
+## Disable check.
+make_git_describe_output="$make_pkg_version"
+export make_git_tag_version_number make_git_describe_output
+
+genmkfile git-tag-check
+
+echo "$0: END."
