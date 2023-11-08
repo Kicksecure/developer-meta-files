@@ -12,11 +12,15 @@ source /usr/share/genmkfile/make-helper-one.bsh
 make_init
 make_get_variables
 
-make_git_tag_version_number="$make_pkg_version"
+appendix="developers-only"
+
+make_git_tag_version_number="${make_pkg_version}-${appendix}"
 ## Disable check.
-make_git_describe_output="$make_pkg_version"
+make_git_describe_output="$make_git_tag_version_number"
 export make_git_tag_version_number make_git_describe_output
 
-genmkfile git-tag-check
+genmkfile git-commit-verify
+genmkfile git-tag-sign
+genmkfile git-verify
 
 echo "$0: END."
