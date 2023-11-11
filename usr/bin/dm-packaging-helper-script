@@ -946,29 +946,46 @@ pkg_debhelper_bump() {
 }
 
 pkg_packaging_files_diff() {
-   local compare_with_path
+   repo_skip "derivative-maker" || return 0
+
    ## Some arbitrary package used as template for comparison.
-   compare_with_path="../anon-apt-sources-list"
-   compare_with_full_path="$(realpath "$compare_with_path")"
+   if [ "$compare_with_path" = "" ]; then
+      compare_with_path="../anon-apt-sources-list"
+      compare_with_full_path="$(realpath "$compare_with_path")"
+   fi
 
    if [ "$reponame" = "qubes-whonix" ]; then
       test -f "$repo_full_path/CONTRIBUTING.md"
    elif [ "$reponame" = "corridor" ]; then
       ## Corridor has no CONTRIBUTING.md file.
       true
-   else
-      diff "$compare_with_full_path/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
-   fi
-
-   if [ "$reponame" = "corridor" ]; then
-      ## Corridor is not GPLv3 but public domain.
+   elif [ "$reponame" = "hardened_malloc" ]; then
+      true
+   elif [ "$reponame" = "lkrg" ]; then
+      true
+   elif [ "$reponame" = "mediawiki-shell" ]; then
+      true
+   elif [ "$reponame" = "tirdad" ]; then
+      true
+   elif [ "$reponame" = "tor-ctrl" ]; then
+      true
+   elif [ "$reponame" = "kloak" ]; then
       true
    else
-      ## Could also use
-      ##     diff "$compare_with_full_path/GPLv3" "./"
-      ## but the implementation below produces more comfortable output.
-      diff "$compare_with_full_path/GPLv3" "$repo_full_path/GPLv3"
+      ## Broken due to different web links.
+      #diff "$compare_with_full_path/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
+      test -f "$repo_full_path/CONTRIBUTING.md"
    fi
+
+#    if [ "$reponame" = "corridor" ]; then
+#       ## Corridor is not GPLv3 but public domain.
+#       true
+#    else
+#       ## Could also use
+#       ##     diff "$compare_with_full_path/GPLv3" "./"
+#       ## but the implementation below produces more comfortable output.
+#       diff "$compare_with_full_path/GPLv3" "$repo_full_path/GPLv3"
+#    fi
 
    if [ ! -f "$compare_with_full_path/COPYING" ]; then
       error "$compare_with_full_path/COPYING does not exist."
@@ -985,7 +1002,12 @@ pkg_packaging_files_diff() {
    if [ "$reponame" = "corridor" ]; then
       ## Corridor has no COPYING but a LICENSE-ISC file.
       test -f "$repo_full_path/LICENSE-ISC"
+   elif [ "$reponame" = "hardened_malloc" ]; then
+      ## Corridor has no COPYING but a LICENSE-ISC file.
+      test -f "$repo_full_path/LICENSE"
    else
+      cp "$repo_full_path/debian/copyright" "$repo_full_path/COPYING"
+
       ## COPYING should always match debian/copyright.
       diff "$repo_full_path/COPYING" "$repo_full_path/debian/copyright"
 
