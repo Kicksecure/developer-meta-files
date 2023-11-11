@@ -1009,7 +1009,7 @@ pkg_packaging_files_diff() {
       cp "$repo_full_path/debian/copyright" "$repo_full_path/COPYING"
 
       ## COPYING should always match debian/copyright.
-      diff "$repo_full_path/COPYING" "$repo_full_path/debian/copyright"
+      diff "$repo_full_path/debian/copyright" "$repo_full_path/COPYING"
 
       ## Would show license files that are different.
       ## This is useful to manually enable sometimes.
