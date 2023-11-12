@@ -15,8 +15,11 @@ read press_enter_to_continue
 official_args=()
 ## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
 official_args+=(--target virtualbox)
+
 ## Also build the Whonix Windows Installer.
-official_args+=(--target windows)
+## TODO: disabled for now until sha512sum overwriting issue was fixed in dm-prepare-release
+#official_args+=(--target windows)
+
 official_args+=(--repo true)
 
 cd ~/derivative-maker
