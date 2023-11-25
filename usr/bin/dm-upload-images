@@ -113,7 +113,6 @@ main() {
    fi
 
    show_files "$@"
-   exit
 
    for dist_server_with_upload_location_item in $dist_server_with_upload_location_list ; do
       upload_files "$@"
