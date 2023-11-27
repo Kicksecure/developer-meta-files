@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+qubes-raw-backup-adrelanos-do
+qubes-raw-backup-adrelanos-verification

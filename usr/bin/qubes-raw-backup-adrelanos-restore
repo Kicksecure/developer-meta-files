@@ -1,0 +1,14 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+source /usr/bin/qubes-raw-backup-adrelanos-shared
+
+true "$0: ERROR: Please verify and edit this RESTORATION script!"
+exit 1
+
+pv < "$backup_disk" > "$original_disk"

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "$0: ERROR: Please verify and edit this SHARED script!"
+exit 1
+
+original_disk=/dev/nvme0n1
+backup_disk=/dev/sdb
+
+test -e "$original_disk"
+test -e "$backup_disk"

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+source /usr/bin/qubes-raw-backup-adrelanos-shared
+
+## Get the size of the original disk in bytes.
+original_size=$(blockdev --getsize64 "$original_disk")
+
+## Using cp with --bytes="$original_size" to ensure that the comparison stops
+## at the size of the original disk, even if the backup disk is larger.
+## This way, the comparison is not confused if the backup_disk is larger.
+pv "$original_disk" | cmp --bytes="$original_size" /dev/stdin "$backup_disk"
+
+## Alternative. Untested!
+#ddrescue --verbose --no-scrape --size="$original_size" "$original_disk" "$backup_disk" ~/logfile

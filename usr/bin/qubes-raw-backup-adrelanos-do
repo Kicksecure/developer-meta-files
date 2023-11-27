@@ -1,0 +1,11 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+source /usr/bin/qubes-raw-backup-adrelanos-shared
+
+pv < "$original_disk" > "$backup_disk"
