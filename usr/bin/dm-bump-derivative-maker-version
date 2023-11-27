@@ -13,7 +13,8 @@ cd ~/derivative-maker
 
 genmkfile deb-uachl-bumpup-major
 
-appendix="developers-only"
+make_git_tag_sign_appendix="-developers-only"
+export make_git_tag_sign_appendix
 
 genmkfile make_deb-uachl-commit-changelog
 
