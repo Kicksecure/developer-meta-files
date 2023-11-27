@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -x
+set -e
+
+qubes-dom0-vm-backup-do
+qubes-dom0-vm-backup-verification

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -x
+set -e
+
+qvm-backup --verbose --dest-vm dom0-backup --no-compress --passphrase-file ~/password /mnt/disk

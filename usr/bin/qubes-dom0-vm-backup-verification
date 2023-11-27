@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -x
+set -e
+
+backup_folder_name=$(qvm-run --pass-io dom0-backup ls /mnt/disk)
+backup_folder_name=$(echo "$backup_folder_name" | tail -1)
+
+## example backup_folder_name:
+## qubes-backup-2023-06-24T103549
+
+backup_folder_full_path="/mnt/disk/${backup_folder_name}"
+
+qvm-backup-restore --verbose --verify-only --dest-vm dom0-backup --passphrase-file ~/password "$backup_folder_full_path"
