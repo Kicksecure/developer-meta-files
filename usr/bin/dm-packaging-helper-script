@@ -72,8 +72,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="17.0.3.0-developers-only"
-version_new_main="17.0.4.5-developers-only"
+version_old_main="17.0.4.5-developers-only"
+version_new_main="17.0.7.9"
 
 ## XXX
 announcements_draft_folder=~/derivative-binary/announcements-drafts
@@ -110,8 +110,10 @@ commit_filter() {
        set -x
        return 1
     fi
-
-    local text
+    if echo "$commit_msg_short" | grep -i -q "change license to AGPL-3+" ; then
+       set -x
+       return 1
+    fi
 
     for text in \
         "aa-logprof" \
@@ -237,6 +239,10 @@ commit_filter() {
         "style" \
         "upgrade license from GPLv2+ to GPLv3+" \
         "CI fix" \
+        "delete empty file" \
+        "wayland" \
+        "nftabels" \
+        "chmod +x" \
         "CI" \
         "."
         do
