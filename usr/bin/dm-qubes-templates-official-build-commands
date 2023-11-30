@@ -21,4 +21,4 @@ VMs="whonix-gateway-${whonix_version} whonix-workstation-${whonix_version}"
 true "press ctrl + c to abort"
 read question
 
-RELEASE="$qubes_release" REPO_PROXY="" make DISTS_VM="$VMs" template-github
+REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$VMs" template-github
