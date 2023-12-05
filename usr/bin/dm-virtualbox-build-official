@@ -9,6 +9,10 @@ set -e
 true "$0: START"
 
 true "$0: checklist..."
+df -h
+read press_enter_to_continue
+
+true "$0: checklist..."
 ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
 read press_enter_to_continue
 
