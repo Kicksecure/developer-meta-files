@@ -39,11 +39,11 @@ if [ ! "$(git status --porcelain)" = "" ]; then
    error "Command git status --porcelain failed at the beginning!"
 fi
 
-git fetch --jobs=200 github-derivative-maker
+git fetch --jobs=200 origin
 
-git verify-commit "github-derivative-maker/master"
+git verify-commit "origin/master"
 
-git merge --ff-only "github-derivative-maker/master"
+git merge --ff-only "origin/master"
 
 git submodule sync --recursive >/dev/null
 

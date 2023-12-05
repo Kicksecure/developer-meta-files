@@ -39,7 +39,7 @@ if [ ! "$(git status --porcelain)" = "" ]; then
    error "Command git status --porcelain failed at the beginning!"
 fi
 
-git fetch --jobs=200 github-derivative-maker
+git fetch --jobs=200 origin
 
 git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
 
