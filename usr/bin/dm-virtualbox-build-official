@@ -26,7 +26,10 @@ official_args+=(--target virtualbox)
 
 official_args+=(--repo true)
 
+## XXX: hardcoded path
 cd ~/derivative-maker
+
+./help-steps/signing-key-test
 
 ## Build '--flavor whonix-workstation-xfce' first because it is the most
 ## complex, when used with '--target windows', because:
