@@ -29,6 +29,7 @@ official_args+=(--repo true)
 ## XXX: hardcoded path
 cd ~/derivative-maker
 
+test -d ~/.ssh
 ./help-steps/signing-key-test
 
 ## Build '--flavor whonix-workstation-xfce' first because it is the most
