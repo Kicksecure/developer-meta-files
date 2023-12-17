@@ -134,12 +134,12 @@ libvirt_compress() {
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
-      rm --force "$(basename $libvirt_target_raw_xz_archive)"
-      true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive $libvirt_target_raw_xz_archive exist..."
-   fi
-   if [ "$dist_build_raw" = "true" ]; then
       rm --force "$(basename $libvirt_target_qcow2_xz_archive)"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive $libvirt_target_qcow2_xz_archive exist..."
+   fi
+   if [ "$dist_build_raw" = "true" ]; then
+      rm --force "$(basename $libvirt_target_raw_xz_archive)"
+      true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive $libvirt_target_raw_xz_archive exist..."
    fi
 
    if [ "$dist_build_type_long" = "kicksecure" ]; then
