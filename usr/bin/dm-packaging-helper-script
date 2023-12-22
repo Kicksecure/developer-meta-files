@@ -1714,7 +1714,13 @@ https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version"
       release_type_long="Point Release"
       header_text="Download $project_name_short for VirtualBox:
 
-https://www.${project_clearnet}/wiki/VirtualBox"
+https://www.${project_clearnet}/wiki/VirtualBox
+
+----
+
+This is a point release.
+
+https://www.kicksecure.com/wiki/Point_Release"
       end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
    else
       error "invalid release_type_short!"
