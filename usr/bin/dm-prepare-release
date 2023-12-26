@@ -478,9 +478,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "$binary_image_iso")" \
+         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "$binary_image_iso_file")" \
          -o "$binary_image_iso_torrent" \
-         "$binary_image_iso"
+         "$binary_image_iso_file"
       transmission-show "$binary_image_iso_torrent"
    fi
 
@@ -540,7 +540,7 @@ hashes_create_and_verify() {
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
+      $hash_sum "$(basename "$binary_image_iso_file")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
@@ -612,11 +612,11 @@ signatures_create() {
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      sign_cmd_gpg "$binary_image_iso"
+      sign_cmd_gpg "$binary_image_iso_file"
       sign_cmd_gpg "$binary_image_iso_torrent"
 
       ## Too big.
-      #sign_cmd_signify "$binary_image_iso"
+      #sign_cmd_signify "$binary_image_iso_file"
 
       sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signify"
    fi
