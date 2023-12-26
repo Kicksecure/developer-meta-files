@@ -691,7 +691,7 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$binary_image_iso_signature"
-      verify_cmd_signinfy "$binary_image_iso_torrent" "$binary_image_ova_torrent_signify"
+      verify_cmd_signinfy "$binary_image_iso_torrent" "$binary_image_iso_torrent_signify"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
