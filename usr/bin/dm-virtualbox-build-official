@@ -16,15 +16,15 @@ true "$0: checklist..."
 ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
 read press_enter_to_continue
 
-official_args=()
+build_args=()
 ## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
-official_args+=(--target virtualbox)
+build_args+=(--target virtualbox)
 
 ## Also build the Whonix Windows Installer.
 ## TODO: disabled for now until sha512sum overwriting issue was fixed in dm-prepare-release
-#official_args+=(--target windows)
+#build_args+=(--target windows)
 
-official_args+=(--repo true)
+build_args+=(--repo true)
 
 ## XXX: hardcoded path
 cd ~/derivative-maker
@@ -49,20 +49,20 @@ build_upload_noninteractive=true
 export build_upload_noninteractive
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-delete "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./derivative-delete "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
-./build-steps.d/*_prepare-build-machine "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/*_cowbuilder-setup "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/*_local-dependencies "${official_args[@]}" --flavor internal "$@"
-./build-steps.d/*_create-debian-packages "${official_args[@]}" --flavor internal "$@"
+./build-steps.d/*_prepare-build-machine "${build_args[@]}" --flavor internal "$@"
+./build-steps.d/*_cowbuilder-setup "${build_args[@]}" --flavor internal "$@"
+./build-steps.d/*_local-dependencies "${build_args[@]}" --flavor internal "$@"
+./build-steps.d/*_create-debian-packages "${build_args[@]}" --flavor internal "$@"
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 SKIP_SCRIPTS+=" sanity-tests "
@@ -73,7 +73,7 @@ SKIP_SCRIPTS+=" create-debian-packages "
 export SKIP_SCRIPTS
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-maker "${official_args[@]}" --flavor "$flavor_item" "$@"
+  ./derivative-maker "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 for flavor_item in "${flavors_list[@]}"; do
@@ -81,7 +81,7 @@ for flavor_item in "${flavors_list[@]}"; do
     ## Not needed for gateway due to unified images.
     continue
   fi
-  dm-prepare-release "${official_args[@]}" --flavor "$flavor_item" "$@"
+  dm-prepare-release "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 for flavor_item in "${flavors_list[@]}"; do
@@ -92,11 +92,11 @@ for flavor_item in "${flavors_list[@]}"; do
 
   if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
     ## Skip upload of debug images.
-    echo simulate-echo-only: dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
+    echo simulate-echo-only: dm-upload-images "${build_args[@]}" --flavor "$flavor_item" "$@"
     continue
   fi
 
-  dm-upload-images "${official_args[@]}" --flavor "$flavor_item" "$@"
+  dm-upload-images "${build_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 true "$0: END"
