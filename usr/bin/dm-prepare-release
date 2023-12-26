@@ -631,7 +631,7 @@ signatures_create() {
       ## Too big.
       #sign_cmd_signify "$binary_image_iso"
 
-      sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signature"
+      sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signify"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
