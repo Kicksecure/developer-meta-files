@@ -456,7 +456,7 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive")" \
+         --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive")" \
          -o "$libvirt_target_raw_xz_archive_torrent" \
          "$libvirt_target_raw_xz_archive"
       transmission-show "$libvirt_target_raw_xz_archive_torrent"
@@ -478,7 +478,7 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$binary_image_iso")" \
+         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "$binary_image_iso")" \
          -o "$binary_image_iso_torrent" \
          "$binary_image_iso"
       transmission-show "$binary_image_iso_torrent"
