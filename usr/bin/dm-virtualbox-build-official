@@ -10,15 +10,13 @@ true "$0: START"
 
 true "$0: checklist..."
 df -h
-read press_enter_to_continue
+read -r press_enter_to_continue
 
 true "$0: checklist..."
 ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
-read press_enter_to_continue
+read -r press_enter_to_continue
 
 build_args=()
-## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
-build_args+=(--target virtualbox)
 
 ## Also build the Whonix Windows Installer.
 ## TODO: disabled for now until sha512sum overwriting issue was fixed in dm-prepare-release
@@ -48,21 +46,29 @@ test -d ~/.ssh
 build_upload_noninteractive=true
 export build_upload_noninteractive
 
+multi_target_args=()
+
+## --target virtualbox
+## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
+multi_target_args+=(--target virtualbox)
+
+multi_target_args+=(--target iso)
+
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-delete "${build_args[@]}" --flavor "$flavor_item" "$@"
+  ./derivative-delete "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${build_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
-./build-steps.d/*_prepare-build-machine "${build_args[@]}" --flavor internal "$@"
-./build-steps.d/*_cowbuilder-setup "${build_args[@]}" --flavor internal "$@"
-./build-steps.d/*_local-dependencies "${build_args[@]}" --flavor internal "$@"
-./build-steps.d/*_create-debian-packages "${build_args[@]}" --flavor internal "$@"
+./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${build_args[@]}" --flavor "$flavor_item" "$@"
+  ./build-steps.d/*_sanity-tests "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 SKIP_SCRIPTS+=" sanity-tests "
@@ -73,7 +79,15 @@ SKIP_SCRIPTS+=" create-debian-packages "
 export SKIP_SCRIPTS
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-maker "${build_args[@]}" --flavor "$flavor_item" "$@"
+  case $flavor_item in
+    kicksecure-xfce|kicksecure-cli)
+      ./derivative-maker "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+    *)
+      ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+  esac
 done
 
 for flavor_item in "${flavors_list[@]}"; do
@@ -81,7 +95,15 @@ for flavor_item in "${flavors_list[@]}"; do
     ## Not needed for gateway due to unified images.
     continue
   fi
-  dm-prepare-release "${build_args[@]}" --flavor "$flavor_item" "$@"
+  case $flavor_item in
+    kicksecure-xfce|kicksecure-cli)
+      dm-prepare-release "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+    *)
+      dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+  esac
 done
 
 for flavor_item in "${flavors_list[@]}"; do
@@ -92,11 +114,20 @@ for flavor_item in "${flavors_list[@]}"; do
 
   if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
     ## Skip upload of debug images.
-    echo simulate-echo-only: dm-upload-images "${build_args[@]}" --flavor "$flavor_item" "$@"
+    echo simulate-echo-only: dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
     continue
   fi
 
-  dm-upload-images "${build_args[@]}" --flavor "$flavor_item" "$@"
+  case $flavor_item in
+    kicksecure-xfce|kicksecure-cli)
+      dm-upload-images "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+    *)
+      dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      ;;
+  esac
+
 done
 
 true "$0: END"

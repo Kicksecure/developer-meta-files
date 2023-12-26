@@ -50,7 +50,7 @@ upload_files() {
 
    if [ ! "$build_upload_noninteractive" = "true" ]; then
       true "${cyan}INFO: Press any enter to continue.${reset}"
-      read temp
+      read -r temp
    fi
 
    rsync_dry_run_maybe="--dry-run"
@@ -59,7 +59,7 @@ upload_files() {
    attempts_max="10"
 
    while true; do
-      attempts_counter="$(( $attempts_counter + 1 ))"
+      attempts_counter="$(( attempts_counter + 1 ))"
 
       if [ "$rsync_dry_run_maybe" = "--dry-run" ]; then
          true "${cyan}INFO: --dry-run only...${reset}"
@@ -79,7 +79,7 @@ upload_files() {
          if [ "$rsync_dry_run_maybe" = "--dry-run" ]; then
             if [ ! "$build_upload_noninteractive" = "true" ]; then
                true "${cyan}INFO: Press any enter to continue.${reset}"
-               read temp
+               read -r temp
             fi
             rsync_dry_run_maybe=""
             continue
