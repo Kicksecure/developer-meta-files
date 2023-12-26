@@ -28,19 +28,32 @@ build_args+=(--repo true)
 cd ~/derivative-maker
 
 test -d ~/.ssh
-./help-steps/signing-key-test
 
-## Build '--flavor whonix-workstation-xfce' first because it is the most
+#TESTING_MODE=1
+#set +x
+
+run_cmd() {
+    if [ "$TESTING_MODE" -eq 1 ]; then
+        echo "$@"
+    else
+        "$@"
+    fi
+}
+
+run_cmd ./help-steps/signing-key-test
+
+## Build '--flavor kicksecure-xfce' first because building ISO, which is newer.
+## Build '--flavor whonix-workstation-xfce' next because it is the most
 ## complex, when used with '--target windows', because:
 ## - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
 ## - dm-prepare-release builds Whonix Windows Installer
 [ -n "$flavors_list" ] || flavors_list=(
+  kicksecure-xfce
+  kicksecure-cli
   whonix-workstation-xfce
   whonix-gateway-xfce
-  kicksecure-xfce
   whonix-workstation-cli
   whonix-gateway-cli
-  kicksecure-cli
 )
 
 build_upload_noninteractive=true
@@ -55,21 +68,19 @@ multi_target_args+=(--target virtualbox)
 multi_target_args+=(--target iso)
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./derivative-delete "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
+  run_cmd ./derivative-delete "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
+  ## Not yet using multi_target_args as the sanity test for Whonix-Gateway ISO would complain that the VMs
+  ## have not been built yet.
+  run_cmd ./build-steps.d/*_sanity-tests "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
 done
 
-./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-
-for flavor_item in "${flavors_list[@]}"; do
-  ./build-steps.d/*_sanity-tests "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
-done
+run_cmd ./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+run_cmd ./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+run_cmd ./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+run_cmd ./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 
 SKIP_SCRIPTS+=" sanity-tests "
 SKIP_SCRIPTS+=" prepare-build-machine "
@@ -81,11 +92,11 @@ export SKIP_SCRIPTS
 for flavor_item in "${flavors_list[@]}"; do
   case $flavor_item in
     kicksecure-xfce|kicksecure-cli)
-      ./derivative-maker "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
-      ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd ./derivative-maker "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      run_cmd ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
     *)
-      ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
   esac
 done
@@ -97,11 +108,11 @@ for flavor_item in "${flavors_list[@]}"; do
   fi
   case $flavor_item in
     kicksecure-xfce|kicksecure-cli)
-      dm-prepare-release "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
-      dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd dm-prepare-release "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      run_cmd dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
     *)
-      dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
   esac
 done
@@ -114,17 +125,17 @@ for flavor_item in "${flavors_list[@]}"; do
 
   if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
     ## Skip upload of debug images.
-    echo simulate-echo-only: dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+    echo simulate-echo-only: run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
     continue
   fi
 
   case $flavor_item in
     kicksecure-xfce|kicksecure-cli)
-      dm-upload-images "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
-      dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd dm-upload-images "${build_args[@]}" --target iso        --flavor "$flavor_item" "$@"
+      run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
     *)
-      dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+      run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
       ;;
   esac
 
