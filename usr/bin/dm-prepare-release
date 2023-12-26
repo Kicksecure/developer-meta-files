@@ -629,7 +629,7 @@ signatures_create() {
       sign_cmd_gpg "$binary_image_iso_torrent"
 
       ## Too big.
-      #sign_cmd_signify "$libvirt_target_qcow2_xz_archive"
+      #sign_cmd_signify "$binary_image_iso"
 
       sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signature"
    fi
