@@ -25,7 +25,7 @@ backup-raw-after-package-install() {
       exit 0
    fi
 
-   cp "$binary_image_raw" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
+   cp "$binary_image_raw_file" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
 }
 
 main() {

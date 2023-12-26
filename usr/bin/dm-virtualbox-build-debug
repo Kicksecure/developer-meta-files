@@ -13,14 +13,14 @@ debug_args_maybe+=(--remote-derivative-packages true)
 
 mkdir --parents ~/cached
 
-cached_binary_image_raw=~/cached/cached.raw
-export cached_binary_image_raw
+cached_binary_image_raw_file=~/cached/cached.raw
+export cached_binary_image_raw_file
 
 ## 1. create a raw image
 #~/derivative-maker/build-steps.d/*_create-raw-image --target raw --flavor kicksecure-xfce
 ## 2. copy the created raw image to ~/cached/cached.raw
 
-test -r "$cached_binary_image_raw"
+test -r "$cached_binary_image_raw_file"
 
 dm-virtualbox-build-official "${debug_args_maybe[@]}"
 
