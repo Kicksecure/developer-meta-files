@@ -514,56 +514,43 @@ hashes_create_and_verify() {
       return 0
    fi
 
-   for hash_sum in sha256sum sha512sum; do
-      case "$hash_sum" in
-         "sha256sum")
-            hash_file="$sha_two_hundredth_fifty_six_hash_file"
-            ;;
-         "sha512sum")
-            hash_file="$sha_five_hundredth_twelve_hash_file"
-            ;;
-         *)
-            error "Undefined hash_sum."
-            return 0
-            ;;
-      esac
+   hash_file="$sha_five_hundredth_twelve_hash_file"
 
-      ## Debugging.
-      pwd
+   ## Debugging.
+   pwd
 
-      if [ "$dist_build_iso" = "true" ]; then
-         true "INFO: Not deleting hash_file '$hash_file'. Appending."
-      else
-         rm --force "$hash_file"
-      fi
+   if [ "$dist_build_iso" = "true" ]; then
+      true "INFO: Not deleting hash_file '$hash_file'. Appending."
+   else
+      rm --force "$hash_file"
+   fi
 
-      ## Using `basename` so we end up with relative paths in hash sums file.
+   ## Using `basename` so we end up with relative paths in hash sums file.
 
-      if [ "$dist_build_virtualbox" = "true" ]; then
-         $hash_sum "$(basename "$binary_image_ova")" | tee --append "$hash_file"
-      fi
+   if [ "$dist_build_virtualbox" = "true" ]; then
+      $hash_sum "$(basename "$binary_image_ova")" | tee --append "$hash_file"
+   fi
 
-      if [ "$dist_build_raw" = "true" ]; then
-         $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | tee --append "$hash_file"
-      fi
+   if [ "$dist_build_raw" = "true" ]; then
+      $hash_sum "$(basename "$libvirt_target_raw_xz_archive")" | tee --append "$hash_file"
+   fi
 
-      if [ "$dist_build_qcow2" = "true" ]; then
-         $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
-      fi
+   if [ "$dist_build_qcow2" = "true" ]; then
+      $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
+   fi
 
-      if [ "$dist_build_iso" = "true" ]; then
-         $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
-      fi
+   if [ "$dist_build_iso" = "true" ]; then
+      $hash_sum "$(basename "$binary_image_iso")" | tee --append "$hash_file"
+   fi
 
-      if [ "$dist_build_windows_installer" = "true" ]; then
-         $hash_sum "$(basename "$binary_image_windows_installer_exe")" | tee --append "$hash_file"
-      fi
+   if [ "$dist_build_windows_installer" = "true" ]; then
+      $hash_sum "$(basename "$binary_image_windows_installer_exe")" | tee --append "$hash_file"
+   fi
 
-      sync
+   sync
 
-      ## Sanity test.
-      $hash_sum --check "$hash_file"
-   done
+   ## Sanity test.
+   $hash_sum --check "$hash_file"
 }
 
 sign_cmd_gpg() {
