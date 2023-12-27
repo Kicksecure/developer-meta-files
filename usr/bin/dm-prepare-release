@@ -29,6 +29,10 @@ sanity_tests() {
 }
 
 installer_dist() {
+   if [ ! "${dist_build_installer_dist}" = "true" ]; then
+      return 0
+   fi
+
    command -v git >/dev/null
    command -v str_replace >/dev/null
 
@@ -118,16 +122,6 @@ libvirt_compress() {
    fi
    if [ "${dist_build_qcow2}" = "true" ]; then
       continue_maybe=yes
-   fi
-   if [ "${dist_build_iso}" = "true" ]; then
-      continue_maybe=no
-   fi
-   if [ "${dist_build_installer_dist}" = "true" ]; then
-      continue_maybe=no
-   fi
-   ## TODO: Maybe an issue when attempting to build for libvirt and windows at the same time. Unlikely.
-   if [ "${dist_build_windows_installer}" = "true" ]; then
-      continue_maybe=no
    fi
    if [ "${continue_maybe}" = "no" ]; then
       return 0
@@ -274,15 +268,6 @@ virtualbox_export() {
    if [ ! "${dist_build_virtualbox}" = "true" ]; then
       return 0
    fi
-   if [ "${dist_build_iso}" = "true" ]; then
-      return 0
-   fi
-   if [ "${dist_build_installer_dist}" = "true" ]; then
-      return 0
-   fi
-   #if [ "${dist_build_windows_installer}" = "true" ]; then
-   #   return 0
-   #fi
 
    local producturl vendorurl vendor eulafile description
    if [ "${dist_build_type_long}" = "kicksecure" ]; then
@@ -597,10 +582,7 @@ main() {
       vm_names_to_be_exported="${VMNAME}"
    fi
 
-   if [ "${dist_build_installer_dist}" = "true" ]; then
-      installer_dist
-   fi
-
+   installer_dist
    libvirt_compress
    virtualbox_export
    windows_installer
