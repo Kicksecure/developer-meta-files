@@ -542,7 +542,7 @@ verify_cmd_signinfy() {
 }
 
 sign_and_verify() {
-   file_size_bytes=$(stat -c%s "$FILE")
+   file_size_bytes=$(stat -c%s "$1")
    # Convert bytes to megabytes
    file_size_mb=$(echo "scale=2; $file_size_bytes / 1024 / 1024" | bc)
 
