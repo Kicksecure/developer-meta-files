@@ -485,7 +485,7 @@ verify_cmd_signinfy() {
 sign_and_verify() {
    file_size_bytes=$(stat -c%s "$1")
    # Convert bytes to megabytes
-   file_size_mb=$(echo "scale=2; $file_size_bytes / 1024 / 1024" | bc)
+   file_size_mb=$(echo "scale=0; $file_size_bytes / 1024 / 1024" | bc)
 
    sign_cmd_gpg "${1}"
    verify_cmd_gpg "${1}.asc"
@@ -528,7 +528,6 @@ signatures_create() {
       var_names+=("binary_image_windows_installer_file")
       file_list+=("${binary_image_windows_installer_file}")
       upload_url_part+=("windows")
-
    fi
 
    ## Debugging.
