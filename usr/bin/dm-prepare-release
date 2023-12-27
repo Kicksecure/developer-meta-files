@@ -56,8 +56,8 @@ windows_installer() {
       return 0
    fi
 
-   if ! test -r "$binary_image_ova" ; then
-      error "$0: binary_image_ova $binary_image_ova does not exist!"
+   if ! test -r "$binary_image_ova_file" ; then
+      error "$0: binary_image_ova_file $binary_image_ova_file does not exist!"
    fi
 
    test -d ~/virtualbox-windows-installer-binary
@@ -84,14 +84,14 @@ windows_installer() {
    ## environment variables read by Whonix-Installer build.sh
    TARGET_SYSTEM="WINDOWS"
    FILE_LICENSE="$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT"
-   FILE_WHONIX_OVA="$binary_image_ova"
+   FILE_WHONIX_OVA="$binary_image_ova_file"
    FILE_WHONIX_STARTER_MSI="$source_code_folder_dist/windows/Whonix-Starter/WhonixStarterInstaller.msi"
    #FILE_VBOX_INST_EXE="$FILE_VBOX_INST_EXE"
    FILE_INSTALLER_BINARY_FINAL="$binary_image_windows_installer_exe"
    export TARGET_SYSTEM FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
    VERSION="${dist_build_version}"
-   VERSION_FULL=$(basename "$binary_image_ova")
+   VERSION_FULL=$(basename "$binary_image_ova_file")
    MANUFACTURE="ENCRYPTED SUPPORT LP"
    DESCRIPTION="Whonix-Starter"
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
@@ -307,7 +307,7 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   rm --force "$binary_image_ova"
+   rm --force "$binary_image_ova_file"
 
    ## --vsys needs to precede --eulafile.
 
@@ -337,11 +337,11 @@ Please donate! [C]
          --vendor "$vendor" \
          --vendorurl "$vendorurl" \
          --version "${dist_build_version}" \
-         --output "$binary_image_ova"
+         --output "$binary_image_ova_file"
    else
       VBoxManage \
          export $vm_names_to_be_exported \
-         --output "$binary_image_ova" \
+         --output "$binary_image_ova_file" \
          --vsys '0' \
             --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
             --description "$description" \
@@ -363,9 +363,9 @@ Please donate! [C]
    fi
 
    ## Only important for redistribution.
-   ## VirtualBox creates $binary_image_ova with u+r only, which is problematic
+   ## VirtualBox creates $binary_image_ova_file with u+r only, which is problematic
    ## with respect to rsync.
-   chmod ugo+r "$binary_image_ova"
+   chmod ugo+r "$binary_image_ova_file"
 
    sync
 
@@ -374,20 +374,20 @@ Please donate! [C]
    ## in the list of imported VirtualBox machines.
    if [ "$vm_multiple" = "false" ]; then
       VBoxManage \
-         import "$binary_image_ova" \
+         import "$binary_image_ova_file" \
          --vsys "0" \
          --eula show \
          --vmname "$VMNAME-${dist_build_version}"
 
       VBoxManage \
-         import "$binary_image_ova" \
+         import "$binary_image_ova_file" \
          --vsys "0" \
          --eula accept \
          --vmname "$VMNAME-${dist_build_version}" \
          --dry-run
    else
       VBoxManage \
-         import "$binary_image_ova" \
+         import "$binary_image_ova_file" \
          --vsys "0" \
             --eula show \
             --vmname "Whonix-Gateway-${dist_build_version}" \
@@ -396,7 +396,7 @@ Please donate! [C]
             --vmname "Whonix-Workstation-${dist_build_version}" \
 
       VBoxManage \
-         import "$binary_image_ova" \
+         import "$binary_image_ova_file" \
          --vsys "0" \
             --eula accept \
             --vmname "Whonix-Gateway-${dist_build_version}" \
@@ -445,9 +445,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "$binary_image_ova")" \
+         --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "$binary_image_ova_file")" \
          -o "$binary_image_ova_torrent" \
-         "$binary_image_ova"
+         "$binary_image_ova_file"
       transmission-show "$binary_image_ova_torrent"
    fi
 
@@ -528,7 +528,7 @@ hashes_create_and_verify() {
    ## Using `basename` so we end up with relative paths in hash sums file.
 
    if [ "$dist_build_virtualbox" = "true" ]; then
-      $hash_sum "$(basename "$binary_image_ova")" | tee --append "$hash_file"
+      $hash_sum "$(basename "$binary_image_ova_file")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
@@ -582,11 +582,11 @@ verify_cmd_signinfy() {
 signatures_create() {
    ## Create detached signatures.
    if [ "$dist_build_virtualbox" = "true" ]; then
-      sign_cmd_gpg "$binary_image_ova"
+      sign_cmd_gpg "$binary_image_ova_file"
       sign_cmd_gpg "$binary_image_ova_torrent"
 
       ## Too big.
-      #sign_cmd_signify "$binary_image_ova"
+      #sign_cmd_signify "$binary_image_ova_file"
 
       sign_cmd_signify "$binary_image_ova_torrent" "$binary_image_ova_torrent_signify"
    fi
