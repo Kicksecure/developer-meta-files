@@ -504,17 +504,20 @@ signatures_create() {
       file_item="${file_list[i]}"
       url_part_item="${upload_url_part[i]}"
 
+      local base_name
+      base_name="$(basename "${file_item}"
+
       rm --force "${file_item}.torrent"
       mktorrent \
          --verbose \
          --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/${url_part_item}/${dist_build_version}/$(basename "${file_item}")" \
+         --web-seed "https://download.${project_clearnet}/${url_part_item}/${dist_build_version}/${base_name}" \
          -o "${file_item}.torrent" \
          "${file_item}"
       transmission-show "${file_item}.torrent"
 
       ## Using `basename` so we end up with relative paths in hash sums file.
-      sha512sum "$(basename "${file_item}")" | tee "${file_item}.sha512sums" >/dev/null
+      sha512sum "${base_name}" | tee "${file_item}.sha512sums" >/dev/null
       sha512sum --check "${file_item}.sha512sums"
 
       sign_and_verify "${file_item}"
