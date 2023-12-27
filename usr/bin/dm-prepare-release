@@ -510,7 +510,7 @@ torrent_create() {
 
 hashes_create_and_verify() {
    if [ "$dist_build_installer_dist" = "true" ]; then
-      #$hash_sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
+      #sha512sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
       return 0
    fi
 
@@ -528,29 +528,29 @@ hashes_create_and_verify() {
    ## Using `basename` so we end up with relative paths in hash sums file.
 
    if [ "$dist_build_virtualbox" = "true" ]; then
-      $hash_sum "$(basename "$binary_image_ova_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "$binary_image_ova_file")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
-      $hash_sum "$(basename "$libvirt_target_raw_xz_archive_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "$libvirt_target_raw_xz_archive_file")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
-      $hash_sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
+      sha512sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      $hash_sum "$(basename "$binary_image_iso_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "$binary_image_iso_file")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
-      $hash_sum "$(basename "$binary_image_windows_installer_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "$binary_image_windows_installer_file")" | tee --append "$hash_file"
    fi
 
    sync
 
    ## Sanity test.
-   $hash_sum --check "$hash_file"
+   sha512sum --check "$hash_file"
 }
 
 sign_cmd_gpg() {
