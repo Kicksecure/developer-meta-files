@@ -441,14 +441,14 @@ torrent_create() {
    ## because CoralCDN appears to no longer support files greater than 50 MB.
 
    if [ "$dist_build_virtualbox" = "true" ]; then
-      rm --force "$binary_image_ova_torrent"
+      rm --force "$binary_image_ova_torrent_file"
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
          --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "$binary_image_ova_file")" \
-         -o "$binary_image_ova_torrent" \
+         -o "$binary_image_ova_torrent_file" \
          "$binary_image_ova_file"
-      transmission-show "$binary_image_ova_torrent"
+      transmission-show "$binary_image_ova_torrent_file"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
@@ -583,12 +583,12 @@ signatures_create() {
    ## Create detached signatures.
    if [ "$dist_build_virtualbox" = "true" ]; then
       sign_cmd_gpg "$binary_image_ova_file"
-      sign_cmd_gpg "$binary_image_ova_torrent"
+      sign_cmd_gpg "$binary_image_ova_torrent_file"
 
       ## Too big.
       #sign_cmd_signify "$binary_image_ova_file"
 
-      sign_cmd_signify "$binary_image_ova_torrent" "$binary_image_ova_torrent_signify"
+      sign_cmd_signify "$binary_image_ova_torrent_file" "$binary_image_ova_torrent_signify"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
@@ -651,7 +651,7 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$binary_image_ova_signature"
-      verify_cmd_signinfy "$binary_image_ova_torrent" "$binary_image_ova_torrent_signify"
+      verify_cmd_signinfy "$binary_image_ova_torrent_file" "$binary_image_ova_torrent_signify"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
