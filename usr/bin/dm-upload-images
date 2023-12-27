@@ -25,6 +25,7 @@ show_files() {
       test -f "$file_name_item"
 
       upload_file_list+=("${file_name_item}")
+      upload_file_list+=("${file_name_item}.asc")
       upload_file_list+=("${file_name_item}.torrent")
       upload_file_list+=("${file_name_item}.torrent.asc")
       upload_file_list+=("${file_name_item}.torrent.sig")
