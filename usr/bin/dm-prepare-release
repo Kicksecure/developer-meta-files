@@ -56,8 +56,8 @@ windows_installer() {
       return 0
    fi
 
-   if ! test -r "$binary_image_ova_file" ; then
-      error "$0: binary_image_ova_file $binary_image_ova_file does not exist!"
+   if ! test -r "${binary_image_ova_file}" ; then
+      error "$0: binary_image_ova_file ${binary_image_ova_file} does not exist!"
    fi
 
    test -d ~/virtualbox-windows-installer-binary
@@ -84,14 +84,14 @@ windows_installer() {
    ## environment variables read by Whonix-Installer build.sh
    TARGET_SYSTEM="WINDOWS"
    FILE_LICENSE="$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT"
-   FILE_WHONIX_OVA="$binary_image_ova_file"
+   FILE_WHONIX_OVA="${binary_image_ova_file}"
    FILE_WHONIX_STARTER_MSI="$source_code_folder_dist/windows/Whonix-Starter/WhonixStarterInstaller.msi"
    #FILE_VBOX_INST_EXE="$FILE_VBOX_INST_EXE"
-   FILE_INSTALLER_BINARY_FINAL="$binary_image_windows_installer_file"
+   FILE_INSTALLER_BINARY_FINAL="${binary_image_windows_installer_file}"
    export TARGET_SYSTEM FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
    VERSION="${dist_build_version}"
-   VERSION_FULL=$(basename "$binary_image_ova_file")
+   VERSION_FULL=$(basename "${binary_image_ova_file}")
    MANUFACTURE="ENCRYPTED SUPPORT LP"
    DESCRIPTION="Whonix-Starter"
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
@@ -101,11 +101,11 @@ windows_installer() {
    ./build_on_linux_for_win64
    popd >/dev/null
 
-   rm --force "$binary_image_windows_installer_file"
+   rm --force "${binary_image_windows_installer_file}"
 
    pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
    ## Requires already existing WhonixStarterInstaller.msi
-   ## Creates $binary_image_windows_installer_file
+   ## Creates ${binary_image_windows_installer_file}
    "$source_code_folder_dist/windows/Whonix-Installer/build.sh"
    popd >/dev/null
 }
@@ -134,12 +134,12 @@ libvirt_compress() {
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
-      rm --force "$(basename $libvirt_target_qcow2_xz_archive)"
-      true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive $libvirt_target_qcow2_xz_archive exist..."
+      rm --force "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
+      true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
    fi
    if [ "$dist_build_raw" = "true" ]; then
-      rm --force "$(basename $libvirt_target_raw_xz_archive_file)"
-      true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file $libvirt_target_raw_xz_archive_file exist..."
+      rm --force "$(basename "${libvirt_target_raw_xz_archive_file}")"
+      true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
 
    if [ "$dist_build_type_long" = "kicksecure" ]; then
@@ -168,12 +168,12 @@ libvirt_compress() {
       if [ "$dist_build_raw" = "true" ]; then
          test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
          test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
-         true "INFO: Ok, all files to be added to $libvirt_target_raw_xz_archive_file exist."
+         true "INFO: Ok, all files to be added to ${libvirt_target_raw_xz_archive_file} exist."
       fi
       if [ "$dist_build_qcow2" = "true" ]; then
          test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
          test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
-         true "INFO: Ok, all files to be added to $libvirt_target_qcow2_xz_archive exist."
+         true "INFO: Ok, all files to be added to ${libvirt_target_qcow2_xz_archive_file} exist."
       fi
    fi
 
@@ -227,10 +227,10 @@ libvirt_compress() {
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
-      xz_archive="$libvirt_target_raw_xz_archive_file"
+      xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
    if [ "$dist_build_qcow2" = "true" ]; then
-      xz_archive="$libvirt_target_qcow2_xz_archive"
+      xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
 
    true "filelist_full_path: $filelist_full_path"
@@ -307,7 +307,7 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   rm --force "$binary_image_ova_file"
+   rm --force "${binary_image_ova_file}"
 
    ## --vsys needs to precede --eulafile.
 
@@ -337,11 +337,11 @@ Please donate! [C]
          --vendor "$vendor" \
          --vendorurl "$vendorurl" \
          --version "${dist_build_version}" \
-         --output "$binary_image_ova_file"
+         --output "${binary_image_ova_file}"
    else
       VBoxManage \
          export $vm_names_to_be_exported \
-         --output "$binary_image_ova_file" \
+         --output "${binary_image_ova_file}" \
          --vsys '0' \
             --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
             --description "$description" \
@@ -363,9 +363,9 @@ Please donate! [C]
    fi
 
    ## Only important for redistribution.
-   ## VirtualBox creates $binary_image_ova_file with u+r only, which is problematic
+   ## VirtualBox creates ${binary_image_ova_file} with u+r only, which is problematic
    ## with respect to rsync.
-   chmod ugo+r "$binary_image_ova_file"
+   chmod ugo+r "${binary_image_ova_file}"
 
    sync
 
@@ -374,20 +374,20 @@ Please donate! [C]
    ## in the list of imported VirtualBox machines.
    if [ "$vm_multiple" = "false" ]; then
       VBoxManage \
-         import "$binary_image_ova_file" \
+         import "${binary_image_ova_file}" \
          --vsys "0" \
          --eula show \
          --vmname "$VMNAME-${dist_build_version}"
 
       VBoxManage \
-         import "$binary_image_ova_file" \
+         import "${binary_image_ova_file}" \
          --vsys "0" \
          --eula accept \
          --vmname "$VMNAME-${dist_build_version}" \
          --dry-run
    else
       VBoxManage \
-         import "$binary_image_ova_file" \
+         import "${binary_image_ova_file}" \
          --vsys "0" \
             --eula show \
             --vmname "Whonix-Gateway-${dist_build_version}" \
@@ -396,7 +396,7 @@ Please donate! [C]
             --vmname "Whonix-Workstation-${dist_build_version}" \
 
       VBoxManage \
-         import "$binary_image_ova_file" \
+         import "${binary_image_ova_file}" \
          --vsys "0" \
             --eula accept \
             --vmname "Whonix-Gateway-${dist_build_version}" \
@@ -445,9 +445,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "$binary_image_ova_file")" \
+         --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "${binary_image_ova_file}")" \
          -o "$binary_image_ova_torrent_file" \
-         "$binary_image_ova_file"
+         "${binary_image_ova_file}"
       transmission-show "$binary_image_ova_torrent_file"
    fi
 
@@ -456,9 +456,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive_file")" \
+         --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "${libvirt_target_raw_xz_archive_file}")" \
          -o "$libvirt_target_raw_xz_archive_torrent_file" \
-         "$libvirt_target_raw_xz_archive_file"
+         "${libvirt_target_raw_xz_archive_file}"
       transmission-show "$libvirt_target_raw_xz_archive_torrent_file"
    fi
 
@@ -467,9 +467,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "$libvirt_target_qcow2_xz_archive")" \
+         --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "${libvirt_target_qcow2_xz_archive_file}")" \
          -o "$libvirt_target_qcow2_xz_archive_torrent_file" \
-         "$libvirt_target_qcow2_xz_archive"
+         "${libvirt_target_qcow2_xz_archive_file}"
       transmission-show "$libvirt_target_qcow2_xz_archive_torrent_file"
    fi
 
@@ -478,9 +478,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "$binary_image_iso_file")" \
+         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "${binary_image_iso_file}")" \
          -o "$binary_image_iso_torrent_file" \
-         "$binary_image_iso_file"
+         "${binary_image_iso_file}"
       transmission-show "$binary_image_iso_torrent_file"
    fi
 
@@ -489,9 +489,9 @@ torrent_create() {
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
-         --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "$binary_image_windows_installer_file")" \
+         --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "${binary_image_windows_installer_file}")" \
          -o "$binary_image_windows_installer_torrent_file" \
-         "$binary_image_windows_installer_file"
+         "${binary_image_windows_installer_file}"
       transmission-show "$binary_image_windows_installer_torrent_file"
    fi
 
@@ -528,23 +528,23 @@ hashes_create_and_verify() {
    ## Using `basename` so we end up with relative paths in hash sums file.
 
    if [ "$dist_build_virtualbox" = "true" ]; then
-      sha512sum "$(basename "$binary_image_ova_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "${binary_image_ova_file}")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
-      sha512sum "$(basename "$libvirt_target_raw_xz_archive_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "${libvirt_target_raw_xz_archive_file}")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
-      sha512sum "$(basename "$libvirt_target_qcow2_xz_archive")" | tee --append "$hash_file"
+      sha512sum "$(basename "${libvirt_target_qcow2_xz_archive_file}")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      sha512sum "$(basename "$binary_image_iso_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "${binary_image_iso_file}")" | tee --append "$hash_file"
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
-      sha512sum "$(basename "$binary_image_windows_installer_file")" | tee --append "$hash_file"
+      sha512sum "$(basename "${binary_image_windows_installer_file}")" | tee --append "$hash_file"
    fi
 
    sync
@@ -582,41 +582,41 @@ verify_cmd_signinfy() {
 signatures_create() {
    ## Create detached signatures.
    if [ "$dist_build_virtualbox" = "true" ]; then
-      sign_cmd_gpg "$binary_image_ova_file"
+      sign_cmd_gpg "${binary_image_ova_file}"
       sign_cmd_gpg "$binary_image_ova_torrent_file"
 
       ## Too big.
-      #sign_cmd_signify "$binary_image_ova_file"
+      #sign_cmd_signify "${binary_image_ova_file}"
 
       sign_cmd_signify "$binary_image_ova_torrent_file" "$binary_image_ova_torrent_signify"
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
-      sign_cmd_gpg "$libvirt_target_raw_xz_archive_file"
+      sign_cmd_gpg "${libvirt_target_raw_xz_archive_file}"
       sign_cmd_gpg "$libvirt_target_raw_xz_archive_torrent_file"
 
       ## Too big.
-      #sign_cmd_signify "$libvirt_target_raw_xz_archive_file"
+      #sign_cmd_signify "${libvirt_target_raw_xz_archive_file}"
 
       sign_cmd_signify "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
-      sign_cmd_gpg "$libvirt_target_qcow2_xz_archive"
+      sign_cmd_gpg "${libvirt_target_qcow2_xz_archive_file}"
       sign_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent_file"
 
       ## Too big.
-      #sign_cmd_signify "$libvirt_target_qcow2_xz_archive"
+      #sign_cmd_signify "${libvirt_target_qcow2_xz_archive_file}"
 
       sign_cmd_signify "$libvirt_target_qcow2_xz_archive_torrent_file" "$libvirt_target_qcow2_xz_archive_torrent_signify"
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      sign_cmd_gpg "$binary_image_iso_file"
+      sign_cmd_gpg "${binary_image_iso_file}"
       sign_cmd_gpg "$binary_image_iso_torrent_file"
 
       ## Too big.
-      #sign_cmd_signify "$binary_image_iso_file"
+      #sign_cmd_signify "${binary_image_iso_file}"
 
       sign_cmd_signify "$binary_image_iso_torrent_file" "$binary_image_iso_torrent_signify"
    fi
@@ -629,9 +629,9 @@ signatures_create() {
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
-      sign_cmd_gpg "$binary_image_windows_installer_file"
+      sign_cmd_gpg "${binary_image_windows_installer_file}"
       ## Too big.
-      #sign_cmd_signify "$binary_image_windows_installer_file" "$binary_image_windows_installer_signify"
+      #sign_cmd_signify "${binary_image_windows_installer_file}" "$binary_image_windows_installer_signify"
       sign_cmd_gpg "$binary_image_windows_installer_torrent_file"
       sign_cmd_signify "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
    fi
@@ -659,7 +659,7 @@ signatures_verify() {
       verify_cmd_gpg "$libvirt_target_raw_xz_archive_torrent_signature"
 
       ## Too big.
-      #verify_cmd_signinfy "$libvirt_target_raw_xz_archive_file"
+      #verify_cmd_signinfy "${libvirt_target_raw_xz_archive_file}"
       verify_cmd_signinfy "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
    fi
 
@@ -668,7 +668,7 @@ signatures_verify() {
       verify_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent_signature"
 
       ## Too big.
-      #verify_cmd_signinfy "$libvirt_target_qcow2_xz_archive"
+      #verify_cmd_signinfy "${libvirt_target_qcow2_xz_archive_file}"
       verify_cmd_signinfy "$libvirt_target_qcow2_xz_archive_torrent_file" "$libvirt_target_qcow2_xz_archive_torrent_signify"
    fi
 
@@ -692,7 +692,7 @@ signatures_verify() {
       verify_cmd_gpg "$binary_image_windows_installer_signature"
       verify_cmd_gpg "$binary_image_windows_installer_torrent_signature"
       ## Too big.
-      #verify_cmd_signinfy "$binary_image_windows_installer_file" "$binary_image_windows_installer_signify"
+      #verify_cmd_signinfy "${binary_image_windows_installer_file}" "$binary_image_windows_installer_signify"
       verify_cmd_signinfy "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
    fi
 
