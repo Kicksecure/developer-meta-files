@@ -485,14 +485,14 @@ torrent_create() {
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
-      rm --force "$binary_image_windows_installer_torrent"
+      rm --force "$binary_image_windows_installer_torrent_file"
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
          --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "$binary_image_windows_installer_exe")" \
-         -o "$binary_image_windows_installer_torrent" \
+         -o "$binary_image_windows_installer_torrent_file" \
          "$binary_image_windows_installer_exe"
-      transmission-show "$binary_image_windows_installer_torrent"
+      transmission-show "$binary_image_windows_installer_torrent_file"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
@@ -632,8 +632,8 @@ signatures_create() {
       sign_cmd_gpg "$binary_image_windows_installer_exe"
       ## Too big.
       #sign_cmd_signify "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
-      sign_cmd_gpg "$binary_image_windows_installer_torrent"
-      sign_cmd_signify "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
+      sign_cmd_gpg "$binary_image_windows_installer_torrent_file"
+      sign_cmd_signify "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
    fi
 
    sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
@@ -693,7 +693,7 @@ signatures_verify() {
       verify_cmd_gpg "$binary_image_windows_installer_torrent_signature"
       ## Too big.
       #verify_cmd_signinfy "$binary_image_windows_installer_exe" "$binary_image_windows_installer_signify"
-      verify_cmd_signinfy "$binary_image_windows_installer_torrent" "$binary_image_windows_installer_torrent_signify"
+      verify_cmd_signinfy "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
    fi
 
    verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
