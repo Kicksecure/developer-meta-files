@@ -505,7 +505,7 @@ signatures_create() {
       url_part_item="${upload_url_part[i]}"
 
       local base_name
-      base_name="$(basename "${file_item}"
+      base_name=$(basename "${file_item}")
 
       rm --force "${file_item}.torrent"
       mktorrent \
