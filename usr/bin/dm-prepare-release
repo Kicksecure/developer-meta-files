@@ -33,7 +33,7 @@ installer_dist() {
    command -v str_replace >/dev/null
 
    mkdir --parents "$binary_image_installer_dist_folder"
-   cp "$binary_image_installer_dist_source" "$binary_image_installer_dist_image"
+   cp "$binary_image_installer_dist_source" "$binary_image_installer_dist_file"
 
    installer_dist_source_folder="$(dirname "$binary_image_installer_dist_source")"
    pushd "$installer_dist_source_folder"
@@ -46,7 +46,7 @@ installer_dist() {
 
    search="commit-hash-replace-me"
    replace="$git_tag_current"
-   file_name="$binary_image_installer_dist_image"
+   file_name="$binary_image_installer_dist_file"
    str_replace "$search" "$replace" "$file_name"
 }
 
@@ -510,7 +510,7 @@ torrent_create() {
 
 hashes_create_and_verify() {
    if [ "$dist_build_installer_dist" = "true" ]; then
-      #sha512sum "$(basename "$binary_image_installer_dist_image")" | tee --append "$hash_file"
+      #sha512sum "$(basename "$binary_image_installer_dist_file")" | tee --append "$hash_file"
       return 0
    fi
 
@@ -622,8 +622,8 @@ signatures_create() {
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
-      sign_cmd_gpg "$binary_image_installer_dist_image"
-      sign_cmd_signify "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
+      sign_cmd_gpg "$binary_image_installer_dist_file"
+      sign_cmd_signify "$binary_image_installer_dist_file" "$binary_image_installer_dist_signify"
       ## Skip creation of hash sum files.
       return 0
    fi
@@ -683,7 +683,7 @@ signatures_verify() {
 
    if [ "$dist_build_installer_dist" = "true" ]; then
       verify_cmd_gpg "$binary_image_installer_dist_signature"
-      verify_cmd_signinfy "$binary_image_installer_dist_image" "$binary_image_installer_dist_signify"
+      verify_cmd_signinfy "$binary_image_installer_dist_file" "$binary_image_installer_dist_signify"
       ## Skip verification of hash sum files since not created for dist-installer-cli.
       return 0
    fi
