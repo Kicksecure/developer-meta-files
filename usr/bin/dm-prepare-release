@@ -534,6 +534,8 @@ signatures_create() {
    ## Debugging.
    pwd
 
+   set -o nounset
+
    local i
    for i in "${!file_list[@]}"; do
       true "Variable Name: ${var_names[i]}"
@@ -561,6 +563,9 @@ signatures_create() {
       sign_and_verify "${file_item}.torrent"
       sign_and_verify "${file_item}.sha512sums"
    done
+
+   ## TODO: Remove when whole script is ready for nounset.
+   set +o nounset
 }
 
 main() {
