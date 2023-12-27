@@ -18,8 +18,8 @@ read -r press_enter_to_continue
 
 build_args=()
 
-## Also build the Whonix Windows Installer.
-## TODO: disabled for now until sha512sum overwriting issue was fixed in dm-prepare-release
+## Also build the Whonix-Windows-Installer.
+## TODO: Disabled until Whonix-Windows-Installer authenticode certificate is available.
 #build_args+=(--target windows)
 
 build_args+=(--repo true)
