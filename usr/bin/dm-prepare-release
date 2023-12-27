@@ -393,47 +393,6 @@ Please donate! [C]
    fi
 }
 
-torrent_create() {
-   ## Thanks to:
-   ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
-
-   TRACKERS=""
-   ## https://fosstorrents.com/tracker/
-   TRACKERS+="http://fosstorrents.com:6969/announce"
-   TRACKERS+=","
-   TRACKERS+="udp://fosstorrents.com:6969/announce"
-   TRACKERS+=","
-   ## https://opentrackr.org/
-   TRACKERS+="udp://tracker.opentrackr.org:1337/announce"
-   TRACKERS+=","
-   ## https://torrent.eu.org/
-   TRACKERS+="udp://tracker.torrent.eu.org:451"
-   true "TRACKERS: ${TRACKERS}"
-
-   ## Not well supported by BitTorrent clients.
-   ## Multi file webseeds do not work
-   ##     https://trac.transmissionbt.com/ticket/4437
-   ## (fixed upstream, but takes a while to propagate to Debian stable)
-   #mktorrent \
-   #   --verbose \
-   #   --announce="${TRACKERS}" \
-   #   --web-seed "https://download.${project_clearnet}/Whonix-Gateway-7.ova" \
-   #   --web-seed "https://download.${project_clearnet}/Whonix-Workstation-7.ova" \
-   #   ~/7
-
-   ## CoralCDN:
-   ## .8008.nyud.net can no longer be appended to https://download.${project_clearnet},
-   ## because CoralCDN appears to no longer support files greater than 50 MB.
-
-   ## Working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Workstation-7.ova");' "$2")"
-
-   ## Not working.
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Gateway-7.ova");' "$2")"
-   #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Workstation-7.ova");' "$2")"
-}
-
 sign_cmd_gpg() {
    ## GPG signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
@@ -515,6 +474,21 @@ signatures_create() {
       upload_url_part+=("windows")
    fi
 
+   ## Thanks to:
+   ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
+   TRACKERS=""
+   ## https://fosstorrents.com/tracker/
+   TRACKERS+="http://fosstorrents.com:6969/announce"
+   TRACKERS+=","
+   TRACKERS+="udp://fosstorrents.com:6969/announce"
+   TRACKERS+=","
+   ## https://opentrackr.org/
+   TRACKERS+="udp://tracker.opentrackr.org:1337/announce"
+   TRACKERS+=","
+   ## https://torrent.eu.org/
+   TRACKERS+="udp://tracker.torrent.eu.org:451"
+   true "TRACKERS: ${TRACKERS}"
+
    ## Debugging.
    pwd
 
@@ -586,7 +560,6 @@ main() {
    libvirt_compress
    virtualbox_export
    windows_installer
-   torrent_create
    signatures_create
    sync
 }
