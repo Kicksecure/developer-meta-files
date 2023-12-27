@@ -452,14 +452,14 @@ torrent_create() {
    fi
 
    if [ "$dist_build_raw" = "true" ]; then
-      rm --force "$libvirt_target_raw_xz_archive_torrent"
+      rm --force "$libvirt_target_raw_xz_archive_torrent_file"
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
          --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "$libvirt_target_raw_xz_archive_file")" \
-         -o "$libvirt_target_raw_xz_archive_torrent" \
+         -o "$libvirt_target_raw_xz_archive_torrent_file" \
          "$libvirt_target_raw_xz_archive_file"
-      transmission-show "$libvirt_target_raw_xz_archive_torrent"
+      transmission-show "$libvirt_target_raw_xz_archive_torrent_file"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
@@ -593,12 +593,12 @@ signatures_create() {
 
    if [ "$dist_build_raw" = "true" ]; then
       sign_cmd_gpg "$libvirt_target_raw_xz_archive_file"
-      sign_cmd_gpg "$libvirt_target_raw_xz_archive_torrent"
+      sign_cmd_gpg "$libvirt_target_raw_xz_archive_torrent_file"
 
       ## Too big.
       #sign_cmd_signify "$libvirt_target_raw_xz_archive_file"
 
-      sign_cmd_signify "$libvirt_target_raw_xz_archive_torrent" "$libvirt_target_raw_xz_archive_torrent_signify"
+      sign_cmd_signify "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
@@ -660,7 +660,7 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$libvirt_target_raw_xz_archive_file"
-      verify_cmd_signinfy "$libvirt_target_raw_xz_archive_torrent" "$libvirt_target_raw_xz_archive_torrent_signify"
+      verify_cmd_signinfy "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
    fi
 
    if [ "$dist_build_qcow2" = "true" ]; then
