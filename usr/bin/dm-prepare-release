@@ -177,7 +177,6 @@ libvirt_compress() {
       fi
    fi
 
-
    ## Not using `gzip`, because it cannot handle sparse files:
    ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=535987
    #pv "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_version}.qcow2" | gzip -n - > "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_version}.libvirt.tar.gz"
@@ -545,9 +544,7 @@ signatures_create() {
       file_item="${file_list[i]}"
       url_part_item="${upload_url_part[i]}"
 
-      continue
-
-      rm --force "$file_item}.torrent"
+      rm --force "${file_item}.torrent"
       mktorrent \
          --verbose \
          --announce="${TRACKERS}" \
