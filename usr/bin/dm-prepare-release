@@ -440,65 +440,6 @@ torrent_create() {
    ## .8008.nyud.net can no longer be appended to https://download.${project_clearnet},
    ## because CoralCDN appears to no longer support files greater than 50 MB.
 
-   if [ "${dist_build_virtualbox}" = "true" ]; then
-      rm --force "${binary_image_ova_torrent_file}"
-      mktorrent \
-         --verbose \
-         --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "${binary_image_ova_file}")" \
-         -o "${binary_image_ova_torrent_file}" \
-         "${binary_image_ova_file}"
-      transmission-show "${binary_image_ova_torrent_file}"
-   fi
-
-   if [ "${dist_build_raw}" = "true" ]; then
-      rm --force "${libvirt_target_raw_xz_archive_torrent_file}"
-      mktorrent \
-         --verbose \
-         --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "${libvirt_target_raw_xz_archive_file}")" \
-         -o "${libvirt_target_raw_xz_archive_torrent_file}" \
-         "${libvirt_target_raw_xz_archive_file}"
-      transmission-show "${libvirt_target_raw_xz_archive_torrent_file}"
-   fi
-
-   if [ "${dist_build_qcow2}" = "true" ]; then
-      rm --force "${libvirt_target_qcow2_xz_archive_torrent_file}"
-      mktorrent \
-         --verbose \
-         --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "${libvirt_target_qcow2_xz_archive_file}")" \
-         -o "${libvirt_target_qcow2_xz_archive_torrent_file}" \
-         "${libvirt_target_qcow2_xz_archive_file}"
-      transmission-show "${libvirt_target_qcow2_xz_archive_torrent_file}"
-   fi
-
-   if [ "${dist_build_iso}" = "true" ]; then
-      rm --force "${binary_image_iso_torrent_file}"
-      mktorrent \
-         --verbose \
-         --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "${binary_image_iso_file}")" \
-         -o "${binary_image_iso_torrent_file}" \
-         "${binary_image_iso_file}"
-      transmission-show "${binary_image_iso_torrent_file}"
-   fi
-
-   if [ "${dist_build_windows_installer}" = "true" ]; then
-      rm --force "${binary_image_windows_installer_torrent_file}"
-      mktorrent \
-         --verbose \
-         --announce="${TRACKERS}" \
-         --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "${binary_image_windows_installer_file}")" \
-         -o "${binary_image_windows_installer_torrent_file}" \
-         "${binary_image_windows_installer_file}"
-      transmission-show "${binary_image_windows_installer_torrent_file}"
-   fi
-
-   if [ "${dist_build_installer_dist}" = "true" ]; then
-      return 0
-   fi
-
    ## Working.
    #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Gateway-7.ova");' "$2")"
    #echo "$(perl -MURI::Escape -e 'print uri_escape("https://download.${project_clearnet}/ova/Whonix-Workstation-7.ova");' "$2")"
@@ -553,39 +494,67 @@ sign_and_verify() {
 }
 
 signatures_create() {
-   ## file
-   ## torrent
-   ## sha
-   ## sig
-
-   ## TODO: Too big for signify
-
-   local file_list
+   local var_names file_list upload_url_part
+   var_names=()
    file_list=()
+   upload_url_part=()
 
    if [ "${dist_build_virtualbox}" = "true" ]; then
+      var_names+=("binary_image_ova_file")
       file_list+=("${binary_image_ova_file}")
+      upload_url_part+=("ova")
    fi
    if [ "${dist_build_raw}" = "true" ]; then
+      var_names+=("libvirt_target_raw_xz_archive_file")
       file_list+=("${libvirt_target_raw_xz_archive_file}")
+      upload_url_part+=("raw")
    fi
    if [ "${dist_build_qcow2}" = "true" ]; then
+      var_names+=("libvirt_target_qcow2_xz_archive_file")
       file_list+=("${libvirt_target_qcow2_xz_archive_file}")
+      upload_url_part+=("libvirt")
    fi
    if [ "${dist_build_iso}" = "true" ]; then
+      var_names+=("binary_image_iso_file")
       file_list+=("${binary_image_iso_file}")
+      upload_url_part+=("iso")
    fi
    if [ "${dist_build_installer_dist}" = "true" ]; then
+      var_names+=("binary_image_installer_dist_file")
       file_list+=("${binary_image_installer_dist_file}")
+      upload_url_part+=("dist-installer-cli")
    fi
    if [ "${dist_build_windows_installer}" = "true" ]; then
+      var_names+=("binary_image_windows_installer_file")
       file_list+=("${binary_image_windows_installer_file}")
+      upload_url_part+=("windows")
+
    fi
 
    ## Debugging.
    pwd
 
-   for file_item in "${flavors_list[@]}"; do
+   local i
+   for i in "${!file_list[@]}"; do
+      true "Variable Name: ${var_names[i]}"
+      true "Variable Content: ${file_list[i]}"
+      true "upload_url_part: ${upload_url_part[i]}"
+
+      local file_item url_part_item
+      file_item="${file_list[i]}"
+      url_part_item="${upload_url_part[i]}"
+
+      continue
+
+      rm --force "$file_item}.torrent"
+      mktorrent \
+         --verbose \
+         --announce="${TRACKERS}" \
+         --web-seed "https://download.${project_clearnet}/${url_part_item}/${dist_build_version}/$(basename "${file_item}")" \
+         -o "${file_item}.torrent" \
+         "${file_item}"
+      transmission-show "${file_item}.torrent"
+
       ## Using `basename` so we end up with relative paths in hash sums file.
       sha512sum "$(basename "${file_item}")" | tee "${file_item}.sha512sums" >/dev/null
       sha512sum --check "${file_item}.sha512sums"
