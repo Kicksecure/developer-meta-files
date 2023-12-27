@@ -1,3 +1,153 @@
+commit f6f62fb579d4eb6346cb8340a7d6f112376a6418
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 22:09:43 2023 -0500
+
+    .
+
+commit 9b80977aee26e10f38e5e96dff895fb9ae6caf8b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 22:03:32 2023 -0500
+
+    .
+
+commit bf0ea2b92bfdf46be3fe1a33cff3c92fb4895880
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 22:00:35 2023 -0500
+
+    .
+
+commit 714d40bb7caada608a062b54207f42868ed59abb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:43:16 2023 -0500
+
+    .
+
+commit 6155e8fd817719ed0c0c81d91cf318c4a0297a73
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:38:23 2023 -0500
+
+    .
+
+commit b4d8e9c90bfeb01a7725c512cc328d6e4e992da8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:30:00 2023 -0500
+
+    .
+
+commit dcce14043314f4d8110ed35c4127a626182b7f7b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:25:35 2023 -0500
+
+    .
+
+commit cb0a223910c24d4102f06d8122aa1dabe618d53b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:07:03 2023 -0500
+
+    .
+
+commit 85a8c3b309b23547ef316a47886cc8e656ef9a76
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 21:05:40 2023 -0500
+
+    .
+
+commit c71ce2820c86b024bf8a4597bf4d59ccb1bc7733
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 20:42:11 2023 -0500
+
+    convert unbraced to braced variables
+
+commit 40684109d1d595205fdf9a074cf4a3f693b5c005
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 20:21:37 2023 -0500
+
+    .
+
+commit 389d2f8f4ea2d814efbb6f0d3bf32fb48e70b20f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 20:13:12 2023 -0500
+
+    rename variable
+
+commit df0f10b3add4472ce48b3ad74f5ef975cf15f9f9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 20:10:22 2023 -0500
+
+    fix
+
+commit 4677c23db441356285ccfcfc5f2344100c5b6405
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 20:05:26 2023 -0500
+
+    rename variable
+
+commit 5187a09d565646fd8506ff4c6c622d732ccb8fa9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:50:25 2023 -0500
+
+    rename variable
+
+commit 6416e2cafc6f6ba14d56d9b7c2853cf57070b017
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:47:51 2023 -0500
+
+    rename variable
+
+commit b5ab8d12eabfed3dffe8e31909c59e063b54609b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:17:10 2023 -0500
+
+    rename variable
+
+commit 2e298d210ee344f570576b02b3af8f9a59c12e93
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:15:16 2023 -0500
+
+    rename variable
+
+commit 67db7275478357480ed1a5f450679f1c15a64b9e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:06:06 2023 -0500
+
+    rename variable
+
+commit a0c33f23244c4ec28418ae47e543c4b9aca2d7fb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 19:03:04 2023 -0500
+
+    rename variable
+
+commit 9d70b9401d73a1f8586a6cfedfeba2e286c11eef
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 18:57:45 2023 -0500
+
+    rename variable
+
+commit 7d74e4cafcaf16c481e8eb29a3919e167256cb29
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 18:54:53 2023 -0500
+
+    rename variable
+
+commit 7f4da49668a2ee75b0492489eebc44d05f593293
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 18:50:00 2023 -0500
+
+    rename variable
+
+commit 5a7e770369235151e22a58b9b2d7e3539a29338e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 18:21:56 2023 -0500
+
+    deprecate sha256sums files
+
+commit 2c1d209e489e22100748f6d7ce285af32993349b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 26 16:19:52 2023 +0000
+
+    bumped changelog version
+
 commit bd9e03887718150974df5e5493294720dffd875e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Dec 26 11:19:32 2023 -0500
