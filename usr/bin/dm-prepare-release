@@ -226,6 +226,7 @@ libvirt_compress() {
       fi
    fi
 
+   ## XXX: --target raw and --target qcow2 can currently not be combined but that seems unlikely.
    if [ "${dist_build_raw}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
