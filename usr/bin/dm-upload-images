@@ -16,28 +16,30 @@ source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
 
 show_files() {
-   local file_name
-
-   for file_name in "${dist_build_files_to_upload[@]}" ; do
-      true "file_name: $file_name"
-
-      if [ "$file_name" == "" ]; then
+   local file_name_item
+   for file_name_item in "${dist_build_files_to_upload[@]}"; do
+      if [ -z "$file_name_item" ]; then
          continue
       fi
 
-      test -f "$file_name"
+      test -f "$file_name_item"
 
-      if [ "$file_list" = "" ]; then
-         file_list="$file_name"
-      else
-         file_list="\
-   $file_list
-   $file_name"
-      fi
+      upload_file_list+=("${file_name_item}")
+      upload_file_list+=("${file_name_item}.torrent")
+      upload_file_list+=("${file_name_item}.torrent.asc")
+      upload_file_list+=("${file_name_item}.torrent.sig")
+      upload_file_list+=("${file_name_item}.sha512sums")
+      upload_file_list+=("${file_name_item}.sha512sums.asc")
+      upload_file_list+=("${file_name_item}.sha512sums.sig")
    done
 
-   true "file_list:"
-   true "$file_list"
+   true "File list:"
+   printf "%s\n" "${upload_file_list[@]}"
+
+   local upload_file_item
+   for upload_file_item in "${upload_file_list[@]}"; do
+      test -f "$upload_file_item"
+   done
 }
 
 upload_files() {
@@ -71,7 +73,7 @@ upload_files() {
       rsync \
          $rsync_dry_run_maybe \
          $rsync_opts \
-         $file_list \
+         "${upload_file_list[@]}" \
          "$dist_server_with_upload_location_item_with_version_maybe" \
          || { rsync_exit_code="$?" ; true; };
 
@@ -112,13 +114,13 @@ main() {
       error "Variable dist_server_with_upload_location_list is empty."
    fi
 
-   show_files "$@"
+   show_files
 
    for dist_server_with_upload_location_item in $dist_server_with_upload_location_list ; do
-      upload_files "$@"
+      upload_files
    done
 
    true
 }
 
-main "$@"
+main
