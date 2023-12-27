@@ -27,6 +27,9 @@ build_args+=(--repo true)
 ## XXX: hardcoded path
 cd ~/derivative-maker
 
+## Avoid building from outdated version.
+diff /usr/bin/dm-virtualbox-build-official ./packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-build-official
+
 test -d ~/.ssh
 
 #TESTING_MODE=1
