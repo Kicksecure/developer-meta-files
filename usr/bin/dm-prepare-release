@@ -6,10 +6,10 @@
 set -x
 set -e
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE} $@"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+cd "${MYDIR}"
 
 source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
@@ -21,22 +21,22 @@ sanity_tests() {
    command -v mktorrent >/dev/null
    command -v transmission-show >/dev/null
    command -v signify-openbsd >/dev/null
-   test -f "$signify_public_key"
-   test -f "$signify_private_key"
-   test -f "$binary_image_installer_dist_source"
+   test -f "${signify_public_key}"
+   test -f "${signify_private_key}"
+   test -f "${binary_image_installer_dist_source}"
 
-   "$dist_source_help_steps_folder/signing-key-test" "$@"
+   "${dist_source_help_steps_folder}/signing-key-test" "$@"
 }
 
 installer_dist() {
    command -v git >/dev/null
    command -v str_replace >/dev/null
 
-   mkdir --parents "$binary_image_installer_dist_folder"
-   cp "$binary_image_installer_dist_source" "$binary_image_installer_dist_file"
+   mkdir --parents "${binary_image_installer_dist_folder}"
+   cp "${binary_image_installer_dist_source}" "${binary_image_installer_dist_file}"
 
-   installer_dist_source_folder="$(dirname "$binary_image_installer_dist_source")"
-   pushd "$installer_dist_source_folder"
+   installer_dist_source_folder="$(dirname "${binary_image_installer_dist_source}")"
+   pushd "${installer_dist_source_folder}"
    git_tag_current="$(git describe --always --abbrev=1000000000)"
    ## example git_tag_current:
    ## 11.7-1
@@ -45,14 +45,14 @@ installer_dist() {
    popd
 
    search="commit-hash-replace-me"
-   replace="$git_tag_current"
-   file_name="$binary_image_installer_dist_file"
-   str_replace "$search" "$replace" "$file_name"
+   replace="${git_tag_current}"
+   file_name="${binary_image_installer_dist_file}"
+   str_replace "${search}" "${replace}" "${file_name}"
 }
 
 windows_installer() {
-   if [ ! "$dist_build_windows_installer" = "true" ]; then
-      true "$0: INFO: Skip $FUNCNAME, because dist_build_windows_installer is not set to true."
+   if [ ! "${dist_build_windows_installer}" = "true" ]; then
+      true "$0: INFO: Skip ${FUNCNAME}, because dist_build_windows_installer is not set to true."
       return 0
    fi
 
@@ -69,24 +69,24 @@ windows_installer() {
       counter=$((counter + 1))
    done
 
-   if [ "$counter" -gt "1" ]; then
+   if [ "${counter}" -gt "1" ]; then
       true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
       exit 1
    fi
 
-   test -r "$file_name"
-   FILE_VBOX_INST_EXE=$(realpath "$file_name")
-   test -r "$FILE_VBOX_INST_EXE"
+   test -r "${file_name}"
+   FILE_VBOX_INST_EXE=$(realpath "${file_name}")
+   test -r "${FILE_VBOX_INST_EXE}"
 
    "${dist_developer_meta_files_folder}/usr/bin/dm-virtualbox-installer-exe-verify-windows"
    popd >/dev/null
 
    ## environment variables read by Whonix-Installer build.sh
    TARGET_SYSTEM="WINDOWS"
-   FILE_LICENSE="$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT"
+   FILE_LICENSE="${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT"
    FILE_WHONIX_OVA="${binary_image_ova_file}"
-   FILE_WHONIX_STARTER_MSI="$source_code_folder_dist/windows/Whonix-Starter/WhonixStarterInstaller.msi"
-   #FILE_VBOX_INST_EXE="$FILE_VBOX_INST_EXE"
+   FILE_WHONIX_STARTER_MSI="${source_code_folder_dist}/windows/Whonix-Starter/WhonixStarterInstaller.msi"
+   #FILE_VBOX_INST_EXE="${FILE_VBOX_INST_EXE}"
    FILE_INSTALLER_BINARY_FINAL="${binary_image_windows_installer_file}"
    export TARGET_SYSTEM FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
@@ -96,53 +96,53 @@ windows_installer() {
    DESCRIPTION="Whonix-Starter"
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
-   pushd "$source_code_folder_dist/windows/Whonix-Starter" >/dev/null
+   pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
    ## Creates WhonixStarterInstaller.msi
    ./build_on_linux_for_win64
    popd >/dev/null
 
    rm --force "${binary_image_windows_installer_file}"
 
-   pushd "$source_code_folder_dist/windows/Whonix-Installer" >/dev/null
+   pushd "${source_code_folder_dist}/windows/Whonix-Installer" >/dev/null
    ## Requires already existing WhonixStarterInstaller.msi
    ## Creates ${binary_image_windows_installer_file}
-   "$source_code_folder_dist/windows/Whonix-Installer/build.sh"
+   "${source_code_folder_dist}/windows/Whonix-Installer/build.sh"
    popd >/dev/null
 }
 
 libvirt_compress() {
    local continue_maybe
    continue_maybe=no
-   if [ "$dist_build_raw" = "true" ]; then
+   if [ "${dist_build_raw}" = "true" ]; then
       continue_maybe=yes
    fi
-   if [ "$dist_build_qcow2" = "true" ]; then
+   if [ "${dist_build_qcow2}" = "true" ]; then
       continue_maybe=yes
    fi
-   if [ "$dist_build_iso" = "true" ]; then
+   if [ "${dist_build_iso}" = "true" ]; then
       continue_maybe=no
    fi
-   if [ "$dist_build_installer_dist" = "true" ]; then
+   if [ "${dist_build_installer_dist}" = "true" ]; then
       continue_maybe=no
    fi
    ## TODO: Maybe an issue when attempting to build for libvirt and windows at the same time. Unlikely.
-   if [ "$dist_build_windows_installer" = "true" ]; then
+   if [ "${dist_build_windows_installer}" = "true" ]; then
       continue_maybe=no
    fi
-   if [ "$continue_maybe" = "no" ]; then
+   if [ "${continue_maybe}" = "no" ]; then
       return 0
    fi
 
-   if [ "$dist_build_qcow2" = "true" ]; then
+   if [ "${dist_build_qcow2}" = "true" ]; then
       rm --force "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
    fi
-   if [ "$dist_build_raw" = "true" ]; then
+   if [ "${dist_build_raw}" = "true" ]; then
       rm --force "$(basename "${libvirt_target_raw_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
 
-   if [ "$dist_build_type_long" = "kicksecure" ]; then
+   if [ "${dist_build_type_long}" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
@@ -150,27 +150,27 @@ libvirt_compress() {
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
-   if [ "$vm_multiple" = "false" ]; then
+   if [ "${vm_multiple}" = "false" ]; then
       test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml"
-      if [ "$dist_build_raw" = "true" ]; then
+      if [ "${dist_build_raw}" = "true" ]; then
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw"
       fi
-      if [ "$dist_build_qcow2" = "true" ]; then
+      if [ "${dist_build_qcow2}" = "true" ]; then
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
       fi
    else
       test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml"
       test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml"
 
-      test -f "$libvirt_target_network_file_external"
-      test -f "$libvirt_target_network_file_internal"
+      test -f "${libvirt_target_network_file_external}"
+      test -f "${libvirt_target_network_file_internal}"
 
-      if [ "$dist_build_raw" = "true" ]; then
+      if [ "${dist_build_raw}" = "true" ]; then
          test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
          test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
          true "INFO: Ok, all files to be added to ${libvirt_target_raw_xz_archive_file} exist."
       fi
-      if [ "$dist_build_qcow2" = "true" ]; then
+      if [ "${dist_build_qcow2}" = "true" ]; then
          test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
          test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
          true "INFO: Ok, all files to be added to ${libvirt_target_qcow2_xz_archive_file} exist."
@@ -193,7 +193,7 @@ libvirt_compress() {
 
    local filelist_full_path
 
-   if [ "$dist_build_type_long" = "kicksecure" ]; then
+   if [ "${dist_build_type_long}" = "kicksecure" ]; then
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT "
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_DISCLAIMER "
    else
@@ -201,49 +201,49 @@ libvirt_compress() {
       filelist_full_path+="${dist_binary_build_folder}/WHONIX_DISCLAIMER "
    fi
 
-   if [ "$vm_multiple" = "false" ]; then
+   if [ "${vm_multiple}" = "false" ]; then
       filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml "
 
-      if [ "$dist_build_raw" = "true" ]; then
+      if [ "${dist_build_raw}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw "
       fi
-      if [ "$dist_build_qcow2" = "true" ]; then
+      if [ "${dist_build_qcow2}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    else
       filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml "
       filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml "
-      filelist_full_path+="$libvirt_target_network_file_external "
-      filelist_full_path+="$libvirt_target_network_file_internal "
+      filelist_full_path+="${libvirt_target_network_file_external} "
+      filelist_full_path+="${libvirt_target_network_file_internal} "
 
-      if [ "$dist_build_raw" = "true" ]; then
+      if [ "${dist_build_raw}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
       fi
-      if [ "$dist_build_qcow2" = "true" ]; then
+      if [ "${dist_build_qcow2}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    fi
 
-   if [ "$dist_build_raw" = "true" ]; then
+   if [ "${dist_build_raw}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
-   if [ "$dist_build_qcow2" = "true" ]; then
+   if [ "${dist_build_qcow2}" = "true" ]; then
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
 
-   true "filelist_full_path: $filelist_full_path"
+   true "filelist_full_path: ${filelist_full_path}"
 
    local file_name_item_full_path
-   for file_name_item_full_path in $filelist_full_path ; do
-      test -f "$file_name_item_full_path"
-      filelist_base_name+=" $(basename "$file_name_item_full_path")"
+   for file_name_item_full_path in ${filelist_full_path} ; do
+      test -f "${file_name_item_full_path}"
+      filelist_base_name+=" $(basename "${file_name_item_full_path}")"
    done
 
    local file_name_item_base_name
-   for file_name_item_base_name in $filelist_base_name ; do
-      test -f "$file_name_item_base_name"
+   for file_name_item_base_name in ${filelist_base_name} ; do
+      test -f "${file_name_item_base_name}"
    done
 
    ## TODO: add progress meter (using `pv`?)
@@ -257,35 +257,35 @@ libvirt_compress() {
       --mtime='2015-10-21 00:00Z' \
       --xz \
       --directory="${dist_binary_build_folder}" \
-      --file "$(basename "$xz_archive")" \
-      $filelist_base_name
+      --file "$(basename "${xz_archive}")" \
+      ${filelist_base_name}
 
-   strip-nondeterminism "$xz_archive"
+   strip-nondeterminism "${xz_archive}"
 
    sync
 
    ## sanity test
-   if [ ! -r "$xz_archive" ]; then
-      error "xz_archive $xz_archive not readable!"
+   if [ ! -r "${xz_archive}" ]; then
+      error "xz_archive ${xz_archive} not readable!"
    fi
 }
 
 virtualbox_export() {
-   if [ ! "$dist_build_virtualbox" = "true" ]; then
+   if [ ! "${dist_build_virtualbox}" = "true" ]; then
       return 0
    fi
-   if [ "$dist_build_iso" = "true" ]; then
+   if [ "${dist_build_iso}" = "true" ]; then
       return 0
    fi
-   if [ "$dist_build_installer_dist" = "true" ]; then
+   if [ "${dist_build_installer_dist}" = "true" ]; then
       return 0
    fi
-   #if [ "$dist_build_windows_installer" = "true" ]; then
+   #if [ "${dist_build_windows_installer}" = "true" ]; then
    #   return 0
    #fi
 
    local producturl vendorurl vendor eulafile description
-   if [ "$dist_build_type_long" = "kicksecure" ]; then
+   if [ "${dist_build_type_long}" = "kicksecure" ]; then
       producturl="https://www.${project_clearnet}"
       vendor="Kicksecure"
       eulafile="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
@@ -313,7 +313,7 @@ Please donate! [C]
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
    TAR_OPTIONS="\
-      $TAR_OPTIONS
+      ${TAR_OPTIONS}
       --owner=0 --group=0 --numeric-owner \
       --mode=go=rX,u+rw,a-s \
       --sort=name \
@@ -322,29 +322,29 @@ Please donate! [C]
       --xz \
       "
    export TAR_OPTIONS
-   XZ_OPT="$XZ_OPT -9"
+   XZ_OPT="${XZ_OPT} -9"
    export XZ_OPT
 
-   if [ "$vm_multiple" = "false" ]; then
+   if [ "${vm_multiple}" = "false" ]; then
       VBoxManage \
-         export "$VMNAME" \
+         export "${VMNAME}" \
          --vsys "0" \
-         --eulafile "$eulafile" \
-         --description "$description" \
+         --eulafile "${eulafile}" \
+         --description "${description}" \
          --manifest \
-         --product "$VMNAME" \
-         --producturl "$producturl" \
-         --vendor "$vendor" \
-         --vendorurl "$vendorurl" \
+         --product "${VMNAME}" \
+         --producturl "${producturl}" \
+         --vendor "${vendor}" \
+         --vendorurl "${vendorurl}" \
          --version "${dist_build_version}" \
          --output "${binary_image_ova_file}"
    else
       VBoxManage \
-         export $vm_names_to_be_exported \
+         export ${vm_names_to_be_exported} \
          --output "${binary_image_ova_file}" \
          --vsys '0' \
             --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
-            --description "$description" \
+            --description "${description}" \
             --manifest \
             --product "Whonix-Gateway" \
             --producturl "https://www.${project_clearnet}/wiki/Whonix-Gateway" \
@@ -352,8 +352,8 @@ Please donate! [C]
             --vendorurl "https://www.${project_clearnet}" \
             --version "${dist_build_version}" \
          --vsys '1' \
-            --eulafile "$binary_image_text" \
-            --description "$description" \
+            --eulafile "${binary_image_text}" \
+            --description "${description}" \
             --manifest \
             --product "Whonix-Workstation" \
             --producturl "https://www.${project_clearnet}/wiki/Whonix-Workstation" \
@@ -370,20 +370,20 @@ Please donate! [C]
    sync
 
    ## Sanity test.
-   ## A different --vmname is required, because $VMNAME does already exist
+   ## A different --vmname is required, because ${VMNAME} does already exist
    ## in the list of imported VirtualBox machines.
-   if [ "$vm_multiple" = "false" ]; then
+   if [ "${vm_multiple}" = "false" ]; then
       VBoxManage \
          import "${binary_image_ova_file}" \
          --vsys "0" \
          --eula show \
-         --vmname "$VMNAME-${dist_build_version}"
+         --vmname "${VMNAME}-${dist_build_version}"
 
       VBoxManage \
          import "${binary_image_ova_file}" \
          --vsys "0" \
          --eula accept \
-         --vmname "$VMNAME-${dist_build_version}" \
+         --vmname "${VMNAME}-${dist_build_version}" \
          --dry-run
    else
       VBoxManage \
@@ -423,7 +423,7 @@ torrent_create() {
    TRACKERS+=","
    ## https://torrent.eu.org/
    TRACKERS+="udp://tracker.torrent.eu.org:451"
-   true "TRACKERS: $TRACKERS"
+   true "TRACKERS: ${TRACKERS}"
 
    ## Not well supported by BitTorrent clients.
    ## Multi file webseeds do not work
@@ -431,7 +431,7 @@ torrent_create() {
    ## (fixed upstream, but takes a while to propagate to Debian stable)
    #mktorrent \
    #   --verbose \
-   #   --announce="$TRACKERS" \
+   #   --announce="${TRACKERS}" \
    #   --web-seed "https://download.${project_clearnet}/Whonix-Gateway-7.ova" \
    #   --web-seed "https://download.${project_clearnet}/Whonix-Workstation-7.ova" \
    #   ~/7
@@ -440,62 +440,62 @@ torrent_create() {
    ## .8008.nyud.net can no longer be appended to https://download.${project_clearnet},
    ## because CoralCDN appears to no longer support files greater than 50 MB.
 
-   if [ "$dist_build_virtualbox" = "true" ]; then
-      rm --force "$binary_image_ova_torrent_file"
+   if [ "${dist_build_virtualbox}" = "true" ]; then
+      rm --force "${binary_image_ova_torrent_file}"
       mktorrent \
          --verbose \
-         --announce="$TRACKERS" \
+         --announce="${TRACKERS}" \
          --web-seed "https://download.${project_clearnet}/ova/${dist_build_version}/$(basename "${binary_image_ova_file}")" \
-         -o "$binary_image_ova_torrent_file" \
+         -o "${binary_image_ova_torrent_file}" \
          "${binary_image_ova_file}"
-      transmission-show "$binary_image_ova_torrent_file"
+      transmission-show "${binary_image_ova_torrent_file}"
    fi
 
-   if [ "$dist_build_raw" = "true" ]; then
-      rm --force "$libvirt_target_raw_xz_archive_torrent_file"
+   if [ "${dist_build_raw}" = "true" ]; then
+      rm --force "${libvirt_target_raw_xz_archive_torrent_file}"
       mktorrent \
          --verbose \
-         --announce="$TRACKERS" \
+         --announce="${TRACKERS}" \
          --web-seed "https://download.${project_clearnet}/raw/${dist_build_version}/$(basename "${libvirt_target_raw_xz_archive_file}")" \
-         -o "$libvirt_target_raw_xz_archive_torrent_file" \
+         -o "${libvirt_target_raw_xz_archive_torrent_file}" \
          "${libvirt_target_raw_xz_archive_file}"
-      transmission-show "$libvirt_target_raw_xz_archive_torrent_file"
+      transmission-show "${libvirt_target_raw_xz_archive_torrent_file}"
    fi
 
-   if [ "$dist_build_qcow2" = "true" ]; then
-      rm --force "$libvirt_target_qcow2_xz_archive_torrent_file"
+   if [ "${dist_build_qcow2}" = "true" ]; then
+      rm --force "${libvirt_target_qcow2_xz_archive_torrent_file}"
       mktorrent \
          --verbose \
-         --announce="$TRACKERS" \
+         --announce="${TRACKERS}" \
          --web-seed "https://download.${project_clearnet}/libvirt/${dist_build_version}/$(basename "${libvirt_target_qcow2_xz_archive_file}")" \
-         -o "$libvirt_target_qcow2_xz_archive_torrent_file" \
+         -o "${libvirt_target_qcow2_xz_archive_torrent_file}" \
          "${libvirt_target_qcow2_xz_archive_file}"
-      transmission-show "$libvirt_target_qcow2_xz_archive_torrent_file"
+      transmission-show "${libvirt_target_qcow2_xz_archive_torrent_file}"
    fi
 
-   if [ "$dist_build_iso" = "true" ]; then
-      rm --force "$binary_image_iso_torrent_file"
+   if [ "${dist_build_iso}" = "true" ]; then
+      rm --force "${binary_image_iso_torrent_file}"
       mktorrent \
          --verbose \
-         --announce="$TRACKERS" \
+         --announce="${TRACKERS}" \
          --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "${binary_image_iso_file}")" \
-         -o "$binary_image_iso_torrent_file" \
+         -o "${binary_image_iso_torrent_file}" \
          "${binary_image_iso_file}"
-      transmission-show "$binary_image_iso_torrent_file"
+      transmission-show "${binary_image_iso_torrent_file}"
    fi
 
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      rm --force "$binary_image_windows_installer_torrent_file"
+   if [ "${dist_build_windows_installer}" = "true" ]; then
+      rm --force "${binary_image_windows_installer_torrent_file}"
       mktorrent \
          --verbose \
-         --announce="$TRACKERS" \
+         --announce="${TRACKERS}" \
          --web-seed "https://download.${project_clearnet}/windows/${dist_build_version}/$(basename "${binary_image_windows_installer_file}")" \
-         -o "$binary_image_windows_installer_torrent_file" \
+         -o "${binary_image_windows_installer_torrent_file}" \
          "${binary_image_windows_installer_file}"
-      transmission-show "$binary_image_windows_installer_torrent_file"
+      transmission-show "${binary_image_windows_installer_torrent_file}"
    fi
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
+   if [ "${dist_build_installer_dist}" = "true" ]; then
       return 0
    fi
 
@@ -509,48 +509,48 @@ torrent_create() {
 }
 
 hashes_create_and_verify() {
-   if [ "$dist_build_installer_dist" = "true" ]; then
-      #sha512sum "$(basename "$binary_image_installer_dist_file")" | tee --append "$hash_file"
+   if [ "${dist_build_installer_dist}" = "true" ]; then
+      #sha512sum "$(basename "${binary_image_installer_dist_file}")" | tee --append "${hash_file}"
       return 0
    fi
 
-   hash_file="$sha_five_hundredth_twelve_hash_file"
+   hash_file="${sha_five_hundredth_twelve_hash_file}"
 
    ## Debugging.
    pwd
 
-   if [ "$dist_build_iso" = "true" ]; then
-      true "INFO: Not deleting hash_file '$hash_file'. Appending."
+   if [ "${dist_build_iso}" = "true" ]; then
+      true "INFO: Not deleting hash_file '${hash_file}'. Appending."
    else
-      rm --force "$hash_file"
+      rm --force "${hash_file}"
    fi
 
    ## Using `basename` so we end up with relative paths in hash sums file.
 
-   if [ "$dist_build_virtualbox" = "true" ]; then
-      sha512sum "$(basename "${binary_image_ova_file}")" | tee --append "$hash_file"
+   if [ "${dist_build_virtualbox}" = "true" ]; then
+      sha512sum "$(basename "${binary_image_ova_file}")" | tee --append "${hash_file}"
    fi
 
-   if [ "$dist_build_raw" = "true" ]; then
-      sha512sum "$(basename "${libvirt_target_raw_xz_archive_file}")" | tee --append "$hash_file"
+   if [ "${dist_build_raw}" = "true" ]; then
+      sha512sum "$(basename "${libvirt_target_raw_xz_archive_file}")" | tee --append "${hash_file}"
    fi
 
-   if [ "$dist_build_qcow2" = "true" ]; then
-      sha512sum "$(basename "${libvirt_target_qcow2_xz_archive_file}")" | tee --append "$hash_file"
+   if [ "${dist_build_qcow2}" = "true" ]; then
+      sha512sum "$(basename "${libvirt_target_qcow2_xz_archive_file}")" | tee --append "${hash_file}"
    fi
 
-   if [ "$dist_build_iso" = "true" ]; then
-      sha512sum "$(basename "${binary_image_iso_file}")" | tee --append "$hash_file"
+   if [ "${dist_build_iso}" = "true" ]; then
+      sha512sum "$(basename "${binary_image_iso_file}")" | tee --append "${hash_file}"
    fi
 
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      sha512sum "$(basename "${binary_image_windows_installer_file}")" | tee --append "$hash_file"
+   if [ "${dist_build_windows_installer}" = "true" ]; then
+      sha512sum "$(basename "${binary_image_windows_installer_file}")" | tee --append "${hash_file}"
    fi
 
    sync
 
    ## Sanity test.
-   sha512sum --check "$hash_file"
+   sha512sum --check "${hash_file}"
 }
 
 sign_cmd_gpg() {
@@ -558,7 +558,7 @@ sign_cmd_gpg() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   $gpg_bin --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   ${gpg_bin} --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
 }
 
 sign_cmd_signify() {
@@ -566,174 +566,174 @@ sign_cmd_signify() {
    ## derivative-maker help-steps/signing-key-create
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "$2"
+   signify-openbsd -S -s "${signify_private_key}" -m "$1" -x "$2"
    ## Sanity test.
    test -f "$2"
 }
 
 verify_cmd_gpg() {
-   $gpg_bin --verify-options show-notations --verify "$1"
+   ${gpg_bin} --verify-options show-notations --verify "$1"
 }
 
 verify_cmd_signinfy() {
-   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "$2"
+   signify-openbsd -V -p "${signify_public_key}" -m "$1" -x "$2"
 }
 
 signatures_create() {
    ## Create detached signatures.
-   if [ "$dist_build_virtualbox" = "true" ]; then
+   if [ "${dist_build_virtualbox}" = "true" ]; then
       sign_cmd_gpg "${binary_image_ova_file}"
-      sign_cmd_gpg "$binary_image_ova_torrent_file"
+      sign_cmd_gpg "${binary_image_ova_torrent_file}"
 
       ## Too big.
       #sign_cmd_signify "${binary_image_ova_file}"
 
-      sign_cmd_signify "$binary_image_ova_torrent_file" "$binary_image_ova_torrent_signify"
+      sign_cmd_signify "${binary_image_ova_torrent_file}" "${binary_image_ova_torrent_signify}"
    fi
 
-   if [ "$dist_build_raw" = "true" ]; then
+   if [ "${dist_build_raw}" = "true" ]; then
       sign_cmd_gpg "${libvirt_target_raw_xz_archive_file}"
-      sign_cmd_gpg "$libvirt_target_raw_xz_archive_torrent_file"
+      sign_cmd_gpg "${libvirt_target_raw_xz_archive_torrent_file}"
 
       ## Too big.
       #sign_cmd_signify "${libvirt_target_raw_xz_archive_file}"
 
-      sign_cmd_signify "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
+      sign_cmd_signify "${libvirt_target_raw_xz_archive_torrent_file}" "${libvirt_target_raw_xz_archive_torrent_signify}"
    fi
 
-   if [ "$dist_build_qcow2" = "true" ]; then
+   if [ "${dist_build_qcow2}" = "true" ]; then
       sign_cmd_gpg "${libvirt_target_qcow2_xz_archive_file}"
-      sign_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent_file"
+      sign_cmd_gpg "${libvirt_target_qcow2_xz_archive_torrent_file}"
 
       ## Too big.
       #sign_cmd_signify "${libvirt_target_qcow2_xz_archive_file}"
 
-      sign_cmd_signify "$libvirt_target_qcow2_xz_archive_torrent_file" "$libvirt_target_qcow2_xz_archive_torrent_signify"
+      sign_cmd_signify "${libvirt_target_qcow2_xz_archive_torrent_file}" "${libvirt_target_qcow2_xz_archive_torrent_signify}"
    fi
 
-   if [ "$dist_build_iso" = "true" ]; then
+   if [ "${dist_build_iso}" = "true" ]; then
       sign_cmd_gpg "${binary_image_iso_file}"
-      sign_cmd_gpg "$binary_image_iso_torrent_file"
+      sign_cmd_gpg "${binary_image_iso_torrent_file}"
 
       ## Too big.
       #sign_cmd_signify "${binary_image_iso_file}"
 
-      sign_cmd_signify "$binary_image_iso_torrent_file" "$binary_image_iso_torrent_signify"
+      sign_cmd_signify "${binary_image_iso_torrent_file}" "${binary_image_iso_torrent_signify}"
    fi
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
-      sign_cmd_gpg "$binary_image_installer_dist_file"
-      sign_cmd_signify "$binary_image_installer_dist_file" "$binary_image_installer_dist_signify"
+   if [ "${dist_build_installer_dist}" = "true" ]; then
+      sign_cmd_gpg "${binary_image_installer_dist_file}"
+      sign_cmd_signify "${binary_image_installer_dist_file}" "${binary_image_installer_dist_signify}"
       ## Skip creation of hash sum files.
       return 0
    fi
 
-   if [ "$dist_build_windows_installer" = "true" ]; then
+   if [ "${dist_build_windows_installer}" = "true" ]; then
       sign_cmd_gpg "${binary_image_windows_installer_file}"
       ## Too big.
-      #sign_cmd_signify "${binary_image_windows_installer_file}" "$binary_image_windows_installer_signify"
-      sign_cmd_gpg "$binary_image_windows_installer_torrent_file"
-      sign_cmd_signify "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
+      #sign_cmd_signify "${binary_image_windows_installer_file}" "${binary_image_windows_installer_signify}"
+      sign_cmd_gpg "${binary_image_windows_installer_torrent_file}"
+      sign_cmd_signify "${binary_image_windows_installer_torrent_file}" "${binary_image_windows_installer_torrent_signify}"
    fi
 
-   sign_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file"
-   sign_cmd_gpg "$sha_five_hundredth_twelve_hash_file"
+   sign_cmd_gpg "${sha_two_hundredth_fifty_six_hash_file}"
+   sign_cmd_gpg "${sha_five_hundredth_twelve_hash_file}"
 
-   sign_cmd_signify "$sha_two_hundredth_fifty_six_hash_file" "$sha_two_hundredth_fifty_six_hash_file_signify"
-   sign_cmd_signify "$sha_five_hundredth_twelve_hash_file" "$sha_five_hundredth_twelve_hash_file_signify"
+   sign_cmd_signify "${sha_two_hundredth_fifty_six_hash_file}" "${sha_two_hundredth_fifty_six_hash_file_signify}"
+   sign_cmd_signify "${sha_five_hundredth_twelve_hash_file}" "${sha_five_hundredth_twelve_hash_file_signify}"
 }
 
 signatures_verify() {
    ## Verify, that signing worked.
-   if [ "$dist_build_virtualbox" = "true" ]; then
-      verify_cmd_gpg "$binary_image_ova_signature"
-      verify_cmd_gpg "$binary_image_ova_torrent_signature"
+   if [ "${dist_build_virtualbox}" = "true" ]; then
+      verify_cmd_gpg "${binary_image_ova_signature}"
+      verify_cmd_gpg "${binary_image_ova_torrent_signature}"
 
       ## Too big.
-      #verify_cmd_signinfy "$binary_image_ova_signature"
-      verify_cmd_signinfy "$binary_image_ova_torrent_file" "$binary_image_ova_torrent_signify"
+      #verify_cmd_signinfy "${binary_image_ova_signature}"
+      verify_cmd_signinfy "${binary_image_ova_torrent_file}" "${binary_image_ova_torrent_signify}"
    fi
 
-   if [ "$dist_build_raw" = "true" ]; then
-      verify_cmd_gpg "$libvirt_target_raw_xz_archive_signature"
-      verify_cmd_gpg "$libvirt_target_raw_xz_archive_torrent_signature"
+   if [ "${dist_build_raw}" = "true" ]; then
+      verify_cmd_gpg "${libvirt_target_raw_xz_archive_signature}"
+      verify_cmd_gpg "${libvirt_target_raw_xz_archive_torrent_signature}"
 
       ## Too big.
       #verify_cmd_signinfy "${libvirt_target_raw_xz_archive_file}"
-      verify_cmd_signinfy "$libvirt_target_raw_xz_archive_torrent_file" "$libvirt_target_raw_xz_archive_torrent_signify"
+      verify_cmd_signinfy "${libvirt_target_raw_xz_archive_torrent_file}" "${libvirt_target_raw_xz_archive_torrent_signify}"
    fi
 
-   if [ "$dist_build_qcow2" = "true" ]; then
-      verify_cmd_gpg "$libvirt_target_qcow2_xz_archive_signature"
-      verify_cmd_gpg "$libvirt_target_qcow2_xz_archive_torrent_signature"
+   if [ "${dist_build_qcow2}" = "true" ]; then
+      verify_cmd_gpg "${libvirt_target_qcow2_xz_archive_signature}"
+      verify_cmd_gpg "${libvirt_target_qcow2_xz_archive_torrent_signature}"
 
       ## Too big.
       #verify_cmd_signinfy "${libvirt_target_qcow2_xz_archive_file}"
-      verify_cmd_signinfy "$libvirt_target_qcow2_xz_archive_torrent_file" "$libvirt_target_qcow2_xz_archive_torrent_signify"
+      verify_cmd_signinfy "${libvirt_target_qcow2_xz_archive_torrent_file}" "${libvirt_target_qcow2_xz_archive_torrent_signify}"
    fi
 
-   if [ "$dist_build_iso" = "true" ]; then
-      verify_cmd_gpg "$binary_image_iso_signature"
-      verify_cmd_gpg "$binary_image_iso_torrent_signature"
+   if [ "${dist_build_iso}" = "true" ]; then
+      verify_cmd_gpg "${binary_image_iso_signature}"
+      verify_cmd_gpg "${binary_image_iso_torrent_signature}"
 
       ## Too big.
-      #verify_cmd_signinfy "$binary_image_iso_signature"
-      verify_cmd_signinfy "$binary_image_iso_torrent_file" "$binary_image_iso_torrent_signify"
+      #verify_cmd_signinfy "${binary_image_iso_signature}"
+      verify_cmd_signinfy "${binary_image_iso_torrent_file}" "${binary_image_iso_torrent_signify}"
    fi
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
-      verify_cmd_gpg "$binary_image_installer_dist_signature"
-      verify_cmd_signinfy "$binary_image_installer_dist_file" "$binary_image_installer_dist_signify"
+   if [ "${dist_build_installer_dist}" = "true" ]; then
+      verify_cmd_gpg "${binary_image_installer_dist_signature}"
+      verify_cmd_signinfy "${binary_image_installer_dist_file}" "${binary_image_installer_dist_signify}"
       ## Skip verification of hash sum files since not created for dist-installer-cli.
       return 0
    fi
 
-   if [ "$dist_build_windows_installer" = "true" ]; then
-      verify_cmd_gpg "$binary_image_windows_installer_signature"
-      verify_cmd_gpg "$binary_image_windows_installer_torrent_signature"
+   if [ "${dist_build_windows_installer}" = "true" ]; then
+      verify_cmd_gpg "${binary_image_windows_installer_signature}"
+      verify_cmd_gpg "${binary_image_windows_installer_torrent_signature}"
       ## Too big.
-      #verify_cmd_signinfy "${binary_image_windows_installer_file}" "$binary_image_windows_installer_signify"
-      verify_cmd_signinfy "$binary_image_windows_installer_torrent_file" "$binary_image_windows_installer_torrent_signify"
+      #verify_cmd_signinfy "${binary_image_windows_installer_file}" "${binary_image_windows_installer_signify}"
+      verify_cmd_signinfy "${binary_image_windows_installer_torrent_file}" "${binary_image_windows_installer_torrent_signify}"
    fi
 
-   verify_cmd_gpg "$sha_two_hundredth_fifty_six_hash_file_signature"
-   verify_cmd_gpg "$sha_five_hundredth_twelve_hash_file_signature"
+   verify_cmd_gpg "${sha_two_hundredth_fifty_six_hash_file_signature}"
+   verify_cmd_gpg "${sha_five_hundredth_twelve_hash_file_signature}"
 
-   verify_cmd_signinfy "$sha_two_hundredth_fifty_six_hash_file" "$sha_two_hundredth_fifty_six_hash_file_signify"
-   verify_cmd_signinfy "$sha_five_hundredth_twelve_hash_file" "$sha_five_hundredth_twelve_hash_file_signify"
+   verify_cmd_signinfy "${sha_two_hundredth_fifty_six_hash_file}" "${sha_two_hundredth_fifty_six_hash_file_signify}"
+   verify_cmd_signinfy "${sha_five_hundredth_twelve_hash_file}" "${sha_five_hundredth_twelve_hash_file_signify}"
 }
 
 main() {
    sanity_tests "$@"
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
-   if [ "$dist_build_type_long" = "kicksecure" ]; then
-      cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      cp "$source_code_folder_dist/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+      cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      cp "$source_code_folder_dist/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
-   if [ "$dist_build_type_long" = "gateway" ]; then
+   if [ "${dist_build_type_long}" = "gateway" ]; then
       true "$0: INFO: Skip, because dist_build_type_long is gateway. Not needed because of unified Whonix-Gateway and Whonix-Workstation images."
       return 0
    fi
 
    vm_multiple=false
-   if [ "$dist_build_type_long" = "workstation" ]; then
+   if [ "${dist_build_type_long}" = "workstation" ]; then
       vm_multiple=true
       ## dist_build_desktop could be KDE, CLI, Xfce, RPi or CUSTOM
       vm_names_to_be_exported="Whonix-Gateway-${dist_build_desktop} Whonix-Workstation-${dist_build_desktop}"
    fi
-   if [ "$dist_build_type_long" = "custom-workstation" ]; then
-      vm_names_to_be_exported="$VMNAME"
+   if [ "${dist_build_type_long}" = "custom-workstation" ]; then
+      vm_names_to_be_exported="${VMNAME}"
    fi
-   if [ "$dist_build_type_long" = "kicksecure" ]; then
-      vm_names_to_be_exported="$VMNAME"
+   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+      vm_names_to_be_exported="${VMNAME}"
    fi
 
-   if [ "$dist_build_installer_dist" = "true" ]; then
+   if [ "${dist_build_installer_dist}" = "true" ]; then
       installer_dist
    fi
 
