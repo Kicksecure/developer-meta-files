@@ -474,14 +474,14 @@ torrent_create() {
    fi
 
    if [ "$dist_build_iso" = "true" ]; then
-      rm --force "$binary_image_iso_torrent"
+      rm --force "$binary_image_iso_torrent_file"
       mktorrent \
          --verbose \
          --announce="$TRACKERS" \
          --web-seed "https://download.${project_clearnet}/iso/${dist_build_version}/$(basename "$binary_image_iso_file")" \
-         -o "$binary_image_iso_torrent" \
+         -o "$binary_image_iso_torrent_file" \
          "$binary_image_iso_file"
-      transmission-show "$binary_image_iso_torrent"
+      transmission-show "$binary_image_iso_torrent_file"
    fi
 
    if [ "$dist_build_windows_installer" = "true" ]; then
@@ -613,12 +613,12 @@ signatures_create() {
 
    if [ "$dist_build_iso" = "true" ]; then
       sign_cmd_gpg "$binary_image_iso_file"
-      sign_cmd_gpg "$binary_image_iso_torrent"
+      sign_cmd_gpg "$binary_image_iso_torrent_file"
 
       ## Too big.
       #sign_cmd_signify "$binary_image_iso_file"
 
-      sign_cmd_signify "$binary_image_iso_torrent" "$binary_image_iso_torrent_signify"
+      sign_cmd_signify "$binary_image_iso_torrent_file" "$binary_image_iso_torrent_signify"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
@@ -678,7 +678,7 @@ signatures_verify() {
 
       ## Too big.
       #verify_cmd_signinfy "$binary_image_iso_signature"
-      verify_cmd_signinfy "$binary_image_iso_torrent" "$binary_image_iso_torrent_signify"
+      verify_cmd_signinfy "$binary_image_iso_torrent_file" "$binary_image_iso_torrent_signify"
    fi
 
    if [ "$dist_build_installer_dist" = "true" ]; then
