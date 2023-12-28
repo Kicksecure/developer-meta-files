@@ -44,18 +44,21 @@ run_cmd() {
 
 run_cmd ./help-steps/signing-key-test
 
-## Build '--flavor kicksecure-xfce' first because building ISO, which is newer.
-## Build '--flavor whonix-workstation-xfce' next because it is the most
-## complex, when used with '--target windows', because:
-## - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
-## - dm-prepare-release builds Whonix Windows Installer
+## - 1) Build '--flavor kicksecure-xfce' because building ISO, which is newer.
+## - 2) Build '--flavor whonix-gateway-xfce' because it is required to be able to
+##      run dm-prepare-release due to unified ova files.
+## - 3) Build '--flavor whonix-workstation-xfce' because it is the most
+##   complex, because of downloading Tor Browser as well as when used with
+##   '--target windows', because:
+##   - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
+##   - dm-prepare-release builds Whonix Windows Installer
 [ -n "$flavors_list" ] || flavors_list=(
   kicksecure-xfce
   kicksecure-cli
-  whonix-workstation-xfce
   whonix-gateway-xfce
-  whonix-workstation-cli
+  whonix-workstation-xfce
   whonix-gateway-cli
+  whonix-workstation-cli
 )
 
 build_upload_noninteractive=true
