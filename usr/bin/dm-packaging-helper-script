@@ -244,6 +244,10 @@ commit_filter() {
         "nftabels" \
         "chmod +x" \
         "CI" \
+        "rename variable" \
+        "ISO" \
+        "wrap-and-sort" \
+        "Depends: pkexec" \
         "."
         do
         if [ "$text" = "$commit_msg_short" ]; then
@@ -1393,9 +1397,11 @@ pkg_git_packages_git_log_writer() {
       #commit_msg_full_with_link="$commit_msg_full <ref>
       #https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
       #</ref>"
-      commit_msg_full_with_link="$commit_msg_full <ref>
-https://github.com/$project_name_short/$reponame/commit/$commit_hash
-</ref>"
+      commit_msg_full_with_link="$commit_msg_full"
+
+      #<ref>
+      #https://github.com/$project_name_short/$reponame/commit/$commit_hash
+      #</ref>"
 
       if [ "$committer_person" = "madaidan" ]; then
          committer_person="@${committer_person}"
@@ -1418,12 +1424,15 @@ https://github.com/$project_name_short/$reponame/commit/$commit_hash
 
       if [ "$notable_changes" = "" ]; then
          notable_changes=yes
-         echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file" >/dev/null
+         #echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file" >/dev/null
+         echo "* $reponame:" | tee -a "$giant_git_log_file" >/dev/null
       fi
 
-      echo "* $log_msg" | tee -a "$giant_git_log_file" >/dev/null
+      echo "** $log_msg" | tee -a "$giant_git_log_file" >/dev/null
 
    done <<< "$commit_msg_short_list"
+
+   echo "" | tee -a "$giant_git_log_file" >/dev/null
 
    true
 }
@@ -1760,10 +1769,6 @@ https://www.${project_clearnet}/wiki/Contribute
 TODO
 
 $giant_git_log_file
-
-# Changelog
-
-https://www.${project_clearnet}/wiki/Changelog
 
 ----
 
