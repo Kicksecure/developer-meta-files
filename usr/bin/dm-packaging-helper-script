@@ -72,8 +72,8 @@ repo_skip() {
 }
 
 ## XXX
-version_old_main="17.0.8.1-developers-only"
-version_new_main="17.0.8.2-developers-only"
+version_old_main="17.1.0.2-developers-only"
+version_new_main="17.1.1.5-developers-only"
 
 ## XXX
 announcements_draft_folder=~/derivative-binary/announcements-drafts
