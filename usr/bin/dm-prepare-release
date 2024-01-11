@@ -36,7 +36,7 @@ installer_dist() {
    command -v git >/dev/null
    command -v str_replace >/dev/null
 
-   mkdir --parents "${binary_image_installer_dist_folder}"
+   mkdir --parents "${dist_binary_build_folder}"
    cp "${binary_image_installer_dist_source}" "${binary_image_installer_dist_file}"
 
    installer_dist_source_folder="$(dirname "${binary_image_installer_dist_source}")"
