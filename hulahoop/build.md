@@ -3,7 +3,7 @@
 Setup build machine according to pages above then run the following commands to create builds:
 
 ```
-./derivative-maker --target qcow2 --flavor whonix-gateway-xfce --repo true
+./derivative-maker --target qcow2 --flavor whonix-gateway-xfce --repo true --tb closed
 ```
 
 Optionally add `--connection onion` to force fetching packages from `.onion` servers.

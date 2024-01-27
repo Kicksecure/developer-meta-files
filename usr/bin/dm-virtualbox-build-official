@@ -23,6 +23,8 @@ build_args=()
 #build_args+=(--target windows)
 
 build_args+=(--repo true)
+## Make sure official builds come with a downloaded browser (Tor Browser) installed by default.
+build_args+=(--tb closed)
 
 ## XXX: hardcoded path
 cd ~/derivative-maker
