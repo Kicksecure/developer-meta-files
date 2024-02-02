@@ -1245,7 +1245,7 @@ pkg_git_diff_and_commit() {
 
    git diff
 
-   commit_message="tmpfiles.d improvement"
+   commit_message="usrmerge debhelper systemd Debian package maintainer scripts fix"
 
    #true "press enter to continue"
    #read temp
