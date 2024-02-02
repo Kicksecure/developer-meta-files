@@ -921,6 +921,9 @@ pkg_compat_delete() {
 }
 
 pkg_build_depends_systemd() {
+   repo_skip "derivative-maker" || return 0
+   repo_skip "developer-meta-files" || return 0
+
    if ! myfind . | grep --fixed-strings usr/lib/systemd/system | grep --color '.service$' ; then
       return 0
    fi
