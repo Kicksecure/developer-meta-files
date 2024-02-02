@@ -920,6 +920,18 @@ pkg_compat_delete() {
    true
 }
 
+pkg_build_depends_systemd() {
+   if ! myfind . | grep --fixed-strings usr/lib/systemd/system | grep --color '.service$' ; then
+      return 0
+   fi
+
+   search="Build-Depends: debhelper (>= 13)"
+   replace="Build-Depends: debhelper (>= 13.11.6)"
+   myreplace "$search" "$replace"
+
+   true
+}
+
 pkg_debhelper_bump() {
 #    two='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
@@ -947,9 +959,9 @@ pkg_debhelper_bump() {
 #    two='Priority: optional'
 #    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
 
-   one='--with=config-package --with=systemd'
-   two='--with=config-package'
-   LANG=C str_replace "$one" "$two" "$repo_full_path/debian/rules"
+#    one='--with=config-package --with=systemd'
+#    two='--with=config-package'
+#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/rules"
 
    git add "$repo_full_path/debian/rules"
    git commit -m "port to debian bookworm" || true
