@@ -22,4 +22,6 @@ genmkfile git-commit-verify
 genmkfile git-tag-sign
 genmkfile git-verify
 
+#dm-push
+
 echo "$0: END."
