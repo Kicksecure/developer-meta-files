@@ -8,7 +8,6 @@ set -e
 
 true "$0: INFO: Currently running script: $BASH_SOURCE $@"
 
-dm-upload-images --target dist-installer-cli --flavor kicksecure-xfce --build
-dm-upload-images --target dist-installer-cli --flavor whonix-workstation-xfce --build
+dm-upload-images --flavor dist-installer-cli
 
 true "$0: INFO: OK."

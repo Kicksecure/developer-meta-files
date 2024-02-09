@@ -26,9 +26,15 @@ show_files() {
 
       upload_file_list+=("${file_name_item}")
       upload_file_list+=("${file_name_item}.asc")
-      if test -f "${file_name_item}.sig" ; then
+
+      if echo "${file_name_item}.sig" | grep dist-installer ; then
          upload_file_list+=("${file_name_item}.sig")
+      else
+         if test -f "${file_name_item}.sig" ; then
+            upload_file_list+=("${file_name_item}.sig")
+         fi
       fi
+
       upload_file_list+=("${file_name_item}.torrent")
       upload_file_list+=("${file_name_item}.torrent.asc")
       upload_file_list+=("${file_name_item}.torrent.sig")
