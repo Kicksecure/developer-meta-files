@@ -17,16 +17,21 @@ true "$0: checklist..."
 df -h
 sleep 2
 
+if [ "$CI" = "true" ]; then
+  pushd ~
+  git clone https://gitlab.com/kicksecure/virtualbox-windows-installer-binary.git
+  popd
+fi
+
 true "$0: checklist..."
-## TODO
-ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
+ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
 sleep 2
 
 build_args=()
 
 ## Also build the Whonix-Windows-Installer.
-## TODO: Disabled until Whonix-Windows-Installer authenticode certificate is available.
-#build_args+=(--target windows)
+## Incomplete until Whonix-Windows-Installer authenticode certificate is available.
+build_args+=(--target windows)
 
 build_args+=(--repo true)
 ## Make sure official builds come with a downloaded browser (Tor Browser) installed by default.
@@ -156,5 +161,7 @@ for flavor_item in "${flavors_list[@]}"; do
 
   run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
 done
+
+## TODO: CI arm64 UTM
 
 true "$0: END"
