@@ -3,6 +3,11 @@
 ## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## This script is supposed to be run:
+## - For official binary builds by a builder (developer).
+## - For debug builds: (dm-virtualbox-build-debug)
+## - By the CI. TODO
+
 set -x
 set -e
 
@@ -13,6 +18,7 @@ df -h
 sleep 2
 
 true "$0: checklist..."
+## TODO
 ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
 sleep 2
 
@@ -90,11 +96,15 @@ done
 run_cmd ./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+run_cmd ./build-steps.d/*_create-raw-image "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+
+## TODO: copy internal raw image
 
 SKIP_SCRIPTS+=" sanity-tests "
 SKIP_SCRIPTS+=" prepare-build-machine "
 SKIP_SCRIPTS+=" cowbuilder-setup "
+SKIP_SCRIPTS+=" create-raw-image "
 SKIP_SCRIPTS+=" local-dependencies "
 SKIP_SCRIPTS+=" create-debian-packages "
 export SKIP_SCRIPTS
