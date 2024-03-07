@@ -13,7 +13,7 @@ set -e
 true "$0: START"
 
 run_cmd() {
-  TESTING_MODE=0
+  [ -n "$TESTING_MODE" ] || TESTING_MODE=0
   if [ "$TESTING_MODE" -eq 1 ]; then
     set +x
     echo "$@"
@@ -23,18 +23,18 @@ run_cmd() {
 }
 
 true "$0: checklist..."
-df -h
-sleep 2
+run_cmd df -h
+run_cmd sleep 2
 
 if [ "$CI" = "true" ]; then
-  pushd ~
+  run_cmd pushd ~
   run_cmd git clone https://gitlab.com/kicksecure/virtualbox-windows-installer-binary.git
-  popd
+  run_cmd popd
 fi
 
 true "$0: checklist..."
 run_cmd ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
-sleep 2
+run_cmd sleep 2
 
 build_args=()
 
@@ -47,12 +47,12 @@ build_args+=(--repo true)
 build_args+=(--tb closed)
 
 ## XXX: hardcoded path
-cd ~/derivative-maker
+run_cmd cd ~/derivative-maker
 
 true "INFO: This is a test to avoid building from an outdated version..."
-diff /usr/bin/dm-virtualbox-build-official ./packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-build-official
+run_cmd diff /usr/bin/dm-virtualbox-build-official ./packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-build-official
 
-test -d ~/.ssh
+run_cmd test -d ~/.ssh
 
 run_cmd ./help-steps/signing-key-test
 
