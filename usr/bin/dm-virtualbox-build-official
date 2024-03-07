@@ -96,18 +96,25 @@ done
 run_cmd ./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-run_cmd ./build-steps.d/*_create-raw-image "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
-run_cmd ./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 
-## TODO: copy internal raw image
+export dist_build_raw_base_image_create=true
+run_cmd ./build-steps.d/*_create-raw-image "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+unset dist_build_raw_base_image_create
+
+run_cmd ./build-steps.d/*_create-debian-packages "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 
 SKIP_SCRIPTS+=" sanity-tests "
 SKIP_SCRIPTS+=" prepare-build-machine "
 SKIP_SCRIPTS+=" cowbuilder-setup "
-SKIP_SCRIPTS+=" create-raw-image "
+## Using cached_binary_image_raw_file instead because we will set dist_build_use_cached_raw_base_image=true.
+## Variable cached_binary_image_raw_file will result in create-raw-image simply making a copy of the exiting raw image.
+#SKIP_SCRIPTS+=" create-raw-image "
 SKIP_SCRIPTS+=" local-dependencies "
 SKIP_SCRIPTS+=" create-debian-packages "
 export SKIP_SCRIPTS
+
+dist_build_use_cached_raw_base_image=true
+export dist_build_use_cached_raw_base_image
 
 for flavor_item in "${flavors_list[@]}"; do
   case $flavor_item in
