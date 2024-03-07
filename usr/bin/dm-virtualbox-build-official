@@ -6,7 +6,7 @@
 ## This script is supposed to be run:
 ## - For official binary builds by a builder (developer).
 ## - For debug builds: (dm-virtualbox-build-debug)
-## - By the CI. TODO
+## - By the CI.
 
 set -x
 set -e
@@ -86,6 +86,15 @@ multi_target_args=()
 ## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
 multi_target_args+=(--target virtualbox)
 
+if [ "$CI" = "true" ]; then
+  ## NOTE
+  ## Currently:
+  ## - local builds: AMD64 only
+  ## - CI builds   : ARM64 only
+  multi_target_args+=(--target utm)
+  multi_target_args+=(--arch arm64)
+fi
+
 multi_target_args+=(--target iso)
 
 for flavor_item in "${flavors_list[@]}"; do
@@ -123,7 +132,7 @@ export dist_build_use_cached_raw_base_image
 
 for flavor_item in "${flavors_list[@]}"; do
   case $flavor_item in
-    kicksecure-xfce|kicksecure-cli)
+    kicksecure-xfce)
       true "INFO: ISO build flavor."
       run_cmd ./derivative-maker "${build_args[@]}" --target iso --flavor "$flavor_item" "$@"
       run_cmd dm-prepare-release "${build_args[@]}" --target iso --flavor "$flavor_item" "$@"
@@ -150,7 +159,7 @@ for flavor_item in "${flavors_list[@]}"; do
   fi
 
   case $flavor_item in
-    kicksecure-xfce|kicksecure-cli)
+    kicksecure-xfce)
       true "INFO: ISO build flavor."
       run_cmd dm-upload-images "${build_args[@]}" --target iso --flavor "$flavor_item" "$@"
       ;;
@@ -161,7 +170,5 @@ for flavor_item in "${flavors_list[@]}"; do
 
   run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
 done
-
-## TODO: CI arm64 UTM
 
 true "$0: END"
