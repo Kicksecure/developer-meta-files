@@ -10,11 +10,11 @@ true "$0: START"
 
 true "$0: checklist..."
 df -h
-read -r press_enter_to_continue
+sleep 2
 
 true "$0: checklist..."
 ls -la ~/virtualbox-windows-installer-binary/VirtualBox-* || true
-read -r press_enter_to_continue
+sleep 2
 
 build_args=()
 
@@ -29,8 +29,8 @@ build_args+=(--tb closed)
 ## XXX: hardcoded path
 cd ~/derivative-maker
 
-## Avoid building from outdated version.
-diff /usr/bin/dm-virtualbox-build-official ./packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-build-official || read -r press_enter_to_continue
+true "INFO: This is a test to avoid building from an outdated version..."
+diff /usr/bin/dm-virtualbox-build-official ./packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-build-official
 
 test -d ~/.ssh
 
@@ -46,7 +46,9 @@ run_cmd() {
 
 run_cmd ./help-steps/signing-key-test
 
-## - 1) Build '--flavor kicksecure-xfce' because building ISO, which is newer.
+## Ordered as follows for the following reasons:
+## - 1) Build '--flavor kicksecure-xfce' because building ISO, which is newer,
+##      therefore more prone to build issues. Error out quicker is better.
 ## - 2) Build '--flavor whonix-gateway-xfce' because it is required to be able to
 ##      run dm-prepare-release due to unified ova files.
 ## - 3) Build '--flavor whonix-workstation-xfce' because it is the most
@@ -54,6 +56,7 @@ run_cmd ./help-steps/signing-key-test
 ##   '--target windows', because:
 ##   - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
 ##   - dm-prepare-release builds Whonix Windows Installer
+## - 4) Build CLI flavors because the least likely to have build issues.
 [ -n "$flavors_list" ] || flavors_list=(
   kicksecure-xfce
   kicksecure-cli
