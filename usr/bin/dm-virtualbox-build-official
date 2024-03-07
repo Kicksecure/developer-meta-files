@@ -68,14 +68,24 @@ run_cmd ./help-steps/signing-key-test
 ##   - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
 ##   - dm-prepare-release builds Whonix Windows Installer
 ## - 4) Build CLI flavors because the least likely to have build issues.
-[ -n "$flavors_list" ] || flavors_list=(
-  kicksecure-xfce
-  kicksecure-cli
-  whonix-gateway-xfce
-  whonix-workstation-xfce
-  whonix-gateway-cli
-  whonix-workstation-cli
-)
+if [ "$CI" = "true" ]; then
+  ## Build fewer flavors on CI to save build time.
+  ## It is unlikely that building an Xfce flavor would succeed while the CLI flavor would fail.
+  [ -n "$flavors_list" ] || flavors_list=(
+    kicksecure-xfce
+    whonix-gateway-xfce
+    whonix-workstation-xfce
+  )
+else
+  [ -n "$flavors_list" ] || flavors_list=(
+    kicksecure-xfce
+    kicksecure-cli
+    whonix-gateway-xfce
+    whonix-workstation-xfce
+    whonix-gateway-cli
+    whonix-workstation-cli
+  )
+fi
 
 build_upload_noninteractive=true
 export build_upload_noninteractive
