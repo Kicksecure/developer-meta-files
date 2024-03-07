@@ -130,6 +130,7 @@ export SKIP_SCRIPTS
 dist_build_use_cached_raw_base_image=true
 export dist_build_use_cached_raw_base_image
 
+## Build and dm-prepare-release.
 for flavor_item in "${flavors_list[@]}"; do
   case $flavor_item in
     kicksecure-xfce)
@@ -146,6 +147,7 @@ for flavor_item in "${flavors_list[@]}"; do
   run_cmd dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
 done
 
+## Uploading.
 for flavor_item in "${flavors_list[@]}"; do
   if echo "$flavor_item" | grep --quiet "gateway" ; then
     ## Not needed for gateway due to unified images.
