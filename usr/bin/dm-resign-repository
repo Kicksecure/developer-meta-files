@@ -27,10 +27,10 @@ for derivative_name_item in $derivative_name_list ; do
    ## NOTE: Do not deprecate too early.
    ## Old:
    ## https://forums.whonix.org/t/one-time-popup-notification-of-whonix-15-deprecation-once-whonix-16-was-released/11720
-   dm-reprepro-wrapper --export=changed export bullseye
-   dm-reprepro-wrapper --export=changed export bullseye-proposed-updates
-   dm-reprepro-wrapper --export=changed export bullseye-testers
-   dm-reprepro-wrapper --export=changed export bullseye-developers
+#    dm-reprepro-wrapper --export=changed export bullseye
+#    dm-reprepro-wrapper --export=changed export bullseye-proposed-updates
+#    dm-reprepro-wrapper --export=changed export bullseye-testers
+#    dm-reprepro-wrapper --export=changed export bullseye-developers
 
    dm-reprepro-wrapper --export=changed export bookworm
    dm-reprepro-wrapper --export=changed export bookworm-proposed-updates
