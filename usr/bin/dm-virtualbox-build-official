@@ -33,7 +33,11 @@ if [ "$CI" = "true" ]; then
 fi
 
 true "$0: checklist..."
-run_cmd ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
+if [ "$TESTING_MODE" -eq 1 ]; then
+  echo ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
+else
+  ls -la ~/virtualbox-windows-installer-binary/VirtualBox-*
+fi
 run_cmd sleep 2
 
 build_args=()
