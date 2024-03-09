@@ -37,8 +37,7 @@ reprepro_wrap() {
       || { reprepro_exit_code="$?" ; true; };
 
    if echo "$reprepro_output" | grep --quiet --ignore-case "is already registered with different checksums!" ; then
-      true "INFO: Not added. Because is already registered with different checksums, ok."
-      return 0
+      error "Not added. Because is already registered with different checksums, ok."
    fi
 
    if echo "$reprepro_output" | grep --quiet --ignore-case "Will not copy as not found" ; then

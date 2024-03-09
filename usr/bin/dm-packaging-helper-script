@@ -1592,6 +1592,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    export make_lintian=true
    export make_use_cowbuilder=true
    genmkfile deb-pkg
+   genmkfile reprepro-remove
    genmkfile reprepro-add
    genmkfile deb-cleanup
 
