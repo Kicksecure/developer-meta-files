@@ -42,10 +42,6 @@ run_cmd sleep 2
 
 build_args=()
 
-## Also build the Whonix-Windows-Installer.
-## Incomplete until Whonix-Windows-Installer authenticode certificate is available.
-build_args+=(--target windows)
-
 build_args+=(--repo true)
 ## Make sure official builds come with a downloaded browser (Tor Browser) installed by default.
 build_args+=(--tb closed)
@@ -75,15 +71,15 @@ run_cmd ./help-steps/signing-key-test
 ##   - *_prepare-build-machine does git clone virtualbox-windows-installer-binary
 ##   - dm-prepare-release builds Whonix Windows Installer
 ## - 4) Build CLI flavors because the least likely to have build issues.
-if [ "$CI" = "true" ]; then
-  ## Build fewer flavors on CI to save build time.
-  ## It is unlikely that building an Xfce flavor would succeed while the CLI flavor would fail.
-  [ -n "$flavors_list" ] || flavors_list=(
-    kicksecure-xfce
-    whonix-gateway-xfce
-    whonix-workstation-xfce
-  )
-else
+# if [ "$CI" = "true" ]; then
+#   ## Build fewer flavors on CI to save build time.
+#   ## It is unlikely that building an Xfce flavor would succeed while the CLI flavor would fail.
+#   [ -n "$flavors_list" ] || flavors_list=(
+#     kicksecure-xfce
+#     whonix-gateway-xfce
+#     whonix-workstation-xfce
+#   )
+# else
   [ -n "$flavors_list" ] || flavors_list=(
     kicksecure-xfce
     kicksecure-cli
@@ -92,27 +88,41 @@ else
     whonix-gateway-cli
     whonix-workstation-cli
   )
-fi
+# fi
 
 build_upload_noninteractive=true
 export build_upload_noninteractive
 
+[ -n "$architecture" ] || architecture=$(dpkg --print-architecture)
+build_args+=(--arch "$architecture")
+
 multi_target_args=()
 
-## --target virtualbox
-## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
-multi_target_args+=(--target virtualbox)
-
-if [ "$CI" = "true" ]; then
-  ## NOTE
-  ## Currently:
-  ## - local builds: AMD64 only
-  ## - CI builds   : ARM64 only
-  multi_target_args+=(--target utm)
-  multi_target_args+=(--arch arm64)
-fi
-
-multi_target_args+=(--target iso)
+case $architecture in
+  amd64)
+    ## Also build the Whonix-Windows-Installer.
+    ## Incomplete until Whonix-Windows-Installer authenticode certificate is available.
+    build_args+=(--target windows)
+    ## '--target virtualbox'
+    ## Build VirtualBox ova. (amd64 for Windows, Linux, Mac)
+    multi_target_args+=(--target virtualbox)
+    if [ "$CI" = "true" ]; then
+      ## Dedicated KVM maintainer.
+      ## This script is currently not used by the KVM maintainer.
+      ## Therefore testing '--target qcow2' for amd64 architecture on CI only.
+      multi_target_args+=(--target qcow2)
+    fi
+  ;;
+  arm64)
+    multi_target_args+=(--target qcow2)
+    ## Only on arm64 for Mac M1, M2.
+    multi_target_args+=(--target utm)
+  ;;
+  *)
+    ## '--target qcow2' might be the most universal.
+    multi_target_args+=(--target qcow2)
+  ;;
+esac
 
 for flavor_item in "${flavors_list[@]}"; do
   run_cmd ./derivative-delete "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
@@ -121,10 +131,12 @@ done
 for flavor_item in "${flavors_list[@]}"; do
   ## Not yet using multi_target_args as the sanity test for Whonix-Gateway ISO would complain that the VMs
   ## have not been built yet.
-  run_cmd ./build-steps.d/*_sanity-tests "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+  run_cmd ./build-steps.d/*_sanity-tests "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
-run_cmd ./build-steps.d/*_prepare-build-machine "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
+## '--target iso' prepare-build-machine.
+run_cmd ./build-steps.d/*_prepare-build-machine "${build_args[@]}" --target iso "${multi_target_args[@]}" --flavor internal "$@"
+
 run_cmd ./build-steps.d/*_cowbuilder-setup "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 run_cmd ./build-steps.d/*_local-dependencies "${build_args[@]}" "${multi_target_args[@]}" --flavor internal "$@"
 
@@ -164,8 +176,8 @@ for flavor_item in "${flavors_list[@]}"; do
       ;;
   esac
 
-  run_cmd ./derivative-maker "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
-  run_cmd dm-prepare-release "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+  run_cmd ./derivative-maker "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
+  run_cmd dm-prepare-release "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 ## Uploading.
@@ -177,7 +189,7 @@ for flavor_item in "${flavors_list[@]}"; do
 
   if echo "$@" | grep --quiet "remote-derivative-packages true" ; then
     ## Skip upload of debug images.
-    echo simulate-echo-only: run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+    echo simulate-echo-only: run_cmd dm-upload-images "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
     continue
   fi
 
@@ -191,7 +203,7 @@ for flavor_item in "${flavors_list[@]}"; do
       ;;
   esac
 
-  run_cmd dm-upload-images "${build_args[@]}" --target virtualbox --flavor "$flavor_item" "$@"
+  run_cmd dm-upload-images "${build_args[@]}" "${multi_target_args[@]}" --flavor "$flavor_item" "$@"
 done
 
 true "$0: END"
