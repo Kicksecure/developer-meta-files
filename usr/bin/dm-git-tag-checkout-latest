@@ -52,7 +52,7 @@ git checkout "$git_tag_latest"
 git submodule sync --recursive >/dev/null
 
 #git submodule update --init --recursive --jobs=200 >/dev/null
-git -c merge.verifySignatures=true submodule update --merge
+git -c merge.verifySignatures=true submodule update --merge --jobs=200 >/dev/null
 
 if [ ! "$(git status --porcelain)" = "" ]; then
    error "Command git status --porcelain failed at the end!"
