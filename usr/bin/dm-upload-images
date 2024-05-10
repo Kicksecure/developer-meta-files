@@ -80,7 +80,7 @@ upload_files() {
       fi
 
       rsync_exit_code="0"
-      rsync \
+      $rsync_cmd \
          $rsync_dry_run_maybe \
          $rsync_opts \
          "${upload_file_list[@]}" \
