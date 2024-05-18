@@ -135,7 +135,7 @@ libvirt_compress() {
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
 
-   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+   if [ "${dist_build_type_short}" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
@@ -185,7 +185,7 @@ libvirt_compress() {
 
    local filelist_full_path
 
-   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+   if [ "${dist_build_type_short}" = "kicksecure" ]; then
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT "
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_DISCLAIMER "
    else
@@ -269,7 +269,7 @@ virtualbox_export() {
    fi
 
    local producturl vendorurl vendor eulafile description
-   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+   if [ "${dist_build_type_short}" = "kicksecure" ]; then
       producturl="https://www.${project_clearnet}"
       vendor="Kicksecure"
       eulafile="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
@@ -532,7 +532,7 @@ main() {
    sanity_tests "$@"
 
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
-   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+   if [ "${dist_build_type_short}" = "kicksecure" ]; then
       cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
@@ -554,7 +554,7 @@ main() {
    if [ "${dist_build_type_long}" = "custom-workstation" ]; then
       vm_names_to_be_exported="${VMNAME}"
    fi
-   if [ "${dist_build_type_long}" = "kicksecure" ]; then
+   if [ "${dist_build_type_short}" = "kicksecure" ]; then
       vm_names_to_be_exported="${VMNAME}"
    fi
 
