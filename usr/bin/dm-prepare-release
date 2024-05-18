@@ -144,7 +144,7 @@ libvirt_compress() {
    fi
 
    if [ "${vm_multiple}" = "false" ]; then
-      test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml"
+      test -f "${dist_binary_build_folder}/${SHORT_VMNAME}-${dist_build_version}.xml"
       if [ "${dist_build_raw}" = "true" ]; then
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw"
       fi
@@ -194,7 +194,7 @@ libvirt_compress() {
    fi
 
    if [ "${vm_multiple}" = "false" ]; then
-      filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.xml "
+      filelist_full_path+="${dist_binary_build_folder}/${SHORT_VMNAME}-${dist_build_version}.xml "
 
       if [ "${dist_build_raw}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw "
