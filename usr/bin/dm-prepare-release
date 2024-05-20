@@ -144,7 +144,7 @@ libvirt_compress() {
    fi
 
    if [ "${vm_multiple}" = "false" ]; then
-      test -f "${dist_binary_build_folder}/${SHORT_VMNAME}-${dist_build_version}.xml"
+      test -f "${dist_binary_build_folder}/${SHORT_VMNAME}.xml"
       if [ "${dist_build_raw}" = "true" ]; then
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw"
       fi
@@ -152,8 +152,8 @@ libvirt_compress() {
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
       fi
    else
-      test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml"
-      test -f "${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml"
+      test -f "${dist_binary_build_folder}/Whonix-Gateway.xml"
+      test -f "${dist_binary_build_folder}/Whonix-Workstation.xml"
 
       test -f "${libvirt_target_network_file_external}"
       test -f "${libvirt_target_network_file_internal}"
