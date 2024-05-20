@@ -1,3 +1,17 @@
+commit 8a3b7835ea223c99a7c5754ca91c52aee6cd06a5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 20 12:51:51 2024 -0400
+
+    remove version number from libvirt xml files
+    
+    for code simplification
+
+commit 2d44e51c765cc141a1bae1886a6e6cf204ee974e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 18 21:46:55 2024 +0000
+
+    bumped changelog version
+
 commit 214e943baaeec7de5b626f3dcf8a7735ad08153e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 18 17:46:00 2024 -0400
