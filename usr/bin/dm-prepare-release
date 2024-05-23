@@ -203,8 +203,8 @@ libvirt_compress() {
          filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    else
-      filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.xml "
-      filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.xml "
+      filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway.xml "
+      filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation.xml "
       filelist_full_path+="${libvirt_target_network_file_external} "
       filelist_full_path+="${libvirt_target_network_file_internal} "
 
