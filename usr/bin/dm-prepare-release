@@ -63,8 +63,8 @@ windows_installer() {
       error "$0: binary_image_ova_file ${binary_image_ova_file} does not exist!"
    fi
 
-   test -d ~/virtualbox-windows-installer-binary
-   pushd ~/virtualbox-windows-installer-binary >/dev/null
+   test -d "$binary_build_folder_dist/virtualbox-windows-installer-binary"
+   pushd "$binary_build_folder_dist/virtualbox-windows-installer-binary" >/dev/null
 
    local counter
    counter=0
