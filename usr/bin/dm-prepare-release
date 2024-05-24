@@ -135,6 +135,7 @@ libvirt_compress() {
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
 
+   true "dist_build_type_short: $dist_build_type_short"
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
@@ -143,7 +144,10 @@ libvirt_compress() {
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 
+   true "vm_multiple: $vm_multiple"
    if [ "${vm_multiple}" = "false" ]; then
+      true "vm_multiple: no"
+      true "SHORT_VMNAME: $SHORT_VMNAME"
       test -f "${dist_binary_build_folder}/${SHORT_VMNAME}.xml"
       if [ "${dist_build_raw}" = "true" ]; then
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.raw"
@@ -152,10 +156,13 @@ libvirt_compress() {
          test -f "${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
       fi
    else
+      true "vm_multiple: yes"
       test -f "${dist_binary_build_folder}/Whonix-Gateway.xml"
       test -f "${dist_binary_build_folder}/Whonix-Workstation.xml"
 
+      true "libvirt_target_network_file_external: $libvirt_target_network_file_external"
       test -f "${libvirt_target_network_file_external}"
+      true "libvirt_target_network_file_internal: $libvirt_target_network_file_internal"
       test -f "${libvirt_target_network_file_internal}"
 
       if [ "${dist_build_raw}" = "true" ]; then
@@ -193,7 +200,9 @@ libvirt_compress() {
       filelist_full_path+="${dist_binary_build_folder}/WHONIX_DISCLAIMER "
    fi
 
+   true "vm_multiple: $vm_multiple"
    if [ "${vm_multiple}" = "false" ]; then
+      true "vm_multiple: false"
       filelist_full_path+="${dist_binary_build_folder}/${SHORT_VMNAME}.xml "
 
       if [ "${dist_build_raw}" = "true" ]; then
@@ -203,15 +212,18 @@ libvirt_compress() {
          filelist_full_path+="${dist_binary_build_folder}/${VMNAME}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
       fi
    else
+      true "vm_multiple: true"
       filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway.xml "
       filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation.xml "
       filelist_full_path+="${libvirt_target_network_file_external} "
       filelist_full_path+="${libvirt_target_network_file_internal} "
 
+      true "dist_build_raw for raw image: $dist_build_raw"
       if [ "${dist_build_raw}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
       fi
+      true "dist_build_qcow2 for qcow image: $dist_build_qcow2"
       if [ "${dist_build_qcow2}" = "true" ]; then
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
          filelist_full_path+="${dist_binary_build_folder}/Whonix-Workstation-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
@@ -219,9 +231,11 @@ libvirt_compress() {
    fi
 
    ## XXX: --target raw and --target qcow2 can currently not be combined but that seems unlikely.
+   true "dist_build_raw: $dist_build_raw"
    if [ "${dist_build_raw}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
+   true "dist_build_qcow2: $dist_build_qcow2"
    if [ "${dist_build_qcow2}" = "true" ]; then
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
