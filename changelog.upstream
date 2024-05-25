@@ -1,3 +1,29 @@
+commit 93bcda4ae19a23a1ec2b05c01ffe8ce5e1bf67be
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 25 12:43:34 2024 -0400
+
+    .
+
+commit e3f529ed5de61a1e71567303842fadaae2c5336e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 25 12:26:05 2024 -0400
+
+    comment
+
+commit ef21daf0ba9362eb73d42b3d0e1990b495d38927
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 25 12:24:05 2024 -0400
+
+    remove .gitignored files
+    
+    to avoid including them inside a source tarball
+
+commit 9feb88d60faa49d90126509445e2cc947ed5ec5f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 24 17:34:51 2024 +0000
+
+    bumped changelog version
+
 commit aeb8f5de65303d63007b319574cbf75241619d72
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 24 13:25:51 2024 -0400
