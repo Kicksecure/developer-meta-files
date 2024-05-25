@@ -1703,6 +1703,16 @@ onetime_usrmerge() {
    true
 }
 
+git_folder_or_file() {
+   if test -d .git ; then
+      echo "$item: folder"
+   elif test -f .git ; then
+      echo "$item: file"
+   else
+      error
+   fi
+}
+
 ## not yet used
 do_nothing() {
    true "INFO: Doing nothing."
