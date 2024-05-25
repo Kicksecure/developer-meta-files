@@ -100,16 +100,20 @@ windows_installer() {
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
    pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
+   git clean --force -d -X
    ## Creates WhonixStarterInstaller.msi
    ./build_on_linux_for_win64
+   git clean --force -d -X
    popd >/dev/null
 
    rm --force "${binary_image_windows_installer_file}"
 
    pushd "${source_code_folder_dist}/windows/Whonix-Installer" >/dev/null
+   git clean --force -d -X
    ## Requires already existing WhonixStarterInstaller.msi
    ## Creates ${binary_image_windows_installer_file}
    "${source_code_folder_dist}/windows/Whonix-Installer/build.sh"
+   git clean --force -d -X
    popd >/dev/null
 }
 
