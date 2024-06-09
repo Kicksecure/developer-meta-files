@@ -38,6 +38,7 @@ grep_find_unicode_wrapper_output="$(\
       --exclude=chroot-script \
       --exclude=changelog.upstream \
       --exclude-dir=.git \
+      -- \
       "$folder"\
    )" \
    || true
