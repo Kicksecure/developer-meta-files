@@ -1,3 +1,33 @@
+commit b3a6acb8bb9f70c4ec6e75ee359cdca05de28a9c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 9 08:50:52 2024 -0400
+
+    use `grep` with `--`
+
+commit 69b72fcb084d63dff0f2bc037677b7ad43c5a026
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 9 08:50:07 2024 -0400
+
+    fix
+
+commit af650b34e3694abf6e7d23156aa2abf8b3b247cd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 9 08:49:48 2024 -0400
+
+    refactoring
+
+commit 755bfe6dbf91a16c5661e0bff7c726e414323d1b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 9 08:49:05 2024 -0400
+
+    dm-check-unicode
+
+commit c77043a7839c90bcfef86eb7e7405392063a7731
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jun 9 12:13:11 2024 +0000
+
+    bumped changelog version
+
 commit 4a687fe0bed821f00a67e963f91bab66c88ed1cf
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Jun 9 08:10:58 2024 -0400
