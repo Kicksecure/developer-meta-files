@@ -104,8 +104,8 @@ windows_installer() {
    git clean --force -d -X
    ## Creates WhonixStarterInstaller.msi
    ./build_on_linux_for_win64
-   ## Delete '.gitignore'd files to avoid including them inside a source tarball.
-   git clean --force -d -X
+   ## Not possible at this time as this would delete WhonixStarterInstaller.msi
+   #git clean --force -d -X
    popd >/dev/null
 
    rm --force "${binary_image_windows_installer_file}"
@@ -117,6 +117,13 @@ windows_installer() {
    "${source_code_folder_dist}/windows/Whonix-Installer/build.sh"
    git clean --force -d -X
    popd >/dev/null
+
+   pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
+   ## Delete WhonixStarterInstaller.msi and other auto generated files.
+   git clean --force -d -X
+   popd >/dev/null
+
+   test -r "${binary_image_windows_installer_file}"
 }
 
 libvirt_compress() {
