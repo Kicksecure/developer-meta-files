@@ -35,6 +35,9 @@ grep_find_unicode_wrapper_output="$(\
       --exclude=lkrg-openrc.sh \
       --exclude=changelog \
       --exclude=chroot-script \
+      --exclude=changelog.upstream \
+      --exclude-dir=.git
+      --binary-files=without-match \
       "$folder"\
    )" \
    || true
