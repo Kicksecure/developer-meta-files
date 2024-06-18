@@ -135,6 +135,9 @@ libvirt_compress() {
    if [ "${dist_build_qcow2}" = "true" ]; then
       continue_maybe=yes
    fi
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      continue_maybe=yes
+   fi
    if [ "${continue_maybe}" = "no" ]; then
       return 0
    fi
@@ -147,18 +150,27 @@ libvirt_compress() {
       rm --force "$(basename "${libvirt_target_raw_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      rm --force "$(basename "${source_archive_xz_file}")"
+      true "INFO: Checking if all files to be added to source_archive_xz_file ${source_archive_xz_file} exist..."
+   fi
 
    true "dist_build_type_short: $dist_build_type_short"
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
       test -f "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
-   else
+   elif [ "${dist_build_type_short}" = "whonix" ]; then
       test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      true "dist_build_source_archive..."
+   fi
 
    true "vm_multiple: $vm_multiple"
-   if [ "${vm_multiple}" = "false" ]; then
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      true "dist_build_source_archive..."
+   elif [ "${vm_multiple}" = "false" ]; then
       true "vm_multiple: no"
       true "SHORT_VMNAME: $SHORT_VMNAME"
       test -f "${dist_binary_build_folder}/${SHORT_VMNAME}.xml"
@@ -205,16 +217,20 @@ libvirt_compress() {
 
    local filelist_full_path
 
-   if [ "${dist_build_type_short}" = "kicksecure" ]; then
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      filelist_full_path+="${source_code_folder_dist} "
+   elif [ "${dist_build_type_short}" = "kicksecure" ]; then
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT "
       filelist_full_path+="${dist_binary_build_folder}/KICKSECURE_DISCLAIMER "
-   else
+   elif [ "${dist_build_type_short}" = "whonix" ]; then
       filelist_full_path+="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT "
       filelist_full_path+="${dist_binary_build_folder}/WHONIX_DISCLAIMER "
    fi
 
    true "vm_multiple: $vm_multiple"
-   if [ "${vm_multiple}" = "false" ]; then
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      true "dist_build_source_archive..."
+   elif [ "${vm_multiple}" = "false" ]; then
       true "vm_multiple: false"
       filelist_full_path+="${dist_binary_build_folder}/${SHORT_VMNAME}.xml "
 
@@ -244,6 +260,11 @@ libvirt_compress() {
    fi
 
    ## XXX: --target raw and --target qcow2 can currently not be combined but that seems unlikely.
+   ## XXX: --target source can currently not be combined.
+   true "dist_build_source_archive: $dist_build_source_archive"
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      xz_archive="${source_archive_xz_file}"
+   fi
    true "dist_build_raw: $dist_build_raw"
    if [ "${dist_build_raw}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
@@ -255,21 +276,29 @@ libvirt_compress() {
 
    true "filelist_full_path: ${filelist_full_path}"
 
+   local test_operator
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      test_operator="-d"
+      $SUDO_TO_ROOT rm --force --recursive "${dist_binary_build_folder}/derivative-maker"
+      cp --archive --no-dereference --preserve=all "${source_code_folder_dist}" "${dist_binary_build_folder}"
+   else
+      test_operator="-f"
+   fi
+
    local file_name_item_full_path
    for file_name_item_full_path in ${filelist_full_path} ; do
-      test -f "${file_name_item_full_path}"
+      test "${test_operator}" "${file_name_item_full_path}"
       filelist_base_name+=" $(basename "${file_name_item_full_path}")"
    done
 
    local file_name_item_base_name
    for file_name_item_base_name in ${filelist_base_name} ; do
-      test -f "${file_name_item_base_name}"
+      test "${test_operator}" "${file_name_item_base_name}"
    done
 
    ## TODO: add progress meter (using `pv`?)
    tar \
       --create \
-      --verbose \
       --owner=0 --group=0 --numeric-owner \
       --mode=go=rX,u+rw,a-s \
       --sort=name \
@@ -498,6 +527,11 @@ signatures_create() {
       var_names+=("binary_image_windows_installer_file")
       file_list+=("${binary_image_windows_installer_file}")
       upload_url_part+=("windows")
+   fi
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      var_names+=("source_archive_xz_file")
+      file_list+=("${source_archive_xz_file}")
+      upload_url_part+=("source")
    fi
 
    ## Thanks to:
