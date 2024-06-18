@@ -37,11 +37,11 @@ Upload to kicksecure.com
 * (server folder: `/home/hulahoop/libvirt/version-number/vm-name....`):
 
 ```
-dm-upload-images --target qcow2 --flavor kicksecure-xfce
+ssh_uploader_account="hulahoop" dm-upload-images --target qcow2 --flavor kicksecure-xfce
 ```
 
 ```
-dm-upload-images --target qcow2 --flavor whonix-workstation-xfce
+ssh_uploader_account="hulahoop" dm-upload-images --target qcow2 --flavor whonix-workstation-xfce
 ```
 
 Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt images.
