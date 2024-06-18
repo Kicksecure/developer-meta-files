@@ -8,12 +8,10 @@ set -e
 
 true "$0: START"
 
-## XXX: hardcoded path
-run_cmd cd ~/derivative-maker
-
 debug_args_maybe=()
 debug_args_maybe+=(--remote-derivative-packages true)
 
-./help-steps/dm-build-official "${debug_args_maybe[@]}"
+## XXX: hardcoded path
+~/derivative-maker/help-steps/dm-build-official "${debug_args_maybe[@]}"
 
 true "$0: END"
