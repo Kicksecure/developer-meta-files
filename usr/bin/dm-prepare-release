@@ -324,15 +324,15 @@ virtualbox_export() {
       return 0
    fi
 
-   local producturl vendorurl vendor eulafile description
+   local producturl vendorurl vendor eulafile_user description
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
       producturl="https://www.${project_clearnet}"
       vendor="Kicksecure"
-      eulafile="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      eulafile_user="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
    else
       producturl="https://www.${project_clearnet}/wiki/Other_Operating_Systems"
       vendor="Whonix"
-      eulafile="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      eulafile_user="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
    fi
 
    vendorurl="https://www.${project_clearnet}"
@@ -347,9 +347,18 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   rm --force "${binary_image_ova_file}"
+   $SUDO_TO_ROOT rm --force "${binary_image_ova_file}"
+   $SUDO_TO_ROOT rm --force "${HOMEVAR_VBOX_TEMP}/temp.ova"
 
-   ## --vsys needs to precede --eulafile.
+   local eulafile_vbox_temp binary_image_text_vbox_temp
+   eulafile_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
+   binary_image_text_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-binary-image-text.txt"
+
+   $SUDO_TO_ROOT cp "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
+   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" "${eulafile_vbox_temp}"
+
+   $SUDO_TO_ROOT cp "${binary_image_text}" "${binary_image_text_vbox_temp}"
+   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" "${binary_image_text_vbox_temp}"
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
    TAR_OPTIONS="\
@@ -365,42 +374,52 @@ Please donate! [C]
    XZ_OPT="${XZ_OPT} -9"
    export XZ_OPT
 
+   ## --vsys needs to precede --eulafile.
    if [ "${vm_multiple}" = "false" ]; then
-      VBoxManage \
-         export "${VMNAME}" \
-         --vsys "0" \
-         --eulafile "${eulafile}" \
-         --description "${description}" \
-         --manifest \
-         --product "${VMNAME}" \
-         --producturl "${producturl}" \
-         --vendor "${vendor}" \
-         --vendorurl "${vendorurl}" \
-         --version "${dist_build_version}" \
-         --output "${binary_image_ova_file}"
-   else
-      VBoxManage \
-         export ${vm_names_to_be_exported} \
-         --output "${binary_image_ova_file}" \
-         --vsys '0' \
-            --eulafile "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT" \
+      $SUDO_TO_VBOX_TEMP \
+         VBoxManage \
+            export "${VMNAME}" \
+            --vsys "0" \
+            --eulafile "${eulafile_vbox_temp}" \
             --description "${description}" \
             --manifest \
-            --product "Whonix-Gateway" \
-            --producturl "https://www.${project_clearnet}/wiki/Whonix-Gateway" \
-            --vendor "Whonix" \
-            --vendorurl "https://www.${project_clearnet}" \
+            --product "${VMNAME}" \
+            --producturl "${producturl}" \
+            --vendor "${vendor}" \
+            --vendorurl "${vendorurl}" \
             --version "${dist_build_version}" \
-         --vsys '1' \
-            --eulafile "${binary_image_text}" \
-            --description "${description}" \
-            --manifest \
-            --product "Whonix-Workstation" \
-            --producturl "https://www.${project_clearnet}/wiki/Whonix-Workstation" \
-            --vendor "Whonix" \
-            --vendorurl "https://www.${project_clearnet}" \
-            --version "${dist_build_version}"
+            --output "${HOMEVAR_VBOX_TEMP}/temp.ova"
+   else
+      $SUDO_TO_VBOX_TEMP \
+         VBoxManage \
+            export ${vm_names_to_be_exported} \
+            --output "${HOMEVAR_VBOX_TEMP}/temp.ova" \
+            --vsys '0' \
+               --eulafile "${eulafile_vbox_temp}" \
+               --description "${description}" \
+               --manifest \
+               --product "Whonix-Gateway" \
+               --producturl "https://www.${project_clearnet}/wiki/Whonix-Gateway" \
+               --vendor "Whonix" \
+               --vendorurl "https://www.${project_clearnet}" \
+               --version "${dist_build_version}" \
+            --vsys '1' \
+               --eulafile "${binary_image_text_vbox_temp}" \
+               --description "${description}" \
+               --manifest \
+               --product "Whonix-Workstation" \
+               --producturl "https://www.${project_clearnet}/wiki/Whonix-Workstation" \
+               --vendor "Whonix" \
+               --vendorurl "https://www.${project_clearnet}" \
+               --version "${dist_build_version}"
    fi
+
+   ## Sanity test.
+   $SUDO_TO_VBOX_TEMP test -r "${HOMEVAR_VBOX_TEMP}/temp.ova"
+   ## Move from dm-vbox-temp user home folder to normal user home folder.
+   $SUDO_TO_ROOT mv --verbose "${HOMEVAR_VBOX_TEMP}/temp.ova" "${binary_image_ova_file}"
+   ## Fix permissions because file previously needed to be moved from one user to another using root rights.
+   $SUDO_TO_ROOT chown "$user_name:$user_name" "${binary_image_ova_file}"
 
    ## Only important for redistribution.
    ## VirtualBox creates ${binary_image_ova_file} with u+r only, which is problematic
@@ -410,8 +429,15 @@ Please donate! [C]
    sync
 
    ## Sanity test.
+   test -r "${binary_image_ova_file}"
+
+   ## Sanity test.
+   ##
    ## A different --vmname is required, because ${VMNAME} does already exist
    ## in the list of imported VirtualBox machines.
+   ##
+   ## Not using $SUDO_TO_VBOX_TEMP because binary_image_ova_file is stored in
+   ## normal user home folder. Not in dm-vbox-temp user home folder.
    if [ "${vm_multiple}" = "false" ]; then
       VBoxManage \
          import "${binary_image_ova_file}" \
