@@ -536,6 +536,9 @@ signatures_create() {
 
    ## Thanks to:
    ## https://github.com/moba/createtortorrents/blob/master/createtorrents.sh
+   ##
+   ## List of trackers (Use with care!):
+   ## https://github.com/XIU2/TrackersListCollection
    TRACKERS=""
    ## https://fosstorrents.com/tracker/
    TRACKERS+="http://fosstorrents.com:6969/announce"
