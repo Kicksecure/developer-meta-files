@@ -1,3 +1,15 @@
+commit 201a38c9c2740fdc1688d07cc8ac126ff07f147c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 5 17:48:18 2024 -0400
+
+    dedicated dm-vbox-temp user
+
+commit 8e6b397067303d6b07e637d643d69afc4b0747cd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 5 20:50:24 2024 +0000
+
+    bumped changelog version
+
 commit 87c0c73e912fbebdfd18c8f4e6e360b80034b584
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 5 16:27:59 2024 -0400
