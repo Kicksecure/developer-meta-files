@@ -1,28 +1,14 @@
-# Build #
+# Build, Compress and Sign #
 
 Setup build machine according to pages above then run the following commands to create builds:
 
 ```
-./derivative-maker --target qcow2 --flavor whonix-gateway-xfce --repo true --tb closed
+dist_build_redistributable=true ./derivative-maker --target qcow2 --flavor whonix-gateway-xfce
 ```
 
 Optionally add `--connection onion` to force fetching packages from `.onion` servers.
 
 For Kicksecure replace `whonix-gateway-xfce` with: `kicksecure-xfce` / `kicksecure-cli`
-
-# Sign and Compress #
-
-Run command below to sign and compress.
-
-```
-dm-prepare-release --target qcow2 --flavor kicksecure-xfce
-```
-
-```
-dm-prepare-release --target qcow2 --flavor whonix-workstation-xfce
-```
-
-Note: No need to repeat for `--whonix-gateway-xfce` because of unified libvirt images.
 
 # Upload Command
 
