@@ -1741,28 +1741,25 @@ announcement() {
       release_type_long="Testers Wanted"
       header_text="# Testers Wanted!
 
-Download the Testers-Only version of $project_name_short for VirtualBox:
+Download the Testers-Only version of $project_name_short:
 
 https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version"
       end_text="(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)"
    elif [ "$release_type_short" = "point" ]; then
       release_type_long="Point Release"
-      header_text="Download $project_name_short for VirtualBox:
+      header_text="# Download
 
-https://www.${project_clearnet}/wiki/VirtualBox
+      https://www.${project_clearnet}/wiki/Download
 
-----
-
-This is a point release.
-
-https://www.kicksecure.com/wiki/Point_Release"
+([What is a point release?](https://www.kicksecure.com/wiki/Point_Release
+))"
       end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
    else
       error "invalid release_type_short!"
    fi
 
    echo "\
-$project_name_short ${version_main_new_short} - for VirtualBox - $release_type_long!
+$project_name_short ${version_main_new_short} - $release_type_long!
 
 $header_text
 
