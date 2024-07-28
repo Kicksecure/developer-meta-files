@@ -29,6 +29,7 @@ variables() {
    vmname="Whonix-Gateway-Xfce"
    vmname_with_quotes='"$vmname"'
    user_name="user"
+   ## TODO: empty by default nowadays
    password="changeme"
 
    vboxmanage_cmd="VBoxManage --nologo"
