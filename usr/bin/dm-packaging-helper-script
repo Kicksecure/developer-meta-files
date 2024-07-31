@@ -1443,7 +1443,7 @@ pkg_git_packages_git_log_writer() {
          echo "* $reponame:" | tee -a "$giant_git_log_file" >/dev/null
       fi
 
-      echo "** $log_msg" | tee -a "$giant_git_log_file" >/dev/null
+      echo "  * $log_msg" | tee -a "$giant_git_log_file" >/dev/null
 
    done <<< "$commit_msg_short_list"
 
