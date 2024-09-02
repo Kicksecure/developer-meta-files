@@ -1245,7 +1245,7 @@ pkg_git_diff_and_commit() {
 
    git diff
 
-   commit_message="usrmerge debhelper systemd Debian package maintainer scripts fix"
+   commit_message="move bind-dirs configuration from qubes-whonix package to individual packages"
 
    #true "press enter to continue"
    #read temp
