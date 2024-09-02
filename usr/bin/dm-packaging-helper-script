@@ -1243,7 +1243,8 @@ pkg_git_diff_and_commit() {
       return
    fi
 
-   git diff
+   git add -A
+   git diff --cached
 
    commit_message="move bind-dirs configuration from qubes-whonix package to individual packages"
 
