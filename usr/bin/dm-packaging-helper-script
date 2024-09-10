@@ -1587,6 +1587,8 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
+   ## TODO: duplicate make_cowbuilder_dist_folder - best re-use create-debian-packages build step?
+   export make_cowbuilder_dist_folder=~/derivative-binary/genmkfile-packages-result
    genmkfile deb-pkg
    genmkfile reprepro-remove
    genmkfile reprepro-add
