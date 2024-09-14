@@ -107,8 +107,7 @@ upload_files() {
       fi
 
       if [ "$attempts_counter" -ge "$attempts_max" ]; then
-         msg="${bold}${red}ERROR: Upload failed.${reset}"
-         error "$msg"
+         error "${bold}${red}ERROR: Upload failed.${reset}"
          ## Allow to ignore the error such as after fixing the internet connection.
          continue
       fi
