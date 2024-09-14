@@ -27,12 +27,14 @@ if [ ! "$build_upload_noninteractive" = "true" ]; then
    read temp
 fi
 
+## XXX: hardcoded git repositories
 pushd ~/sourcesown/canary/
 git push github-kicksecure master
 git push github-whonix master
 git push adrelanos master
 popd
 
+## XXX: hardcoded project domain names
 for upload_location in root@whonix.org root@kicksecure.com ; do
 
    if [ ! "$build_upload_noninteractive" = "true" ]; then

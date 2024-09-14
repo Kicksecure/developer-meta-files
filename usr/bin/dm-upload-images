@@ -68,16 +68,23 @@ upload_files() {
    rsync_dry_run_maybe="--dry-run"
 
    attempts_counter="0"
-   attempts_max="10"
+   attempts_max="100"
+   [ -n "$sleep_seconds" ] || sleep_seconds="1"
 
    while true; do
       attempts_counter="$(( attempts_counter + 1 ))"
+      sleep_seconds="$(( sleep_seconds * 2 ))"
 
       if [ "$rsync_dry_run_maybe" = "--dry-run" ]; then
          true "${cyan}INFO: --dry-run only...${reset}"
       else
          true "${cyan}INFO: uploading...${reset}"
       fi
+
+      ## Test if DNS is functional.
+      ## Sometimes 'rsync' fails to resolve DNS but running 'nslookup' beforehand fixes it.
+      ## Overrule with '||true' as the failure would be handled below by 'rsync'.
+      nslookup "$dist_server_with_upload_location_list_list" || true
 
       rsync_exit_code="0"
       $rsync_cmd \
@@ -101,12 +108,12 @@ upload_files() {
 
       if [ "$attempts_counter" -ge "$attempts_max" ]; then
          msg="${bold}${red}ERROR: Upload failed.${reset}"
-         true "$msg"
          error "$msg"
-         break
+         ## Allow to ignore the error such as after fixing the internet connection.
+         continue
       fi
 
-      sleep 10
+      sleep "$sleep_seconds" || true
 
    done
 }
