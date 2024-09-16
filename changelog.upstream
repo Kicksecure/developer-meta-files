@@ -1,3 +1,21 @@
+commit 27faa1fc158a80f3b9f7b4672a2e9147493ebe7e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 14 09:19:20 2024 -0400
+
+    refactoring
+
+commit 6a013fef83e9c5694d282c033a966be0cc9d8f5b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 14 09:15:27 2024 -0400
+
+    make image upload script more resilient against transient network issues
+
+commit bfcf272712b8a76b13f35b49530ce4738003bf01
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 10 18:42:40 2024 +0000
+
+    bumped changelog version
+
 commit cba4f3ff0f8c7c0e6728658a4fb8c35041f0a664
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Sep 10 13:57:55 2024 -0400
