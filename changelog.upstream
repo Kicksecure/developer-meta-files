@@ -1,3 +1,15 @@
+commit bd882d52adeb326495f1705efec09e52e176c37e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 25 05:44:12 2024 -0400
+
+    Windows installer
+
+commit 654735eba8789068688efde6203bafee6b2f89a7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 25 08:36:44 2024 +0000
+
+    bumped changelog version
+
 commit 22a95331f3fb8d096c5223618135848673b7beb6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Sep 25 04:35:10 2024 -0400
