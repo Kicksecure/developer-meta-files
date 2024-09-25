@@ -82,6 +82,12 @@ windows_installer() {
    test -r "${FILE_VBOX_INST_EXE}"
 
    "${dist_developer_meta_files_folder}/usr/bin/dm-virtualbox-installer-exe-verify-windows"
+
+   FILE_VCREDIST_INST_EXE=$(realpath "vc_redist.x64.exe")
+   test -r "$FILE_VCREDIST_INST_EXE"
+
+   "${dist_developer_meta_files_folder}/usr/bin/dm-virtualbox-installer-vc_redist-verify-windows"
+
    popd >/dev/null
 
    ## environment variables read by Whonix-Installer build.sh
@@ -91,7 +97,7 @@ windows_installer() {
    FILE_WHONIX_STARTER_MSI="${source_code_folder_dist}/windows/Whonix-Starter/WhonixStarterInstaller.msi"
    #FILE_VBOX_INST_EXE="${FILE_VBOX_INST_EXE}"
    FILE_INSTALLER_BINARY_FINAL="${binary_image_windows_installer_file}"
-   export TARGET_SYSTEM FILE_LICENSE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
+   export TARGET_SYSTEM FILE_LICENSE FILE_VCREDIST_INST_EXE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
    VERSION="${dist_build_version}"
    VERSION_FULL=$(basename "${binary_image_ova_file}")

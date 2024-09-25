@@ -1,0 +1,38 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+#### meta start
+#### project Kicksecure
+#### category security
+#### description
+
+## Verifies the integrity of vc_redist.x64.exe.
+## This script assumes that the calling script previously changed directory
+## into the folder which contains the vc_redist.x64.exe.
+
+#### meta end
+
+set -x
+set -e
+
+true "$0: START"
+
+pwd
+
+file_name="vc_redist.x64.exe"
+
+test -r "$file_name"
+
+## Cannot find root certificate. Signature might be expired.
+#osslsigncode verify -in "$file_name"
+
+## https://www.virustotal.com/gui/file/5eea714e1f22f1875c1cb7b1738b0c0b1f02aec5ecb95f0fdb1c5171c6cd93a3
+## https://web.archive.org/web/20240925081631/https://www.virustotal.com/gui/file/5eea714e1f22f1875c1cb7b1738b0c0b1f02aec5ecb95f0fdb1c5171c6cd93a3
+echo "5eea714e1f22f1875c1cb7b1738b0c0b1f02aec5ecb95f0fdb1c5171c6cd93a3  vc_redist.x64.exe" | sha256sum --check
+
+## https://strontic.github.io/xcyclopedia/library/VC_redist.x64.exe-27B141AACC2777A82BB3FA9F6E5E5C1C.html
+echo "7789eabb6dd4a159bb899d2e6d6df70addb3df239bda6f9ead8c1d2a2ac2062fce3a495814b48a3c2bec12f13800ad0703e2c61c35158b0912011b914f098011  vc_redist.x64.exe" | sha512sum --check
+
+true "$0: SUCCESS"
