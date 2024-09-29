@@ -75,6 +75,10 @@ repo_skip() {
 }
 
 ## XXX
+## To auto generate a release announcement, run:
+## dm-packaging-helper-script pkg_git_packages_git_log_writer
+##
+## Can be found in folder $announcements_draft_folder
 version_old_main="17.2.0.7-developers-only"
 version_new_main="17.2.3.7-developers-only"
 
@@ -1717,10 +1721,6 @@ do_nothing() {
    true "INFO: Doing nothing."
 }
 
-## To auto generate a release announcement, run:
-## dm-packaging-helper-script pkg_git_packages_git_log_writer
-##
-## Can be found in folder $announcements_draft_folder
 announcement() {
    if [ "$project_name_short" = "derivative-maker" ]; then
       return 0
