@@ -123,6 +123,10 @@ commit_filter() {
     fi
 
     for text in \
+        "signed commit" \
+        "rm_conffile" \
+        "Typo" \
+        "Clarify" \
         "aa-logprof" \
         "bookworm aa-logprof" \
         "release-upgrade" \
@@ -1429,6 +1433,14 @@ pkg_git_packages_git_log_writer() {
          committer_person="@JeremyRand"
       elif [ "$committer_person" = "HulaHoop0" ]; then
          committer_person="@HulaHoop"
+      elif [ "$committer_person" = "Raja Grewal" ]; then
+         committer_person="@raja"
+      elif [ "$committer_person" = "raja-grewal" ]; then
+         committer_person="@raja"
+      elif [ "$committer_person" = "Aaron Rainbolt" ]; then
+         committer_person="@ArrayBolt3"
+      elif [ "$committer_person" = "TNT BOM BOM" ]; then
+         committer_person="@nurmagoz"
       fi
 
       if [ "$committer_person" = "Patrick Schleizer" ]; then
