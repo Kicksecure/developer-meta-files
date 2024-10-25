@@ -1,3 +1,22 @@
+commit 522e491bf905d3c63260b63f72f38aec58663bc7
+Merge: e3659e0 d053175
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 09:35:00 2024 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/master'
+
+commit d053175dd27beb6eee8ad853a35efb57928e4f04
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Oct 25 02:10:01 2024 -0500
+
+    Add wiki-vbox-version-update script
+
+commit e3659e08f82c2dfc6600326c1b5d380ad7f2c269
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Oct 3 07:20:18 2024 +0000
+
+    bumped changelog version
+
 commit b80273d179c600bd97998ef73559dfb0b2d08b2d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 30 04:32:55 2024 -0400
