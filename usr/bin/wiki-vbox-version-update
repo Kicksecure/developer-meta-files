@@ -17,11 +17,11 @@ get_url_cached () {
    url="${1:-}";
    [ -z "$url" ] && return 1;
 
-   if [ -z "${url_cache[$url]}" ]; then
-      url_cache[$url]="$(2>/dev/null scurl "$url")";
+   if [ -z "${url_cache["$url"]}" ]; then
+      url_cache["$url"]="$(2>/dev/null scurl "$url")";
    fi
 
-   url_content="${url_cache[$url]}";
+   url_content="${url_cache["$url"]}";
 }
 
 get_wiki_page_cached () {
@@ -40,7 +40,7 @@ get_wiki_page_cached () {
       safe-rm "$tmpfile";
    fi
 
-   wiki_content="${wiki_cache[$cache_id]}";
+   wiki_content="${wiki_cache["$cache_id"]}";
 }
 
 # TODO: It might be more lightweight to use release-monitoring.org to detect
