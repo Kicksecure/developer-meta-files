@@ -3,6 +3,11 @@
 # wiki-vbox-version-update - Find new versions of VirtualBox and updates the
 #   links in the wiki accordingly.
 
+set -o errexit
+set -o nounset
+set -o errtrace
+set -o pipefail
+
 declare -A url_cache;
 declare -A wiki_cache;
 
