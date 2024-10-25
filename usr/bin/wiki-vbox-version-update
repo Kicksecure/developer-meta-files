@@ -32,7 +32,7 @@ get_wiki_page_cached () {
    if [ -z "${wiki_cache[$cache_id]}" ]; then
       2>/dev/null >/dev/null wiki_article_to_fetch="$wiki_page" wiki_fetch_to_file="$tmpfile" mw-fetch;
       wiki_cache[$cache_id]="$(cat "$tmpfile")";
-      rm "$tmpfile";
+      safe-rm "$tmpfile";
    fi
 
    wiki_content="${wiki_cache[$cache_id]}";
@@ -123,7 +123,7 @@ replace_wiki_string () {
    wiki_content="$(cat "$tmpfile")";
    wiki_cache[$cache_id]="$wiki_content";
 
-   rm "$tmpfile";
+   safe-rm "$tmpfile";
 }
 
 # TODO: Templates for future work
@@ -155,7 +155,7 @@ save_cached_page_to_wiki () {
    echo "$wiki_content" > "$tmpfile";
    mw-edit "$wiki_page" "$tmpfile";
 
-   rm "$tmpfile";
+   safe-rm "$tmpfile";
 }
 
 declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_regex;
