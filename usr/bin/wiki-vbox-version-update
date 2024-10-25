@@ -108,7 +108,7 @@ get_url_from_wiki () {
 }
 
 replace_wiki_string () {
-   local wiki wiki_page orig_string new_string cache_id tmpfile py_replace_script;
+   local wiki wiki_page orig_string new_string cache_id tmpfile;
 
    wiki_page="${1:-}";
    orig_string="${2:-}";
