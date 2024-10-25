@@ -1,0 +1,200 @@
+#!/bin/bash
+#
+# wiki-vbox-version-update - Find new versions of VirtualBox and updates the
+#   links in the wiki accordingly.
+
+declare -A url_cache;
+declare -A wiki_cache;
+
+get_url_cached () {
+   local url;
+
+   url="${1:-}";
+   [ -z "$url" ] && return 1;
+
+   if [ -z "${url_cache[$url]}" ]; then
+      url_cache[$url]="$(2>/dev/null curl "$url")";
+   fi
+
+   url_content="${url_cache[$url]}";
+}
+
+get_wiki_page_cached () {
+   local wiki wiki_page cache_id tmpfile;
+
+   wiki_page="${1:-}";
+   [ -z "$wiki_page" ] && return 1;
+
+   tmpfile="$(mktemp)";
+
+   cache_id="${WIKI_URL} - ${wiki_page}";
+
+   if [ -z "${wiki_cache[$cache_id]}" ]; then
+      2>/dev/null >/dev/null wiki_article_to_fetch="$wiki_page" wiki_fetch_to_file="$tmpfile" mw-fetch;
+      wiki_cache[$cache_id]="$(cat "$tmpfile")";
+      rm "$tmpfile";
+   fi
+
+   wiki_content="${wiki_cache[$cache_id]}";
+}
+
+# TODO: It might be more lightweight to use release-monitoring.org to detect
+#   the latest VirtualBox release.
+# get_latest_version-virtualbox () {
+#    get_url_cached 'https://release-monitoring.org/api/v2/packages/?name=Virtualbox'
+#    jq '.items[] | select ( contains({distribution: "Windows"}) ) | .version' <<< "$url_content";
+# }
+
+extract_url () {
+   local content regex;
+
+   content="${1:-}";
+   regex="${2:-}";
+   [ -z "$content" ] && return 1;
+   [ -z "$regex" ] && return 1;
+
+   while read -r line; do
+      if [[ "$line" =~ $regex ]]; then
+         result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "$line")";
+      fi;
+   done <<< "$content";
+
+   echo "$result";
+}
+
+get_url_from_page () {
+   local dl_page release_regex line result;
+
+   dl_page="${1:-}";
+   release_regex="${2:-}";
+   [ -z "$dl_page" ] && return 1;
+   [ -z "$release_regex" ] && return 1;
+
+   get_url_cached "$dl_page";
+   readarray -t result < <(extract_url "$url_content" "$release_regex");
+
+   if [ "${#result[@]}" != '1' ]; then
+      1>&2 echo 'WARNING - more than one URL found for download!';
+   elif [ -z "${result[0]}" ]; then
+      1>&2 echo 'WARNING - no URL found!';
+   fi
+
+   func_result="${result[0]}";
+}
+
+get_url_from_wiki () {
+   local wiki wiki_page release_regex content result;
+
+   wiki_page="${1:-}";
+   release_regex="${2:-}";
+   [ -z "$wiki_page" ] && return 1;
+   [ -z "$release_regex" ] && return 1;
+
+   get_wiki_page_cached "$wiki_page";
+   readarray -t result < <(extract_url "$wiki_content" "$release_regex");
+
+   if [ "${#result[@]}" != '1' ]; then
+      1>&2 echo 'WARNING - more than one URL found for download!';
+   elif [ -z "${result[0]}" ]; then
+      1>&2 echo 'WARNING - no URL found!';
+   fi
+
+   func_result="${result[0]}";
+}
+
+replace_wiki_string () {
+   local wiki wiki_page orig_string new_string cache_id tmpfile py_replace_script;
+
+   wiki_page="${1:-}";
+   orig_string="${2:-}";
+   new_string="${3:-}";
+   [ -z "$wiki_page" ] && return 1;
+   [ -z "$orig_string" ] && return 1;
+   [ -z "$new_string" ] && return 1;
+
+   
+   cache_id="${WIKI_URL} - ${wiki_page}";
+   wiki_content="${wiki_cache[$cache_id]}";
+   [ -z "$wiki_content" ] && return 1;
+
+   tmpfile="$(mktemp)";
+   echo "$wiki_content" > "$tmpfile";
+   str_replace "$orig_string" "$new_string" "$tmpfile";
+   wiki_content="$(cat "$tmpfile")";
+   wiki_cache[$cache_id]="$wiki_content";
+
+   rm "$tmpfile";
+}
+
+# TODO: Templates for future work
+# get_latest_version-tor-browser () {
+#    true;
+# }
+#
+# get_latest_version-tor-browser-alpha () {
+#    true;
+# }
+#
+# get_current_version-tor-browser () {
+#    true;
+# }
+#
+# get_current_version-tor-browser-alpha () {
+#    true;
+# }
+
+save_cached_page_to_wiki () {
+   local wiki_page tmpfile;
+
+   wiki_page="${1:-}";
+   [ -z "$wiki_page" ] && return 1;
+
+   tmpfile="$(mktemp)";
+
+   get_wiki_page_cached "$wiki_page";
+   echo "$wiki_content" > "$tmpfile";
+   mw-edit "$wiki_page" "$tmpfile";
+
+   rm "$tmpfile";
+}
+
+declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_regex;
+kicksecure_wiki_vbox_page='Template:VirtualBox_Host_Software_Installation';
+vbox_download_page='https://www.virtualbox.org/wiki/Downloads';
+vbox_win_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*Win\.exe';
+vbox_macos_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*OSX.dmg';
+
+WIKI_URL='https://www.kicksecure.com/w'; export WIKI_URL;
+
+main () {
+   local vbox_win_latest vbox_macos_latest vbox_win_current vbox_macos_current update_done;
+
+   update_done='false';
+   if [ -z "$WIKI_API_USER_NAME" ]; then
+      echo "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
+      exit 1
+   elif [ -z "$WIKI_API_USER_PASS" ]; then
+      echo "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
+      exit 1
+   fi
+
+   get_url_from_page "$vbox_download_page" "$vbox_win_regex";   vbox_win_latest="$func_result";
+   get_url_from_page "$vbox_download_page" "$vbox_macos_regex"; vbox_macos_latest="$func_result";
+   get_url_from_wiki "$kicksecure_wiki_vbox_page" "$vbox_win_regex";   vbox_win_current="$func_result";
+   get_url_from_wiki "$kicksecure_wiki_vbox_page" "$vbox_macos_regex"; vbox_macos_current="$func_result";
+
+   if [ "$vbox_win_latest" != "$vbox_win_current" ]; then
+      replace_wiki_string "$kicksecure_wiki_vbox_page" "$vbox_win_current" "$vbox_win_latest";
+      update_done='true'
+   fi
+   if [ "$vbox_macos_latest" != "$vbox_macos_current" ]; then
+      replace_wiki_string "$kicksecure_wiki_vbox_page" "$vbox_macos_current" "$vbox_macos_latest";
+      update_done='true'
+   fi
+
+   if [ "$update_done" = 'true' ]; then
+      save_cached_page_to_wiki "$kicksecure_wiki_vbox_page";
+   fi
+}
+
+main "$@";
