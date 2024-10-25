@@ -25,7 +25,7 @@ get_url_cached () {
 }
 
 get_wiki_page_cached () {
-   local wiki wiki_page cache_id tmpfile;
+   local wiki_page cache_id tmpfile;
 
    wiki_page="${1:-}";
    [ -z "$wiki_page" ] && return 1;
@@ -88,7 +88,7 @@ get_url_from_page () {
 }
 
 get_url_from_wiki () {
-   local wiki wiki_page release_regex content result;
+   local wiki_page release_regex content result;
 
    wiki_page="${1:-}";
    release_regex="${2:-}";
@@ -108,7 +108,7 @@ get_url_from_wiki () {
 }
 
 replace_wiki_string () {
-   local wiki wiki_page orig_string new_string cache_id tmpfile;
+   local wiki_page orig_string new_string cache_id tmpfile;
 
    wiki_page="${1:-}";
    orig_string="${2:-}";
