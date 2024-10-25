@@ -175,13 +175,13 @@ main () {
    local vbox_win_latest vbox_macos_latest vbox_win_current vbox_macos_current update_done;
 
    update_done='false';
-   if [ ! -v WIKI_API_USER_NAME ]; then
-      echo "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
-      exit 1
-   elif [ ! -v WIKI_API_USER_PASS ]; then
-      echo "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
-      exit 1
-   fi
+#    if [ ! -v WIKI_API_USER_NAME ]; then
+#       echo "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
+#       exit 1
+#    elif [ ! -v WIKI_API_USER_PASS ]; then
+#       echo "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
+#       exit 1
+#    fi
 
    get_url_from_page "$vbox_download_page" "$vbox_win_regex";   vbox_win_latest="$func_result";
    get_url_from_page "$vbox_download_page" "$vbox_macos_regex"; vbox_macos_latest="$func_result";
