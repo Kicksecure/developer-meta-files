@@ -46,7 +46,7 @@ get_wiki_page_cached () {
 # }
 
 extract_url () {
-   local content regex;
+   local content regex line;
 
    content="${1:-}";
    regex="${2:-}";
