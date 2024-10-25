@@ -118,7 +118,7 @@ replace_wiki_string () {
    [ -z "$wiki_content" ] && return 1;
 
    tmpfile="$(mktemp)";
-   echo "$wiki_content" > "$tmpfile";
+   append-once "$tmpfile" "$wiki_content";
    str_replace "$orig_string" "$new_string" "$tmpfile";
    wiki_content="$(cat "$tmpfile")";
    wiki_cache[$cache_id]="$wiki_content";
@@ -152,7 +152,7 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)";
 
    get_wiki_page_cached "$wiki_page";
-   echo "$wiki_content" > "$tmpfile";
+   append-once "$tmpfile" "$wiki_content";
    mw-edit "$wiki_page" "$tmpfile";
 
    safe-rm "$tmpfile";
