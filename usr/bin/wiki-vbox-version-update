@@ -15,39 +15,39 @@ get_url_cached () {
    local url
 
    url="${1:-}"
-   [ -z "$url" ] && return 1
+   [ -z "${url}" ] && return 1
 
-   if [ -z "${url_cache["$url"]}" ]; then
-      url_cache["$url"]="$(2>/dev/null scurl "$url")"
+   if [ -z "${url_cache["${url}"]}" ]; then
+      url_cache["${url}"]="$(2>/dev/null scurl "${url}")"
    fi
 
-   url_content="${url_cache["$url"]}"
+   url_content="${url_cache["${url}"]}"
 }
 
 get_wiki_page_cached () {
    local wiki_page cache_id tmpfile
 
    wiki_page="${1:-}"
-   [ -z "$wiki_page" ] && return 1
+   [ -z "${wiki_page}" ] && return 1
 
    tmpfile="$(mktemp)"
 
    cache_id="${WIKI_URL} - ${wiki_page}"
 
-   if [ -z "${wiki_cache[$cache_id]}" ]; then
-      2>/dev/null >/dev/null wiki_article_to_fetch="$wiki_page" wiki_fetch_to_file="$tmpfile" mw-fetch
-      wiki_cache[$cache_id]="$(cat "$tmpfile")"
-      safe-rm "$tmpfile"
+   if [ -z "${wiki_cache[${cache_id}]}" ]; then
+      2>/dev/null >/dev/null wiki_article_to_fetch="${wiki_page}" wiki_fetch_to_file="${tmpfile}" mw-fetch
+      wiki_cache[${cache_id}]="$(cat "${tmpfile}")"
+      safe-rm "${tmpfile}"
    fi
 
-   wiki_content="${wiki_cache["$cache_id"]}"
+   wiki_content="${wiki_cache["${cache_id}"]}"
 }
 
 # TODO: It might be more lightweight to use release-monitoring.org to detect
 #   the latest VirtualBox release.
 # get_latest_version-virtualbox () {
 #    get_url_cached 'https://release-monitoring.org/api/v2/packages/?name=Virtualbox'
-#    jq '.items[] | select ( contains({distribution: "Windows"}) ) | .version' <<< "$url_content"
+#    jq '.items[] | select ( contains({distribution: "Windows"}) ) | .version' <<< "${url_content}"
 # }
 
 extract_url () {
@@ -55,16 +55,16 @@ extract_url () {
 
    content="${1:-}"
    regex="${2:-}"
-   [ -z "$content" ] && return 1
-   [ -z "$regex" ] && return 1
+   [ -z "${content}" ] && return 1
+   [ -z "${regex}" ] && return 1
 
    while read -r line; do
-      if [[ "$line" =~ $regex ]]; then
-         regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "$line")"
+      if [[ "${line}" =~ ${regex} ]]; then
+         regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
       fi
-   done <<< "$content"
+   done <<< "${content}"
 
-   echo "$regex_result"
+   echo "${regex_result}"
 }
 
 get_url_from_page () {
@@ -72,11 +72,11 @@ get_url_from_page () {
 
    dl_page="${1:-}"
    release_regex="${2:-}"
-   [ -z "$dl_page" ] && return 1
-   [ -z "$release_regex" ] && return 1
+   [ -z "${dl_page}" ] && return 1
+   [ -z "${release_regex}" ] && return 1
 
-   get_url_cached "$dl_page"
-   readarray -t result < <(extract_url "$url_content" "$release_regex")
+   get_url_cached "${dl_page}"
+   readarray -t result < <(extract_url "${url_content}" "${release_regex}")
 
    if [ "${#result[@]}" != '1' ]; then
       1>&2 echo 'WARNING - more than one URL found for download!'
@@ -92,11 +92,11 @@ get_url_from_wiki () {
 
    wiki_page="${1:-}"
    release_regex="${2:-}"
-   [ -z "$wiki_page" ] && return 1
-   [ -z "$release_regex" ] && return 1
+   [ -z "${wiki_page}" ] && return 1
+   [ -z "${release_regex}" ] && return 1
 
-   get_wiki_page_cached "$wiki_page"
-   readarray -t result < <(extract_url "$wiki_content" "$release_regex")
+   get_wiki_page_cached "${wiki_page}"
+   readarray -t result < <(extract_url "${wiki_content}" "${release_regex}")
 
    if [ "${#result[@]}" != '1' ]; then
       1>&2 echo 'WARNING - more than one URL found for download!'
@@ -113,21 +113,21 @@ replace_wiki_string () {
    wiki_page="${1:-}"
    orig_string="${2:-}"
    new_string="${3:-}"
-   [ -z "$wiki_page" ] && return 1
-   [ -z "$orig_string" ] && return 1
-   [ -z "$new_string" ] && return 1
+   [ -z "${wiki_page}" ] && return 1
+   [ -z "${orig_string}" ] && return 1
+   [ -z "${new_string}" ] && return 1
 
    cache_id="${WIKI_URL} - ${wiki_page}"
-   wiki_content="${wiki_cache[$cache_id]}"
-   [ -z "$wiki_content" ] && return 1
+   wiki_content="${wiki_cache[${cache_id}]}"
+   [ -z "${wiki_content}" ] && return 1
 
-   tmpfile="$(mktemp)";
-   append-once "$tmpfile" "$wiki_content"
-   str_replace "$orig_string" "$new_string" "$tmpfile"
-   wiki_content="$(cat "$tmpfile")"
-   wiki_cache[$cache_id]="$wiki_content"
+   tmpfile="$(mktemp)"
+   append-once "${tmpfile}" "${wiki_content}"
+   str_replace "${orig_string}" "${new_string}" "${tmpfile}"
+   wiki_content="$(cat "${tmpfile}")"
+   wiki_cache[${cache_id}]="${wiki_content}"
 
-   safe-rm "$tmpfile";
+   safe-rm "${tmpfile}"
 }
 
 # TODO: Templates for future work
@@ -151,15 +151,15 @@ save_cached_page_to_wiki () {
    local wiki_page tmpfile
 
    wiki_page="${1:-}"
-   [ -z "$wiki_page" ] && return 1
+   [ -z "${wiki_page}" ] && return 1
 
    tmpfile="$(mktemp)"
 
-   get_wiki_page_cached "$wiki_page"
-   append-once "$tmpfile" "$wiki_content"
-   mw-edit "$wiki_page" "$tmpfile"
+   get_wiki_page_cached "${wiki_page}"
+   append-once "${tmpfile}" "${wiki_content}"
+   mw-edit "${wiki_page}" "${tmpfile}"
 
-   safe-rm "$tmpfile"
+   safe-rm "${tmpfile}"
 }
 
 declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_regex
@@ -182,22 +182,22 @@ main () {
 #       exit 1
 #    fi
 
-   get_url_from_page "$vbox_download_page" "$vbox_win_regex";   vbox_win_latest="$func_result"
-   get_url_from_page "$vbox_download_page" "$vbox_macos_regex"; vbox_macos_latest="$func_result"
-   get_url_from_wiki "$kicksecure_wiki_vbox_page" "$vbox_win_regex";   vbox_win_current="$func_result"
-   get_url_from_wiki "$kicksecure_wiki_vbox_page" "$vbox_macos_regex"; vbox_macos_current="$func_result"
+   get_url_from_page "${vbox_download_page}" "${vbox_win_regex}";   vbox_win_latest="${func_result}"
+   get_url_from_page "${vbox_download_page}" "${vbox_macos_regex}"; vbox_macos_latest="${func_result}"
+   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_win_regex}";   vbox_win_current="${func_result}"
+   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_macos_regex}"; vbox_macos_current="${func_result}"
 
-   if [ "$vbox_win_latest" != "$vbox_win_current" ]; then
-      replace_wiki_string "$kicksecure_wiki_vbox_page" "$vbox_win_current" "$vbox_win_latest"
+   if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
+      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
       update_done='true'
    fi
-   if [ "$vbox_macos_latest" != "$vbox_macos_current" ]; then
-      replace_wiki_string "$kicksecure_wiki_vbox_page" "$vbox_macos_current" "$vbox_macos_latest"
+   if [ "${vbox_macos_latest}" != "${vbox_macos_current}" ]; then
+      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_macos_current}" "${vbox_macos_latest}"
       update_done='true'
    fi
 
-   if [ "$update_done" = 'true' ]; then
-      save_cached_page_to_wiki "$kicksecure_wiki_vbox_page"
+   if [ "${update_done}" = 'true' ]; then
+      save_cached_page_to_wiki "${kicksecure_wiki_vbox_page}"
    fi
 }
 
