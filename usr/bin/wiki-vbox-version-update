@@ -117,7 +117,6 @@ replace_wiki_string () {
    [ -z "$orig_string" ] && return 1
    [ -z "$new_string" ] && return 1
 
-
    cache_id="${WIKI_URL} - ${wiki_page}"
    wiki_content="${wiki_cache[$cache_id]}"
    [ -z "$wiki_content" ] && return 1
