@@ -8,6 +8,8 @@ set -o nounset
 set -o errtrace
 set -o pipefail
 
+command -v mw-fetch
+
 declare -A url_cache
 declare -A wiki_cache
 
@@ -17,7 +19,7 @@ get_url_cached () {
    url="${1:-}"
    [ -z "${url}" ] && return 1
 
-   if [ -z "${url_cache["${url}"]}" ]; then
+   if [ -z "${url_cache["${url}"]:-}" ]; then
       url_cache["${url}"]="$(2>/dev/null scurl "${url}")"
    fi
 
@@ -34,7 +36,7 @@ get_wiki_page_cached () {
 
    cache_id="${WIKI_URL} - ${wiki_page}"
 
-   if [ -z "${wiki_cache[${cache_id}]}" ]; then
+   if [ -z "${wiki_cache[${cache_id}]:-}" ]; then
       2>/dev/null >/dev/null wiki_article_to_fetch="${wiki_page}" wiki_fetch_to_file="${tmpfile}" mw-fetch
       wiki_cache[${cache_id}]="$(cat "${tmpfile}")"
       safe-rm "${tmpfile}"
@@ -199,6 +201,8 @@ main () {
    if [ "${update_done}" = 'true' ]; then
       save_cached_page_to_wiki "${kicksecure_wiki_vbox_page}"
    fi
+
+   true "SUCCESS"
 }
 
 main "$@"
