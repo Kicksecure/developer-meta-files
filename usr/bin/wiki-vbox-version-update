@@ -51,7 +51,7 @@ get_wiki_page_cached () {
 # }
 
 extract_url () {
-   local content regex line;
+   local content regex line regex_result;
 
    content="${1:-}";
    regex="${2:-}";
@@ -60,11 +60,11 @@ extract_url () {
 
    while read -r line; do
       if [[ "$line" =~ $regex ]]; then
-         result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "$line")";
+         regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "$line")";
       fi;
    done <<< "$content";
 
-   echo "$result";
+   echo "$regex_result";
 }
 
 get_url_from_page () {
