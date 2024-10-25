@@ -175,10 +175,10 @@ main () {
    local vbox_win_latest vbox_macos_latest vbox_win_current vbox_macos_current update_done;
 
    update_done='false';
-   if [ -z "$WIKI_API_USER_NAME" ]; then
+   if [ ! -v WIKI_API_USER_NAME ]; then
       echo "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
       exit 1
-   elif [ -z "$WIKI_API_USER_PASS" ]; then
+   elif [ ! -v WIKI_API_USER_PASS ]; then
       echo "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
       exit 1
    fi
