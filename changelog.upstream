@@ -1,3 +1,99 @@
+commit b15b438e95d37548cd5ca49fc1687e738306b804
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 13:04:14 2024 -0400
+
+    nounset
+
+commit e0b820151018a45d2f5eb7a882494dbd97704418
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:52:34 2024 -0400
+
+    use ${variable} style
+
+commit 1ef3e8aeaf66515610898f0ec5e13366b7b5ae73
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:50:50 2024 -0400
+
+    minor
+
+commit def966b076c3336827e6f1cb19fcaf1448b53bde
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:50:21 2024 -0400
+
+    remove trailing ;
+
+commit f9bb4aa5c39d20b6e991be5b4854a7ae25e03936
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:42:47 2024 -0400
+
+    leave credentials check to mediawiki-shell
+
+commit 212a8f3a96b8278b97631ade660de50ba9181ed1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:40:19 2024 -0400
+
+    nounset
+
+commit 3f36b642dd0674d2918619dadaa9eca9b74eece8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:26:24 2024 -0400
+
+    refactoring
+
+commit b9122deeb2d25b6bd057819939d562a56a27891a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:21:13 2024 -0400
+
+    quotes
+
+commit 8e273f22e65efa77d1643cf9005fe5191b6f5565
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:17:50 2024 -0400
+
+    cleanup
+
+commit 75f5ece33a31ebe73bc9c32b0dbf2b96e6544e42
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:16:47 2024 -0400
+
+    cleanup
+
+commit baed768617929a7a835e25d40ff3edd43407ad9d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:15:09 2024 -0400
+
+    shell options
+
+commit 6d12219e970e99602ea32994a76e2406798c35b1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:13:11 2024 -0400
+
+    local
+
+commit 1cdd8e409f872c67dfbcdb4ee55f486bfa32a30e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:12:11 2024 -0400
+
+    use append-once
+
+commit c9bc2751f9052ecfc2a0834584574193f4ce04dc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:09:09 2024 -0400
+
+    use safe-rm
+
+commit 9448693a3d4e346238af043e9a2dee6048782451
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 12:07:50 2024 -0400
+
+    use scurl
+
+commit 5070a5e7b2725bb787a9392f92c7d1ae44c94021
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 25 14:30:33 2024 +0000
+
+    bumped changelog version
+
 commit 522e491bf905d3c63260b63f72f38aec58663bc7
 Merge: e3659e0 d053175
 Author: Patrick Schleizer <adrelanos@whonix.org>
