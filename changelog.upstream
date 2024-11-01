@@ -1,3 +1,45 @@
+commit fde7815039765c535d9d4514b9677cf2ba16b529
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 1 12:09:08 2024 -0400
+
+    shell options
+
+commit f4486987da6d9094e8f43f44c56d5562cc035514
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 1 12:07:58 2024 -0400
+
+    .
+
+commit 62b152b2266853a9b70a2df428177905a9c94fbd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 1 12:07:01 2024 -0400
+
+    use end-of-options
+
+commit 6d5afc92412312a04305147ab3857c32cb534e88
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 1 12:06:15 2024 -0400
+
+    dm-check-unicode: add whitelist for live-build files
+
+commit 183b190446301491d1cd7c25637c9193e78043c2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 1 11:54:28 2024 -0400
+
+    dm-check-unicode: use relative paths
+
+commit e8929599681617f5dbc115abb41b42a44aa2f13c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 30 07:33:56 2024 -0400
+
+    .
+
+commit 421720751f9ac35738d95d40d734a12a550d6155
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Oct 30 09:40:25 2024 +0000
+
+    bumped changelog version
+
 commit b15b438e95d37548cd5ca49fc1687e738306b804
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Oct 25 13:04:14 2024 -0400
