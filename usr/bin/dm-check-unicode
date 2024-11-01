@@ -14,6 +14,7 @@ wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-
 
 test -d "$folder"
 test -x "$wrapper"
+cd "$folder"
 
 ## overwrite with '|| true' because `grep` exits non-zero if no match was found.
 ##
@@ -39,7 +40,7 @@ grep_find_unicode_wrapper_output="$(\
       --exclude=changelog.upstream \
       --exclude-dir=.git \
       -- \
-      "$folder"\
+      "./" \
    )" \
    || true
 
