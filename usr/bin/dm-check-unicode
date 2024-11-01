@@ -44,10 +44,14 @@ grep_find_unicode_wrapper_output="$(\
    )" \
    || true
 
-if [ "$grep_find_unicode_wrapper_output" = "" ]; then
-   true "INFO: grep_find_unicode_wrapper_output empty, good, OK."
+whitelist_pattern="(./live-build/debian/control|./live-build/debian/copyright|./live-build/manpages/po/fr/.*|./live-build/manpages/po/ja/.*)"
+
+filtered_output=$(echo "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp "$whitelist_pattern" || true)
+
+if [ -z "$filtered_output" ]; then
+   true "INFO: No Unicode issues found, everything is OK."
 else
-   echo "$grep_find_unicode_wrapper_output" >&2
+   echo "$filtered_output" >&2
 
    true "\
 $0: ERROR: Unicode found!
