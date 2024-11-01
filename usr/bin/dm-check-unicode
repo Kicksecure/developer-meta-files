@@ -25,9 +25,6 @@ cd "$folder"
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
 ## https://github.com/grml/grml-debootstrap/issues/219
-## TODO: remove
-## https://github.com/grml/grml-debootstrap/pull/220
-## --exclude=chroot-script
 grep_find_unicode_wrapper_output="$(\
    "$wrapper" \
       --recursive \
@@ -36,7 +33,6 @@ grep_find_unicode_wrapper_output="$(\
       --exclude=LICENSE \
       --exclude=lkrg-openrc.sh \
       --exclude=changelog \
-      --exclude=chroot-script \
       --exclude=changelog.upstream \
       --exclude-dir=.git \
       -- \
