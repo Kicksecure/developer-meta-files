@@ -28,6 +28,10 @@ test -r "$file_name"
 ## Cannot find root certificate. Signature might be expired.
 #osslsigncode verify -in "$file_name"
 
+## Debugging.
+sha256sum "$file_name"
+sha512sum "$file_name"
+
 ## https://www.virustotal.com/gui/file/3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a/detection/f-3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a-1716408627
 ## https://web.archive.org/web/20240925094309/https://www.virustotal.com/gui/file/3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a/detection/f-3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a-1716408627
 echo "3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a  vc_redist.x64.exe" | sha256sum --check
