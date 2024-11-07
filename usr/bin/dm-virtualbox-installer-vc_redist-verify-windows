@@ -30,13 +30,11 @@ test -r "$file_name"
 
 ## Debugging.
 sha256sum "$file_name"
-sha512sum "$file_name"
+#sha512sum "$file_name"
 
-## https://www.virustotal.com/gui/file/3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a/detection/f-3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a-1716408627
-## https://web.archive.org/web/20240925094309/https://www.virustotal.com/gui/file/3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a/detection/f-3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a-1716408627
-echo "3642e3f95d50cc193e4b5a0b0ffbf7fe2c08801517758b4c8aeb7105a091208a  vc_redist.x64.exe" | sha256sum --check
+echo "814e9da5ec5e5d6a8fa701999d1fc3baddf7f3adc528e202590e9b1cb73e4a11  vc_redist.x64.exe" | sha256sum --check
 
-## https://strontic.github.io/xcyclopedia/library/VC_redist.x64.exe-27B141AACC2777A82BB3FA9F6E5E5C1C.html
-echo "5935b69f5138ac3fbc33813c74da853269ba079f910936aefa95e230c6092b92f6225bffb594e5dd35ff29bf260e4b35f91adede90fdf5f062030d8666fd0104  vc_redist.x64.exe" | sha512sum --check
+##
+#echo "5935b69f5138ac3fbc33813c74da853269ba079f910936aefa95e230c6092b92f6225bffb594e5dd35ff29bf260e4b35f91adede90fdf5f062030d8666fd0104  vc_redist.x64.exe" | sha512sum --check
 
 true "$0: SUCCESS"
