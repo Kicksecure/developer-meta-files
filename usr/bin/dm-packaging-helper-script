@@ -1357,7 +1357,7 @@ git_reset_changelog_upstream() {
 }
 
 ## Commits changes to the readme files of all repos.
-pkg_git_commmit_readme() {
+pkg_git_commit_readme() {
    local msg
 
    if [ -f 'README_generic.md' ]; then
