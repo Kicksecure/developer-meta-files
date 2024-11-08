@@ -1,3 +1,9 @@
+developer-meta-files (3:35.10-1~local1) bookworm; urgency=medium
+
+  * Test build
+
+ -- Aaron Rainbolt <arraybolt3@ubuntu.com>  Fri, 08 Nov 2024 13:51:49 -0600
+
 developer-meta-files (3:35.9-1) unstable; urgency=medium
 
   * New upstream version (local package).

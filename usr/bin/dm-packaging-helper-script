@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## Copyright (C) 2012 - 2024 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 set -x
@@ -10,1089 +10,520 @@ set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
-build_all_error_handler() {
-   echo "
-${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
-reponame: $reponame
-PWD: $PWD
-" >&2
-   echo "Press enter to continue or ctrl +c to break or enter to continue." >&2
-   sleep 2
-   read temp || true
-   true
+## BEGIN Initialization functions {
+
+## Checks script prerequisites, aborting the script or printing a warning if
+## one or more prerequisites are missing.
+check_prerequisites() {
+   ## BEGIN Hard prerequisites
+   #
+   # Failure of one of these prerequisites is a fatal error.
+
+   [ -d "${derivative_maker_source_code_dir}" ] || {
+      echo "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} does not exist or is not a directory."
+      exit 1
+   }
+
+   # Any arbitrary package under derivative-maker/packages/kicksecure will
+   # work here, live-config-dist was chosen arbitrarily.
+   test "$(find "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist" | wc -l)" -gt '1' || {
+      echo "FATAL ERROR: Hard prerequisite not met: git submodules under ${derivative_maker_source_code_dir} not populated."
+      exit 1
+   }
+
+   # TODO: dm-check-unicode hardcodes the derivative-maker path. This should
+   # eventually be corrected.
+   dm-check-unicode || {
+      echo "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} contains Unicode or is mislocated."
+      exit 1;
+   }
+
+   ## . END Hard prerequisites
+
+   ## BEGIN Soft prerequisites
+   #
+   # Failure of one of these prerequisites is a possible issue but not fatal.
+
+   [ -d "${derivative_binary_dir}" ] || {
+      echo "WARNING: Soft prerequisite not met: ${derivative_binary_dir} does not exist or is not a directory. Some features will be disabled."
+   }
+
+   [ "${derivative_maker_source_code_dir}" = "$HOME/derivative-maker" ] || {
+      echo "WARNING: Soft prerequisite not met: ${derivative_maker_source_code_dir} is not located at $HOME/derivative-maker. The script may break."
+   }
+
+   ## . END Soft prerequisites
 }
 
-trap "build_all_error_handler" ERR
-set +e
+## Sources all libraries found in the global 'library_list' variable.
+source_library_list() {
+   local library
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-## example MYDIR:
-## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin
+   for library in "${library_list[@]}"; do
+      source "${library}" || {
+         echo "ERROR: Library not found: ${library}"
+         exit 1
+      }
+   done
+}
 
-my_pkg_name="$(basename "$(dirname "$MYDIR")")"
-## example my_pkg_name:
-## developer-meta-files
+## Ensures that the system is prepared to run the script (right now this just
+## makes sure directories that need to exist actually exist).
+prepare_system() {
+   mkdir -p "${announcements_drafts_dir}"
+   mkdir -p "${package_documentation_dir}"
+}
 
-cd "$MYDIR"
+## Shows debugging information for all non-volatile global variables.
+## TODO Make sure this is up-to-date!
+show_debug_variable_info() {
+   local library
 
-cd ~/derivative-maker
-source ~/derivative-maker/help-steps/colors
+   true "Global tunables:"
+   true "derivative_binary_dir: ${derivative_binary_dir}"
+   true "derivative_maker_source_code_dir: ${derivative_maker_source_code_dir}"
+   true "derivative_version_old_main: ${derivative_version_old_main}"
+   true "derivative_version_new_main: ${derivative_version_new_main}"
+   true "derivative_release_type: ${derivative_release_type}"
+   true "git_commit_all_msg: ${git_commit_all_msg}"
+   true "makefile_generic_version: ${makefile_generic_version}"
+   true "packaging_files_diff_template_package_relative_path: ${packaging_files_diff_template_package_relative_path}"
+   true
+   true "Global variables:"
+   true "announcements_drafts_dir: ${announcements_drafts_dir}"
+   true "derivative_maker_dir_name: ${derivative_maker_dir_name}"
+   true "make_cowbuilder_dist_dir: ${make_cowbuilder_dist_dir}"
+   true "nothing_to_commit_msg: ${nothing_to_commit_msg}"
+   true "package_documentation_dir: ${package_documentation_dir}"
+   true "script_absolute_dir: ${script_absolute_dir}"
+   true "script_package_name: ${script_package_name}"
+   for library in "${library_list[@]}"; do
+      true "library_list library: ${library}"
+   done
+}
 
-derivative_maker_source_code_folder="$PWD"
-## example derivative_maker_source_code_folder:
-## /home/user/derivative-maker
+## . END Initialization functions }
 
-derivative_maker_folder_name="$(basename "$derivative_maker_source_code_folder")"
-if [ ! "$derivative_maker_folder_name" = "derivative-maker" ]; then
-   exit 1
-fi
+## BEGIN Utility functions {
 
-## Source make-helper.bsh to get function make_get_variables.
-source ~/derivative-maker/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh
+## Takes a short commit message as input. Returns 0 if the commit message is
+## not one of several common ones that should be ignored. Returns 1 otherwise.
+commit_filter() {
+   local commit_msg_short text
 
-counter=0
+   commit_msg_short="$1"
+   [ -z "${commit_msg_short}" ] && {
+      echo "${red}${bold}FATAL ERROR: No argument provided to ${FUNCNAME[0]}!${reset}"
+      exit 1;
+   }
 
-nothing_to_commit_msg="On branch master
-nothing to commit, working tree clean"
+   set +x
 
-command -v isutf8 >/dev/null
+   if echo "${commit_msg_short}" | grep -i -q 'Merge remote-tracking branch' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'Merge pull request' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'lintian FHS' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'LANG=C' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'genmkfile manpages' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'lintian' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'Standards-Version' ; then
+      set -x
+      return 1
+   fi
+   if echo "${commit_msg_short}" | grep -i -q 'change license to AGPL-3+' ; then
+      set -x
+      return 1
+   fi
 
-## TODO: duplicate make_cowbuilder_dist_folder - best re-use create-debian-packages build step?
-export make_cowbuilder_dist_folder=~/derivative-binary/genmkfile-packages-result
-
-repo_skip() {
-   if [ "main" = "$1" ]; then
-      if [ "$this_is_derivative_maker_source_code_folder" = "true" ]; then
-         true "Skipping $reponame (main)."
+   for text in \
+      'signed commit' \
+      'rm_conffile' \
+      'Typo' \
+      'Clarify' \
+      'aa-logprof' \
+      'bookworm aa-logprof' \
+      'release-upgrade' \
+      'Kicksecure' \
+      'kicksecure' \
+      'rename' \
+      'split' \
+      'split project source code' \
+      'split source code' \
+      'split Kicksecure and Whonix packages' \
+      're-generated man pages' \
+      'update lintian tag name' \
+      'genmkfile debinstfile' \
+      'update-path' \
+      'output, refactoring' \
+      'man' \
+      'manpage' \
+      'lintian' \
+      'fix comment' \
+      'genmkfile manpages' \
+      'update comment' \
+      'fix linitian warning' \
+      'PEP8' \
+      'intentd' \
+      'improve error handling' \
+      'refactoring; output' \
+      'refactoring; fix' \
+      'fix; refactoring' \
+      'refactoring; debugging' \
+      'output; refactoring' \
+      'autopep8' \
+      'anondate' \
+      'apparmor' \
+      'update path' \
+      'update link' \
+      'package description' \
+      'update copyright year' \
+      'remove white spaces from file names' \
+      'Added creation of upstream changelog to debian/rules' \
+      'add debian install file' \
+      'remove genmkfile' \
+      '# On branch master nothing to commit (working directory clean)' \
+      'copyright' \
+      'fix lintian warnings' \
+      'fix lintian warning' \
+      'fixed debian/changelog' \
+      'fix path' \
+      'remove trailing spaces' \
+      'typos' \
+      'minor' \
+      'typo' \
+      'update Depends' \
+      'update copyright' \
+      'Update Copyright' \
+      'remove faketime from Build-Depends:' \
+      'remove debian/gain-root-command workaround' \
+      'packaging simplification config-package-dev (>= 5.1) -> config-package-dev' \
+      'packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support' \
+      'bump version number' \
+      'bumped version number' \
+      'bumped changelog version' \
+      'packaging' \
+      'fix' \
+      'comment' \
+      'comments' \
+      'output' \
+      'news' \
+      'readme' \
+      'updated generic makefile' \
+      'bumped compat from 8 to 9' \
+      'Updated debian/changelog.' \
+      'Fixed changelog date.' \
+      'updated makefile generic to version 1.3' \
+      'updated makefile generic to version 1.4' \
+      'updated makefile generic to version 1.5' \
+      'added changelog.upstream' \
+      'quotes' \
+      'refactoring' \
+      'debugging' \
+      'lintian warning copyright fix' \
+      'https://www.kicksecure.com/wiki/Dev/Licensing' \
+      'port to debian buster' \
+      'port to debian bullseye' \
+      'surpress lintian warning' \
+      'update' \
+      'fix debian/watch lintian warning debian-watch-contains-dh_make-template' \
+      'code simplification' \
+      'simplification' \
+      'update path to pre.bsh' \
+      'sudo' \
+      'gksudo' \
+      'description' \
+      'buster' \
+      'bullseye' \
+      'bookworm' \
+      'cleanup' \
+      'license' \
+      'update path to pre.bsh' \
+      'anon-shared-helper-scripts -> helper-scripts' \
+      'enable debugging' \
+      'Update control' \
+      'fix output' \
+      'local' \
+      'man page' \
+      'coypright' \
+      'formatting' \
+      'improve error handler' \
+      'cleanup' \
+      'fix lintian warning' \
+      'bump' \
+      'trailing spaces' \
+      'coypright' \
+      'description' \
+      'shuffle' \
+      'use pre.bsh' \
+      'set -e' \
+      'Update control' \
+      'update control' \
+      'disable debugging' \
+      'set -o pipefail' \
+      'style' \
+      'upgrade license from GPLv2+ to GPLv3+' \
+      'CI fix' \
+      'delete empty file' \
+      'wayland' \
+      'nftabels' \
+      'chmod +x' \
+      'CI' \
+      'rename variable' \
+      'ISO' \
+      'wrap-and-sort' \
+      'Depends: pkexec' \
+      '.'; do
+      if [ "${text}" = "${commit_msg_short}" ]; then
+         set -x
          return 1
       fi
-   fi
-   if [ "$reponame" = "$1" ]; then
-      true "Skipping $reponame."
+   done
+
+   set -x
+}
+
+## Takes a package repository name as an argument. Returns 0 if the current
+## package reponame being handled is NOT the same as the argument. Returns 1
+## otherwise. Intended to be used in commands as
+## `repo_skip 'package-name' || return 0`.
+repo_skip() {
+   if [ "${batch_current_package_reponame}" = "$1" ]; then
+      true "Skipping ${batch_current_package_reponame}."
       return 1
    fi
 }
 
-## XXX
-## To auto generate a release announcement, run:
-## dm-packaging-helper-script pkg_git_packages_git_log_writer
-##
-## Can be found in folder $announcements_draft_folder
-version_old_main="17.2.0.7-developers-only"
-version_new_main="17.2.3.7-developers-only"
-
-## XXX
-announcements_draft_folder=~/derivative-binary/announcements-drafts
-mkdir -p "$announcements_draft_folder"
-
-commit_filter() {
-    set +x
-
-    if echo "$commit_msg_short" | grep -i -q "Merge remote-tracking branch" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "Merge pull request" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "lintian FHS" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "LANG=C" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "genmkfile manpages" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "lintian" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "Standards-Version" ; then
-       set -x
-       return 1
-    fi
-    if echo "$commit_msg_short" | grep -i -q "change license to AGPL-3+" ; then
-       set -x
-       return 1
-    fi
-
-    for text in \
-        "signed commit" \
-        "rm_conffile" \
-        "Typo" \
-        "Clarify" \
-        "aa-logprof" \
-        "bookworm aa-logprof" \
-        "release-upgrade" \
-        "Kicksecure" \
-        "kicksecure" \
-        "rename" \
-        "split" \
-        "split project source code" \
-        "split source code" \
-        "split Kicksecure and Whonix packages" \
-        "re-generated man pages" \
-        "update lintian tag name" \
-        "genmkfile debinstfile" \
-        "update-path" \
-        "output, refactoring" \
-        "man" \
-        "manpage" \
-        "lintian" \
-        "fix comment" \
-        "genmkfile manpages" \
-        "update comment" \
-        "fix linitian warning" \
-        "PEP8" \
-        "intentd" \
-        "improve error handling" \
-        "refactoring; output" \
-        "refactoring; fix" \
-        "fix; refactoring" \
-        "refactoring; debugging" \
-        "output; refactoring" \
-        "autopep8" \
-        "anondate" \
-        "apparmor" \
-        "update path" \
-        "update link" \
-        "package description" \
-        "update copyright year" \
-        "remove white spaces from file names" \
-        "Added creation of upstream changelog to debian/rules" \
-        "add debian install file" \
-        "remove genmkfile" \
-        "# On branch master nothing to commit (working directory clean)" \
-        "copyright" \
-        "fix lintian warnings" \
-        "fix lintian warning" \
-        "fixed debian/changelog" \
-        "fix path" \
-        "remove trailing spaces" \
-        "typos" \
-        "minor" \
-        "typo" \
-        "update Depends" \
-        "update copyright" \
-        "Update Copyright" \
-        "remove faketime from Build-Depends:" \
-        "remove debian/gain-root-command workaround" \
-        "packaging simplification config-package-dev (>= 5.1) -> config-package-dev" \
-        "packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support" \
-        "bump version number" \
-        "bumped version number" \
-        "bumped changelog version" \
-        "packaging" \
-        "fix" \
-        "comment" \
-        "comments" \
-        "output" \
-        "news" \
-        "readme" \
-        "updated generic makefile" \
-        "bumped compat from 8 to 9" \
-        "Updated debian/changelog." \
-        "Fixed changelog date." \
-        "updated makefile generic to version 1.3" \
-        "updated makefile generic to version 1.4" \
-        "updated makefile generic to version 1.5" \
-        "added changelog.upstream" \
-        "quotes" \
-        "refactoring" \
-        "debugging" \
-        "lintian warning copyright fix" \
-        "https://www.kicksecure.com/wiki/Dev/Licensing" \
-        "port to debian buster" \
-        "port to debian bullseye" \
-        "surpress lintian warning" \
-        "update" \
-        "fix debian/watch lintian warning debian-watch-contains-dh_make-template" \
-        "code simplification" \
-        "simplification" \
-        "update path to pre.bsh" \
-        "sudo" \
-        "gksudo" \
-        "description" \
-        "buster" \
-        "bullseye" \
-        "bookworm" \
-        "cleanup" \
-        "license" \
-        "update path to pre.bsh" \
-        "anon-shared-helper-scripts -> helper-scripts" \
-        "enable debugging" \
-        "Update control" \
-        "fix output" \
-        "local" \
-        "man page" \
-        "coypright" \
-        "formatting" \
-        "improve error handler" \
-        "cleanup" \
-        "fix lintian warning" \
-        "bump" \
-        "trailing spaces" \
-        "coypright" \
-        "description" \
-        "shuffle" \
-        "use pre.bsh" \
-        "set -e" \
-        "Update control" \
-        "update control" \
-        "disable debugging" \
-        "set -o pipefail" \
-        "style" \
-        "upgrade license from GPLv2+ to GPLv3+" \
-        "CI fix" \
-        "delete empty file" \
-        "wayland" \
-        "nftabels" \
-        "chmod +x" \
-        "CI" \
-        "rename variable" \
-        "ISO" \
-        "wrap-and-sort" \
-        "Depends: pkexec" \
-        "."
-        do
-        if [ "$text" = "$commit_msg_short" ]; then
-            set -x
-            return 1
-        fi
-    done
-
-    set -x
+## Resets all batch_meta_* global state variables to default values.
+reset_batch_meta_globals() {
+   batch_meta_category_list=()
+   batch_meta_debian_control_web_link=''
+   batch_meta_file_name_without_reponame=''
+   batch_meta_file_web_link=''
+   batch_meta_gateway_only='n'
+   batch_meta_installed_by_default='y'
+   batch_meta_non_qubes_whonix_only='n'
+   batch_meta_project_list=()
+   batch_meta_qubes_whonix_only='n'
+   batch_meta_relative_file_name=''
+   batch_meta_repo_web_link=''
+   batch_meta_workstation_only='n'
+   unset batch_meta_file_header_done_list
+   declare -A -g batch_meta_file_header_done_list
 }
 
-pkg_readme_creator_commit() {
-   repo_skip "derivative-maker" || return 0
+## Extracts a package description from a debian/control file, writing it to
+## the specified file using a special template for the headline. The template
+## can be an arbitrary string, but must contain the string XXX_REPLACE_ME_XXX
+## to indicate where the first line of the description should be inserted.
+extract_description_from_debian_control() {
+   local source_file target_file headline_template line first_word \
+     description_found headline_written
 
-#    repo_skip "anon-meta-packages" || return 0
-#    repo_skip "lkrg" || return 0
-
-   ## global readme_file
-   if [ -f "README_generic.md" ]; then
-      ## When there is a README_generic.md, this is a way to express
-      ## "do not create a generic README.md for that package, because it
-      ## already has a real readme."
-      readme_file="README_generic.md"
-   else
-      readme_file="README.md"
-   fi
-   git add "$readme_file" || true
-   git commit -m "readme" || true
-}
-
-## TODO
-pkg_readme_creator_do() {
-   repo_skip "derivative-maker" || return 0
-
-#    repo_skip "anon-meta-packages" || return 0
-#    repo_skip "lkrg" || return 0
-
-   ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
-   repo_skip "tirdad" || return 0
-   #repo_skip "lkrg" || return 0
-
-   local control_file
-   control_file="debian/control"
-
-   if [ ! -f "$control_file" ]; then
-      true "No file"
-      return
+   source_file="${1:-}"
+   target_file="${2:-}"
+   headline_template="${3:-}"
+   if [ -z "${source_file}" ]; then
+      echo "${red}${bold}FATAL ERROR: Empty source_file parameter provided!${reset}"
+      exit 1
+   elif [ -z "${target_file}" ]; then
+      echo "${red}${bold}FATAL ERROR: Empty target_file parameter provided!${reset}"
+      exit 1
+   elif [ -z "${headline_template}" ]; then
+      echo "${red}${bold}FATAL ERROR: Empty headline_template parameter provided!${reset}"
+      exit 1
+   elif ! grep -q 'XXX_REPLACE_ME_XXX' <<< "${headline_template}" ; then
+      echo "${red}${bold}FATAL ERROR: headline_template parameter lacks XXX_REPLACE_ME_XXX placeholder!${reset}"
+      exit 1
    fi
 
-   generic_readme_template_file="$derivative_maker_source_code_folder/packages/kicksecure/developer-meta-files/README_generic_template_file.md"
-   test -f "$generic_readme_template_file"
+   description_found='n'
+   headline_written='n'
 
-   local line first_word matched headline
-
-   ## global readme_file
-   if [ -f "README_generic.md" ]; then
-      ## When there is a README_generic.md, this is a way to express
-      ## "do not create a generic README.md for that package, because it
-      ## already has a real readme."
-      readme_file="README_generic.md"
-   else
-      readme_file="README.md"
-   fi
-
-   rm --force "$readme_file"
-
-   matched=0
-
-   ## Start writing readme_file based on debian/control.
-   while read -r line; do
-      read -r first_word _ <<< "$line"
-      if [ "$first_word" = "Description:" ]; then
-         matched=$(( $matched + 1 ))
-      fi
-      if [ "$matched" -gt "1" ]; then
+   while IFS= read -r line; do
+      read -r first_word _ <<< "${line}"
+      if [ "${first_word}" = 'Description:' ]; then
+         description_found='y'
+      elif [ "${line:0:1}" != ' ' ] && [ "${description_found}" = 'y' ]; then
          break
       fi
-      if [ "$matched" = "1" ]; then
-         if [ "$line" = "" ]; then
+
+      if [ "${description_found}" = 'y' ]; then
+         if [ -z "${line}" ]; then
+            break;
+         fi
+         if [ "${headline_written}" = 'n' ]; then
+            headline="$(awk -F':' '{ print $2 }' <<< "${line}")"
+            ## Strip off the one leading space if it exists. TODO: Is there
+            ## ever a situation where this doesn't exist?
+            if [ "${headline:0:1}" = ' ' ]; then
+               headline="${headline:1}"
+            fi
+            headline_template="${headline_template//'XXX_REPLACE_ME_XXX'/"${headline}"}"
+            echo "${headline_template}" | tee -a -- "${target_file}" >/dev/null
+            echo '' | tee -a -- "${target_file}" >/dev/null
+            headline_written='y'
+            continue
+         fi
+         if [ "${line}" = ' .' ]; then
+            echo '' | tee -a -- "${target_file}" >/dev/null
+         else
+            # Strip all leading whitespace
+            read -r line <<< "${line}"
+            echo "${line}" | tee -a -- "${target_file}" >/dev/null
+         fi
+      fi
+   done < "${source_file}"
+}
+
+## Creates and appends to package description files.
+internal_descr_writer() {
+   local project category description_file control_file line first_word \
+     description_found headline_written
+
+   for project in "${batch_meta_project_list[@]}"; do
+      for category in "${batch_meta_category_list[@]}"; do
+         description_file="${package_documentation_dir}/${batch_current_package_reponame}_${category}_${project}.mediawiki"
+    
+         ## Create the file if it does not yet exist
+         if ! [ -e "${description_file}" ]; then
+            control_file="${batch_current_package_path}/debian/control"
+            if ! [ -f "${control_file}" ]; then
+               echo "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
+               exit 1
+            fi
+    
+            touch "${description_file}"
+    
+            echo "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
+            echo '' | tee -a -- "${description_file}" >/dev/null
+            echo "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
+            echo "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
+    
+            extract_description_from_debian_control "${control_file}" "${description_file}" '=== XXX_REPLACE_ME_XXX ==='
+    
+         ## If the file does exist, make sure it's a real file
+         elif ! [ -f "${description_file}" ]; then
+            echo "${red}${bold}FATAL ERROR: ${description_file} exists but is not a regular file!${reset}"
+            exit 1
+         fi
+    
+         if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]}" = 'y' ]; then
+            echo "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
+            echo '' | tee -a -- "${description_file}" >/dev/null
+            echo "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_gateway_only}" = 'y' ] && echo '* gateway only<!--gateway-only-->' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_workstation_only}" = 'y' ] && echo '* workstation only<!--workstation-only-->' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && echo '* Non-Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_qubes_whonix_only}" = 'y' ] && echo '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_installed_by_default}" = 'n' ] && echo '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
+            echo '' | tee -a -- "${description_file}" >/dev/null
+    
+            batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
+         fi
+    
+         echo "$@" | tee -a -- "${description_file}" >/dev/null
+      done
+   done
+}
+
+## Extracts a list of unique info fields from package documentation file
+## names. The info fields that can be searched for are 'category' and
+##'project'. This takes advantage of the fact that in package documentation
+## filenames, the reponames, categories, and projects are separated by
+## underscores and can thus be extracted easily that way.
+get_package_documentation_info_list() {
+   local info_type info_idx info_list file_name_full_path file_name_only \
+      file_info info_from_list info_match_found
+
+   info_type="${1:-}"
+   if [ "${info_type}" = 'category' ]; then
+      info_idx='2'
+   elif [ "${info_type}" = 'project' ]; then
+      info_idx='3'
+   else
+      echo "${red}${bold}FATAL ERROR: info_type is not 'category' or 'project'!${reset}"
+      exit 1
+   fi
+
+   info_list=()
+
+   for file_name_full_path in "${package_documentation_dir}/"* ; do
+      file_name_only="${file_name_full_path##*/}"
+      file_info="$(cut -d'_' -f"${info_idx}" <<< "${file_name_only}")"
+      if [[ "${file_info}" =~ \.merged\.mediawiki ]] \
+         || [[ "${file_info}" =~ \.allmerged\.mediawiki ]]; then
+         continue
+      fi
+      file_info="$(LANG=C str_replace '.mediawiki' '' <<< "${file_info}")"
+      info_match_found='n'
+      for info_from_list in "${info_list[@]}"; do
+         if [ "${file_info}" = "${info_from_list}" ]; then
+            info_match_found='y'
             break
          fi
-         if [ "$headline" = "done" ]; then
-            true
-         else
-            line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
-            echo "#$line_with_keyword #" | tee -a "$readme_file" >/dev/null
-            echo "" | tee -a "$readme_file" >/dev/null
-            headline=done
-            continue
-         fi
-         if [ "$line" = "." ]; then
-            echo "" | tee -a "$readme_file" >/dev/null
-         else
-            echo "$line" | tee -a "$readme_file" >/dev/null
-         fi
-      fi
-   done < "$control_file"
-
-#    if [ -d "man" ]; then
-#       echo "# Manual Page #" | tee -a "$readme_file"
-#       echo "" | tee -a "$readme_file" >/dev/null
-#       echo 'See also `man` folder for more information.' | tee -a "$readme_file" >/dev/null
-#       echo "" | tee -a "$readme_file" >/dev/null
-#    fi
-
-   echo "" | tee -a "$readme_file" >/dev/null
-
-   ## Append readme_file based on generic_readme_template_file.
-   while read -r line; do
-      echo "$line" | tee -a "$readme_file" >/dev/null
-   done < "$generic_readme_template_file"
-
-   local search replace
-
-   search="%%project_clearnet%%"
-   replace="$project_clearnet"
-   str_replace "$search" "$replace" "$readme_file"
-
-   search="%%package-name%%"
-   replace="$reponame"
-   str_replace "$search" "$replace" "$readme_file"
-
-   true "Done: $readme_file"
-}
-
-recurse() {
-   local file_name
-   for file_name in "$1"/*; do
-      if [ -d "$file_name" ]; then
-         #echo "dir: $i"
-         recurse "$file_name"
-       elif [ -f "$file_name" ]; then
-         echo "$file_name"
-       fi
-   done
-}
-
-pkg_descr_creator() {
-   repo_skip "derivative-maker" || return 0
-
-   local file_name file_name_without_leading_dot
-
-   local to_skip_list="
-changelog.upstream
-CONTRIBUTING.md
-COPYING
-GPLv3
-Makefile
-README.md
-"
-
-   if [ ! "$deleted_yet" = "true" ]; then
-      rm -f "$MYDIR"/../package_documentation/*.mediawiki
-      deleted_yet=true
-   fi
-
-   for file_name in $(recurse "$repo_full_path") ; do
-      ## Skip binary files for better performance.
-      if ! isutf8 -q "$file_name" ; then
-         continue
-      fi
-
-      true "file_name: $file_name"
-      temp="$file_name"
-      file_name_without_leading_dot="$(echo "$temp" | LANG=C str_replace ~/derivative-maker/packages/ "")"
-      file_name_without_leading_dot="$(echo "$file_name_without_leading_dot" | LANG=C str_replace ~/derivative-maker/packages/ "")"
-
-      file_name_without_reponame="$(echo "$file_name_without_leading_dot" | cut -d "/" -f2-)"
-      file_name_without_reponame="/${file_name_without_reponame}"
-
-      if ! isutf8 -q "$file_name" ; then
-         continue
-      fi
-
-      file_name_to_open="~/derivative-maker/packages/$file_name_without_leading_dot"
-
-      repo_web_link="https://github.com/$project_name_short/$reponame"
-      debian_control_web_link="https://github.com/$project_name_short/$reponame/blob/master/debian/control"
-      web_link="https://github.com/$project_name_short/$reponame/blob/master${file_name_without_reponame}"
-
-      base_name="${file_name##*/}"
-
-      skip_file=false
-      for to_skip_file in $to_skip_list ; do
-         #echo "$to_skip_file $base_name"
-         if [ "$to_skip_file" = "$base_name" ]; then
-            skip_file=true
-            continue
-         fi
       done
-
-      if [ "$skip_file" = "true" ]; then
-         continue
+      if [ "${info_match_found}" = 'n' ]; then
+         info_list+=( "${file_info}" )
+         echo "${file_info}"
       fi
-
-      test -f "$file_name"
-
-      meta_start=false
-      non_qubes_whonix_only=no
-      qubes_whonix_only=no
-      projects=""
-      categories=""
-      gateway_only=no
-      workstation_only=no
-      installed_by_default=yes
-      description=no
-      file_header_done=false
-      while read -r line; do
-         true "line: $line"
-         read -r first_word second_word third_word _ <<< "$line" || true
-
-         if [ "$first_word" = "####" ]; then
-            #echo "$web_link $file_name_to_open"
-
-            #file_name_editor="$(echo "$file_name_to_open" | LANG=C str_replace "~" ~)"
-            #kate "$file_name_editor"
-            #break
-
-            true "second_word: '$second_word'"
-            if [ "$second_word" = "meta" ]; then
-               if [ "$third_word" = "start" ]; then
-                  meta_start=true
-                  echo "##################################################"
-                  echo "$file_name_to_open"
-                  continue
-               fi
-               if [ "$third_word" = "end" ]; then
-                  meta_start=false
-                  break
-               fi
-            fi
-            if [ "$second_word" = "project" ]; then
-               projects="$(echo "$line" | LANG=C str_replace "#### project " "")"
-               projects="$(echo "$projects" | LANG=C str_replace " and" "")"
-               echo "projects: $projects"
-               continue
-            fi
-            if [ "$second_word" = "non_qubes_whonix_only" ]; then
-               if [ "$third_word" = "yes" ]; then
-                  non_qubes_whonix_only=yes
-                  continue
-               fi
-            fi
-            if [ "$second_word" = "qubes_whonix_only" ]; then
-               if [ "$third_word" = "yes" ]; then
-                  qubes_whonix_only=yes
-                  continue
-               fi
-            fi
-            if [ "$second_word" = "gateway_only" ]; then
-               if [ "$third_word" = "yes" ]; then
-                  gateway_only=yes
-                  continue
-               fi
-            fi
-            if [ "$second_word" = "workstation_only" ]; then
-               if [ "$third_word" = "yes" ]; then
-                  workstation_only=yes
-                  continue
-               fi
-            fi
-            if [ "$second_word" = "installed_by_default" ]; then
-               if [ "$third_word" = "no" ]; then
-                  installed_by_default=no
-                  continue
-               fi
-            fi
-            if [ "$second_word" = "category" ]; then
-               categories="$(echo "$line" | LANG=C str_replace "#### category " "")"
-               categories="$(echo "$categories" | LANG=C str_replace " and" "")"
-               echo "categories: $categories"
-               continue
-            fi
-            if [ "$second_word" = "description" ]; then
-               description=yes
-               continue
-            fi
-         fi
-
-         if [ "$description" = "yes" ]; then
-            if [ "$line" = "" ]; then
-               internal_descr_writer ""
-               continue
-            fi
-
-            ## translate '##' to newline
-            if [ "$line" = "##" ]; then
-               line=""
-               internal_descr_writer ""
-               continue
-            fi
-
-            first_character_of_line="${line:0:1}"
-            second_character_of_line="${line:1:1}"
-            ## translate '#commented-out-command' to '* <code>#commented-out-command</code><br />'
-            if [ "$first_character_of_line" = "#" ]; then
-               if [ ! "$second_character_of_line" = "#" ]; then
-                  line="$(echo "$line" | LANG=C str_replace "#" "")"
-                  line="<code>#$line</code><br />"
-                  internal_descr_writer "$line"
-                  continue
-               fi
-            fi
-
-            if [ ! "$first_character_of_line" = "#" ]; then
-               line="* <code>$line</code>"
-               internal_descr_writer "$line"
-               continue
-            fi
-
-            line="$(echo "$line" | LANG=C str_replace "## " "")"
-            internal_descr_writer "$line"
-         fi
-      done < "$file_name"
-   done
-
-   ## TODO
-   #exit
-}
-
-declare -A -g file_header_done
-declare -A -g file_deleted_already
-
-internal_descr_writer() {
-   #for project in $projects ; do
-      for category in $categories ; do
-         description_write_to_file="$MYDIR/../package_documentation/${reponame}_${category}.mediawiki"
-
-         if [ ! -f "$description_write_to_file" ]; then
-            touch "$description_write_to_file"
-
-            echo "== $reponame ==" | tee -a "$description_write_to_file"
-            echo "" | tee -a "$description_write_to_file" >/dev/null
-
-            echo "* $repo_web_link" | tee -a "$description_write_to_file"
-            echo "* [$debian_control_web_link debian/control]" | tee -a "$description_write_to_file" >/dev/null
-
-            local control_file
-            control_file="$repo_full_path/debian/control"
-            test -f "$control_file"
-            local matched line first_word line_with_keyword
-            while read -r line; do
-               read -r first_word _ <<< "$line"
-               if [ "$matched" = "true" ]; then
-                  if [ "$line" = "." ]; then
-                     echo "" | tee -a "$description_write_to_file" >/dev/null
-                  else
-                     echo "$line" | tee -a "$description_write_to_file" >/dev/null
-                  fi
-               fi
-               if [ "$first_word" = "Description:" ]; then
-                  matched="true"
-                  line_with_keyword="$(echo "$line" | awk -F ":" '{ print $2 }')"
-                  echo "=== $line_with_keyword ===" | tee -a "$description_write_to_file" >/dev/null
-                  echo "" | tee -a "$description_write_to_file"
-               fi
-            done < "$control_file"
-         fi
-
-         if [ ! "${file_header_done["${file_name_without_leading_dot}_${project}_${category}"]}" = "true" ]; then
-            echo "=== $file_name_without_reponame ===" | tee -a "$description_write_to_file" >/dev/null
-            echo "" | tee -a "$description_write_to_file"
-            echo "* [$web_link $file_name_without_reponame]" | tee -a "$description_write_to_file" >/dev/null
-            echo "* <code>$file_name_to_open</code>" | tee -a "$description_write_to_file" >/dev/null
-            if [ "$gateway_only" = "yes" ]; then
-               echo "* gateway only<!--gateway-only-->" | tee -a "$description_write_to_file" >/dev/null
-            fi
-            if [ "$workstation_only" = "yes" ]; then
-               echo "* workstation only<!--workstation-only-->" | tee -a "$description_write_to_file" >/dev/null
-            fi
-            if [ "$non_qubes_whonix_only" = "yes" ]; then
-               echo "* Non-Qubes-Whonix only" | tee -a "$description_write_to_file" >/dev/null
-            fi
-            if [ "$qubes_whonix_only" = "yes" ]; then
-               echo "* Qubes-Whonix only" | tee -a "$description_write_to_file" >/dev/null
-            fi
-            if [ "$installed_by_default" = "no" ]; then
-               echo "* Not installed by default." | tee -a "$description_write_to_file" >/dev/null
-            fi
-
-            echo "" | tee -a "$description_write_to_file" >/dev/null
-            file_header_done["${file_name_without_leading_dot}_${project}_${category}"]=true
-         fi
-         echo "$@" | tee -a "$description_write_to_file" >/dev/null
-      done
-   #done
-}
-
-pkg_descr_merger() {
-   ## TODO
-   category=networking
-
-   package_documentation_all_merged_file="$MYDIR/../package_documentation/${category}.allmerged.mediawiki"
-   rm -f "$package_documentation_all_merged_file"
-
-   local file_name_full_path file_name_only package_name machine
-
-   for file_name_full_path in "$MYDIR/../package_documentation/"*"_${category}.mediawiki" ; do
-      file_name_only="${file_name_full_path##*/}"
-      package_name="$(echo "$file_name_only" | LANG=C str_replace "_${category}.mediawiki" "")"
-
-      if echo "$package_name" | grep "\-gw-" ; then
-         machine=gateway
-      elif echo "$package_name" | grep "\-ws-" ; then
-         machine=workstation
-      else
-         machine=shared
-      fi
-
-      ## TODO: don't hardcode here
-      if [ "$package_name" = "onion-grater" ]; then
-         machine=gateway
-      fi
-      if [ "$package_name" = "anon-apps-config" ]; then
-         machine=workstation
-      fi
-      if [ "$package_name" = "bindp" ]; then
-         machine=workstation
-      fi
-      if [ "$package_name" = "ipv4-forward-disable" ]; then
-         machine=gateway
-      fi
-      if [ "$package_name" = "ipv6-disable" ]; then
-         machine=gateway
-      fi
-
-      package_documentation_merged_file="$MYDIR/../package_documentation/${machine}_${category}.merged.mediawiki"
-
-      if [ ! "${file_deleted_already["${package_documentation_merged_file}"]}" = "true" ]; then
-         rm -f "$package_documentation_merged_file"
-         file_deleted_already["${package_documentation_merged_file}"]=true
-      fi
-
-      cat "$file_name_full_path" | tee -a "$package_documentation_merged_file" >/dev/null
    done
 }
 
-pkg_descr_merge_all() {
-   ## TODO
-   category=networking
-
-   pkg_descr_merger
-
-   local machine_list machine file_name_full_path
-   machine_list="gateway workstation shared"
-
-   for machine in $machine_list ; do
-      file_name_full_path="$MYDIR/../package_documentation/${machine}_${category}.merged.mediawiki"
-      true "file_name_full_path: $file_name_full_path"
-      true "package_documentation_all_merged_file: $package_documentation_all_merged_file"
-
-      if [ "$machine" = "gateway" ]; then
-         echo "= Whonix-Gateway =" | tee -a "$package_documentation_all_merged_file" >/dev/null
-      fi
-      if [ "$machine" = "workstation" ]; then
-         echo "= Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file" >/dev/null
-      fi
-      if [ "$machine" = "shared" ]; then
-         echo "= Shared by Whonix-Gateway and Whonix-Workstation =" | tee -a "$package_documentation_all_merged_file" >/dev/null
-      fi
-
-      cat "$file_name_full_path" | tee -a "$package_documentation_all_merged_file" >/dev/null
-   done
-
-   exit
-}
-
-pkg_links_echo() {
-   echo "https://github.com/$project_name_short/$reponame"
-   #echo "https://github.com/adrelanos/$reponame"
-}
-
-pkg_links_markdown_echo() {
-   echo "[$reponame](https://github.com/$project_name_short/$reponame)"
-   #echo "https://github.com/adrelanos/$reponame"
-}
-
-pkg_echo_commits_adrelanos() {
-   echo "https://github.com/$project_name_short/$reponame/commits?author=adrelanos"
-}
-
-pkg_names_echo() {
-   echo "$reponame"
-}
-
-pkg_names_test() {
-   echo "$reponame | $project_name_short"
-}
-
-pkg_links_open() {
-   torbrowser --new-tab "$(pkg_links_echo)"
-}
-
-pkg_twitter_to_github() {
-
-#   echo "\
-#{
-#  "name": "web",
-#  "active": true,
-#  "events": [
-#    "push",
-#    "pull_request"
-#  ],
-#  "config": {
-#    "url": "http://example.com/webhook",
-#    "content_type": "json"
-#  }
-#}" > /tmp/xxx789
-
-   echo "\
- {
-    \"name\": \"twitter\",
-    \"events\": [
-      \"push\"
-    ],
-    \"supported_events\": [
-      \"push\"
-    ],
-    \"title\": \"Twitter\",
-    \"schema\": [
-      [
-        \"string\",
-        \"1280368298-pfu7jKs5EwAq8JUlce9efKVURNIzH7BwtQkv78F\"
-      ],
-      [
-        \"string\",
-        \"NLRQlofXcg78Oo8B4ATmtQ3Njhx4rn9O4enWhSs\"
-      ],
-      [
-        \"false\",
-        \"digest\"
-      ],
-      [
-        \"boolean\",
-        \"short_format\"
-      ]
-    ]
-  }" > /tmp/xxx789
-
-
-   #POST /repos/:owner/:repo/hooks
-
-   #curl -X POST -d @/tmp/xxx789 http://example.com/path/to/resource --header "Content-Type:application/json"
-
-   #curl -v -u adrelanos:$gh_token -X POST https://api.github.com/authorizations --data @/tmp/xxx789
-
-   curl -v -H "Authorization: token $gh_token" -X POST https://api.github.com/orgs/$project_name_short/repos --data @/tmp/xxx789
-
-   true "press enter"
-   read temp
-}
-
-pkg_git_remotes_add() {
-   git remote rm origin || true
-
-   git remote add     adrelanos         git@github.com:adrelanos/$reponame.git || true
-   git remote set-url adrelanos         git@github.com:adrelanos/$reponame.git || true
-
-   if [ "$project_name_short_lowercase" = "whonix" ]; then
-      git remote add     github-whonix     git@github.com:Whonix/$reponame.git || true
-      git remote set-url github-whonix     git@github.com:Whonix/$reponame.git || true
-
-      #git remote add     gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
-      #git remote set-url gitlab-whonix     git@gitlab.com:whonix/$reponame.git || true
-   elif [ "$project_name_short_lowercase" = "kicksecure" ]; then
-      git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
-      git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
-
-      #git remote add     gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
-      #git remote set-url gitlab-kicksecure git@gitlab.com:kicksecure/$reponame.git || true
-   elif [ "$project_name_short_lowercase" = "derivative-maker" ]; then
-      git remote add     github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
-      git remote set-url github-derivative-maker git@github.com:derivative-maker/$reponame.git || true
-
-      git remote add     github-kicksecure git@github.com:Kicksecure/$reponame.git || true
-      git remote set-url github-kicksecure git@github.com:Kicksecure/$reponame.git || true
-
-      git remote add     github-whonix git@github.com:Whonix/$reponame.git || true
-      git remote set-url github-whonix git@github.com:Whonix/$reponame.git || true
-
-      #git remote add     gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
-      #git remote set-url gitlab-derivative-maker git@gitlab.com:derivative-maker/$reponame.git || true
-   else
-      echo "ERROR: project_name_short_lowercase wrong! (1)"
+## Sets the list of Github remotes for the the current package, as defined in
+## batch_current_package_reponame. See pkg_git_remotes_add for a good
+## definition of the remotes typically used Kicksecure and Whonix packages.
+## TODO: Use this function as the single source of truth for most of these
+## remote names, rather than duplicating info.
+set_batch_current_package_remote_list() {
+   batch_current_package_remote_list=( "github-${batch_current_project_name,,}" )
+   ## derivative-maker has a couple extra remotes
+   if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
+      batch_current_package_remote_list+=( 'github-kicksecure' 'github-whonix' )
    fi
-
-   true
 }
 
-pkg_git_branch_bookworm() {
-   git branch bookworm || true
-   true
-}
-
-pkg_git_branch_checkout_master() {
-   git checkout master
-   true
-}
-
-pkg_git_branch_checkout_bullseye() {
-   git checkout bullseye
-   true
-}
-
-pkg_git_branch_checkout_bookworm() {
-   git checkout bookworm
-   true
-}
-
-pkg_git_diff_branch_master() {
-   git diff master
-   true
-}
-
-pkg_git_diff_branch_development() {
-   git diff development || true
-   true
-}
-
-pkg_profile_d_zsh_creator() {
-   if ! test -d etc/profile.d ; then
-      return 0
-   fi
-   file_name_without_slash=$(ls etc/profile.d/*)
-   profile_d_symlink="/${file_name_without_slash}"
-   basename_symlink_with_file_extension=$(basename "$profile_d_symlink")
-   basename_symlink_without_file_extension="${basename_symlink_with_file_extension%.*}"
-   package_links_file="debian/${reponame}.links"
-   z_profile_d_symlink="/etc/zprofile.d/${basename_symlink_without_file_extension}.zsh"
-   symlink_config_entry="$profile_d_symlink $z_profile_d_symlink"
-   if test -f "$package_links_file" ; then
-      if grep --quiet "$symlink_config_entry" "$package_links_file" ; then
-         true "already exists."
-         return 0
-      fi
-   fi
-   echo "$symlink_config_entry" | tee --append "$package_links_file" >/dev/null
-   true
-}
-
-pkg_packaging_copy() {
-   repo_skip "derivative-maker" || return 0
-   repo_skip "genmkfile" || return 0
-
-   cp "../genmkfile/usr/share/genmkfile/Makefile" "./"
-
-   git add "./Makefile"
-   git rm "./make-helper.bsh"
-
-   git commit -m "updated makefile generic to version 1.5"
-
-   true
-}
-
-pkg_copy_contributing_file() {
-   repo_skip "derivative-maker" || return 0
-   repo_skip "kloak" || return 0
-   repo_skip "corridor" || return 0
-
-   cp "~/derivative-maker/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
-   git add "$repo_full_path/CONTRIBUTING.md"
-   git commit -m "update"
-
-   true
-}
-
-pkg_compat_delete() {
-   git rm "debian/compat"
-
-   true
-}
-
-pkg_build_depends_systemd() {
-   repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
-
-   if ! myfind . | grep --fixed-strings usr/lib/systemd/system | grep --color '.service$' ; then
-      return 0
-   fi
-
-   search="Build-Depends: debhelper (>= 13)"
-   replace="Build-Depends: debhelper (>= 13.11.6)"
-   myreplace "$search" "$replace"
-
-   true
-}
-
-pkg_debhelper_bump() {
-#    two='debhelper (>= 12)'
-#    two='debhelper (>= 13), debhelper-compat (= 13)'
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
-
-#    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
-#    two='https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
-#    LANG=C str_replace "$one" "$two" debian/copyright
-#    LANG=C str_replace "$one" "$two" COPYING
-
-#    one="Standards-Version: 3.9.8"
-#    two="Standards-Version: 4.6.2
-
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
-#
-#    one="debian-watch-may-check-gpg-signature"
-#    two="debian-watch-does-not-check-openpgp-signature"
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/source/lintian-overrides"
-#
-#    one="ruby-ronn"
-#    two="ronn"
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
-#
-#    one='Priority: extra'
-#    two='Priority: optional'
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/control"
-
-#    one='--with=config-package --with=systemd'
-#    two='--with=config-package'
-#    LANG=C str_replace "$one" "$two" "$repo_full_path/debian/rules"
-
-   git add "$repo_full_path/debian/rules"
-   git commit -m "port to debian bookworm" || true
-}
-
-pkg_packaging_files_diff() {
-   repo_skip "derivative-maker" || return 0
-
-   ## Some arbitrary package used as template for comparison.
-   if [ "$compare_with_path" = "" ]; then
-      compare_with_path="../anon-apt-sources-list"
-      compare_with_full_path="$(realpath "$compare_with_path")"
-   fi
-
-   if [ "$reponame" = "qubes-whonix" ]; then
-      test -f "$repo_full_path/CONTRIBUTING.md"
-   elif [ "$reponame" = "corridor" ]; then
-      ## Corridor has no CONTRIBUTING.md file.
-      true
-   elif [ "$reponame" = "hardened_malloc" ]; then
-      true
-   elif [ "$reponame" = "lkrg" ]; then
-      true
-   elif [ "$reponame" = "mediawiki-shell" ]; then
-      true
-   elif [ "$reponame" = "tirdad" ]; then
-      true
-   elif [ "$reponame" = "tor-ctrl" ]; then
-      true
-   elif [ "$reponame" = "kloak" ]; then
-      true
-   else
-      ## Broken due to different web links.
-      #diff "$compare_with_full_path/CONTRIBUTING.md" "$repo_full_path/CONTRIBUTING.md"
-      test -f "$repo_full_path/CONTRIBUTING.md"
-   fi
-
-#    if [ "$reponame" = "corridor" ]; then
-#       ## Corridor is not GPLv3 but public domain.
-#       true
-#    else
-#       ## Could also use
-#       ##     diff "$compare_with_full_path/GPLv3" "./"
-#       ## but the implementation below produces more comfortable output.
-#       diff "$compare_with_full_path/GPLv3" "$repo_full_path/GPLv3"
-#    fi
-
-   if [ ! -f "$compare_with_full_path/COPYING" ]; then
-      error "$compare_with_full_path/COPYING does not exist."
-   fi
-
-   if [ ! -f "$repo_full_path/README.md" ]; then
-      if [ ! -f "$repo_full_path/README.mediawiki" ]; then
-         error "Neither $repo_full_path/README.md nor $repo_full_path/README.mediawiki exist."
-      fi
-   fi
-
-   diff "$compare_with_full_path/debian/source/format" "$repo_full_path/debian/source/format"
-
-   if [ "$reponame" = "corridor" ]; then
-      ## Corridor has no COPYING but a LICENSE-ISC file.
-      test -f "$repo_full_path/LICENSE-ISC"
-   elif [ "$reponame" = "hardened_malloc" ]; then
-      ## Corridor has no COPYING but a LICENSE-ISC file.
-      test -f "$repo_full_path/LICENSE"
-   else
-      cp "$repo_full_path/debian/copyright" "$repo_full_path/COPYING"
-
-      ## COPYING should always match debian/copyright.
-      diff "$repo_full_path/debian/copyright" "$repo_full_path/COPYING"
-
-      ## Would show license files that are different.
-      ## This is useful to manually enable sometimes.
-      #diff "$compare_with_full_path/COPYING" "$repo_full_path/COPYING"
-
-#       if diff ~/old-copying "$repo_full_path/COPYING" &>/dev/null ; then
-#          cp ~/derivative-maker/COPYING "$repo_full_path/COPYING"
-#          cp ~/derivative-maker/COPYING "$repo_full_path/debian/copyright"
-#       else
-#          ## TODO: delete /tmp/list-of-packages
-#          echo "$reponame" | tee -a /tmp/list-of-packages >/dev/null
-#          kate "$repo_full_path/COPYING"
-#          kate "$repo_full_path/debian/copyright"
-#       fi
-
-   fi
-
-   if [ ! -f "$repo_full_path/debian/changelog" ]; then
-      error "$repo_full_path/debian/changelog does not exist."
-   fi
-   if [ ! -f "$repo_full_path/debian/control" ]; then
-      error "$repo_full_path/debian/control does not exist."
-   fi
-   if [ ! -f "$repo_full_path/debian/copyright" ]; then
-      error "$repo_full_path/debian/copyright does not exist."
-   fi
-   if [ ! -f "$repo_full_path/debian/rules" ]; then
-      error "$repo_full_path/debian/rules does not exist."
-   fi
-   if [ ! -f "$repo_full_path/debian/watch" ]; then
-      error "$repo_full_path/debian/watch does not exist."
-   fi
-
-   true
-}
-
+## Diffs two Git branches against each other, reporting whether they have
+## differences or not. Returns 0 when differences are found, 1 otherwise.
 internal_git_diff() {
-   git_exit_code="0"
-   git_diff_output="$(git diff --stat "$1" "$2")" || { git_exit_code="$?" ; true; };
+   local git_branch_one git_branch_two git_exit_code git_diff_output
 
-   if [ "$git_exit_code" = "128" ]; then
-      true "ERROR: Something is wrong. See above. Press enter to continue."
-      read error
+   git_branch_one="${1:-}"
+   git_branch_two="${2:-}"
+   if [ -z "${git_branch_one}" ]; then
+      echo "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
+      exit 1
+   elif [ -z "${git_branch_tw}" ]; then
+      echo "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
+      exit 1
    fi
 
-   if [ "$git_diff_output" = "" ]; then
-      if [ "$git_exit_code" = "0" ]; then
+   git_exit_code='0'
+   git_diff_output="$(git diff --stat "${git_branch_one}" "${git_branch_two}")" || { git_exit_code="$?"; true; };
+
+   if [ "${git_exit_code}" = '128' ]; then
+      true "ERROR: Something is wrong. See above. Press enter to continue."
+      read -r _
+   fi
+
+   if [ -z "${git_diff_output}" ]; then
+      if [ "${git_exit_code}" = '0' ]; then
          return 1
       fi
    fi
@@ -1100,155 +531,979 @@ internal_git_diff() {
    return 0
 }
 
-pkg_git_fetch_remotes() {
-   for repo_to_push_to_item in $repo_to_push_to_list ; do
-      git fetch $repo_to_push_to_item &
+## . END Utility functions }
+
+## BEGIN Commands {
+#
+# NOTE: Commands may assume that $PWD is the directory in which they should
+# make changes, unless they are excluded from the batch processing mechanism.
+
+## Commits changes to all project README files.
+pkg_readme_creator_commit() {
+   local readme_file git_status_last_line
+
+   repo_skip 'derivative-maker' || return 0
+
+   ## global readme file
+   if [ -f 'README_generic.md' ]; then
+      ## When there is a README_generic.md, this is a way to express
+      ## "do not create a generic README.md for that package, because it
+      ## already has a real readme."
+      readme_file='README_generic.md'
+   else
+      readme_file='README.md'
+   fi
+
+   git add "${readme_file}" || true
+
+   git_status_last_line="$(git status | tail -n1)" || true
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+      return 0
+   fi
+
+   git commit -m 'readme' || true
+}
+
+## Regenerates the README files for all projects except derivative-maker and
+## tirdad, using the description from 'debian/control' and a master README
+## template. The files are placed at `README.md` or `README_generic.md`,
+## depending on which kind of README the project uses.
+pkg_readme_creator_do() {
+   local control_file generic_readme_template_file readme_file line \
+     first_word description_found headline_written headline search_str \
+     replace_str
+
+   repo_skip 'derivative-maker' || return 0
+   
+   ##TODO: genmkfile not requires. Easy "dpkg-buildpackage -b".
+   repo_skip "tirdad" || return 0
+
+   control_file='debian/control'
+   if ! [ -f "${control_file}" ]; then
+      true "No file"
+      return
+   fi
+
+   generic_readme_template_file="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/README_generic_template_file.md"
+   if ! [ -f "${generic_readme_template_file}" ]; then
+      echo "${red}${bold}FATAL ERROR: ${generic_readme_template_file} does not exist!${reset}"
+      exit 1
+   fi
+
+   ## global readme file
+   if [ -f 'README_generic.md' ]; then
+      ## When there is a README_generic.md, this is a way to express
+      ## "do not create a generic README.md for that package, because it
+      ## already has a real readme."
+      readme_file='README_generic.md'
+   else
+      readme_file='README.md'
+   fi
+
+   description_found='n'
+   headline_written='n'
+
+   rm --force "${readme_file}"
+
+   extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
+
+   echo "" | tee -a -- "${readme_file}" >/dev/null
+
+   cat "${generic_readme_template_file}" | tee -a -- "${readme_file}" >/dev/null
+
+   search_str='%%project_clearnet%%'
+   replace_str="${batch_current_project_website}"
+   str_replace "${search_str}" "${replace_str}" "${readme_file}"
+
+   search_str='%%package-name%%'
+   replace_str="${batch_current_package_reponame}"
+   str_replace "${search_str}" "${replace_str}" "${readme_file}"
+
+   true "Done: ${readme_file}"
+}
+
+## Harvests metadata from individual files under all projects except
+## derivative-maker, and converts it to package documentation in the form of
+## MediaWiki files. Places documentation under package_documentation_dir.
+## TODO: Only handles the first metadata section of each file. Some files have
+## multiple metadata sections.
+pkg_descr_creator() {
+   local file_name file_list skip_file_list base_name do_skip_file \
+     skip_file_name in_meta_section description_found line first_word \
+     second_word third_word temp
+
+   repo_skip 'derivative-maker' || return 0
+
+   skip_file_list=(
+      'changelog.upstream'
+      'CONTRIBUTING.md'
+      'COPYING'
+      'GPLv3'
+      'Makefile'
+      'README.md'
+   )
+
+   if [ "${batch_func_init_done}" = 'n' ]; then
+      rm -f "${package_documentation_dir}"/*.mediawiki
+      batch_func_init_done='y'
+   fi
+
+   readarray -t file_list < <(find "${batch_current_package_path}" -type f)
+   for file_name in "${file_list[@]}"; do
+      ## Skip binary files for better performance.
+      if ! isutf8 -q "${file_name}" ; then
+         continue
+      fi
+
+      true "file_name: ${file_name}"
+
+      base_name="${file_name##*/}"
+      do_skip_file='n'
+      for skip_file_name in "${skip_file_list[@]}"; do
+         if [ "${skip_file_name}" = "${base_name}" ]; then
+            do_skip_file='y'
+            break
+         fi
+      done
+      if [ "${do_skip_file}" = 'y' ]; then
+         continue
+      fi
+
+      if ! [ -f "${file_name}" ]; then
+         echo "${red}${bold}FATAL ERROR: ${file_name} does not exist!${reset}"
+         exit 1
+      fi
+
+      reset_batch_meta_globals
+
+      batch_meta_relative_file_name="$(LANG=C str_replace "${derivative_maker_source_code_dir}/packages/${batch_current_project_name,,}/" '' <<< "${file_name}")"
+      batch_meta_file_name_without_reponame="/$(cut -d'/' -f2- <<< "${batch_meta_relative_file_name}")"
+      batch_meta_repo_web_link="https://github.com/${batch_current_project_name}/${batch_current_package_reponame}"
+      batch_meta_debian_control_web_link="https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/blob/master/debian/control"
+      batch_meta_file_web_link="https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/blob/master${batch_meta_file_name_without_reponame}"
+
+      in_meta_section='n'
+      description_found='n'
+      while read -r line; do
+         true "line: ${line}"
+         read -r first_word second_word third_word _ <<< "${line}" || true
+
+         if [ "${first_word}" = '####' ]; then
+            true "second_word: '${second_word}'"
+            if [ "${second_word}" = 'meta' ]; then
+               if [ "${third_word}" = 'start' ]; then
+                  in_meta_section='y'
+                  echo '##################################################'
+                  echo "${file_name}"
+                  continue
+               elif [ "${third_word}" = 'end' ]; then
+                  in_meta_section='n'
+                  break
+               else
+                  echo "${red}${bold}FATAL ERROR: Unexpected meta subcommand '${third_word}'!${reset}"
+                  exit 1
+               fi
+            fi
+
+            if [ "${in_meta_section}" = 'y' ]; then
+               if [ "${second_word}" = 'project' ]; then
+                  ## TODO: Consider rewriting this to handle a comma-separated
+                  ## list of projects
+                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
+                  readarray -d' ' -t batch_meta_project_list <<< "${temp}"
+                  # Remove a mangled entry at the end.
+                  batch_meta_project_list=( "${batch_meta_project_list[@]:0:((${#batch_meta_project_list[@]} - 1))}" )
+                  echo "batch_meta_project_list: ${batch_meta_project_list[*]}"
+                  continue
+               elif [ "${second_word}" = 'non_qubes_whonix_only' ]; then
+                  if [ "${third_word}" = 'yes' ]; then
+                     batch_meta_non_qubes_whonix_only='y'
+                     continue
+                  fi
+               elif [ "${second_word}" = 'qubes_whonix_only' ]; then
+                  if [ "${third_word}" = 'yes' ]; then
+                     batch_meta_qubes_whonix_only='y'
+                     continue
+                  fi
+               elif [ "${second_word}" = 'gateway_only' ]; then
+                  if [ "${third_word}" = 'yes' ]; then
+                     batch_meta_gateway_only='y'
+                     continue
+                  fi
+               elif [ "${second_word}" = 'workstation_only' ]; then
+                  if [ "${third_word}" = 'yes' ]; then
+                     batch_meta_workstation_only='y'
+                     continue
+                  fi
+               elif [ "${second_word}" = 'installed_by_default' ]; then
+                  if [ "${third_word}" = 'no' ]; then
+                     batch_meta_installed_by_default='n'
+                     continue
+                  fi
+               elif [ "${second_word}" = 'category' ]; then
+                  ## TODO: Consider rewriting this to handle a comma-separated
+                  ## list of categories
+                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
+                  readarray -d' ' -t batch_meta_category_list <<< "${temp}"
+                  # Remove a mangled entry at the end.
+                  batch_meta_category_list=( "${batch_meta_category_list[@]:0:((${#batch_meta_category_list[@]} - 1))}" )
+                  echo "batch_meta_category_list: ${batch_meta_category_list[*]}"
+                  continue
+               elif [ "${second_word}" = 'description' ]; then
+                  description_found='y'
+                  continue
+               else
+                  ## this looks like a metadata field line and we're in the
+                  ## meta section, but the field keyword was not recognized.
+                  continue
+               fi
+            else
+               ## this looks like a metadata field line, but we're not in the
+               ## meta section and a 'meta' keyword was not encountered
+               continue
+            fi
+         fi
+         
+         if [ "${in_meta_section}" = 'y' ]; then
+            ## At this point, we're in the meta section, but the current line
+            ## doesn't look like a metadata field line. Usually this means
+            ## that we're in a description zone.
+            if [ "${description_found}" = 'y' ]; then
+               if [ "${line}" = '' ]; then
+                  internal_descr_writer ''
+                  continue
+               fi
+
+               ## translate a line consisting entirely of '##' to a newline
+               if [ "${line}" = '##' ]; then
+                  internal_descr_writer ''
+                  continue
+               fi
+
+               ## Lines prefixed by a single '#' and lines with no '#'s
+               ## prefixing them at all are code, anything else should be
+               ## treated as normal text.
+               if [ "${line:0:1}" = '#' ] && [ "${line:1:1}" != '#' ]; then
+                  line="* <code>${line}</code>"
+                  internal_descr_writer "${line}"
+                  continue
+               elif [ "${line:0:1}" != '#' ]; then
+                  line="* <code>${line}</code>"
+                  internal_descr_writer "${line}"
+                  continue
+               else
+                  line="$(LANG=C str_replace '## ' '' <<< "${line}")"
+                  internal_descr_writer "${line}"
+               fi
+            fi
+         fi
+      done < "${file_name}"
+   done
+}
+
+## Merges together package documentation files for all packages sharing a
+## project, category, and target machine type in common. pkg_descr_creator
+## must be run first. Note that this function does NOT go through the batch
+## processing mechnism.
+pkg_descr_merger() {
+   local project_list category_list project category file_name_full_path \
+      file_name_only package_name machine merged_file
+
+   readarray -t project_list < <(get_package_documentation_info_list 'project')
+   readarray -t category_list < <(get_package_documentation_info_list 'category')
+
+   for project in "${project_list[@]}"; do
+      for category in "${category_list[@]}"; do
+         for file_name_full_path in "${package_documentation_dir}/"*"_${category}_${project}.mediawiki" ; do
+            ## If we hit on a combination of category and project that never
+            ## occurs, file_name_full_path will contain a bogus filename that
+            ## needs to be skipped.
+            if [ ! -f "${file_name_full_path}" ]; then
+               continue
+            fi
+
+            file_name_only="${file_name_full_path##*/}"
+            package_name="$(LANG=C str_replace "_${category}_${project}.mediawiki" '' <<< "${file_name_only}")"
+
+            if [ "${project}" = 'Kicksecure' ]; then
+               machine='all'
+            elif [ "${project}" = 'Whonix' ]; then
+               if grep -q '\-gw-' <<< "${package_name}" ; then
+                  machine='gateway'
+               elif grep '\-ws-' <<< "${package_name}" ; then
+                  machine='workstation'
+               else
+                  machine='shared'
+               fi
+
+               ## TODO: don't hardcode here
+               [ "${package_name}" = 'onion-grater' ] && machine='gateway'
+               [ "${package_name}" = 'anon-apps-config' ] && machine='workstation'
+               [ "${package_name}" = 'bindp' ] && machine='workstation'
+               [ "${package_name}" = 'ipv4-forward-disable' ] && machine='gateway'
+               [ "${package_name}" = 'ipv6-disable' ] && machine='gateway'
+            else
+               echo "${red}${bold}FATAL ERROR: Unrecognized project '${project}'!${reset}"
+               exit 1
+            fi
+
+            merged_file="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
+
+            if ! [ "${merge_file_reset_list["${merged_file}"]}" = 'y' ] ; then
+               rm -f "${merged_file}"
+               merge_file_reset_list["${merged_file}"]='y'
+            fi
+
+            cat "${file_name_full_path}" | tee -a -- "${merged_file}" >/dev/null
+         done
+      done
+   done
+}
+
+## Merges together the merged files output by pkg_descr_merger, so that the
+## final resulting files contain documentation for all packages sharing a
+## project and category in common. Runs pkg_descr_merger, so you can run this
+## without running pkg_descr_merger first. Note that this function does NOT go
+## through the batch processing mechanism.
+pkg_descr_merge_all() {
+   local project_list category_list machine_list project category machine \
+      all_merged_file file_name_full_path
+
+   readarray -t project_list < <(get_package_documentation_info_list 'project')
+   readarray -t category_list < <(get_package_documentation_info_list 'category')
+
+   pkg_descr_merger
+
+   machine_list=( 'all' 'gateway' 'workstation' 'shared' )
+
+   for project in "${project_list[@]}"; do
+      for category in "${category_list[@]}"; do
+         all_merged_file="${package_documentation_dir}/${category}_${project}.allmerged.mediawiki"
+         rm -f "${all_merged_file}"
+
+         for machine in "${machine_list[@]}"; do
+            file_name_full_path="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
+            if ! [ -f "${file_name_full_path}" ]; then
+               continue
+            fi
+
+            true "file_name_full_path: ${file_name_full_path}"
+            true "all_merged_file: ${all_merged_file}"
+
+            if [ "${machine}" = 'all' ]; then
+               echo '= Kicksecure =' | tee -a -- "${all_merged_file}" >/dev/null
+            elif [ "${machine}" = 'gateway' ]; then
+               echo '= Whonix-Gateway =' | tee -a -- "${all_merged_file}" >/dev/null
+            elif [ "${machine}" = 'workstation' ]; then
+               echo '= Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+            elif [ "${machine}" = 'shared' ]; then
+               echo '= Shared by Whonix-Gateway and Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+            fi
+
+            cat "${file_name_full_path}" | tee -a -- "${all_merged_file}" >/dev/null
+         done
+      done
+   done
+}
+
+## Echos repository links for all repositories.
+pkg_links_echo() {
+   echo "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}"
+   #echo "https://github.com/adrelanos/${batch_current_package_reponame}"
+}
+
+## Echos Markdown-formatted links for all repositories.
+pkg_links_markdown_echo() {
+   echo "[${batch_current_package_reponame}](https://github.com/${batch_current_project_name}/${batch_current_package_reponame})"
+}
+
+## Echos links to all commits made by adrelanos for all repositories.
+pkg_echo_commits_adrelanos() {
+   echo "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/commits?author=adrelanos"
+}
+
+## Echos the names of all packages.
+pkg_names_echo() {
+   echo "${batch_current_package_reponame}"
+}
+
+## Echos the names of all packages, along with the project each package is
+## under.
+pkg_names_test() {
+   echo "${batch_current_package_reponame} | ${batch_current_project_name}"
+}
+
+## Opens all package links in Tor Browser.
+pkg_links_open() {
+   torbrowser --new-tab "$(pkg_links_echo)"
+}
+
+## TODO document this, seems to do something Twitter-related by hitting a
+## GitHub API endpoint? Also, this looks dangerous, it will call the API it's
+## targetting once per project, per package in the project, meaning that the
+## Kicksecure project will get "hit" 55 times, while the Whonix project will
+## get "hit" 16 times. That does not seem correct. Lastly, there's probably a
+## more efficient way to do this, this will constantly create and then delete
+## a tempfile that has the exact same contents.
+##
+## Note from Patrick: not sure anymore. broken long time ago. skip for now.
+#pkg_twitter_to_github() {
+#   local tempfile_path
+
+#   if [ -z "${gh_token}" ]; then
+#      echo "${red}${bold}FATAL ERROR: Cannot call APIs, please set the 'gh_token' environment variable first!${reset}"
+#      exit 1
+#   fi
+
+#   tempfile_path="$(mktemp)"
+
+#   echo "\
+# {
+#    \"name\": \"twitter\",
+#    \"events\": [
+#      \"push\"
+#    ],
+#    \"supported_events\": [
+#      \"push\"
+#    ],
+#    \"title\": \"Twitter\",
+#    \"schema\": [
+#      [
+#        \"string\",
+#        \"1280368298-pfu7jKs5EwAq8JUlce9efKVURNIzH7BwtQkv78F\"
+#      ],
+#      [
+#        \"string\",
+#        \"NLRQlofXcg78Oo8B4ATmtQ3Njhx4rn9O4enWhSs\"
+#      ],
+#      [
+#        \"false\",
+#        \"digest\"
+#      ],
+#      [
+#        \"boolean\",
+#        \"short_format\"
+#      ]
+#    ]
+#  }" > "${tempfile_path}"
+
+#   curl -v -H "Authorization: token $gh_token" -X POST "https://api.github.com/orgs/${batch_current_project_name}/repos" --data @"${tempfile_path}"
+#   rm "${tempfile_path}"
+#}
+
+## Sets up standard Git remotes for all repos.
+pkg_git_remotes_add() {
+   git remote rm origin || true
+
+   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true 
+   git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+
+   if [ "${batch_current_project_name,,}" = "whonix" ]; then
+      git remote add     github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      git remote set-url github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+
+      #git remote add     gitlab-whonix     "git@gitlab.com:whonix/${batch_current_package_reponame}.git" || true
+      #git remote set-url gitlab-whonix     "git@gitlab.com:whonix/${batch_current_package_reponame}.git" || true
+   elif [ "${batch_current_project_name,,}" = "kicksecure" ]; then
+      git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+
+      #git remote add     gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
+      #git remote set-url gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
+   elif [ "${batch_current_project_name,,}" = "derivative-maker" ]; then
+      git remote add     github-derivative-maker "git@github.com:derivative-maker/${batch_current_package_reponame}.git" || true
+      git remote set-url github-derivative-maker "git@github.com:derivative-maker/${batch_current_package_reponame}.git" || true
+
+      git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+
+      git remote add     github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      git remote set-url github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+
+      #git remote add     gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
+      #git remote set-url gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
+   else
+      echo "ERROR: batch_current_project_name wrong! (1)"
+   fi
+
+   true
+}
+
+## TODO: Condense the next several functions into a single function for
+## arbitrary batch Git operations?
+#
+## Creates a 'bookworm' branch for all repos.
+pkg_git_branch_bookworm() {
+   git branch bookworm || true
+   true
+}
+
+## Checks out the 'master' branch of all repos.
+pkg_git_branch_checkout_master() {
+   git checkout master
+   true
+}
+
+## Checks out the 'bullseye' branch of all repos.
+pkg_git_branch_checkout_bullseye() {
+   git checkout bullseye
+   true
+}
+
+## Checks out the 'bookworm' branch of all repos.
+pkg_git_branch_checkout_bookworm() {
+   git checkout bookworm
+   true
+}
+
+## Runs `git diff master` on all repos.
+pkg_git_diff_branch_master() {
+   git diff master
+   true
+}
+
+## Runs `git diff development` on all repos.
+pkg_git_diff_branch_development() {
+   git diff development || true
+   true
+}
+
+## Detects packages with Bash profile.d files, and adds symlink lines to zsh's
+## zprofile.d directory to the Debian packaging if needed.
+pkg_profile_d_zsh_creator() {
+   local file_name_list file_name_without_slash profile_d_symlink \
+      basename_symlink_with_file_extension \
+      basename_symlink_without_file_extension
+
+   if ! test -d 'etc/profile.d' ; then
+      return 0
+   fi
+
+   readarray -t file_name_list < <(find etc/profile.d/*)
+
+   for file_name_without_slash in "${file_name_list[@]}"; do
+      profile_d_symlink="/${file_name_without_slash}"
+      basename_symlink_with_file_extension="${profile_d_symlink##*/}"
+      basename_symlink_without_file_extension="${basename_symlink_with_file_extension%.*}"
+      package_links_file="debian/${batch_current_package_reponame}.links"
+      z_profile_d_symlink="/etc/zprofile.d/${basename_symlink_without_file_extension}.zsh"
+      symlink_config_entry="$profile_d_symlink $z_profile_d_symlink"
+      if [ -f "${package_links_file}" ]; then
+         if grep --quiet "${symlink_config_entry}" "${package_links_file}" ; then
+            true 'already exists.'
+            continue
+         fi
+      fi
+      echo "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
    done
    true
 }
 
-pkg_git_push_remotes() {
-   for repo_to_push_to_item in $repo_to_push_to_list ; do
-      if internal_git_diff master $repo_to_push_to_item/master ; then
-         git push $repo_to_push_to_item master &
-         git_pid="$!"
-         #wait "$git_pid"
-         git_pid_list="$git_pid_list $git_pid"
+## Updates genmkfile Makefiles in all repositories except derivative-maker and
+## genmkfile itself.
+## TODO: No Kicksecure or Whonix packages appear to use "real" genmkfile
+## Makefiles anymore, and some packages such as kloak do use real Makefiles.
+## Therefore this is outdated and dangerous.
+# pkg_packaging_copy() {
+#    repo_skip 'derivative-maker' || return 0
+#    repo_skip 'genmkfile' || return 0
+#
+#    cp '../genmkfile/usr/share/genmkfile/Makefile' './'
+#
+#    git add './Makefile'
+#    git rm './make-helper.bsh'
+#
+#    git commit -m "updated makefile generic to version ${makefile_generic_version}"
+#
+#    true
+# }
+
+## Updated CONTRIBUTING.md in all repos except derivative-maker, kloak, and
+## corridor.
+pkg_copy_contributing_file() {
+   repo_skip 'derivative-maker' || return 0
+   repo_skip 'kloak' || return 0
+   # repo_skip 'corridor' || return 0
+
+   cp "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
+   git add "${batch_current_package_path}/CONTRIBUTING.md"
+   git commit -m "update"
+
+   true
+}
+
+## Gets rid of all 'debian/compat' files in all repos.
+pkg_compat_delete() {
+   git rm "debian/compat"
+
+   true
+}
+
+## Updates all packages that ship systemd services and Build-Depend on
+## debhelper 13 or later to depend on debhelper 13.11.6 or later. TODO:
+## Potentially consider not hardcoding debhelper versions here?
+pkg_build_depends_systemd() {
+   local search replace
+
+   repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
+
+   if ! find . | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
+      return 0
+   fi   
+
+   search='Build-Depends: debhelper (>= 13)'
+   replace='Build-Depends: debhelper (>= 13.11.6)'
+   str_replace "${search}" "${replace}" "${batch_current_package_path}/debian/control"
+
+   true 
+}
+
+## Previously was used to do mass package changes for porting packages from
+## Bullseye to Bookworm. Retained for future reference.
+# pkg_debhelper_bump() {
+#    local one two  
+#    one='debhelper (>= 12)'
+#    two='debhelper (>= 13), debhelper-compat (= 13)'
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#
+#    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
+#    two='https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
+#    LANG=C str_replace "$one" "$two" debian/copyright
+#    LANG=C str_replace "$one" "$two" COPYING
+#
+#    one="Standards-Version: 3.9.8"
+#    two="Standards-Version: 4.6.2
+#
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#
+#    one="debian-watch-may-check-gpg-signature"
+#    two="debian-watch-does-not-check-openpgp-signature"
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/source/lintian-overrides"
+#
+#    one="ruby-ronn"
+#    two="ronn"
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#
+#    one='Priority: extra'
+#    two='Priority: optional'
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#
+#    one='--with=config-package --with=systemd'
+#    two='--with=config-package'
+#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/rules"
+#
+#    git add "${batch_current_package_path}/debian/rules"
+#    git commit -m "port to debian bookworm" || true
+# }
+
+## Generates diffs for specific files between each package and an arbitrary
+## template package. Also checks for the existence of several files, and
+## synchronizes files that should be identical. TODO: This function does an
+## awful lot. Should its functionality be broken up into multiple smaller
+## functions?
+pkg_packaging_files_diff() {
+   local compare_with_full_path contributing_md_absent_package_list \
+      package_lacks_contributing_md contributing_md_absent_package \
+      check_file_list check_file
+
+   repo_skip 'derivative-maker' || return 0
+
+   compare_with_full_path="$(realpath "../../${packaging_files_diff_template_package_relative_path}")"
+
+   if [ "${batch_func_init_done}" = 'n' ]; then
+      if ! [ -f "${compare_with_full_path}/COPYING" ]; then
+         echo "${red}${bold}FATAL ERROR: ${compare_with_full_path}/COPYING does not exist!"
+         exit 1
+      fi
+      batch_func_init_done='y'
+   fi
+
+   ## Don't bother looking for CONTRIBUTING.md for the following list of
+   ## packages. For all others, make sure that CONTRIBUTING.md exists.
+   contributing_md_absent_package_list=(
+      'mediawiki-shell'
+      'tirdad'
+      'tor-ctrl'
+      'kloak'
+   )
+
+   package_lacks_contributing_md='n'
+   for contributing_md_absent_package in "${contributing_md_absent_package_list[@]}"; do
+      if [ "${batch_current_package_reponame}" = "${contributing_md_absent_package}" ]; then
+         package_lacks_contributing_md='y'
+         break
+      fi
+   done
+   if ! [ "${package_lacks_contributing_md}" = 'y' ]; then
+      if ! [ -f "${batch_current_package_path}/CONTRIBUTING.md" ]; then
+         echo "${red}${bold}FATAL ERROR: Package ${batch_current_package_reponame} is missing a CONTRIBUTING.md file!${reset}"
+         exit 1
+      fi
+   fi
+
+   if ! [ -f "${batch_current_package_path}/README.md" ]; then
+      if ! [ -f "${batch_current_package_path}/README.mediawiki" ]; then
+         ## TODO: Should README_generic.d be taken into account here?
+         echo "${red}${bold}FATAL ERROR: Neither ${batch_current_package_path}/README.md nor ${batch_current_package_path}/README.mediawiki exist!${reset}"
+         exit 1
+      fi
+   fi
+
+   diff "${compare_with_full_path}/debian/source/format" "${batch_current_package_path}/debian/source/format"
+
+   if [ "${batch_current_package_reponame}" = 'corridor' ]; then
+      ## Corridor has no COPYING but a LICENSE-ISC file.
+      if ! [ -f "${batch_current_package_path}/LICENSE-ISC" ]; then
+         echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE-ISC does not exist!${reset}"
+         return 1
+      fi
+#  elif [ "${batch_current_package_reponame}" = 'hardened_malloc' ]; then
+#     ## hardened_malloc has no COPYING but a LICENSE file.
+#     if ! [ -f "${batch_current_package_path}/LICENSE" ]; then
+#        echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE does not exist!${reset}"
+#        return 1
+#     fi
+   else
+      cp "${batch_current_package_path}/debian/copyright" "${batch_current_package_path}/COPYING"
+
+      ## COPYING should always match debian/copyright.
+      diff "${batch_current_package_path}/debian/copyright" "${batch_current_package_path}/COPYING"
+
+      ## Would show license files that are different.
+      ## This is useful to manually enable sometimes.
+      ## TODO: Make toggleable without requiring manual enablement?
+      #diff "${compare_with_full_path}/COPYING" "${batch_current_package_path}/COPYING"
+
+#       if diff ~/old-copying "${batch_current_package_path}/COPYING" &>/dev/null ; then
+#          cp ~/derivative-maker/COPYING "${batch_current_package_path}/COPYING"
+#          cp ~/derivative-maker/COPYING "${batch_current_package_path}/debian/copyright"
+#       else
+#          ## TODO: delete /tmp/list-of-packages
+#          echo "${batch_current_package_reponame}" | tee -a -- /tmp/list-of-packages >/dev/null
+#          mousepad "${batch_current_package_path}/COPYING"
+#          mousepad "${batch_current_package_path}/debian/copyright"
+#       fi
+
+   fi
+
+   check_file_list=(
+      "debian/changelog"
+      "debian/control"
+      "debian/copyright"
+      "debian/rules"
+      "debian/watch"
+   )
+   for check_file in "${check_file_list[@]}"; do
+      if ! [ -f "${batch_current_package_path}/${check_file}" ]; then
+         echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/${check_file} does not exist!"
+         exit 1
       fi
    done
 
    true
 }
 
-pkg_git_push_tags() {
-   make_git_tag_latest="$(git describe --tags $(git rev-list --tags --max-count=1))"
+## Fetches remote changes from all Git remotes for all repos.
+pkg_git_fetch_remotes() {
+   local package_remote git_pid
 
-   ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-
-   for repo_to_push_to_item in $repo_to_push_to_list ; do
-      git push $repo_to_push_to_item $make_git_tag_latest &
+   for package_remote in "${batch_current_package_remote_list[@]}"; do
+      git fetch "${package_remote}" &
       git_pid="$!"
-      #wait "$git_pid"
-      git_pid_list="$git_pid_list $git_pid"
+      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+   done
+   true
+}
+
+## Pushes local changes to all Git remotes for all repos.
+pkg_git_push_remotes() {
+   local package_remote git_pid
+
+   for package_remote in "${batch_current_package_remote_list[@]}"; do
+      if internal_git_diff 'master' "${package_remote}/master"; then
+         git push "${package_remote}" 'master' &
+         git_pid="$!"
+         git_pid_list_str="${git_pid_list_str} ${git_pid}"
+      fi
    done
 
    true
 }
 
+## Pushes the most recent tag for all Git repos to all Git remotes of each
+## repo.
+pkg_git_push_tags() {
+   local git_tag_latest package_remote git_pid
+
+   git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+
+   ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
+   
+   for package_remote in "${batch_current_package_remote_list[@]}"; do
+      git push "${package_remote}" "${git_tag_latest}" &
+      git_pid="$!"
+      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+   done
+
+   true
+}
+
+## Checks out the changelog.upstream file of all repos.
 git_reset_changelog_upstream() {
    git checkout changelog.upstream
 }
 
+## Commits changes to the readme files of all repos.
 pkg_git_commmit_readme() {
-   if test -f README_generic.md ; then
-      git add README_generic.md
-   elif test -f README.md ; then
-      git add README.md
-   elif test -f README.mediawiki ; then
-      git add README.mediawiki
+   local msg
+
+   if [ -f 'README_generic.md' ]; then
+      git add 'README_generic.md'
+   elif [ -f 'README.md' ]; then
+      git add 'README.md'
+   elif [ -f 'README.mediawiki' ]; then
+      git add 'README.mediawiki'
    fi
+
    #git diff --cached
-   msg="readme"
-   git commit -m "$msg" || true
+   msg='readme'
+   git commit -m "${msg}" || true
    git status
 }
 
+## Commits changes to the changelog files of all repos.
 pkg_git_commit_changelog() {
-   git add debian/changelog
-   if test -f changelog.upstream ; then
-      git add changelog.upstream
+   local msg
+
+   git add 'debian/changelog'
+   if [ -f 'changelog.upstream' ]; then
+      git add 'changelog.upstream'
    fi
-   msg="bumped changelog version"
-   git commit -m "$msg"
+   msg='bumped changelog version'
+   git commit -m "${msg}"
    git status
    true
 }
 
+## Creates a new commit called 'copyright' for all repos. TODO: This should
+## probably only commit the copyright files, rather than everything!
 pkg_git_commit_copyright() {
+   local msg
+
    msg='copyright'
    git add -A
-   git commit -m "$msg" || true
+   git commit -m "${msg}" || true
    git status
    true
 }
 
+## Commits all changes to all repos with a tunable-set message. TODO: Maybe
+## use a command-line argument rather than a tunable?
 pkg_git_commit_all() {
-   msg='refactoring environment variables loading mechanism'
    git add -A
-   git commit -m "$msg" || true
+   git commit -m "${git_commit_all_msg}" || true
    git status
    true
 }
 
+## Regenerate and commit manpages for all repos.
 pkg_git_manpages() {
-   if ! test -d "man" ; then
+   local msg
+
+   if ! [ -d 'man' ]; then
       return 0
    fi
+
    genmkfile manpages
+
    msg='re-generate man pages (generated using "genmkfile manpages")'
-   git add auto-generated-man-pages/* || true
-   git commit -m "$msg" || true
+   git add 'auto-generated-man-pages'/* || true
+   git commit -m "${msg}" || true
    git status
    true
 }
 
+## Generate and commit debian install files for all repos.
 pkg_git_debinstfile() {
+   local msg
+
    genmkfile debinstfile
+
    msg='add debian install file (generated using "genmkfile debinstfile")'
    echo "PWD: '$PWD'"
-   git add "debian/${reponame}.install" || true
-   git commit -m "$msg" || true
+   git add "debian/${batch_current_package_reponame}.install" || true
+   git commit -m "${msg}" || true
    git status
    true
 }
 
+## Commits packaging-related files for all repos. TODO: Perhaps don't hardcode
+## the word 'bookworm' here? Could be broken out into a tunable
 pkg_git_commit_packaging() {
-   repo_skip "derivative-maker" || return 0
+   declare git_status_last_line msg
 
-   returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+   repo_skip 'derivative-maker' || return 0
+
+   git_status_last_line="$(git status | tail -n1)"
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+      ## TODO: should we just get rid of this `true` call?
       true "press enter to continue_not"
       #read temp
       return
    fi
 
-   #git add Makefile
-   #git add make-helper.bsh
-   #git add debian/changelog
-   #git add changelog.upstream
-   #git add debian/*.install
-   git add debian/control
+   #git add 'Makefile'
+   #git add 'make-helper.bsh'
+   #git add 'debian/changelog'
+   #git add 'changelog.upstream'
+   #git add 'debian'/*'.install'
+   git add 'debian/control'
    #git add -A
-   msg="bookworm"
-   git commit -m "$msg"
+   msg='bookworm'
+   git commit -m "${msg}"
    git status
    true
 }
 
+## Add a dh_installchangelogs entry to all packages that don't already have
+## one. Note that this was modified from the original to avoid writing
+## duplicates.
 pkg_add_dh_changelogs_override_to_debian_rules() {
+   if grep -q 'override_dh_installchangelogs' 'debian/rules'; then
+      return 0
+    fi
+
    echo "
 override_dh_installchangelogs:
-	dh_installchangelogs changelog.upstream upstream" | tee -a "debian/rules" >/dev/null
+  dh_installchangelogs changelog.upstream upstream" | tee -a -- "debian/rules" >/dev/null
    true
 }
 
+## Hard-reset all repos except for derivative-maker and developer-meta-files.
 pkg_git_reset() {
-   repo_skip "derivative-maker" || return 0
-   repo_skip "developer-meta-files" || return 0
+   repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
    git reset --hard
    git clean -dff
 }
 
+## Does a git diff follwed by a git commit on all repos with changes, except
+## for derivative-maker.
 pkg_git_diff_and_commit() {
-   repo_skip "derivative-maker" || return 0
+   local git_status_last_line
+
+   repo_skip 'derivative-maker' || return 0
 
    ## Remove extra new lines.
    ## Thanks to llua http://unix.stackexchange.com/a/81689
    #a=$(<debian/rules); printf '%s\n' "$a" > debian/rules
    #continue
 
-   returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+   git_status_last_line="$(git status | tail -n1)"
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       true "press enter to continue_not"
       #read temp
       return
@@ -1257,16 +1512,14 @@ pkg_git_diff_and_commit() {
    git add -A
    git diff --cached
 
-   commit_message="move bind-dirs configuration from qubes-whonix package to individual packages"
-
    #true "press enter to continue"
    #read temp
 
    git add -A
-   git commit -m "$commit_message"
+   git commit -m "${git_commit_all_msg}"
 
-   returned="$(git status)"
-   if [ "$returned" = "$nothing_to_commit_msg" ]; then
+   git_status_last_line="$(git status | tail -n1)"
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       true "press enter to continue_not"
       #read temp
       return
@@ -1275,14 +1528,17 @@ pkg_git_diff_and_commit() {
    true
 }
 
+## Opens the debian/control file of all repos in Mousepad.
 pkg_debian_control_open() {
-   kate "$item/debian/control"
+   mousepad "${batch_current_package_path}/debian/control"
 
    true
 }
 
+## Finds all Bash scripts in all repos and syntax-checks them.
 pkg_bash_sanity_test() {
    local grep_opts
+
    grep_opts="\
       --exclude-dir=.git \
       --exclude-dir=auto-generated-man-pages \
@@ -1290,202 +1546,187 @@ pkg_bash_sanity_test() {
       -l \
       "
 
-   if ! grep $grep_opts --quiet '#!/bin/bash$' ; then
+   if ! grep "${grep_opts}" --quiet '#!/bin/bash$' ; then
       return 0
    fi
 
-   grep $grep_opts '#!/bin/bash$' | xargs bash -n
+   grep "${grep_opts}" '#!/bin/bash$' | xargs bash -n
 
    true
 }
 
+## Rewrites the Git submodules file for the derivative-maker repo.
 pkg_git_submodule_file_writer() {
-   repo_skip "derivative-maker" || return 0
+   local url
 
-   if [ ! "$git_submodule_file_deleted" = "true" ]; then
-      rm "$derivative_maker_source_code_folder/.gitmodules"
-      git_submodule_file_deleted=true
+   repo_skip 'derivative-maker' || return 0
+
+   if [ "${batch_func_init_done}" = 'n' ]; then
+      rm "${derivative_maker_source_code_dir}/.gitmodules" 
+      batch_func_init_done='y'
       echo '## This file is autogenerated by:
 ## autogenerated by dm-packaging-helper-script function pkg_git_submodule_file_writer
 
 ## BEGIN hardcoded part BEGIN ##
 
-[submodule "live-build"]
-        path = live-build
-        url  = https://github.com/Kicksecure/live-build.git
-        #url = https://gitlab.com/Kicksecure/live-build.git
-
 [submodule "grml-debootstrap"]
         path = grml-debootstrap
-        url  = https://github.com/Kicksecure/grml-debootstrap.git
-        #url = https://gitlab.com/Kicksecure/grml-debootstrap.git
+        url = https://github.com/Kicksecure/grml-debootstrap.git
+        #url =https://gitlab.com/Kicksecure/grml-debootstrap.git
 
 [submodule "grml-debootstraptest"]
         path = grml-debootstraptest
-        url  = https://github.com/Kicksecure/grml-debootstraptest.git
-        #url = https://gitlab.com/Kicksecure/grml-debootstraptest.git
+        url = https://github.com/Kicksecure/grml-debootstraptest.git
+        #url =https://gitlab.com/Kicksecure/grml-debootstraptest.git
 
 [submodule "whonix-installer"]
         path = windows/Whonix-Installer
-        url  = https://github.com/Whonix/Whonix-Installer.git
+        url = https://github.com/Whonix/Whonix-Installer.git
         #url = https://gitlab.com/whonix/Whonix-Installer.git
 
 [submodule "whonix-starter"]
         path = windows/Whonix-Starter
-        url  = https://github.com/Whonix/Whonix-Starter.git
+        url = https://github.com/Whonix/Whonix-Starter.git
         #url = https://gitlab.com/whonix/Whonix-Starter.git
 
 ## END hardcoded part END ##
-' | tee "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
+' | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
    fi
 
-   local url
    url="\
-        url = https://github.com/${project_name_short}/${reponame}.git
-        #url = https://gitlab.com/${project_name_short_lowercase}/${reponame}.git"
+        url = https://github.com/${batch_current_project_name}/${batch_current_package_reponame}.git
+        #url = https://gitlab.com/${batch_current_project_name,,}/${batch_current_package_reponame}.git"
 
    echo "\
-[submodule \"${reponame}\"]
-        path = packages/${project_name_short_lowercase}/${reponame}
+[submodule \"${batch_current_package_reponame}\"]
+        path = packages/${batch_current_project_name,,}/${batch_current_package_reponame}
 $url" \
-         | \
-         tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
+         | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 
-   echo "" | tee -a "$derivative_maker_source_code_folder/.gitmodules" >/dev/null
+   echo "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 }
 
-pkg_git_main_git_log_writer() {
-   pushd .. >/dev/null
-   pushd .. >/dev/null
-}
+## TODO: what... is this useful for?
+#pkg_git_main_git_log_writer() {
+#   pushd .. >/dev/null
+#   pushd .. >/dev/null
+#}
 
+## Generates a release announcement.
 pkg_git_packages_git_log_writer() {
-   repo_skip "lkrg" || return 0
-   repo_skip "hardened_malloc" || return 0
+   local package_header_written package_version_old package_version_new \
+      new_package commit_msg_short_list commit_hash commit_msg_short \
+      committer_person commit_msg_full log_msg
 
-   if [ "$giant_git_log_delete_once" = "" ]; then
-      giant_git_log_delete_once=done
-      announcement_create=true
-      rm -f "$announcements_draft_folder/derivative-maker_giant_git_log.txt"
-      rm -f "$announcements_draft_folder/kicksecure_giant_git_log.txt"
-      rm -f "$announcements_draft_folder/whonix_giant_git_log.txt"
+   repo_skip 'lkrg' || return 0
+   repo_skip 'hardened_malloc' || return 0
+
+   if [ "${batch_func_init_done}" = 'n' ]; then
+      post_run_hook_list+=( 'generate_announcement' )
+      rm -f "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
+      rm -f "${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+      rm -f "${announcements_drafts_dir}/whonix_giant_git_log.txt"
+      batch_func_init_done='y'
    fi
 
-   notable_changes=""
+   package_header_written='n'
 
-   if [ "$this_is_derivative_maker_source_code_folder" = "false" ]; then
+   if [ "${batch_current_package_reponame}" != 'derivative-maker' ]; then
       pushd .. >/dev/null
-      if package_version_old="$(git rev-parse "${version_old_main}:packages/${project_name_short_lowercase}/${reponame}")" ; then
-         new_package=false
+      if package_version_old="$(git rev-parse "${derivative_version_old_main}:packages/${batch_current_project_name,,}/${batch_current_package_reponame}")" ; then
+         new_package='n'
       else
-         new_package=true
+         new_package='y'
       fi
-      package_version_new="$(git rev-parse "${version_new_main}:packages/${project_name_short_lowercase}/${reponame}")"
-      popd >/dev/null
+      package_version_new="$(git rev-parse "${derivative_version_new_main}:packages/${batch_current_project_name,,}/${batch_current_package_reponame}")"
    else
-      new_package=false
-      package_version_old="${version_old_main}"
-      package_version_new="${version_new_main}"
+      new_package='n'
+      package_version_old="${derivative_version_old_main}"
+      package_version_new="${derivative_version_new_main}"
    fi
 
-   if [ "$new_package" = "false" ]; then
+   if [ "${new_package}" = 'n' ]; then
       if [ "${package_version_old}" = "${package_version_new}" ]; then
          true "skipping because package_version_old = package_version_new"
          return 0
       else
-         commit_msg_short_list="$(git --no-pager log --pretty="%H %s" "${package_version_old}..${package_version_new}")"
-         #echo "git --no-pager log ${package_version_old}..${package_version_new}" | tee -a "$giant_git_log_file" >/dev/null
-         #echo ""
+         commit_msg_short_list="$(git --no-pager log --pretty='%H %s' "${package_version_old}..${package_version_new}")"
       fi
    else
-      commit_msg_short_list="$(git --no-pager log --pretty="%H %s")"
-      #echo "git --no-pager log" | tee -a "$giant_git_log_file" >/dev/null
-      #echo ""
-      #return 0
+      commit_msg_short_list="$(git --no-pager log --pretty='%H %s')"
    fi
 
    while read -r commit_hash commit_msg_short ; do
-      if ! commit_filter ; then
-         true "SKIP: $commit_msg_short"
+      if ! commit_filter "${commit_msg_short}" ; then
+         true "SKIP: ${commit_msg_short}"
          continue
       fi
-      true "OK: $commit_msg_short"
+      true "OK: ${commit_msg_short}"
 
-      committer_person="$(git log --format="%an" -n 1 "$commit_hash")"
-      commit_msg_full="$(git log --format="%B" -n 1 "$commit_hash")"
+      committer_person="$(git log --format='%an' -n 1 "${commit_hash}")"
+      commit_msg_full="$(git log --format='%B' -n 1 "${commit_hash}")"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
-      commit_msg_full="$(echo "$commit_msg_full" | sed '/^[[:space:]]*$/d')"
+      commit_msg_full="$(echo "${commit_msg_full}" | sed '/^[[:space:]]*$/d')"
       ## Replace new lines with spaces to unbreak links for multi line comments.
-      commit_msg_full="$(echo "$commit_msg_full" | tr "\n" " ")"
+      commit_msg_full="$(echo "${commit_msg_full}" | tr '\n' ' ')"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
 
-      #commit_msg_full_with_link="$commit_msg_full <ref>
-      #https://gitlab.com/$project_name_short_lowercase/$reponame/-/commit/$commit_hash
-      #</ref>"
-      commit_msg_full_with_link="$commit_msg_full"
-
-      #<ref>
-      #https://github.com/$project_name_short/$reponame/commit/$commit_hash
-      #</ref>"
-
-      if [ "$committer_person" = "madaidan" ]; then
+      if [ "${committer_person}" = 'madaidan' ]; then
          committer_person="@${committer_person}"
-      elif [ "$committer_person" = "Gavin Pacini" ]; then
-         committer_person="@GavinPacini"
-      elif [ "$committer_person" = "JeremyRand" ]; then
-         committer_person="@JeremyRand"
-      elif [ "$committer_person" = "HulaHoop0" ]; then
-         committer_person="@HulaHoop"
-      elif [ "$committer_person" = "Raja Grewal" ]; then
-         committer_person="@raja"
-      elif [ "$committer_person" = "raja-grewal" ]; then
-         committer_person="@raja"
-      elif [ "$committer_person" = "Aaron Rainbolt" ]; then
-         committer_person="@ArrayBolt3"
-      elif [ "$committer_person" = "TNT BOM BOM" ]; then
-         committer_person="@nurmagoz"
+      elif [ "${committer_person}" = 'Gavin Pacini' ]; then
+         committer_person='@GavinPacini'
+      elif [ "${committer_person}" = 'JeremyRand' ]; then
+         committer_person='@JeremyRand'
+      elif [ "${committer_person}" = 'HulaHoop0' ]; then
+         committer_person='@HulaHoop'
+      elif [ "${committer_person}" = 'Raja Grewal' ]; then
+         committer_person='@raja'
+      elif [ "${committer_person}" = 'raja-grewal' ]; then
+         committer_person='@raja'
+      elif [ "${committer_person}" = 'Aaron Rainbolt' ]; then
+         committer_person='@ArrayBolt3'
+      elif [ "${committer_person}" = 'TNT BOM BOM' ]; then
+         committer_person='@nurmagoz'
       fi
 
-      if [ "$committer_person" = "Patrick Schleizer" ]; then
+      if [ "${committer_person}" = 'Patrick Schleizer' ]; then
          credit_msg=""
       else
          credit_msg=" (Thanks to ${committer_person}!)"
       fi
 
-      log_msg="$commit_msg_full_with_link"
-      log_msg+="$credit_msg"
+      log_msg="${commit_msg_full}"
+      log_msg+="${credit_msg}"
 
-      if [ "$notable_changes" = "" ]; then
-         notable_changes=yes
-         #echo "[https://github.com/$project_name_short_lowercase/$reponame <code>$reponame_pretty</code>]:" | tee -a "$giant_git_log_file" >/dev/null
-         echo "* $reponame:" | tee -a "$giant_git_log_file" >/dev/null
+      if [ "${package_header_written}" = 'n' ]; then
+         echo "* ${batch_current_package_reponame}:" | tee -a -- "${batch_current_package_changelog}" >/dev/null
       fi
 
-      echo "  * $log_msg" | tee -a "$giant_git_log_file" >/dev/null
+      echo "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+   done <<< "${commit_msg_short_list}"
 
-   done <<< "$commit_msg_short_list"
-
-   echo "" | tee -a "$giant_git_log_file" >/dev/null
+   echo '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
 
    true
 }
 
+## Signs git tags for all repos except derivative-maker using genmkfile.
 pkg_git_sign_tags() {
-   repo_skip "derivative-maker" || return 0
+   repo_skip 'derivative-maker' || return 0
 
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 TODO"
+   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 TODO"
    genmkfile git-commit-verify
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 1/4 done"
+   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 done"
 
-   true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 TODO"
+   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 TODO"
    if ! genmkfile git-verify 2>/dev/null ; then
-      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 2/4 done"
+      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
 
-      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 TODO"
+      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
       genmkfile git-tag-sign
-      true "${cyan}reponame: ${under}$reponame${eunder}${reset} 3/4 done"
+      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
    genmkfile git-verify
@@ -1493,78 +1734,126 @@ pkg_git_sign_tags() {
    true
 }
 
+## Verifies that the head commit of all repos is signed.
 pkg_verify_signed_commit() {
-   #genmkfile git-commit-verify
-   ## Faster.
    git verify-commit HEAD
 
    true
 }
 
+## Verifies that the head commit and tag of all repos except derivative-maker
+## is signed. Uses genmkfile.
 pkg_verify_signed_commit_and_tag() {
-   repo_skip "derivative-maker" || return 0
+   repo_skip 'derivative-maker' || return 0
 
    genmkfile git-verify
    true
 }
 
-pkg_dput_cfg_writer() {
-   make_get_variables
+## TODO: Old, outdated, looks like it was last used in Ubuntu 14.04.
+#pkg_dput_cfg_writer() {
+#   make_get_variables
+#
+#   launchpad_name="adrelanos"
+#
+#   echo "\
+#[${reponame}]
+#fqdn      = ppa.launchpad.net
+#method      = sftp
+#incoming                = ~${launchpad_name}/${reponame}/ubuntu/
+#login     = ${launchpad_name}
+#allowed_distributions   = trusty" | tee -a ~/dput.cfg >/dev/null
+#
+#   true
+#}
 
-   launchpad_name="adrelanos"
-
-   echo "\
-[${reponame}]
-fqdn			= ppa.launchpad.net
-method			= sftp
-incoming                = ~${launchpad_name}/${reponame}/ubuntu/
-login			= ${launchpad_name}
-allowed_distributions 	= trusty" | tee -a ~/dput.cfg >/dev/null
-
-   true
-}
-
-## dm-packaging-helper-script pkg_need_version_bump_show 2>/dev/null
+## Finds packages that have modifications made to them since the last version
+## bump, and displays their repo names. Also communicates that the package in
+## question needs a version bump via a global variable, which is consumed by
+## other functions in this script.
+## NOTE: When calling this directly, redirect STDERR to /dev/null with
+## 2>/dev/null.
 pkg_need_version_bump_show() {
-   needs_version_bump=todo-check
+   local last_log_entry git_status_last_line
 
-   repo_skip "derivative-maker" || return 0
-
+   batch_current_package_needs_version_bump='n'
+         
+   repo_skip 'derivative-maker' || return 0
+      
    last_log_entry="$(git log --format=%s -1)"
-
-   if [ "bumped changelog version" = "$last_log_entry" ]; then
+   
+   if [ 'bumped changelog version' = "${last_log_entry}" ]; then
       return 0
    fi
 
-   returned="$(git status)"
-   if [ ! "$returned" = "$nothing_to_commit_msg" ]; then
+   git_status_last_line="$(git status | tail -n1)"
+   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       true "uncommited changes #1"
       return 1
    fi
 
    ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
-
+   
    pkg_bash_sanity_test
 
-   needs_version_bump=true
+   batch_current_package_needs_version_bump='y'
 
-   echo "$reponame"
+   echo "${batch_current_package_reponame}"
    true
 }
 
-## dm-packaging-helper-script pkg_need_version_bump_do 2>/dev/null
-pkg_need_version_bump_do() {
-   repo_skip "derivative-maker" || return 0
+## Bumps the debian/changelog version and rewrites the changelog.upstream file
+## for all repos except derivative-maker. Generally called by other batch
+## functions when necessary, calling this directly is probably a bad idea.
+pkg_upstream_and_debian_changelog_bump() {
+   repo_skip 'derivative-maker' || return 0
 
-   ## sets: needs_version_bump
+   ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
+   ## individual packages.
+   echo "version_numbers_by_upstream: ${version_numbers_by_upstream}"
+
+   ## TODO:
+   ## Not the cleanest way. Other variables might be unwanted.
+   local version_numbers_by_upstream
+
+   ## Complex, slow.
+   #make_init ## includes make_get_variables
+   ## sets maybe: version_numbers_by_upstream
+   make_source_overrides_file
+
+   ## If version_numbers_by_upstream=true then 'genmkfile deb-uachl-bumpup-major'
+   ## would be bumping only the package revision number. Not the version number.
+   ## In that case reprepro ('genmkfile reprepro-add') would then detect the same
+   ## source tarball version but with different content (checksum) and therefore
+   ## refuse adding it.
+   if [ "${version_numbers_by_upstream}" = "true" ]; then
+      ## XXX: manual
+      genmkfile deb-uachl-bumpup-manual
+   else
+      genmkfile deb-uachl-bumpup-major
+   fi
+
+   genmkfile make_deb-uachl-commit-changelog
+
+   true
+}
+
+## Does changelog bumps on all repos that need it except derivative-maker,
+## then pushes the modified repos.
+## NOTE: When calling this directly, redirect STDERR to /dev/null with
+## 2>/dev/null.
+pkg_need_version_bump_do() {
+   repo_skip 'derivative-maker' || return 0
+
+   ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
 
-   if [ ! "$needs_version_bump" = "true" ]; then
+   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       return 0
    fi
 
-   echo "$FUNCNAME: needs version bump: $reponame"
+   echo "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
@@ -1579,16 +1868,28 @@ pkg_need_version_bump_do() {
    true
 }
 
+## For all packages that have modifications since the last changelog bump:
+##
+## * Regenerates manpages
+## * Rewrites the Debian install file
+## * Does version number bumps
+## * Pushes the changes to Git
+## * Builds the package
+## * Adds the built package to a reprepro repository
+## * Cleans up after the build
+##
+## NOTE: When calling this directly, redirect STDERR to /dev/null with
+## 2>/dev/null.
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip "derivative-maker" || return 0
+   repo_skip 'derivative-maker' || return 0
 
-   ## sets: needs_version_bump
+   ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
-   if [ ! "$needs_version_bump" = "true" ]; then
+   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then 
       return 0
    fi
 
-   echo "$FUNCNAME: needs version bump: $reponame"
+   echo "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_git_manpages
    pkg_git_debinstfile
@@ -1598,9 +1899,10 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## sets: needs_version_bump
    pkg_need_version_bump_do
-   if [ ! "$needs_version_bump" = "true" ]; then
-      error "needs_version_bump before true but now not!?"
-   fi
+   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
+      echo "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
+      exit 1
+   fi   
 
    ## At this stage:
    ## - the commit prior the changelog bump is verified
@@ -1616,21 +1918,23 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    genmkfile reprepro-add
    genmkfile deb-cleanup
 
-   true
+   true 
 }
 
+## Builds all packages.
 pkg_only_build_all() {
-   repo_skip "derivative-maker" || return 0
+   repo_skip 'derivative-maker' || return 0
 
    export make_lintian=true
    export make_use_cowbuilder=true
    genmkfile deb-pkg
 
-   true
+   true 
 }
 
+## Adds all packages to a reprepro repository.
 pkg_only_reprepro_add() {
-   repo_skip "derivative-maker" || return 0
+   repo_skip 'derivative-maker' || return 0
 
    export make_use_cowbuilder=true
    genmkfile reprepro-add
@@ -1638,167 +1942,131 @@ pkg_only_reprepro_add() {
    true
 }
 
-pkg_upstream_and_debian_changelog_bump() {
-   repo_skip "derivative-maker" || return 0
-
-   echo "version_numbers_by_upstream: $version_numbers_by_upstream"
-
-   ## TODO:
-   ## Not the cleanest way. Other variables might be unwanted.
-   local version_numbers_by_upstream
-
-   ## Complex, slow.
-   #make_init ## includes make_get_variables
-   ## sets maybe: version_numbers_by_upstream
-   make_source_overrides_file
-
-   ## If version_numbers_by_upstream=true then 'genmkfile deb-uachl-bumpup-major'
-   ## would be bumping only the package revision number. Not the version number.
-   ## In that case reprepro ('genmkfile reprepro-add"I) would then detect the same
-   ## source tarball version but with different content (checksum) and therefore
-   ## refuse adding it.
-   if [ "$version_numbers_by_upstream" = "true" ]; then
-      ## XXX: manual
-      genmkfile deb-uachl-bumpup-manual
-   else
-      genmkfile deb-uachl-bumpup-major
-   fi
-
-   genmkfile make_deb-uachl-commit-changelog
-
-   true
-}
-
+## Creates a lintian-overrides file for all repositories, ignoring
+## debian-watch-does-not-check-openpgp-signature warnings.
 pkg_add_lintian_watch_gpg_override() {
-   mkdir --parents "./debian/source"
+   repo_skip 'derivative-maker' || return 0
+
+   mkdir --parents './debian/source'
    echo "\
 ## https://phabricator.whonix.org/T277
 debian-watch-does-not-check-openpgp-signature" > "./debian/source/lintian-overrides"
 }
 
+## Commits the lintian-overrides file generated by
+## pkg_add_lintian_watch_gpg_override.
 pkg_git_commit_lintian_watch_gpg_override() {
-   git add "./debian/source/lintian-overrides"
    local msg
+
+   repo_skip 'derivative-maker' || return 0
+
+   git add './debian/source/lintian-overrides'
    msg="\
 added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning - https://phabricator.whonix.org/T277"
-   git commit -m "$msg"
+   git commit -m "${msg}"
    true
 }
 
-pkg_add_lintian_watch_gpg_override() {
-   mkdir --parents "./debian/source"
-   echo "\
-## https://phabricator.whonix.org/T277
-debian-watch-does-not-check-openpgp-signature" > "./debian/source/lintian-overrides"
-}
-
+## Creates debian/watch files for all repos.
 debian_watch_file_create() {
+   local msg
+
    echo "## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
-opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/$reponame-\$1\.tar\.gz/ \\
-  https://github.com/$project_name_short/$reponame/tags .*/v?(\d\S+)\.tar\.gz" > "$repo_full_path/debian/watch"
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/${batch_current_package_reponame}-\$1\.tar\.gz/ \\
+  https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/tags .*/v?(\d\S+)\.tar\.gz" > "${batch_current_package_path}/debian/watch"
 
-   git add "$repo_full_path/debian/watch"
-   local msg
+   git add "${batch_current_package_path}/debian/watch"
    msg="\
 fix debian/watch lintian warning debian-watch-contains-dh_make-template"
-   git commit -m "$msg"
+   git commit -m "${msg}"
    true
 }
 
-## not yet used
-onetime_usrmerge() {
-   if ! -d ./lib ; then
-      return 0
-   fi
+## . END Commands }
 
-   mkdir -p ./usr
-   git mv ./lib ./usr/
+## BEGIN Post-run hooks {
 
-   sed -i '/lib\/\*/d' "./debian/$item.install"
-   git add "./debian/$item.install"
-
-   true
-}
-
-git_folder_or_file() {
-   if test -d .git ; then
-      echo "$item: folder"
-   elif test -f .git ; then
-      echo "$item: file"
-   else
-      error
+wait_for_git_processes() {
+   if [ "${git_pid_list_str}" != '' ]; then
+      # Word splitting is used here intentionally.
+      # shellcheck disable=SC2086
+      wait $git_pid_list_str
    fi
 }
 
-## not yet used
-do_nothing() {
-   true "INFO: Doing nothing."
-}
+generate_announcement() {
+   local changelog_file derivative_name project_name project_website temp \
+      derivative_version_new_main_short release_type_long end_text
 
-announcement() {
-   if [ "$project_name_short" = "derivative-maker" ]; then
-      return 0
-   fi
+   ## TODO: Should this dynamically change depending on the project? Also,
+   ## should it be inserted into the announcement automatically?
+   changelog_file="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
 
-   local temp
-   temp="$version_new_main"
-   temp=$(echo "$temp" | str_replace "-developers-only" "")
-   temp=$(echo "$temp" | str_replace "-testers-only" "")
-   temp=$(echo "$temp" | str_replace "-stable-only" "")
+   for derivative_name in "${derivative_name_list[@]}"; do
+      if [ "${derivative_name}" = 'kicksecure' ]; then
+         project_name='Kicksecure'
+         project_website='kicksecure.com'
+      elif [ "${derivative_name}" = 'whonix' ]; then
+         project_name='Whonix'
+         project_website='whonix.org'
+      fi
 
-   version_main_new_short="$temp"
-   release_type_short="point"
-   #release_type_short="testers"
+      temp="${derivative_version_new_main}"
+      temp="$(str_replace "-developers-only" "" <<< "${temp}")"
+      temp="$(str_replace "-testers-only" "" <<< "${temp}")"
+      temp="$(str_replace "-stable-only" "" <<< "${temp}")"
 
-   if [ "$release_type_short" = "testers" ]; then
-      release_type_long="Testers Wanted"
-      header_text="# Testers Wanted!
+      derivative_version_new_main_short="$temp"
 
-Download the Testers-Only version of $project_name_short:
+      if [ "${derivative_release_type}" = 'testers' ]; then
+         release_type_long='Testers Wanted'
+         header_text="# Testers Wanted!
 
-https://www.${project_clearnet}/wiki/VirtualBox_Testers_Only_Version"
+Download the Testers-Only version of ${project_name}:
+
+https://www.${project_website}/wiki/VirtualBox_Testers_Only_Version"
       end_text="(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)"
-   elif [ "$release_type_short" = "point" ]; then
-      release_type_long="Point Release"
-      header_text="# Download
+      elif [ "${derivative_release_type}" = 'point' ]; then
+         release_type_long="Point Release"
+         header_text="# Download
 
-https://www.${project_clearnet}/wiki/Download
+https://www.${project_website}/wiki/Download
 
 ([What is a point release?](https://www.kicksecure.com/wiki/Point_Release))"
       end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
-   else
-      error "invalid release_type_short!"
-   fi
+      else
+         error "invalid derivative_release_type!"
+      fi
 
-   echo "\
-$project_name_short ${version_main_new_short} - $release_type_long!
+      echo "\
+${project_name} ${derivative_version_new_main_short} - ${release_type_long}!
 
-$header_text
+${header_text}
 
 ----
 
 # Upgrade
 
-Alternatively, in-place release upgrade is possible upgrade using [$project_name_short repository](https://www.${project_clearnet}/wiki/Project-APT-Repository).
+Alternatively, in-place release upgrade is possible upgrade using [${project_name} repository](https://www.${project_website}/wiki/Project-APT-Repository).
 
 ----
 
-This release would not have been possible without the numerous supporters of $project_name_short!
+This release would not have been possible without the numerous supporters of ${project_name}!
 
 ----
 
 Please Donate!
 
-https://www.${project_clearnet}/wiki/Donate
+https://www.${project_website}/wiki/Donate
 
 ----
 
 Please Contribute!
 
-https://www.${project_clearnet}/wiki/Contribute
+https://www.${project_website}/wiki/Contribute
 
 ----
 
@@ -1806,145 +2074,186 @@ https://www.${project_clearnet}/wiki/Contribute
 
 TODO
 
-$giant_git_log_file
+${changelog_file}
 
 ----
 
 # Full difference of all changes
 
-[https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main}](https://github.com/$project_name_short/derivative-maker/compare/${version_old_main}...${version_new_main})
+[https://github.com/${project_name}/derivative-maker/compare/${derivative_version_old_main}...${derivative_version_new_main}](https://github.com/${project_name}/derivative-maker/compare/${derivative_version_old_main}...${derivative_version_new_main})
 
 ----
 
-$end_text
+${end_text}
 " | \
-   tee "$announcements_draft_folder/${project_name_short}.txt" >/dev/null
+      tee "${announcements_drafts_dir}/${project_name}.txt" >/dev/null
+   done
 }
 
-loop_helper_worker() {
-   counter=$(( $counter + 1 ))
-   true "$FUNCNAME: item: $item | counter: $counter"
+## . END Post-run hooks }
 
-   reponame="$(basename "$item")"
-   reponame_pretty="$reponame"
-   repo_full_path="$(realpath "$item")"
+## BEGIN Main logic {
 
-   true "${cyan}INFO: $FUNCNAME: reponame: $reponame${reset}"
-   true "${cyan}INFO: $FUNCNAME: project_name_short_lowercase: $project_name_short_lowercase${reset}"
-   true "${cyan}INFO: $FUNCNAME: giant_git_log_file: $giant_git_log_file${reset}"
+run_batch_command() {
+   local batch_command arg_list
 
-   repo_to_push_to_list=""
+   batch_command="$1"
+   shift
+   arg_list=( "$@" )
 
-   repo_to_push_to_list+=" github-$project_name_short_lowercase"
+   [ -z "${batch_command}" ] && {
+      echo "${red}${bold}FATAL ERROR: No command provided to ${FUNCNAME[0]}!${reset}"
+      exit 1
+   }
 
-   true "this_is_derivative_maker_source_code_folder: $this_is_derivative_maker_source_code_folder"
+   (( batch_run_counter++ )) || true
+   true "${FUNCNAME[0]}: batch_current_package_path: ${batch_current_package_path} | batch_run_counter: ${batch_run_counter}"
+   true "${cyan}INFO: ${FUNCNAME[0]}: batch_current_package_path: ${batch_current_package_path}"
+   true "${cyan}INFO: ${FUNCNAME[0]}: batch_current_package_reponame: ${batch_current_package_reponame}${reset}"
+   true "${cyan}INFO: ${FUNCNAME[0]}: batch_current_project_name: ${batch_current_project_name}${reset}"
+   true "${cyan}INFO: ${FUNCNAME[0]}: batch_current_package_changelog: ${batch_current_package_changelog}${reset}"
 
-   if [ "$this_is_derivative_maker_source_code_folder" = "true" ]; then
-      pushd "$derivative_maker_source_code_folder" >/dev/null
-      reponame_pretty="derivative-maker"
-      repo_to_push_to_list+=" github-kicksecure"
-      repo_to_push_to_list+=" github-whonix"
-   else
-      pushd "$item" >/dev/null
-   fi
+   set_batch_current_package_remote_list
 
-   ## TODO:
-   "$@"
-
+   pushd "${batch_current_package_path}" >/dev/null
+   "${batch_command}" "$@"
    popd >/dev/null
-
-   #true "press enter to continue_did"
-   #read temp
 }
 
-loop_helper() {
-   [ -n "$derivative_name_list" ] || derivative_name_list="kicksecure whonix"
+run_batch() {
+   local derivative_name post_run_hook
 
-   this_is_derivative_maker_source_code_folder=false
-
-   for derivative_name_item in $derivative_name_list ; do
-      for item in ./packages/$derivative_name_item/* ; do
-         true "pwd: $PWD"
-         true "item: $item"
-         if [ "$derivative_name_item" = "kicksecure" ]; then
-            project_name_short=Kicksecure
-            project_name_short_lowercase=kicksecure
-            project_clearnet="kicksecure.com"
-         elif [ "$derivative_name_item" = "whonix" ]; then
-            project_name_short=Whonix
-            project_name_short_lowercase=whonix
-            project_clearnet="whonix.org"
-         else
-            echo "ERROR: project name detection failed!"
-            exit 1
-         fi
-         if [ ! -d "$item" ]; then
-            continue
-         fi
-         giant_git_log_file="$announcements_draft_folder/${project_name_short_lowercase}_giant_git_log.txt"
-         loop_helper_worker "$@"
+   for derivative_name in "${derivative_name_list[@]}" ; do
+      for batch_current_package_path in "${derivative_maker_source_code_dir}/packages/${derivative_name}"/* ; do
+         if [ "${derivative_name}" = 'kicksecure' ]; then
+            batch_current_project_name='Kicksecure'
+            batch_current_project_website='kicksecure.com'
+          elif [ "${derivative_name}" = 'whonix' ]; then
+             batch_current_project_name='Whonix'
+             batch_current_project_website='whonix.org'
+          else
+             echo 'ERROR: Project name detection failed!'
+             exit 1;
+          fi
+          if ! [ -d "${batch_current_package_path}" ]; then
+             continue
+          fi
+          batch_current_package_changelog="${announcements_drafts_dir}/${batch_current_project_name,,}_giant_git_log.txt"
+          batch_current_package_reponame="$(basename "${batch_current_package_path}")"
+          run_batch_command "$@"
       done
    done
 
-   this_is_derivative_maker_source_code_folder=true
-   project_name_short=derivative-maker
-   project_name_short_lowercase=derivative-maker
-   project_clearnet="kicksecure.com"
-   giant_git_log_file="$announcements_draft_folder/kicksecure_giant_git_log.txt"
-   item=derivative-maker
+   # Special-case for derivative-maker
+   batch_current_project_name='derivative-maker'
+   batch_current_package_reponame='derivative-maker'
+   batch_current_project_website='kicksecure.com'
+   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+   batch_current_package_path="${derivative_maker_source_code_dir}"
+   run_batch_command "$@"
 
-   loop_helper_worker "$@"
-
-   if [ "$announcement_create" = "true" ]; then
-      for derivative_name_item in $derivative_name_list ; do
-         if [ "$derivative_name_item" = "kicksecure" ]; then
-            project_name_short=Kicksecure
-            project_name_short_lowercase=kicksecure
-            project_clearnet="kicksecure.com"
-         elif [ "$derivative_name_item" = "whonix" ]; then
-            project_name_short=Whonix
-            project_name_short_lowercase=whonix
-            project_clearnet="whonix.org"
-         else
-            echo "ERROR: project name detection failed!"
-            exit 1
-         fi
-         announcement
-      done
-   fi
+   # Post-run hooks
+   # Note that this does nothing if post_run_hook_list is empty.
+   for post_run_hook in "${post_run_hook_list[@]}"; do
+      "${post_run_hook}"
+   done
 }
 
 main() {
-   args="$@"
-   if [ "$args" = "" ]; then
+   local target_cmd arg_list
+
+   target_cmd="$1"
+   shift || true
+   arg_list=( "$@" )
+
+   if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 function-name"
+      true "INFO: syntax: ./$0 function-name arguments"
       exit 0
    fi
 
-   loop_helper "$@"
-   true
+   case "${target_cmd}" in
+      'commit_filter')
+         [ -z "${arg_list[0]}" ] && {
+            echo "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
+            exit 1
+         }
+         commit_filter "${arg_list[@]}"
+         ;;
+      'pkg_descr_merger')
+         pkg_descr_merger
+         ;;
+      'pkg_descr_merge_all')
+         pkg_descr_merge_all
+         ;;
+      *)
+         run_batch "${target_cmd}"
+         ;;
+   esac
 }
 
-## TODO
-# item=uwt
-# reponame="$(basename "$item")"
-# repo_full_path="$(realpath "$item")"
-# pkg_descr_creator
-# exit
+## . END Main logic }
 
-dm-check-unicode
+## Global tunables, adjust these as necessary
+## TODO should these be broken out into a config file?
+derivative_binary_dir="$HOME/derivative-binary"
+derivative_maker_source_code_dir="$HOME/derivative-maker"
+derivative_name_list=( 'kicksecure' 'whonix' )
+derivative_version_old_main='17.2.0.7-developers-only'
+derivative_version_new_main='17.2.3.7-developers-only'
+derivative_release_type='point'
+#derivative_release_type='testers'
+git_commit_all_msg='refactoring environment variables loading mechanism'
+makefile_generic_version='1.5'
+packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources-list'
 
-if [ "$@" = "commit_filter" ]; then
-   commit_filter
-   exit 0
-fi
+## Global static variables, do not adjust
+announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
+derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
+make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
+nothing_to_commit_msg="nothing to commit, working tree clean"
+package_documentation_dir="${derivative_maker_source_code_dir}/package_documentation"
+script_absolute_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+script_package_name="$(cd "${script_absolute_dir}/../.." && basename "${PWD}")"
 
+library_list=(
+   "${derivative_maker_source_code_dir}/help-steps/colors"
+   "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+)
+
+## Global state variables, do not adjust
+batch_current_package_changelog=''
+batch_current_package_needs_version_bump='n'
+batch_current_package_path=''
+batch_current_package_reponame=''
+batch_current_project_name=''
+batch_current_project_website=''
+batch_current_package_remote_list=()
+batch_func_init_done='n'
+batch_meta_category_list=()
+batch_meta_debian_control_web_link=''
+batch_meta_file_name_without_reponame=''
+batch_meta_file_web_link=''
+batch_meta_gateway_only='n'
+batch_meta_installed_by_default='y' # yes, this defaults to 'y'
+batch_meta_non_qubes_whonix_only='n'
+batch_meta_project_list=()
+batch_meta_qubes_whonix_only='n'
+batch_meta_relative_file_name=''
+batch_meta_repo_web_link=''
+batch_meta_workstation_only='n'
+declare -A -g batch_meta_file_header_done_list
+batch_run_counter=0
+git_pid_list_str=''
+declare -A -g merge_file_reset_list
+post_run_hook_list=( 'wait_for_git_processes' )
+
+## Initialization and launch
+check_prerequisites
+source_library_list
+prepare_system
+show_debug_variable_info
 main "$@"
-
-if [ ! "$git_pid_list" = "" ]; then
-   wait $git_pid_list
-fi
 
 true "END: $0"
