@@ -806,7 +806,7 @@ pkg_descr_creator() {
 ## Merges together package documentation files for all packages sharing a
 ## project, category, and target machine type in common. pkg_descr_creator
 ## must be run first. Note that this function does NOT go through the batch
-## processing mechnism.
+## processing mechanism.
 pkg_descr_merger() {
    local project_list category_list project category file_name_full_path \
       file_name_only package_name machine merged_file
