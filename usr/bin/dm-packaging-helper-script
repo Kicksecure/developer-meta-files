@@ -400,7 +400,7 @@ internal_descr_writer() {
    for project in "${batch_meta_project_list[@]}"; do
       for category in "${batch_meta_category_list[@]}"; do
          description_file="${package_documentation_dir}/${batch_current_package_reponame}_${category}_${project}.mediawiki"
-    
+
          ## Create the file if it does not yet exist
          if ! [ -e "${description_file}" ]; then
             control_file="${batch_current_package_path}/debian/control"
@@ -408,22 +408,22 @@ internal_descr_writer() {
                echo "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
                exit 1
             fi
-    
+
             touch "${description_file}"
-    
+
             echo "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
             echo '' | tee -a -- "${description_file}" >/dev/null
             echo "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
             echo "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
-    
+
             extract_description_from_debian_control "${control_file}" "${description_file}" '=== XXX_REPLACE_ME_XXX ==='
-    
+
          ## If the file does exist, make sure it's a real file
          elif ! [ -f "${description_file}" ]; then
             echo "${red}${bold}FATAL ERROR: ${description_file} exists but is not a regular file!${reset}"
             exit 1
          fi
-    
+
          if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]}" = 'y' ]; then
             echo "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
             echo '' | tee -a -- "${description_file}" >/dev/null
@@ -434,10 +434,10 @@ internal_descr_writer() {
             [ "${batch_meta_qubes_whonix_only}" = 'y' ] && echo '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
             [ "${batch_meta_installed_by_default}" = 'n' ] && echo '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
             echo '' | tee -a -- "${description_file}" >/dev/null
-    
+
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
-    
+
          echo "$@" | tee -a -- "${description_file}" >/dev/null
       done
    done
@@ -574,7 +574,7 @@ pkg_readme_creator_do() {
      replace_str
 
    repo_skip 'derivative-maker' || return 0
-   
+
    ##TODO: genmkfile not requires. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
 
@@ -709,7 +709,7 @@ pkg_descr_creator() {
                if [ "${second_word}" = 'project' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of projects
-                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray
                   temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_project_list <<< "${temp}"
                   # Remove a mangled entry at the end.
@@ -744,7 +744,7 @@ pkg_descr_creator() {
                elif [ "${second_word}" = 'category' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of categories
-                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray
                   temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_category_list <<< "${temp}"
                   # Remove a mangled entry at the end.
@@ -765,7 +765,7 @@ pkg_descr_creator() {
                continue
             fi
          fi
-         
+
          if [ "${in_meta_section}" = 'y' ]; then
             ## At this point, we're in the meta section, but the current line
             ## doesn't look like a metadata field line. Usually this means
@@ -997,7 +997,7 @@ pkg_links_open() {
 pkg_git_remotes_add() {
    git remote rm origin || true
 
-   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true 
+   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
    git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
@@ -1148,19 +1148,19 @@ pkg_build_depends_systemd() {
 
    if ! find . | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
       return 0
-   fi   
+   fi
 
    search='Build-Depends: debhelper (>= 13)'
    replace='Build-Depends: debhelper (>= 13.11.6)'
    str_replace "${search}" "${replace}" "${batch_current_package_path}/debian/control"
 
-   true 
+   true
 }
 
 ## Previously was used to do mass package changes for porting packages from
 ## Bullseye to Bookworm. Retained for future reference.
 # pkg_debhelper_bump() {
-#    local one two  
+#    local one two
 #    one='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
 #    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
@@ -1334,7 +1334,7 @@ pkg_git_push_tags() {
    git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
 
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-   
+
    for package_remote in "${batch_current_package_remote_list[@]}"; do
       git push "${package_remote}" "${git_tag_latest}" &
       git_pid="$!"
@@ -1565,7 +1565,7 @@ pkg_git_submodule_file_writer() {
    repo_skip 'derivative-maker' || return 0
 
    if [ "${batch_func_init_done}" = 'n' ]; then
-      rm "${derivative_maker_source_code_dir}/.gitmodules" 
+      rm "${derivative_maker_source_code_dir}/.gitmodules"
       batch_func_init_done='y'
       echo '## This file is autogenerated by:
 ## autogenerated by dm-packaging-helper-script function pkg_git_submodule_file_writer
@@ -1786,11 +1786,11 @@ pkg_need_version_bump_show() {
    local last_log_entry git_status_last_line
 
    batch_current_package_needs_version_bump='n'
-         
+
    repo_skip 'derivative-maker' || return 0
-      
+
    last_log_entry="$(git log --format=%s -1)"
-   
+
    if [ 'bumped changelog version' = "${last_log_entry}" ]; then
       return 0
    fi
@@ -1803,7 +1803,7 @@ pkg_need_version_bump_show() {
 
    ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
-   
+
    pkg_bash_sanity_test
 
    batch_current_package_needs_version_bump='y'
@@ -1894,7 +1894,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
-   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then 
+   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       return 0
    fi
 
@@ -1911,7 +1911,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       echo "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
       exit 1
-   fi   
+   fi
 
    ## At this stage:
    ## - the commit prior the changelog bump is verified
@@ -1927,7 +1927,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    genmkfile reprepro-add
    genmkfile deb-cleanup
 
-   true 
+   true
 }
 
 ## Builds all packages.
@@ -1938,7 +1938,7 @@ pkg_only_build_all() {
    export make_use_cowbuilder=true
    genmkfile deb-pkg
 
-   true 
+   true
 }
 
 ## Adds all packages to a reprepro repository.
