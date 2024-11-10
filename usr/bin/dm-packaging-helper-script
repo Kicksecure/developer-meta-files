@@ -1383,18 +1383,20 @@ pkg_git_commit_changelog() {
       git add 'changelog.upstream'
    fi
    msg='bumped changelog version'
-   git commit -m "${msg}"
+   git commit -m "${msg}" || true
    git status
    true
 }
 
-## Creates a new commit called 'copyright' for all repos. TODO: This should
-## probably only commit the copyright files, rather than everything!
+## Creates a new commit called 'copyright' for all repos.
 pkg_git_commit_copyright() {
    local msg
 
+   git add 'debian/copyright'
+   if [ -f 'COPYING' ]; then
+      git add 'COPYING'
+   fi
    msg='copyright'
-   git add -A
    git commit -m "${msg}" || true
    git status
    true
@@ -1420,6 +1422,7 @@ pkg_git_manpages() {
    genmkfile manpages
 
    msg='re-generate man pages (generated using "genmkfile manpages")'
+   git add 'man'/* || true
    git add 'auto-generated-man-pages'/* || true
    git commit -m "${msg}" || true
    git status
@@ -1429,6 +1432,11 @@ pkg_git_manpages() {
 ## Generate and commit debian install files for all repos.
 pkg_git_debinstfile() {
    local msg
+
+   repo_skip 'derivative-maker' || return 0
+
+   ## Skipped because the install file for corridor is maintained manually.
+   repo_skip 'corridor' || return 0
 
    genmkfile debinstfile
 
@@ -1472,6 +1480,8 @@ pkg_git_commit_packaging() {
 ## one. Note that this was modified from the original to avoid writing
 ## duplicates.
 pkg_add_dh_changelogs_override_to_debian_rules() {
+   repo_skip 'derivative-maker' || return 0
+
    if grep -q 'override_dh_installchangelogs' 'debian/rules'; then
       return 0
     fi
@@ -1530,7 +1540,7 @@ pkg_git_diff_and_commit() {
 
 ## Opens the debian/control file of all repos in Mousepad.
 pkg_debian_control_open() {
-   mousepad "${batch_current_package_path}/debian/control"
+   mousepad "${batch_current_package_path}/debian/control" &
 
    true
 }
@@ -1539,18 +1549,19 @@ pkg_debian_control_open() {
 pkg_bash_sanity_test() {
    local grep_opts
 
-   grep_opts="\
-      --exclude-dir=.git \
-      --exclude-dir=auto-generated-man-pages \
-      --recursive \
-      -l \
-      "
+   grep_opts=(
+      '--exclude-dir=.git'
+      '--exclude-dir=auto-generated-man-pages'
+      '--exclude-dir=man'
+      '--recursive'
+      '-l'
+   )
 
-   if ! grep "${grep_opts}" --quiet '#!/bin/bash$' ; then
+   if ! grep "${grep_opts[@]}" --quiet '#!/bin/bash$' ; then
       return 0
    fi
 
-   grep "${grep_opts}" '#!/bin/bash$' | xargs bash -n
+   grep "${grep_opts[@]}" '#!/bin/bash$' | xargs -n 1 bash -n
 
    true
 }
@@ -1569,24 +1580,29 @@ pkg_git_submodule_file_writer() {
 
 ## BEGIN hardcoded part BEGIN ##
 
+[submodule "live-build"]
+        path = live-build
+        url  = https://github.com/Kicksecure/live-build.git
+        #url = https://gitlab.com/Kicksecure/live-build.git
+
 [submodule "grml-debootstrap"]
         path = grml-debootstrap
-        url = https://github.com/Kicksecure/grml-debootstrap.git
-        #url =https://gitlab.com/Kicksecure/grml-debootstrap.git
+        url  = https://github.com/Kicksecure/grml-debootstrap.git
+        #url = https://gitlab.com/Kicksecure/grml-debootstrap.git
 
 [submodule "grml-debootstraptest"]
         path = grml-debootstraptest
-        url = https://github.com/Kicksecure/grml-debootstraptest.git
-        #url =https://gitlab.com/Kicksecure/grml-debootstraptest.git
+        url  = https://github.com/Kicksecure/grml-debootstraptest.git
+        #url = https://gitlab.com/Kicksecure/grml-debootstraptest.git
 
 [submodule "whonix-installer"]
         path = windows/Whonix-Installer
-        url = https://github.com/Whonix/Whonix-Installer.git
+        url  = https://github.com/Whonix/Whonix-Installer.git
         #url = https://gitlab.com/whonix/Whonix-Installer.git
 
 [submodule "whonix-starter"]
         path = windows/Whonix-Starter
-        url = https://github.com/Whonix/Whonix-Starter.git
+        url  = https://github.com/Whonix/Whonix-Starter.git
         #url = https://gitlab.com/whonix/Whonix-Starter.git
 
 ## END hardcoded part END ##
@@ -1639,6 +1655,7 @@ pkg_git_packages_git_log_writer() {
          new_package='y'
       fi
       package_version_new="$(git rev-parse "${derivative_version_new_main}:packages/${batch_current_project_name,,}/${batch_current_package_reponame}")"
+      popd >/dev/null
    else
       new_package='n'
       package_version_old="${derivative_version_old_main}"
@@ -1948,9 +1965,11 @@ pkg_add_lintian_watch_gpg_override() {
    repo_skip 'derivative-maker' || return 0
 
    mkdir --parents './debian/source'
-   echo "\
+   if [ -f './debian/source/lintian-overrides' ] && ! grep 'debian-watch-does-not-check-openpgp-signature' './debian/source/lintian-overrides' ; then
+      echo "\
 ## https://phabricator.whonix.org/T277
-debian-watch-does-not-check-openpgp-signature" > "./debian/source/lintian-overrides"
+debian-watch-does-not-check-openpgp-signature" >> "./debian/source/lintian-overrides"
+   fi
 }
 
 ## Commits the lintian-overrides file generated by
@@ -1960,10 +1979,10 @@ pkg_git_commit_lintian_watch_gpg_override() {
 
    repo_skip 'derivative-maker' || return 0
 
-   git add './debian/source/lintian-overrides'
+   git add './debian/source/lintian-overrides' || true
    msg="\
 added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning - https://phabricator.whonix.org/T277"
-   git commit -m "${msg}"
+   git commit -m "${msg}" || true
    true
 }
 
@@ -1978,10 +1997,10 @@ version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/${batch_current_package_reponame}-\$1\.tar\.gz/ \\
   https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/tags .*/v?(\d\S+)\.tar\.gz" > "${batch_current_package_path}/debian/watch"
 
-   git add "${batch_current_package_path}/debian/watch"
+   git add "${batch_current_package_path}/debian/watch" || true
    msg="\
 fix debian/watch lintian warning debian-watch-contains-dh_make-template"
-   git commit -m "${msg}"
+   git commit -m "${msg}" || true
    true
 }
 
