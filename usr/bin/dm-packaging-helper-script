@@ -940,59 +940,6 @@ pkg_links_open() {
    torbrowser --new-tab "$(pkg_links_echo)"
 }
 
-## TODO document this, seems to do something Twitter-related by hitting a
-## GitHub API endpoint? Also, this looks dangerous, it will call the API it's
-## targetting once per project, per package in the project, meaning that the
-## Kicksecure project will get "hit" 55 times, while the Whonix project will
-## get "hit" 16 times. That does not seem correct. Lastly, there's probably a
-## more efficient way to do this, this will constantly create and then delete
-## a tempfile that has the exact same contents.
-##
-## Note from Patrick: not sure anymore. broken long time ago. skip for now.
-#pkg_twitter_to_github() {
-#   local tempfile_path
-
-#   if [ -z "${gh_token}" ]; then
-#      echo "${red}${bold}FATAL ERROR: Cannot call APIs, please set the 'gh_token' environment variable first!${reset}"
-#      exit 1
-#   fi
-
-#   tempfile_path="$(mktemp)"
-
-#   echo "\
-# {
-#    \"name\": \"twitter\",
-#    \"events\": [
-#      \"push\"
-#    ],
-#    \"supported_events\": [
-#      \"push\"
-#    ],
-#    \"title\": \"Twitter\",
-#    \"schema\": [
-#      [
-#        \"string\",
-#        \"1280368298-pfu7jKs5EwAq8JUlce9efKVURNIzH7BwtQkv78F\"
-#      ],
-#      [
-#        \"string\",
-#        \"NLRQlofXcg78Oo8B4ATmtQ3Njhx4rn9O4enWhSs\"
-#      ],
-#      [
-#        \"false\",
-#        \"digest\"
-#      ],
-#      [
-#        \"boolean\",
-#        \"short_format\"
-#      ]
-#    ]
-#  }" > "${tempfile_path}"
-
-#   curl -v -H "Authorization: token $gh_token" -X POST "https://api.github.com/orgs/${batch_current_project_name}/repos" --data @"${tempfile_path}"
-#   safe-rm "${tempfile_path}"
-#}
-
 ## Sets up standard Git remotes for all repos.
 pkg_git_remotes_add() {
    git remote rm origin || true
@@ -1097,25 +1044,6 @@ pkg_profile_d_zsh_creator() {
    done
    true
 }
-
-## Updates genmkfile Makefiles in all repositories except derivative-maker and
-## genmkfile itself.
-## TODO: No Kicksecure or Whonix packages appear to use "real" genmkfile
-## Makefiles anymore, and some packages such as kloak do use real Makefiles.
-## Therefore this is outdated and dangerous.
-# pkg_packaging_copy() {
-#    repo_skip 'derivative-maker' || return 0
-#    repo_skip 'genmkfile' || return 0
-#
-#    cp '../genmkfile/usr/share/genmkfile/Makefile' './'
-#
-#    git add './Makefile'
-#    git safe-rm './make-helper.bsh'
-#
-#    git commit -m "updated makefile generic to version ${makefile_generic_version}"
-#
-#    true
-# }
 
 ## Updated CONTRIBUTING.md in all repos except derivative-maker, kloak, and
 ## corridor.
@@ -1614,12 +1542,6 @@ $url" \
    echo "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 }
 
-## TODO: what... is this useful for?
-#pkg_git_main_git_log_writer() {
-#   pushd .. >/dev/null
-#   pushd .. >/dev/null
-#}
-
 ## Generates a release announcement.
 pkg_git_packages_git_log_writer() {
    local package_header_written package_version_old package_version_new \
@@ -1758,23 +1680,6 @@ pkg_verify_signed_commit_and_tag() {
    genmkfile git-verify
    true
 }
-
-## TODO: Old, outdated, looks like it was last used in Ubuntu 14.04.
-#pkg_dput_cfg_writer() {
-#   make_get_variables
-#
-#   launchpad_name="adrelanos"
-#
-#   echo "\
-#[${reponame}]
-#fqdn      = ppa.launchpad.net
-#method      = sftp
-#incoming                = ~${launchpad_name}/${reponame}/ubuntu/
-#login     = ${launchpad_name}
-#allowed_distributions   = trusty" | tee -a ~/dput.cfg >/dev/null
-#
-#   true
-#}
 
 ## Finds packages that have modifications made to them since the last version
 ## bump, and displays their repo names. Also communicates that the package in
