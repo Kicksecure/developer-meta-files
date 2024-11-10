@@ -44,7 +44,7 @@ grep_find_unicode_wrapper_output="$(\
    )" \
    || true
 
-whitelist_pattern="(./live-build/debian/control|./live-build/debian/copyright|./live-build/manpages/po/fr/.*|./live-build/manpages/po/ja/.*)"
+whitelist_pattern="(./live-build/debian/control|./live-build/debian/copyright|./live-build/manpages/po/fr/.*|./live-build/manpages/po/ja/.*|./packages/kicksecure/kicksecure-base-files/debian/copyright)"
 
 filtered_output=$(echo "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
 
