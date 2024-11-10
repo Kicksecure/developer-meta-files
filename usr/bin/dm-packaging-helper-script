@@ -1031,9 +1031,6 @@ pkg_git_remotes_add() {
    true
 }
 
-## TODO: Condense the next several functions into a single function for
-## arbitrary batch Git operations?
-#
 ## Creates a 'bookworm' branch for all repos.
 pkg_git_branch_bookworm() {
    git branch bookworm || true
@@ -1142,8 +1139,7 @@ pkg_compat_delete() {
 }
 
 ## Updates all packages that ship systemd services and Build-Depend on
-## debhelper 13 or later to depend on debhelper 13.11.6 or later. TODO:
-## Potentially consider not hardcoding debhelper versions here?
+## debhelper 13 or later to depend on debhelper 13.11.6 or later.
 pkg_build_depends_systemd() {
    local search replace
 
@@ -1201,9 +1197,7 @@ pkg_build_depends_systemd() {
 
 ## Generates diffs for specific files between each package and an arbitrary
 ## template package. Also checks for the existence of several files, and
-## synchronizes files that should be identical. TODO: This function does an
-## awful lot. Should its functionality be broken up into multiple smaller
-## functions?
+## synchronizes files that should be identical.
 pkg_packaging_files_diff() {
    local compare_with_full_path contributing_md_absent_package_list \
       package_lacks_contributing_md contributing_md_absent_package \
@@ -1274,7 +1268,6 @@ pkg_packaging_files_diff() {
 
       ## Would show license files that are different.
       ## This is useful to manually enable sometimes.
-      ## TODO: Make toggleable without requiring manual enablement?
       #diff "${compare_with_full_path}/COPYING" "${batch_current_package_path}/COPYING"
 
 #       if diff ~/old-copying "${batch_current_package_path}/COPYING" &>/dev/null ; then
@@ -1402,8 +1395,7 @@ pkg_git_commit_copyright() {
    true
 }
 
-## Commits all changes to all repos with a tunable-set message. TODO: Maybe
-## use a command-line argument rather than a tunable?
+## Commits all changes to all repos with a tunable-set message.
 pkg_git_commit_all() {
    git add -A
    git commit -m "${git_commit_all_msg}" || true
@@ -2215,7 +2207,6 @@ main() {
 ## . END Main logic }
 
 ## Global tunables, adjust these as necessary
-## TODO should these be broken out into a config file?
 derivative_binary_dir="$HOME/derivative-binary"
 derivative_maker_source_code_dir="$HOME/derivative-maker"
 derivative_name_list=( 'kicksecure' 'whonix' )
