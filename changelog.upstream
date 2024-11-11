@@ -1,3 +1,15 @@
+commit e586ef8d818122f8809e75469f2087a9eda35212
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 09:07:57 2024 -0500
+
+    unicode
+
+commit 9b1b8c49857b6cfa18efa3a124b8d7790afb161f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 12:52:03 2024 +0000
+
+    bumped changelog version
+
 commit 0f4021f456eb63b4fc3d71b88358a72276d2a1ad
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 11 07:35:54 2024 -0500
