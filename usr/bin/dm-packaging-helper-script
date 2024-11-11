@@ -842,8 +842,6 @@ pkg_descr_merger() {
                [ "${package_name}" = 'onion-grater' ] && machine='gateway'
                [ "${package_name}" = 'anon-apps-config' ] && machine='workstation'
                [ "${package_name}" = 'bindp' ] && machine='workstation'
-               [ "${package_name}" = 'ipv4-forward-disable' ] && machine='gateway'
-               [ "${package_name}" = 'ipv6-disable' ] && machine='gateway'
             else
                echo "${red}${bold}FATAL ERROR: Unrecognized project '${project}'!${reset}"
                exit 1
