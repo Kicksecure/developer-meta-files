@@ -2128,7 +2128,7 @@ announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
 derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
 nothing_to_commit_msg="nothing to commit, working tree clean"
-package_documentation_dir="${derivative_maker_source_code_dir}/package_documentation"
+package_documentation_dir="${derivative_binary_dir}/package_documentation"
 script_absolute_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_package_name="$(cd "${script_absolute_dir}/../.." && basename "${PWD}")"
 
