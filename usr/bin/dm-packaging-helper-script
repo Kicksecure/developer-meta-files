@@ -509,7 +509,7 @@ internal_git_diff() {
    if [ -z "${git_branch_one}" ]; then
       echo "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
       exit 1
-   elif [ -z "${git_branch_tw}" ]; then
+   elif [ -z "${git_branch_two}" ]; then
       echo "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
       exit 1
    fi
