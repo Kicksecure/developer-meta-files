@@ -400,7 +400,7 @@ internal_descr_writer() {
    for project in "${batch_meta_project_list[@]}"; do
       for category in "${batch_meta_category_list[@]}"; do
          description_file="${package_documentation_dir}/${batch_current_package_reponame}_${category}_${project}.mediawiki"
-    
+
          ## Create the file if it does not yet exist
          if ! [ -e "${description_file}" ]; then
             control_file="${batch_current_package_path}/debian/control"
@@ -408,22 +408,22 @@ internal_descr_writer() {
                echo "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
                exit 1
             fi
-    
+
             touch "${description_file}"
-    
+
             echo "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
             echo '' | tee -a -- "${description_file}" >/dev/null
             echo "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
             echo "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
-    
+
             extract_description_from_debian_control "${control_file}" "${description_file}" '=== XXX_REPLACE_ME_XXX ==='
-    
+
          ## If the file does exist, make sure it's a real file
          elif ! [ -f "${description_file}" ]; then
             echo "${red}${bold}FATAL ERROR: ${description_file} exists but is not a regular file!${reset}"
             exit 1
          fi
-    
+
          if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]}" = 'y' ]; then
             echo "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
             echo '' | tee -a -- "${description_file}" >/dev/null
@@ -434,10 +434,10 @@ internal_descr_writer() {
             [ "${batch_meta_qubes_whonix_only}" = 'y' ] && echo '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
             [ "${batch_meta_installed_by_default}" = 'n' ] && echo '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
             echo '' | tee -a -- "${description_file}" >/dev/null
-    
+
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
-    
+
          echo "$@" | tee -a -- "${description_file}" >/dev/null
       done
    done
@@ -509,7 +509,7 @@ internal_git_diff() {
    if [ -z "${git_branch_one}" ]; then
       echo "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
       exit 1
-   elif [ -z "${git_branch_tw}" ]; then
+   elif [ -z "${git_branch_two}" ]; then
       echo "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
       exit 1
    fi
@@ -574,7 +574,7 @@ pkg_readme_creator_do() {
      replace_str
 
    repo_skip 'derivative-maker' || return 0
-   
+
    ##TODO: genmkfile not requires. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
 
@@ -603,7 +603,7 @@ pkg_readme_creator_do() {
    description_found='n'
    headline_written='n'
 
-   rm --force "${readme_file}"
+   safe-rm --force "${readme_file}"
 
    extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
 
@@ -644,11 +644,11 @@ pkg_descr_creator() {
    )
 
    if [ "${batch_func_init_done}" = 'n' ]; then
-      rm -f "${package_documentation_dir}"/*.mediawiki
+      safe-rm -f "${package_documentation_dir}"/*.mediawiki
       batch_func_init_done='y'
    fi
 
-   readarray -t file_list < <(find "${batch_current_package_path}" -type f)
+   readarray -t file_list < <(find "${batch_current_package_path}" -type f -not -iwholename '*.git*')
    for file_name in "${file_list[@]}"; do
       ## Skip binary files for better performance.
       if ! isutf8 -q "${file_name}" ; then
@@ -709,7 +709,7 @@ pkg_descr_creator() {
                if [ "${second_word}" = 'project' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of projects
-                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray
                   temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_project_list <<< "${temp}"
                   # Remove a mangled entry at the end.
@@ -744,7 +744,7 @@ pkg_descr_creator() {
                elif [ "${second_word}" = 'category' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of categories
-                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray 
+                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray
                   temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_category_list <<< "${temp}"
                   # Remove a mangled entry at the end.
@@ -765,7 +765,7 @@ pkg_descr_creator() {
                continue
             fi
          fi
-         
+
          if [ "${in_meta_section}" = 'y' ]; then
             ## At this point, we're in the meta section, but the current line
             ## doesn't look like a metadata field line. Usually this means
@@ -806,7 +806,7 @@ pkg_descr_creator() {
 ## Merges together package documentation files for all packages sharing a
 ## project, category, and target machine type in common. pkg_descr_creator
 ## must be run first. Note that this function does NOT go through the batch
-## processing mechnism.
+## processing mechanism.
 pkg_descr_merger() {
    local project_list category_list project category file_name_full_path \
       file_name_only package_name machine merged_file
@@ -842,8 +842,6 @@ pkg_descr_merger() {
                [ "${package_name}" = 'onion-grater' ] && machine='gateway'
                [ "${package_name}" = 'anon-apps-config' ] && machine='workstation'
                [ "${package_name}" = 'bindp' ] && machine='workstation'
-               [ "${package_name}" = 'ipv4-forward-disable' ] && machine='gateway'
-               [ "${package_name}" = 'ipv6-disable' ] && machine='gateway'
             else
                echo "${red}${bold}FATAL ERROR: Unrecognized project '${project}'!${reset}"
                exit 1
@@ -852,7 +850,7 @@ pkg_descr_merger() {
             merged_file="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
 
             if ! [ "${merge_file_reset_list["${merged_file}"]}" = 'y' ] ; then
-               rm -f "${merged_file}"
+               safe-rm -f "${merged_file}"
                merge_file_reset_list["${merged_file}"]='y'
             fi
 
@@ -881,7 +879,7 @@ pkg_descr_merge_all() {
    for project in "${project_list[@]}"; do
       for category in "${category_list[@]}"; do
          all_merged_file="${package_documentation_dir}/${category}_${project}.allmerged.mediawiki"
-         rm -f "${all_merged_file}"
+         safe-rm -f "${all_merged_file}"
 
          for machine in "${machine_list[@]}"; do
             file_name_full_path="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
@@ -940,64 +938,11 @@ pkg_links_open() {
    torbrowser --new-tab "$(pkg_links_echo)"
 }
 
-## TODO document this, seems to do something Twitter-related by hitting a
-## GitHub API endpoint? Also, this looks dangerous, it will call the API it's
-## targetting once per project, per package in the project, meaning that the
-## Kicksecure project will get "hit" 55 times, while the Whonix project will
-## get "hit" 16 times. That does not seem correct. Lastly, there's probably a
-## more efficient way to do this, this will constantly create and then delete
-## a tempfile that has the exact same contents.
-##
-## Note from Patrick: not sure anymore. broken long time ago. skip for now.
-#pkg_twitter_to_github() {
-#   local tempfile_path
-
-#   if [ -z "${gh_token}" ]; then
-#      echo "${red}${bold}FATAL ERROR: Cannot call APIs, please set the 'gh_token' environment variable first!${reset}"
-#      exit 1
-#   fi
-
-#   tempfile_path="$(mktemp)"
-
-#   echo "\
-# {
-#    \"name\": \"twitter\",
-#    \"events\": [
-#      \"push\"
-#    ],
-#    \"supported_events\": [
-#      \"push\"
-#    ],
-#    \"title\": \"Twitter\",
-#    \"schema\": [
-#      [
-#        \"string\",
-#        \"1280368298-pfu7jKs5EwAq8JUlce9efKVURNIzH7BwtQkv78F\"
-#      ],
-#      [
-#        \"string\",
-#        \"NLRQlofXcg78Oo8B4ATmtQ3Njhx4rn9O4enWhSs\"
-#      ],
-#      [
-#        \"false\",
-#        \"digest\"
-#      ],
-#      [
-#        \"boolean\",
-#        \"short_format\"
-#      ]
-#    ]
-#  }" > "${tempfile_path}"
-
-#   curl -v -H "Authorization: token $gh_token" -X POST "https://api.github.com/orgs/${batch_current_project_name}/repos" --data @"${tempfile_path}"
-#   rm "${tempfile_path}"
-#}
-
 ## Sets up standard Git remotes for all repos.
 pkg_git_remotes_add() {
    git remote rm origin || true
 
-   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true 
+   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
    git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
@@ -1098,25 +1043,6 @@ pkg_profile_d_zsh_creator() {
    true
 }
 
-## Updates genmkfile Makefiles in all repositories except derivative-maker and
-## genmkfile itself.
-## TODO: No Kicksecure or Whonix packages appear to use "real" genmkfile
-## Makefiles anymore, and some packages such as kloak do use real Makefiles.
-## Therefore this is outdated and dangerous.
-# pkg_packaging_copy() {
-#    repo_skip 'derivative-maker' || return 0
-#    repo_skip 'genmkfile' || return 0
-#
-#    cp '../genmkfile/usr/share/genmkfile/Makefile' './'
-#
-#    git add './Makefile'
-#    git rm './make-helper.bsh'
-#
-#    git commit -m "updated makefile generic to version ${makefile_generic_version}"
-#
-#    true
-# }
-
 ## Updated CONTRIBUTING.md in all repos except derivative-maker, kloak, and
 ## corridor.
 pkg_copy_contributing_file() {
@@ -1146,21 +1072,21 @@ pkg_build_depends_systemd() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'developer-meta-files' || return 0
 
-   if ! find . | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
+   if ! find . -not -iwholename '*.git*' | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
       return 0
-   fi   
+   fi
 
    search='Build-Depends: debhelper (>= 13)'
    replace='Build-Depends: debhelper (>= 13.11.6)'
    str_replace "${search}" "${replace}" "${batch_current_package_path}/debian/control"
 
-   true 
+   true
 }
 
 ## Previously was used to do mass package changes for porting packages from
 ## Bullseye to Bookworm. Retained for future reference.
 # pkg_debhelper_bump() {
-#    local one two  
+#    local one two
 #    one='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
 #    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
@@ -1334,7 +1260,7 @@ pkg_git_push_tags() {
    git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
 
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-   
+
    for package_remote in "${batch_current_package_remote_list[@]}"; do
       git push "${package_remote}" "${git_tag_latest}" &
       git_pid="$!"
@@ -1565,7 +1491,7 @@ pkg_git_submodule_file_writer() {
    repo_skip 'derivative-maker' || return 0
 
    if [ "${batch_func_init_done}" = 'n' ]; then
-      rm "${derivative_maker_source_code_dir}/.gitmodules" 
+      safe-rm "${derivative_maker_source_code_dir}/.gitmodules"
       batch_func_init_done='y'
       echo '## This file is autogenerated by:
 ## autogenerated by dm-packaging-helper-script function pkg_git_submodule_file_writer
@@ -1614,12 +1540,6 @@ $url" \
    echo "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 }
 
-## TODO: what... is this useful for?
-#pkg_git_main_git_log_writer() {
-#   pushd .. >/dev/null
-#   pushd .. >/dev/null
-#}
-
 ## Generates a release announcement.
 pkg_git_packages_git_log_writer() {
    local package_header_written package_version_old package_version_new \
@@ -1631,9 +1551,9 @@ pkg_git_packages_git_log_writer() {
 
    if [ "${batch_func_init_done}" = 'n' ]; then
       post_run_hook_list+=( 'generate_announcement' )
-      rm -f "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
-      rm -f "${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-      rm -f "${announcements_drafts_dir}/whonix_giant_git_log.txt"
+      safe-rm -f "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
+      safe-rm -f "${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+      safe-rm -f "${announcements_drafts_dir}/whonix_giant_git_log.txt"
       batch_func_init_done='y'
    fi
 
@@ -1760,23 +1680,6 @@ pkg_verify_signed_commit_and_tag() {
    true
 }
 
-## TODO: Old, outdated, looks like it was last used in Ubuntu 14.04.
-#pkg_dput_cfg_writer() {
-#   make_get_variables
-#
-#   launchpad_name="adrelanos"
-#
-#   echo "\
-#[${reponame}]
-#fqdn      = ppa.launchpad.net
-#method      = sftp
-#incoming                = ~${launchpad_name}/${reponame}/ubuntu/
-#login     = ${launchpad_name}
-#allowed_distributions   = trusty" | tee -a ~/dput.cfg >/dev/null
-#
-#   true
-#}
-
 ## Finds packages that have modifications made to them since the last version
 ## bump, and displays their repo names. Also communicates that the package in
 ## question needs a version bump via a global variable, which is consumed by
@@ -1787,11 +1690,11 @@ pkg_need_version_bump_show() {
    local last_log_entry git_status_last_line
 
    batch_current_package_needs_version_bump='n'
-         
+
    repo_skip 'derivative-maker' || return 0
-      
+
    last_log_entry="$(git log --format=%s -1)"
-   
+
    if [ 'bumped changelog version' = "${last_log_entry}" ]; then
       return 0
    fi
@@ -1804,7 +1707,7 @@ pkg_need_version_bump_show() {
 
    ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
-   
+
    pkg_bash_sanity_test
 
    batch_current_package_needs_version_bump='y'
@@ -1895,7 +1798,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
-   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then 
+   if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       return 0
    fi
 
@@ -1912,7 +1815,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       echo "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
       exit 1
-   fi   
+   fi
 
    ## At this stage:
    ## - the commit prior the changelog bump is verified
@@ -1928,7 +1831,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    genmkfile reprepro-add
    genmkfile deb-cleanup
 
-   true 
+   true
 }
 
 ## Builds all packages.
@@ -1939,7 +1842,7 @@ pkg_only_build_all() {
    export make_use_cowbuilder=true
    genmkfile deb-pkg
 
-   true 
+   true
 }
 
 ## Adds all packages to a reprepro repository.
@@ -2224,7 +2127,7 @@ announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
 derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
 nothing_to_commit_msg="nothing to commit, working tree clean"
-package_documentation_dir="${derivative_maker_source_code_dir}/package_documentation"
+package_documentation_dir="${derivative_binary_dir}/package_documentation"
 script_absolute_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_package_name="$(cd "${script_absolute_dir}/../.." && basename "${PWD}")"
 

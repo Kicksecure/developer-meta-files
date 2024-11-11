@@ -1,3 +1,124 @@
+commit e586ef8d818122f8809e75469f2087a9eda35212
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 09:07:57 2024 -0500
+
+    unicode
+
+commit 9b1b8c49857b6cfa18efa3a124b8d7790afb161f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 12:52:03 2024 +0000
+
+    bumped changelog version
+
+commit 0f4021f456eb63b4fc3d71b88358a72276d2a1ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 07:35:54 2024 -0500
+
+    .
+
+commit 02c114bd896f5a53ca06b38d294e985177407dba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 07:32:26 2024 -0500
+
+    .
+
+commit b3c78970255d41acaff106537024bd3e3eed9282
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 07:31:11 2024 -0500
+
+    .
+
+commit f78c8ee5b9b89a5f2f4461d28e679d9b082793ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 11:15:51 2024 +0000
+
+    bumped changelog version
+
+commit 9d7636d41bd8ddc17a4f59ca8b6c132d73096fc6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 06:14:15 2024 -0500
+
+    fix
+
+commit a6de0be6554714e465b3b0fcc7ac8e743b76b02e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 14:34:47 2024 +0000
+
+    bumped changelog version
+
+commit cc2337f2acf1dda082f0948f0192d0273faafaa5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 09:05:43 2024 -0500
+
+    .
+
+commit 8c48327192d20d021e6b50b5621d6a2355e0fce2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 09:02:41 2024 -0500
+
+    cleanup
+
+commit 4d44c00f150f03a3a14c4fe8ccb65dcad0f619e2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 08:59:47 2024 -0500
+
+    safe-rm
+
+commit 89c8abcf77f21cb953333e09f7960d13b283a243
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 08:55:37 2024 -0500
+
+    remove trailing spaces
+
+commit 9fcc138270474372d8df10ac25b5c9539e20603e
+Merge: ace4574 386ae2d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 08:55:14 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/dm-packaging-helper-script-refactor'
+
+commit ace457415fdf40b0c34cee8d46997653da710ad8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 11:51:58 2024 +0000
+
+    bumped changelog version
+
+commit 2c5662d99c71ce1b052c7a58a6dc9af525e453ac
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 10 06:49:26 2024 -0500
+
+    unicode
+
+commit 386ae2d1fd616add60836423ad3c90c670202c50
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Nov 10 00:46:18 2024 -0600
+
+    Remove unneeded TODOs from dm-packaging-helper-script
+
+commit 83ac02786187f3fbb76aad07e83ac26cedd08e0b
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Nov 9 23:35:52 2024 -0600
+
+    Fix several bugs in dm-packaging-helper-script
+
+commit ba9e167e764ef61c390b4dee4a06719ce93375f5
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Nov 8 16:46:19 2024 -0600
+
+    dm-packaging-helper-script: fix misspelled function name
+
+commit c5f2b4bc36299178a4bea3d087cc26d31cc1cdc7
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Nov 8 13:51:38 2024 -0600
+
+    Refactor dm-packaging-helper-script (WIP)
+
+commit 4d442bfde07ed7647821f177718c878af65b50ac
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Nov 7 16:00:39 2024 +0000
+
+    bumped changelog version
+
 commit 18c804c5c14ee1c6490a1fc18ff4a644c5821753
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Nov 7 11:00:03 2024 -0500
