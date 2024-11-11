@@ -648,7 +648,7 @@ pkg_descr_creator() {
       batch_func_init_done='y'
    fi
 
-   readarray -t file_list < <(find "${batch_current_package_path}" -type f)
+   readarray -t file_list < <(find "${batch_current_package_path}" -type f -not -iwholename '*.git*')
    for file_name in "${file_list[@]}"; do
       ## Skip binary files for better performance.
       if ! isutf8 -q "${file_name}" ; then
@@ -1072,7 +1072,7 @@ pkg_build_depends_systemd() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'developer-meta-files' || return 0
 
-   if ! find . | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
+   if ! find . -not -iwholename '*.git*' | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
       return 0
    fi
 
