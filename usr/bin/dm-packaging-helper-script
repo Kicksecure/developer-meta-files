@@ -1631,6 +1631,7 @@ pkg_git_packages_git_log_writer() {
 
       if [ "${package_header_written}" = 'n' ]; then
          echo "* ${batch_current_package_reponame}:" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+         package_header_written='y'
       fi
 
       echo "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
