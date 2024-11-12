@@ -1,3 +1,71 @@
+commit 8cac7d204da1cd46e94ebae035a469c06c83836e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:20:45 2024 -0500
+
+    .
+
+commit e1b3f6d1d3256deceffd137723867ccabd5ee4d6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:19:20 2024 -0500
+
+    .
+
+commit 33b79a38e829746cfaa839dc2ab889c814b93cee
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:16:52 2024 -0500
+
+    .
+
+commit 4ddd55063bcff1078535c97213366772abc34a7a
+Merge: 9bbbc1b 8c66793
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:10:20 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/tor-browser-version-update'
+
+commit 9bbbc1b9c0bb650c65028932971ed1834b6d86c3
+Merge: 7961dda fc5a151
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:05:20 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/dm-packaging-helper-script-refactor'
+
+commit 7961dda570841efe43e561d6daefb301cb349bbb
+Merge: 37d777d 2ec3ed0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Nov 12 01:04:50 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/dm-check-unicode-enhance'
+
+commit 8c667933ed46418dc5dcfd21b512b6e8baeedd87
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Mon Nov 11 23:08:31 2024 -0600
+
+    Add Tor Browser Bundle version detection function
+    
+    Note that this adds a dependency on jq since autodetecting the latest
+    version of Tor Browser for ARM64 requires parsing JSON from
+    SourceForge.
+
+commit 2ec3ed0aa581b1a7ba4580c9e71554ea290601e8
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Mon Nov 11 18:05:47 2024 -0600
+
+    Make the whitelisted directory list in dm-check-unicode look nicer
+
+commit fc5a1516eb24245587a5ac856a7e074c6e7b6cd6
+Merge: b746d99 37d777d
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Mon Nov 11 17:41:29 2024 -0600
+
+    Merge branch 'master' into arraybolt3/dm-packaging-helper-script-refactor
+
+commit 37d777dce8f70dbc7b6c8cf58cae559b2c16ce2f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 11 14:08:06 2024 +0000
+
+    bumped changelog version
+
 commit e586ef8d818122f8809e75469f2087a9eda35212
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 11 09:07:57 2024 -0500
@@ -39,6 +107,12 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 11 06:14:15 2024 -0500
 
     fix
+
+commit b746d9902f1380931c719f42daa21db6b0c5c732
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Nov 10 11:36:39 2024 -0600
+
+    Fix dm-packaging-helper-script bug with package headers in changelogs
 
 commit a6de0be6554714e465b3b0fcc7ac8e743b76b02e
 Author: Patrick Schleizer <adrelanos@whonix.org>
