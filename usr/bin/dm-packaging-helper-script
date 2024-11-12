@@ -1910,9 +1910,9 @@ pkg_tor_browser_version_update() {
       current_tbb_version current_tbb_alpha_version tbb_arm_json \
       current_tbb_arm_version line
 
-   tbb_dl_page="$(2>/dev/null scurl 'https://www.torproject.org/download/languages/')"
-   tbb_dl_alpha_page="$(2>/dev/null scurl 'https://www.torproject.org/download/alpha/')"
-   tbb_dl_arm_page="$(2>/dev/null scurl 'https://sourceforge.net/projects/tor-browser-ports/files/')";
+   tbb_dl_page="$(2>/dev/null scurl --cert-status 'https://www.torproject.org/download/languages/')"
+   tbb_dl_alpha_page="$(2>/dev/null scurl --cert-status 'https://www.torproject.org/download/alpha/')"
+   tbb_dl_arm_page="$(2>/dev/null scurl --cert-status 'https://sourceforge.net/projects/tor-browser-ports/files/')";
    tbb_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
    tbb_alpha_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
    tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
@@ -1942,12 +1942,12 @@ pkg_tor_browser_version_update() {
       | sed 's/"//g')";
 
    safe-rm -f "${tbb_hardcoded_version_file}"
-   echo "tbb_hardcoded_version=\"${current_tbb_version}\"" | tee -a -- "${tbb_hardcoded_version_file}"
-   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | tee -a -- "${tbb_hardcoded_version_file}"
+   echo "tbb_hardcoded_version=\"${current_tbb_version}\"" | sponge -a -- "${tbb_hardcoded_version_file}"
+   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | sponge -a -- "${tbb_hardcoded_version_file}"
 
    safe-rm -f "${tbb_hardcoded_version_alpha_file}"
-   echo "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | tee -a -- "${tbb_hardcoded_version_alpha_file}"
-   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | tee -a -- "${tbb_hardcoded_version_alpha_file}"
+   echo "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
+   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git diff HEAD
