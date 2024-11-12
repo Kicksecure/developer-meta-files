@@ -1899,6 +1899,65 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
    true
 }
 
+## Checks the current hardcoded Tor Browser version against the latest version
+## available from the Tor Project website, updating it if necessary. Note
+## that this function does NOT go through the batch processing mechanism.
+pkg_tor_browser_version_update() {
+   local tbb_dl_page tbb_dl_alpha_page tbb_dl_arm_page tbb_regex \
+      tbb_alpha_regex tbb_hardcoded_version_file \
+      tbb_hardcoded_version_alpha_file current_tbb_url current_tbb_alpha_url \
+      current_tbb_version current_tbb_alpha_version tbb_arm_json \
+      current_tbb_arm_version line
+
+   tbb_dl_page="$(2>/dev/null scurl 'https://www.torproject.org/download/languages/')"
+   tbb_dl_alpha_page="$(2>/dev/null scurl 'https://www.torproject.org/download/alpha/')"
+   tbb_dl_arm_page="$(2>/dev/null scurl 'https://sourceforge.net/projects/tor-browser-ports/files/')";
+   tbb_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
+   tbb_alpha_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
+   tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
+   tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
+
+   current_tbb_url="$(while read -r line; do
+         if [[ "${line}" =~ ${tbb_regex} ]]; then
+            perl -p -e "s/.*(${tbb_regex}).*/\1/" <<< "${line}"
+         fi
+      done <<< "${tbb_dl_page}" | cut -d'/' -f5)"
+   current_tbb_alpha_url="$(while read -r line; do
+         if [[ "${line}" =~ ${tbb_alpha_regex} ]]; then
+            perl -p -e "s/.*(${tbb_alpha_regex}).*/\1/" <<< "${line}"
+         fi
+      done <<< "${tbb_dl_alpha_page}" | cut -d'/' -f5)"
+   current_tbb_version="$(cut -d'/' -f5 <<< "${current_tbb_url}")"
+   current_tbb_alpha_version="$(cut -d'/' -f5 <<< "${current_tbb_alpha_url}")"
+
+   ## Sourceforge returns the file list from a repo as a JSON blob embedded in
+   ## a JS script, so a plain regex match isn't so suitable here. Instead,
+   ## extract the JSON and then parse it.
+   tbb_arm_json="$(grep 'net.sf.files' <<< "${tbb_dl_arm_page}" \
+         | sed 's/\s\+net\.sf\.files = //; s/;$//')"
+   current_tbb_arm_version="$(jq \
+      '[.[] | select(.name | test("^\\d+\\.\\d+\\.\\d+"))][0].name' \
+      <<< "${tbb_arm_json}" \
+      | sed 's/"//g')";
+
+   safe-rm -f "${tbb_hardcoded_version_file}"
+   echo "tbb_hardcoded_version=\"${current_tbb_version}\"" | tee -a -- "${tbb_hardcoded_version_file}"
+   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | tee -a -- "${tbb_hardcoded_version_file}"
+
+   safe-rm -f "${tbb_hardcoded_version_alpha_file}"
+   echo "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | tee -a -- "${tbb_hardcoded_version_alpha_file}"
+   echo "tbb_hardcoded_version_arm64=\"${current_tbb_arm_version}\"" | tee -a -- "${tbb_hardcoded_version_alpha_file}"
+
+   pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+   git diff HEAD
+   echo 'Press any key to continue.'
+   read -n1 -s
+   git add 'usr/share/tb-updater/tbb_hardcoded_version'
+   git add 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
+   git commit -m 'tbb_hardcoded_version update'
+   popd
+}
+
 ## . END Commands }
 
 ## BEGIN Post-run hooks {
@@ -2100,6 +2159,9 @@ main() {
          ;;
       'pkg_descr_merge_all')
          pkg_descr_merge_all
+         ;;
+      'pkg_tor_browser_version_update')
+         pkg_tor_browser_version_update
          ;;
       *)
          run_batch "${target_cmd}"
