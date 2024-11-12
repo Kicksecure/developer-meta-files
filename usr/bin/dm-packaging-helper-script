@@ -1951,12 +1951,16 @@ pkg_tor_browser_version_update() {
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git diff HEAD
-   echo 'Press any key to continue.'
-   read -n1 -s
+
+   true "press enter to continue"
+   read temp
+
    git add 'usr/share/tb-updater/tbb_hardcoded_version'
    git add 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
    git commit -m 'tbb_hardcoded_version update'
+
    popd
+   true
 }
 
 ## . END Commands }
