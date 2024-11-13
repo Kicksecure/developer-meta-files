@@ -32,8 +32,8 @@ test -r "$file_name"
 sha256sum "$file_name"
 #sha512sum "$file_name"
 
-## https://www.virustotal.com/gui/url/40f69874f4286621b834052b97804bf75a0e77aa78b24d80b3f1f66f171e6642/detection
-echo "814e9da5ec5e5d6a8fa701999d1fc3baddf7f3adc528e202590e9b1cb73e4a11  vc_redist.x64.exe" | sha256sum --check
+## https://www.virustotal.com/gui/file/1821577409c35b2b9505ac833e246376cc68a8262972100444010b57226f0940?nocache=1
+echo "1821577409c35b2b9505ac833e246376cc68a8262972100444010b57226f0940  vc_redist.x64.exe" | sha256sum --check
 
 ##
 #echo "5935b69f5138ac3fbc33813c74da853269ba079f910936aefa95e230c6092b92f6225bffb594e5dd35ff29bf260e4b35f91adede90fdf5f062030d8666fd0104  vc_redist.x64.exe" | sha512sum --check
