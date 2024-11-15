@@ -1377,7 +1377,7 @@ pkg_git_commit_packaging() {
    if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       ## TODO: should we just get rid of this `true` call?
       true "press enter to continue_not"
-      #read temp
+      #read -r temp
       return
    fi
 
@@ -1433,7 +1433,7 @@ pkg_git_diff_and_commit() {
    git_status_last_line="$(git status | tail -n1)"
    if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       true "press enter to continue_not"
-      #read temp
+      #read -r temp
       return
    fi
 
@@ -1441,7 +1441,7 @@ pkg_git_diff_and_commit() {
    git diff --cached
 
    #true "press enter to continue"
-   #read temp
+   #read -r temp
 
    git add -A
    git commit -m "${git_commit_all_msg}"
@@ -1449,7 +1449,7 @@ pkg_git_diff_and_commit() {
    git_status_last_line="$(git status | tail -n1)"
    if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
       true "press enter to continue_not"
-      #read temp
+      #read -r temp
       return
    fi
 
@@ -1967,7 +1967,7 @@ pkg_tor_browser_version_update() {
    git diff HEAD
 
    true "press enter to continue"
-   read temp
+   read -r temp
 
    git add 'usr/share/tb-updater/tbb_hardcoded_version'
    git add 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
