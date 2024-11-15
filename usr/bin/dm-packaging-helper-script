@@ -1904,44 +1904,50 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
 ## available from the Tor Project website, updating it if necessary. Note
 ## that this function does NOT go through the batch processing mechanism.
 pkg_tor_browser_version_update() {
-   local tbb_dl_page tbb_dl_alpha_page tbb_dl_arm_page tbb_regex \
-      tbb_alpha_regex tbb_hardcoded_version_file \
-      tbb_hardcoded_version_alpha_file current_tbb_url current_tbb_alpha_url \
-      current_tbb_version current_tbb_alpha_version tbb_arm_json \
-      current_tbb_arm_version line git_status_last_line
+   local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
+      tbb_stable_json_url tbb_alpha_json_url git_status_last_line \
+      current_tbb_version current_tbb_alpha_version tbb_dl_arm_page \
+      tbb_arm_json current_tbb_arm_version
+
+   ## Source tb-updater version-parser script to get tbbversion function. Uses
+   ## environment variable RecommendedTBBVersions as input.
+   source "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/libexec/tb-updater/version-parser"
+
+   tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
+   tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
+   tbb_stable_json_url='https://aus1.torproject.org/torbrowser/update_3/release/downloads.json'
+   tbb_alpha_json_url='https://aus1.torproject.org/torbrowser/update_3/alpha/downloads.json'
+   RecommendedTBBVersions="$(mktemp)"
+   export RecommendedTBBVersions
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git_status_last_line="$(git status | tail -n1)"
    if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
-      true "ERROR: Uncommited changes!"
+      echo "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
       exit 1
    fi
    popd
 
-   tbb_dl_page="$(2>/dev/null scurl --cert-status 'https://www.torproject.org/download/languages/')"
-   tbb_dl_alpha_page="$(2>/dev/null scurl --cert-status 'https://www.torproject.org/download/alpha/')"
-   tbb_dl_arm_page="$(2>/dev/null scurl --cert-status 'https://sourceforge.net/projects/tor-browser-ports/files/')";
-   tbb_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
-   tbb_alpha_regex='https:\/\/dist.torproject.org\/torbrowser\/.*\/tor-browser-linux-x86_64-.*tar.xz'
-   tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
-   tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
+   ## Calling tbbversion populates the tbb_version variable.
+   2>/dev/null scurl --cert-status --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
+   tbbversion || {
+      echo "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
+      exit 1
+   }
+   # shellcheck disable=SC2154
+   current_tbb_version="${tbb_version}"
+   2>/dev/null scurl --cert-status --output "${RecommendedTBBVersions}" "${tbb_alpha_json_url}"
+   tbbversion || {
+      echo "${red}${bold}FATAL ERROR: Could not parse alpha TBB version JSON!${reset}"
+      exit 1
+   }
+   # shellcheck disable=SC2154
+   current_tbb_alpha_version="${tbb_version}"
 
-   current_tbb_url="$(while read -r line; do
-         if [[ "${line}" =~ ${tbb_regex} ]]; then
-            perl -p -e "s/.*(${tbb_regex}).*/\1/" <<< "${line}"
-         fi
-      done <<< "${tbb_dl_page}" | cut -d'/' -f5)"
-   current_tbb_alpha_url="$(while read -r line; do
-         if [[ "${line}" =~ ${tbb_alpha_regex} ]]; then
-            perl -p -e "s/.*(${tbb_alpha_regex}).*/\1/" <<< "${line}"
-         fi
-      done <<< "${tbb_dl_alpha_page}" | cut -d'/' -f5)"
-   current_tbb_version="$(cut -d'/' -f5 <<< "${current_tbb_url}")"
-   current_tbb_alpha_version="$(cut -d'/' -f5 <<< "${current_tbb_alpha_url}")"
-
+   ## Tor Browser's unofficial ARM64 port is on Sourceforge. Unfortunately,
    ## Sourceforge returns the file list from a repo as a JSON blob embedded in
-   ## a JS script, so a plain regex match isn't so suitable here. Instead,
-   ## extract the JSON and then parse it.
+   ## a JS script, and parsing that JSON blob is tricky.
+   tbb_dl_arm_page="$(2>/dev/null scurl --cert-status 'https://sourceforge.net/projects/tor-browser-ports/files/')";
    tbb_arm_json="$(grep 'net.sf.files' <<< "${tbb_dl_arm_page}" \
          | sed 's/\s\+net\.sf\.files = //; s/;$//')"
    current_tbb_arm_version="$(jq \
@@ -1968,6 +1974,9 @@ pkg_tor_browser_version_update() {
    git commit -m 'tbb_hardcoded_version update'
 
    popd
+
+   # Clean up temp file
+   safe-rm "${RecommendedTBBVersions}"
    true
 }
 
