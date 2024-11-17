@@ -1,3 +1,28 @@
+commit acceba78d035c4be1d3751ff99028300da34e13d
+Merge: 9aa1c36 9c36322
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 17 10:16:21 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/tbb-version-detection-v2'
+
+commit 9c36322bc573a5fd8f35cb32d6520fb483e520cc
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Nov 15 15:50:28 2024 -0600
+
+    Fix a Shellcheck notice
+
+commit 84204d7fdc13ea3251c65be7a1a014e381883f1e
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Nov 15 15:49:24 2024 -0600
+
+    Use tb-updater's tbbversion for finding Tor Browser versions where possible
+
+commit 9aa1c361aed56babc7cbbb51abb4cf8f41513af0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 15 11:27:30 2024 +0000
+
+    bumped changelog version
+
 commit 1f39e529c45efca073f4aa864853a87c35c384a3
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Nov 15 06:27:18 2024 -0500
