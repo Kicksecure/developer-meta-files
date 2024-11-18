@@ -1931,7 +1931,8 @@ pkg_tor_browser_version_update() {
    fi
    popd
 
-   ## Calling tbbversion populates the tbb_version variable.
+   ## tbbversion requires: ${RecommendedTBBVersions}
+   ## tbbversion sets: ${tbb_version}
    2>/dev/null scurl --cert-status --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
    tbbversion || {
       echo "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
