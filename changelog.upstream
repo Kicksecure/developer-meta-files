@@ -1,3 +1,34 @@
+commit aac98709f43a2e6ec842a8920bcb432e5444a798
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 18 08:01:39 2024 -0500
+
+    refactoring
+
+commit 570dcd7cff677341496b8276b3d9ffc59e0b6269
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 18 07:58:14 2024 -0500
+
+    comments
+
+commit 3a371999d294b7e9245c230113619ff14dd30a41
+Merge: 00c14a2 65b428c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 18 06:58:05 2024 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/json-parse-hardening'
+
+commit 65b428c34ea3f7d42d36445f816f8ef4e653747c
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Nov 17 16:23:52 2024 -0600
+
+    Make compatible with hardened JSON parsing code in tb-updater, harden Tor Browser ARM64 JSON parsing
+
+commit 00c14a297d67c0aeae1beab939a5efef7bb54946
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 17 16:05:48 2024 +0000
+
+    bumped changelog version
+
 commit acceba78d035c4be1d3751ff99028300da34e13d
 Merge: 9aa1c36 9c36322
 Author: Patrick Schleizer <adrelanos@whonix.org>
