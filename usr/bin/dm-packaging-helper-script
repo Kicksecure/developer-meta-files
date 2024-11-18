@@ -1954,7 +1954,7 @@ pkg_tor_browser_version_update() {
    tbb_dl_arm_page="$(2>/dev/null scurl --cert-status 'https://sourceforge.net/projects/tor-browser-ports/files/')";
    tbb_arm_json="$(grep 'net.sf.files' <<< "${tbb_dl_arm_page}" \
       | sed 's/\s\+net\.sf\.files = //; s/;$//')"
-   echo "${tbb_arm_json}" > "${RecommendedTBBVersions}"
+   echo "${tbb_arm_json}" | sponge -- "${RecommendedTBBVersions}"
 
    tbb_version_parse_as_arm64='y'
    tbbversion || {
