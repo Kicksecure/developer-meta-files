@@ -323,6 +323,17 @@ libvirt_compress() {
    if [ ! -r "${xz_archive}" ]; then
       error "xz_archive ${xz_archive} not readable!"
    fi
+
+   if [ "${dist_build_source_archive}" = "true" ]; then
+      ## Not deleting source code.
+      return 0
+   fi
+
+   for file_name_item_full_path in ${filelist_full_path} ; do
+      ## Safe disk space.
+      ## Delete raw and ova images in ${dist_binary_build_folder} after xz archive has been created.
+      safe-rm -f "${file_name_item_full_path}"
+   done
 }
 
 virtualbox_export() {
