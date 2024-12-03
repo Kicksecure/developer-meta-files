@@ -483,7 +483,6 @@ Please donate! [C]
             --dry-run
    fi
 
-
    local vm_name_to_be_deleted
    for vm_name_to_be_deleted in ${vm_names_to_be_exported} ; do
       ## Safe disk space.
