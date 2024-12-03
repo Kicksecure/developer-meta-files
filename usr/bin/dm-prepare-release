@@ -148,6 +148,8 @@ libvirt_compress() {
       return 0
    fi
 
+   legal_files_copy
+
    if [ "${dist_build_qcow2}" = "true" ]; then
       rm --force "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
@@ -344,6 +346,8 @@ virtualbox_export() {
    if [ "$vm_names_to_be_exported" = "" ]; then
       error "vm_names_to_be_exported is unset!"
    fi
+
+   legal_files_copy
 
    local producturl vendorurl vendor eulafile_user description
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
@@ -648,9 +652,7 @@ signatures_create() {
    set +o nounset
 }
 
-main() {
-   sanity_tests "$@"
-
+legal_files_copy() {
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
       cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
@@ -659,6 +661,10 @@ main() {
       cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
+}
+
+main() {
+   sanity_tests "$@"
 
    if [ "${dist_build_type_long}" = "gateway" ]; then
       true "$0: INFO: Skip, because dist_build_type_long is gateway. Not needed because of unified Whonix-Gateway and Whonix-Workstation images."
