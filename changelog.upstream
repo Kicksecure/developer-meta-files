@@ -1,3 +1,43 @@
+commit a303b07fc9395616923329014fce838a30a38340
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 3 15:26:12 2024 -0500
+
+    fix
+
+commit 11bc42e65b938d7b4bb845ae0fbb279bc746f620
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 3 15:23:28 2024 -0500
+
+    refactoring
+
+commit c2fea785fdf209b0bdf7f30c4935319aff37cf7b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 3 10:24:06 2024 -0500
+
+    Safe disk space.
+    
+    Delete raw and ova images in ${dist_binary_build_folder} after xz archive has been created.
+
+commit 3dba15da15a03e993a02c033f0267509a7895cfa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 3 10:12:40 2024 -0500
+
+    .
+
+commit fab20e08da1b4eea3bf4f42513cbd141a11c2aff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 3 10:11:58 2024 -0500
+
+    Safe disk space.
+    
+    Delete temporary VirtualBox VMs in temporary VM user build folder to save disk space during the build process.
+
+commit 4bb90ffcbbe2b7c42bccde38a64134f470eb8008
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Nov 18 14:56:11 2024 +0000
+
+    bumped changelog version
+
 commit aac98709f43a2e6ec842a8920bcb432e5444a798
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 18 08:01:39 2024 -0500
