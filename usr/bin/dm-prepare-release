@@ -330,6 +330,10 @@ virtualbox_export() {
       return 0
    fi
 
+   if [ "$vm_names_to_be_exported" = "" ]; then
+      error "vm_names_to_be_exported is unset!"
+   fi
+
    local producturl vendorurl vendor eulafile_user description
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
       producturl="https://www.${project_clearnet}"
@@ -478,6 +482,16 @@ Please donate! [C]
             --vmname "Whonix-Workstation-${dist_build_version}" \
             --dry-run
    fi
+
+
+   local vm_name_to_be_deleted
+   for vm_name_to_be_deleted in ${vm_names_to_be_exported} ; do
+      ## Safe disk space.
+      ## Delete temporary VM in temporary VM user build folder to save disk space
+      ## during the build process.
+      $SUDO_TO_VBOX_TEMP VBoxManage unregistervm "$vm_name_to_be_deleted" --delete || true
+      $SUDO_TO_ROOT safe-rm -r -f "$HOMEVAR_VBOX_TEMP/VirtualBox VMs/$vm_name_to_be_deleted"
+   done
 }
 
 sign_cmd_gpg() {
