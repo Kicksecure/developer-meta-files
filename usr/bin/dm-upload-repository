@@ -109,8 +109,7 @@ main() {
 }
 
 ## used to work very well
-## TODO: not using during repository split Kicksecure and Whonix
-#rsync_delete_maybe="--delete"
+rsync_delete_maybe="--delete"
 
 derivative_name_item=whonix
 upload_location="root@whonix.org:/var/rsync/developer-meta-files/internal"
