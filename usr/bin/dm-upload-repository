@@ -8,9 +8,6 @@ set -e
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
-## TODO
-exit 0
-
 dist_build_internal_run="true"
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
