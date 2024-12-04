@@ -1,3 +1,15 @@
+commit efc2a3d0280a87f112b354fff15061b8a911e47f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Dec 4 10:20:32 2024 -0500
+
+    delete obsolte remote packages
+
+commit d27782cc1323bf2eba0dee52b2d5a127cbe4aa1f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Dec 4 14:41:05 2024 +0000
+
+    bumped changelog version
+
 commit 23294a0f19424b2362c29327666a8b008c995c00
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Dec 4 08:50:27 2024 -0500
