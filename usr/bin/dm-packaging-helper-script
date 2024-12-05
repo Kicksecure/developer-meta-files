@@ -2053,7 +2053,7 @@ ${header_text}
 
 # Upgrade
 
-Alternatively, in-place release upgrade is possible upgrade using [${project_name} repository](https://www.${project_website}/wiki/Project-APT-Repository).
+Alternatively, an in-place release upgrade is possible using the [${project_name} repository](https://www.${project_website}/wiki/Project-APT-Repository).
 
 ----
 
