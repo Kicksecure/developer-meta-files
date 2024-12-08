@@ -2205,8 +2205,8 @@ main() {
 derivative_binary_dir="$HOME/derivative-binary"
 derivative_maker_source_code_dir="$HOME/derivative-maker"
 derivative_name_list=( 'kicksecure' 'whonix' )
-derivative_version_old_main='17.2.7.8-developers-only'
-derivative_version_new_main='17.2.8.0-developers-only'
+derivative_version_old_main='17.2.8.0-developers-only'
+derivative_version_new_main='17.2.8.1-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
 git_commit_all_msg='refactoring environment variables loading mechanism'
