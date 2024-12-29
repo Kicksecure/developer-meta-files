@@ -20,13 +20,14 @@ trap "exithandler" EXIT
 
 true "${cyan}INFO: rsync test...${reset}"
 
+rsync-ssl --dry-run --recursive --times --quiet rsync://kicksecure.com/kicksecure
+rsync-ssl --dry-run --recursive --times --quiet rsync://whonix.org/whonix
 ## Cannot use subdomain.
-
 #rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
 
-rsync-ssl --dry-run --recursive --times --quiet rsync://whonix.org/whonix
-
 ## XXX: hardcoded
+onion="w5j6stm77zs6652pgsij4awcjeel3eco7kvipheu6mtr623eyyehj4yd.onion"
+torsocks rsync --dry-run --recursive --times --quiet "rsync://${onion}/kicksecure"
 onion="dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion"
 torsocks rsync --dry-run --recursive --times --quiet "rsync://${onion}/whonix"
 
