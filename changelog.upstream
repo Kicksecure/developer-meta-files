@@ -1,3 +1,15 @@
+commit 0859f270f3ea4d03187cb41050ad5c6e695991e2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Dec 29 08:18:42 2024 -0500
+
+    rsync test Kicksecure
+
+commit a15a1be64486f07f0c0778fcea0ab8eb5a599def
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Dec 29 13:06:30 2024 +0000
+
+    bumped changelog version
+
 commit 9b2e9c6c84430aedf422d75473316f2681ab0b01
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Dec 29 07:58:05 2024 -0500
