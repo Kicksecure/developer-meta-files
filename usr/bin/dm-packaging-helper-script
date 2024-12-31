@@ -1,6 +1,6 @@
 #!/bin/bash
 
-## Copyright (C) 2012 - 2024 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 set -x
@@ -1886,7 +1886,7 @@ added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-s
 debian_watch_file_create() {
    local msg
 
-   echo "## Copyright (C) 2012 - 2023 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+   echo "## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
@@ -2188,7 +2188,7 @@ derivative_version_old_main='17.2.8.2-developers-only'
 derivative_version_new_main='17.2.8.5-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
-git_commit_all_msg='refactoring environment variables loading mechanism'
+git_commit_all_msg='copyright'
 makefile_generic_version='1.5'
 packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources-list'
 
