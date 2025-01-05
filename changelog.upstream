@@ -1,3 +1,27 @@
+commit 1b8e6874460f9672822929720165bcad19dfbde6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jan 5 03:32:37 2025 -0500
+
+    fix: skip libvirt_compress for UTM
+
+commit 2b6d28a2418edcbed34e3dc9869284eb5a7f22d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jan 5 03:29:34 2025 -0500
+
+    fix: skip libvirt_compress for UTM
+
+commit cd5912b2d8074f6f2058fe8a093db29a02b227af
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jan 5 03:27:34 2025 -0500
+
+    debugging
+
+commit c6555c221424a77b92c8f1b07671baaa93bc9c99
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Dec 31 18:31:50 2024 +0000
+
+    bumped changelog version
+
 commit a2d43b4e96fb69e79d1e3e84370068f374bbe98b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Dec 31 13:26:16 2024 -0500
