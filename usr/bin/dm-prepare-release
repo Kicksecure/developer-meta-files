@@ -136,12 +136,15 @@ libvirt_compress() {
    local continue_maybe
    continue_maybe=no
    if [ "${dist_build_raw}" = "true" ]; then
+      true "dist_build_raw: true"
       continue_maybe=yes
    fi
    if [ "${dist_build_qcow2}" = "true" ]; then
+      true "dist_build_qcow: true"
       continue_maybe=yes
    fi
    if [ "${dist_build_source_archive}" = "true" ]; then
+      true "dist_build_source_archive: true"
       continue_maybe=yes
    fi
    if [ "${continue_maybe}" = "no" ]; then
