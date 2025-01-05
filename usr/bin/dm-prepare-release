@@ -147,11 +147,6 @@ libvirt_compress() {
       true "dist_build_source_archive: true"
       continue_maybe=yes
    fi
-   if [ "${dist_build_utm}" = "true" ]; then
-      true "dist_build_utm: true"
-      true "INFO: Skipping $FUNCNAME, because not implemented for UTM."
-      continue_maybe=no
-   fi
    if [ "${continue_maybe}" = "no" ]; then
       return 0
    fi
@@ -672,6 +667,12 @@ legal_files_copy() {
 }
 
 main() {
+   if [ "${dist_build_utm}" = "true" ]; then
+      true "dist_build_utm: true"
+      true "INFO: Skipping $FUNCNAME, because not implemented for UTM."
+      exit 0
+   fi
+
    sanity_tests "$@"
 
    if [ "${dist_build_type_long}" = "gateway" ]; then
