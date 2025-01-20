@@ -1530,8 +1530,8 @@ pkg_git_submodule_file_writer() {
 
 [submodule "qubes-template-whonix"]
         path = qubes/qubes-template-whonix
-        url  = https://github.com/Kicksecure/qubes-template-whonix.git
-        #url = https://gitlab.com/Kicksecure/qubes-template-whonix.git
+        url  = https://github.com/Whonix/qubes-template-whonix.git
+        #url = https://gitlab.com/Whonix/qubes-template-whonix.git
 
 ## END hardcoded part END ##
 ' | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
