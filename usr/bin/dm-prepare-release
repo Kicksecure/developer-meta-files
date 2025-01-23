@@ -101,7 +101,7 @@ windows_installer() {
 
    VERSION="${dist_build_version}"
    VERSION_FULL=$(basename "${binary_image_ova_file}")
-   MANUFACTURE="ENCRYPTED SUPPORT LP"
+   MANUFACTURE="ENCRYPTED SUPPORT LLC"
    DESCRIPTION="Whonix-Starter"
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
