@@ -1,3 +1,15 @@
+commit e76981adc71377fe1c00d6b112a6a709aefe1f1b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jan 29 06:10:03 2025 -0500
+
+    delete usr/bin/dm-packaging-helper-script-old
+
+commit 9e190a327afbb57b4b01690fe2435d1e120bcc32
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jan 23 16:18:50 2025 +0000
+
+    bumped changelog version
+
 commit 8ac16653a72474eabf7c047b17ee664ef1e630a9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Jan 23 11:09:57 2025 -0500
