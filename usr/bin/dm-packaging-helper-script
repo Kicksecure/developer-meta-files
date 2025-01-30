@@ -471,7 +471,7 @@ get_package_documentation_info_list() {
          || [[ "${file_info}" =~ \.allmerged\.mediawiki ]]; then
          continue
       fi
-      file_info="$(LANG=C str_replace '.mediawiki' '' <<< "${file_info}")"
+      file_info="$(str_replace '.mediawiki' '' <<< "${file_info}")"
       info_match_found='n'
       for info_from_list in "${info_list[@]}"; do
          if [ "${file_info}" = "${info_from_list}" ]; then
@@ -676,7 +676,7 @@ pkg_descr_creator() {
 
       reset_batch_meta_globals
 
-      batch_meta_relative_file_name="$(LANG=C str_replace "${derivative_maker_source_code_dir}/packages/${batch_current_project_name,,}/" '' <<< "${file_name}")"
+      batch_meta_relative_file_name="$(str_replace "${derivative_maker_source_code_dir}/packages/${batch_current_project_name,,}/" '' <<< "${file_name}")"
       batch_meta_file_name_without_reponame="/$(cut -d'/' -f2- <<< "${batch_meta_relative_file_name}")"
       batch_meta_repo_web_link="https://github.com/${batch_current_project_name}/${batch_current_package_reponame}"
       batch_meta_debian_control_web_link="https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/blob/master/debian/control"
@@ -709,8 +709,8 @@ pkg_descr_creator() {
                if [ "${second_word}" = 'project' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of projects
-                  temp="$(LANG=C str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray
-                  temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
+                  temp="$(str_replace '#### project ' '' <<< "${line}") " # extra space needed for readarray
+                  temp="$(str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_project_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_project_list=( "${batch_meta_project_list[@]:0:((${#batch_meta_project_list[@]} - 1))}" )
@@ -744,8 +744,8 @@ pkg_descr_creator() {
                elif [ "${second_word}" = 'category' ]; then
                   ## TODO: Consider rewriting this to handle a comma-separated
                   ## list of categories
-                  temp="$(LANG=C str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray
-                  temp="$(LANG=C str_replace ' and' '' <<< "${temp}")"
+                  temp="$(str_replace '#### category ' '' <<< "${line}") " # extra space needed for readarray
+                  temp="$(str_replace ' and' '' <<< "${temp}")"
                   readarray -d' ' -t batch_meta_category_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_category_list=( "${batch_meta_category_list[@]:0:((${#batch_meta_category_list[@]} - 1))}" )
@@ -794,7 +794,7 @@ pkg_descr_creator() {
                   internal_descr_writer "${line}"
                   continue
                else
-                  line="$(LANG=C str_replace '## ' '' <<< "${line}")"
+                  line="$(str_replace '## ' '' <<< "${line}")"
                   internal_descr_writer "${line}"
                fi
             fi
@@ -825,7 +825,7 @@ pkg_descr_merger() {
             fi
 
             file_name_only="${file_name_full_path##*/}"
-            package_name="$(LANG=C str_replace "_${category}_${project}.mediawiki" '' <<< "${file_name_only}")"
+            package_name="$(str_replace "_${category}_${project}.mediawiki" '' <<< "${file_name_only}")"
 
             if [ "${project}" = 'Kicksecure' ]; then
                machine='all'
@@ -1089,33 +1089,33 @@ pkg_build_depends_systemd() {
 #    local one two
 #    one='debhelper (>= 12)'
 #    two='debhelper (>= 13), debhelper-compat (= 13)'
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
 #
 #    one='http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
 #    two='https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/'
-#    LANG=C str_replace "$one" "$two" debian/copyright
-#    LANG=C str_replace "$one" "$two" COPYING
+#    str_replace "$one" "$two" debian/copyright
+#    str_replace "$one" "$two" COPYING
 #
 #    one="Standards-Version: 3.9.8"
 #    two="Standards-Version: 4.6.2
 #
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
 #
 #    one="debian-watch-may-check-gpg-signature"
 #    two="debian-watch-does-not-check-openpgp-signature"
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/source/lintian-overrides"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/source/lintian-overrides"
 #
 #    one="ruby-ronn"
 #    two="ronn"
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
 #
 #    one='Priority: extra'
 #    two='Priority: optional'
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/control"
 #
 #    one='--with=config-package --with=systemd'
 #    two='--with=config-package'
-#    LANG=C str_replace "$one" "$two" "${batch_current_package_path}/debian/rules"
+#    str_replace "$one" "$two" "${batch_current_package_path}/debian/rules"
 #
 #    git add "${batch_current_package_path}/debian/rules"
 #    git commit -m "port to debian bookworm" || true
@@ -2198,7 +2198,7 @@ derivative_version_old_main='17.2.8.2-developers-only'
 derivative_version_new_main='17.2.8.5-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
-git_commit_all_msg='copyright'
+git_commit_all_msg='LANG=C str_replace: no longer requires LANG=C, therefore removed'
 makefile_generic_version='1.5'
 packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources-list'
 

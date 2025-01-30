@@ -30,7 +30,7 @@ while read -r line; do
       continue
    fi
 
-   file_name="$(echo "$line" | LANG=C str_replace "Filename: " "")"
+   file_name="$(echo "$line" | str_replace "Filename: " "")"
 
    if echo "$file_name" | grep -q anon-meta-packages ; then
       continue

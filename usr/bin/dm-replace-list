@@ -53,9 +53,9 @@ while IFS= read -r -d $'\0' file_name; do
          error "ERROR! second is empty!"
       fi
 
-      LANG=C str_replace "$first" "$second" "$file_name"
+      str_replace "$first" "$second" "$file_name"
 
-      #LANG=C str_replace 'sudo $SUDO_OPTS' '$SUDO_TO_USER' "$file_name"
+      #str_replace 'sudo $SUDO_OPTS' '$SUDO_TO_USER' "$file_name"
 
 #       new_file_name="$(echo "$file_name" | str_replace "$first" "$second")"
 #       if [ "$file_name" = "$new_file_name" ]; then
