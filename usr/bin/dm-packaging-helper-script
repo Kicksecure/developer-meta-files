@@ -135,6 +135,10 @@ commit_filter() {
       set -x
       return 1
    fi
+   if echo "${commit_msg_short}" | grep -i -q 'LC_ALL=C' ; then
+      set -x
+      return 1
+   fi
    if echo "${commit_msg_short}" | grep -i -q 'genmkfile manpages' ; then
       set -x
       return 1
@@ -2198,7 +2202,7 @@ derivative_version_old_main='17.2.8.2-developers-only'
 derivative_version_new_main='17.2.8.5-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
-git_commit_all_msg='LANG=C str_replace: no longer requires LANG=C, therefore removed'
+git_commit_all_msg='LC_ALL=C'
 makefile_generic_version='1.5'
 packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources-list'
 
