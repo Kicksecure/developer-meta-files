@@ -119,7 +119,12 @@ upload_files() {
 
 main() {
    if [ ! "$dist_build_image_upload_supported" = "true" ]; then
-      error "upload support for this --target is not yet implemented."
+      if [ "$CI" = "true" ]; then
+         true "upload support for this --target is not yet implemented."
+         exit 0
+      else
+         error "upload support for this --target is not yet implemented."
+      fi
    fi
 
    if [ "$dist_build_version" = "" ]; then
