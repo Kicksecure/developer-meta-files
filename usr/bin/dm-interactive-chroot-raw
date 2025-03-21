@@ -57,8 +57,8 @@ main() {
    sync
 
    ## Sanity tests.
-   $CHROOT mount
-   $CHROOT sync
+   chroot_run mount
+   chroot_run sync
 
    sync
 
@@ -75,13 +75,13 @@ main() {
 
    ## Run interactive shell.
    trap "error_handler_interactive-chroot-raw-shell" ERR INT TERM
-   $CHROOT "/bin/bash"
+   chroot_run "/bin/bash"
 
    echo "${green}INFO: Exited (0) interactive shell.${reset}"
 
    "$dist_source_help_steps_folder"/remove-local-temp-apt-repo "$@"
 
-   $CHROOT sync
+   chroot_run sync
    sync
 
    "$dist_source_help_steps_folder"/unchroot-raw "$@"
