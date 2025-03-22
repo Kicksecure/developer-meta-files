@@ -1944,14 +1944,14 @@ pkg_tor_browser_version_update() {
 
    ## tbbversion requires: ${RecommendedTBBVersions}
    ## tbbversion sets: ${tbb_version}
-   2>/dev/null scurl --cert-status --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
+   2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
    tbbversion || {
       echo "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
       exit 1
    }
    # shellcheck disable=SC2154
    current_tbb_version="${tbb_version}"
-   2>/dev/null scurl --cert-status --output "${RecommendedTBBVersions}" "${tbb_alpha_json_url}"
+   2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_alpha_json_url}"
    tbbversion || {
       echo "${red}${bold}FATAL ERROR: Could not parse alpha TBB version JSON!${reset}"
       exit 1
