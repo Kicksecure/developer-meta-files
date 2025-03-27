@@ -5,6 +5,9 @@
 
 set -x
 set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
 
 true "$0: ERROR: Please verify and edit this SHARED script!"
 exit 1

@@ -5,6 +5,9 @@
 
 set -x
 set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
 
 qubes-dom0-vm-backup-do
 qubes-dom0-vm-backup-verification

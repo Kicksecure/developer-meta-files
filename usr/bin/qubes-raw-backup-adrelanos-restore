@@ -5,6 +5,9 @@
 
 set -x
 set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
 
 source /usr/bin/qubes-raw-backup-adrelanos-shared
 

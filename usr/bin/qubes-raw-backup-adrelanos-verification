@@ -5,8 +5,14 @@
 
 set -x
 set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
 
 source /usr/bin/qubes-raw-backup-adrelanos-shared
+
+command -v cmp >/dev/null
+command -v blockdev >/dev/null
 
 ## Get the size of the original disk in bytes.
 original_size=$(blockdev --getsize64 "$original_disk")
