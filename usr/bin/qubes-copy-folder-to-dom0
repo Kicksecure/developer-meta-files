@@ -21,8 +21,6 @@ target_folder="$3"
 ## --touch: Avoid
 ## > tar: testfolder: time stamp 2025-03-28 06:56:11 is 2 s in the future
 
-## Use cd, basename, dirname to avoid the target folder to contain sub folders such as '/home/user/source-folder'.
-
 if test -d "$target_folder" ; then
   echo "$0: Folder: '$target_folder' already exists!" >&2
   ## Otherwise 'tar' would lead to inconsistent outcomes.
@@ -31,6 +29,13 @@ if test -d "$target_folder" ; then
   exit 1
 fi
 
-qvm-run --no-gui --pass-io -- "$vmname" "cd $(dirname $source_folder) && tar -cf - -C $(dirname $source_folder) $(basename $source_folder)" | tar -x --touch --one-top-level="$target_folder"
+## Folder creation is required to avoid tar error:
+## > tar: /home/user/bin: Cannot open: No such file or directory
+## > tar: Error is not recoverable: exiting now
+mkdir "$target_folder"
+
+## Use 'cd', 'basename', 'dirname' to avoid the target folder to contain sub folders such as '/home/user/source-folder'.
+
+qvm-run --no-gui --pass-io -- "$vmname" "set -x && cd $(dirname $source_folder) && tar -cf - -C $(dirname $source_folder) $(basename $source_folder)" | tar -x --touch --strip-components=1 -C "$target_folder"
 
 true "$0: END"
