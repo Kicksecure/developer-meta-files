@@ -1,0 +1,15 @@
+#!/bin/bash
+
+## Copyright (C) 2023 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## usage:
+## qubes-copy-file-to-dom0 vmname source-file target-file
+
+set -x
+set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
+
+qvm-run --pass-io "$1" "cat $2" > "$3"

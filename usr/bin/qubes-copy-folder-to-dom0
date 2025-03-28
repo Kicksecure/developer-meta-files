@@ -1,0 +1,36 @@
+#!/bin/bash
+
+## Copyright (C) 2025 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## usage:
+## qubes-copy-folder-to-dom0 vmname source-folder target-folder
+
+set -x
+set -e
+set -o errtrace
+set -o pipefail
+set -o nounset
+
+true "$0: START"
+
+vmname="$1"
+source_folder="$2"
+target_folder="$3"
+
+## --touch: Avoid
+## > tar: testfolder: time stamp 2025-03-28 06:56:11 is 2 s in the future
+
+## Use cd, basename, dirname to avoid the target folder to contain sub folders such as '/home/user/source-folder'.
+
+if test -d "$target_folder" ; then
+  echo "$0: Folder: '$target_folder' already exists!" >&2
+  ## Otherwise 'tar' would lead to inconsistent outcomes.
+  ## File deleted in VM: Does not delete in dom0.
+  ## File modified in VM: Updates file in dom0.
+  exit 1
+fi
+
+qvm-run --no-gui --pass-io -- "$vmname" "cd $(dirname $source_folder) && tar -cf - -C $(dirname $source_folder) $(basename $source_folder)" | tar -x --touch --one-top-level="$target_folder"
+
+true "$0: END"
