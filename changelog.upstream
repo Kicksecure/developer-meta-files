@@ -1,3 +1,19 @@
+commit bda2b86d38db6fcfd7b0e43aa294a9974b1121d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 1 03:06:26 2025 -0400
+
+    no longer add second informative `--eulafile` to Whonix-Workstation
+    
+    because broken on some systems probably due to a VirtualBox bug
+    
+    https://www.reddit.com/r/Whonix/comments/1jnavvb/cannot_install_whonix_virtualbox_asks_me_to_agree/
+
+commit 3e574147c5736311a03f3bffd63b138e70f0f636
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Mar 28 16:14:20 2025 +0000
+
+    bumped changelog version
+
 commit e0727ba5883b05052fa12471e72d23a961f17e6c
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Mar 28 11:21:29 2025 -0400
