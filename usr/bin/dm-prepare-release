@@ -418,6 +418,17 @@ Please donate! [C]
             --version "${dist_build_version}" \
             --output "${HOMEVAR_VBOX_TEMP}/temp.ova"
    else
+      ## Only use '--eulafile' after "--vsys '0'".
+      ## No longer using additional, second '--eulafile' after "--vsys '1'"
+      ## No longer using:
+      # --vsys '1' \
+      # --eulafile "${binary_image_text_vbox_temp}" \
+      ##
+      ## This is to avoid a VirtualBox bug, which shows the second "Software License Agreement" screen,
+      ## which lacks the buttons [Agree] [Disagree] [Print] [Save].
+      ##
+      ## https://www.reddit.com/r/Whonix/comments/1jnavvb/cannot_install_whonix_virtualbox_asks_me_to_agree/
+      ## https://imgur.com/a/IGjI7TV
       $SUDO_TO_VBOX_TEMP \
          VBoxManage \
             export ${vm_names_to_be_exported} \
@@ -432,7 +443,6 @@ Please donate! [C]
                --vendorurl "https://www.${project_clearnet}" \
                --version "${dist_build_version}" \
             --vsys '1' \
-               --eulafile "${binary_image_text_vbox_temp}" \
                --description "${description}" \
                --manifest \
                --product "Whonix-Workstation" \
