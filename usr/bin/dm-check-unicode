@@ -45,6 +45,7 @@ grep_find_unicode_wrapper_output="$(\
    || true
 
 whitelist_list=(
+   './live-build/share/bootloaders/syslinux_common/menu.cfg'
    './live-build/debian/control'
    './live-build/debian/copyright'
    './live-build/manpages/po/fr/.*'
@@ -56,12 +57,12 @@ whitelist_list=(
 )
 whitelist_pattern="($(IFS=$'\n'; echo -n "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
 
-filtered_output=$(echo "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
+filtered_output=$(printf "%s\n" "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
 
 if [ -z "$filtered_output" ]; then
    true "INFO: No Unicode issues found, everything is OK."
 else
-   echo "$filtered_output" >&2
+   printf "%s\n" "$filtered_output" >&2
 
    true "\
 $0: ERROR: Unicode found!
