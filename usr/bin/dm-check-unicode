@@ -73,4 +73,26 @@ https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-
    exit 1
 fi
 
+## Check for trailing spaces.
+## TODO: remove '--exclude-dir=live-build' once live-build is free of trailing spaces.
+if grep \
+      --line-number \
+      --recursive \
+      --binary-files=without-match \
+      --exclude=control.authcookie \
+      --exclude=LICENSE \
+      --exclude=lkrg-openrc.sh \
+      --exclude=changelog \
+      --exclude=changelog.upstream \
+      --exclude-dir=.git \
+      --exclude-dir=live-build \
+      -- \
+      '[[:blank:]]$' ; then
+   true "\
+$0: ERROR: Trailing whitespaces found!"
+   exit 1
+else
+   true "INFO: No trailing whitespace issues found, everything is OK."
+fi
+
 true "$0: END."
