@@ -1,3 +1,15 @@
+commit dc711e56576a9cf751a3c84525a0bd3d830cb0e7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 8 07:26:29 2025 -0400
+
+    check for trailing white spaces
+
+commit ea81a23904cfb7c0e2384287b93b4ade8f4d63a1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Apr 2 18:15:07 2025 +0000
+
+    bumped changelog version
+
 commit 20c5e3bc044aa342cb38127367853b0abde436ad
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Apr 2 13:33:53 2025 -0400
