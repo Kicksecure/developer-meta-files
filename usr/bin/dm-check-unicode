@@ -95,4 +95,36 @@ else
    true "INFO: No trailing whitespace issues found, everything is OK."
 fi
 
+## Check for missing newline at the end of the file (EOF).
+##
+## Thanks to:
+## Julien Palard
+## https://stackoverflow.com/a/25686825/2605155
+##
+## grep -Pzlvr '\x0a$'
+## --perl-regexp --null --files-with-matches --invert-match
+##
+## '--null-data' unfortunately breaks '--binary-files'. Hence,
+## binary file types need to be manually excluded.
+if grep \
+      --line-number \
+      --recursive \
+      --binary-files=without-match \
+      --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg' \
+      --exclude='*.ico' --exclude='*.svg' --exclude='*.ai' \
+      --exclude='*.gpg' --exclude='*.kbx' \
+      --perl-regexp --null-data --files-with-matches --invert-match \
+      --exclude="control.authcookie" \
+      --exclude="RecommendedTBBVersions" \
+      --exclude-dir="live-build" \
+      --exclude-dir=".git" \
+      -- \
+      '\x0a$' ; then
+   true "\
+$0: ERROR: Missing newlines at the end of file found!"
+   exit 1
+else
+   true "INFO: No missing newlines at the end of file issues found, everything is OK."
+fi
+
 true "$0: END."
