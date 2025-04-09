@@ -1,3 +1,15 @@
+commit 74f129b2bb5b5a135080b5c3382b06a48a9ec45c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Apr 9 10:31:23 2025 -0400
+
+    dm-check-unicode: Check for missing newline at the end of the file (EOF).
+
+commit 36e6b7536f7fb4be33d96e6ae6364188160daf81
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 8 14:06:26 2025 +0000
+
+    bumped changelog version
+
 commit dc711e56576a9cf751a3c84525a0bd3d830cb0e7
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Apr 8 07:26:29 2025 -0400
