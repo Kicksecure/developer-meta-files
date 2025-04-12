@@ -36,7 +36,7 @@ installer_dist() {
    command -v git >/dev/null
    command -v str_replace >/dev/null
 
-   cp "${binary_image_installer_dist_source}" "${binary_image_installer_dist_file}"
+   cp -- "${binary_image_installer_dist_source}" "${binary_image_installer_dist_file}"
 
    installer_dist_source_folder="$(dirname "${binary_image_installer_dist_source}")"
    pushd "${installer_dist_source_folder}"
@@ -291,7 +291,7 @@ libvirt_compress() {
    if [ "${dist_build_source_archive}" = "true" ]; then
       test_operator="-d"
       $SUDO_TO_ROOT rm --force --recursive "${dist_binary_build_folder}/derivative-maker"
-      cp --archive --no-dereference --preserve=all "${source_code_folder_dist}" "${dist_binary_build_folder}"
+      cp --archive --no-dereference --preserve=all -- "${source_code_folder_dist}" "${dist_binary_build_folder}"
    else
       test_operator="-f"
    fi
@@ -382,11 +382,11 @@ Please donate! [C]
    eulafile_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
    binary_image_text_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-binary-image-text.txt"
 
-   $SUDO_TO_ROOT cp "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
-   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" "${eulafile_vbox_temp}"
+   $SUDO_TO_ROOT cp -- "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
+   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" -- "${eulafile_vbox_temp}"
 
    $SUDO_TO_ROOT cp "${binary_image_text}" "${binary_image_text_vbox_temp}"
-   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" "${binary_image_text_vbox_temp}"
+   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" -- "${binary_image_text_vbox_temp}"
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
    TAR_OPTIONS="\
@@ -455,9 +455,9 @@ Please donate! [C]
    ## Sanity test.
    $SUDO_TO_VBOX_TEMP test -r "${HOMEVAR_VBOX_TEMP}/temp.ova"
    ## Move from dm-vbox-temp user home folder to normal user home folder.
-   $SUDO_TO_ROOT mv --verbose "${HOMEVAR_VBOX_TEMP}/temp.ova" "${binary_image_ova_file}"
+   $SUDO_TO_ROOT mv --verbose -- "${HOMEVAR_VBOX_TEMP}/temp.ova" "${binary_image_ova_file}"
    ## Fix permissions because file previously needed to be moved from one user to another using root rights.
-   $SUDO_TO_ROOT chown "$user_name:$user_name" "${binary_image_ova_file}"
+   $SUDO_TO_ROOT chown "$user_name:$user_name" -- "${binary_image_ova_file}"
 
    ## Only important for redistribution.
    ## VirtualBox creates ${binary_image_ova_file} with u+r only, which is problematic
@@ -668,11 +668,11 @@ signatures_create() {
 legal_files_copy() {
    ## libvirt_compress uses --directory="${dist_binary_build_folder}"
    if [ "${dist_build_type_short}" = "kicksecure" ]; then
-      cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
-      cp "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
+      cp -- "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT"
+      cp -- "${source_code_folder_dist}/packages/kicksecure/kicksecure-base-files/usr/share/kicksecure/KICKSECURE_DISCLAIMER" "${dist_binary_build_folder}/KICKSECURE_DISCLAIMER"
    else
-      cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
-      cp "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
+      cp -- "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_BINARY_LICENSE_AGREEMENT" "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
+      cp -- "${source_code_folder_dist}/packages/whonix/whonix-base-files/usr/share/whonix/WHONIX_DISCLAIMER" "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
 }
 
