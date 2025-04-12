@@ -337,7 +337,7 @@ libvirt_compress() {
    for file_name_item_full_path in ${file_list_compress_full_path} ; do
       ## Safe disk space.
       ## Delete raw and ova images in ${dist_binary_build_folder} after xz archive has been created.
-      safe-rm -f "${file_name_item_full_path}"
+      safe-rm -f -- "${file_name_item_full_path}"
    done
 }
 
@@ -517,7 +517,7 @@ Please donate! [C]
       ## Delete temporary VM in temporary VM user build folder to save disk space
       ## during the build process.
       $SUDO_TO_VBOX_TEMP VBoxManage unregistervm "$vm_name_to_be_deleted" --delete || true
-      $SUDO_TO_ROOT safe-rm -r -f "$HOMEVAR_VBOX_TEMP/VirtualBox VMs/$vm_name_to_be_deleted"
+      $SUDO_TO_ROOT safe-rm -r -f -- "$HOMEVAR_VBOX_TEMP/VirtualBox VMs/$vm_name_to_be_deleted"
    done
 }
 
