@@ -347,7 +347,7 @@ virtualbox_export() {
    fi
 
    if [ "${vm_names_to_be_exported}" = "" ]; then
-      error "vm_names_to_be_exported is unset!"
+      error "Variable vm_names_to_be_exported is unset!"
    fi
 
    legal_files_copy
