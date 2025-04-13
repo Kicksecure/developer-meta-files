@@ -231,6 +231,7 @@ libvirt_compress() {
    ## - slows down tar too much.
 
    local -a file_list_compress_full_path
+   file_list_compress_full_path=()
 
    if [ "${dist_build_source_archive}" = "true" ]; then
       file_list_compress_full_path+=("${source_code_folder_dist}")
@@ -300,14 +301,19 @@ libvirt_compress() {
       test_operator="-f"
    fi
 
+   local -a filelist_base_name
+   filelist_base_name=()
+
    local file_name_item_full_path
+   local base_name_file_item_full_path
    for file_name_item_full_path in "${file_list_compress_full_path[@]}" ; do
       test "${test_operator}" "${file_name_item_full_path}"
-      filelist_base_name+=" $(basename "${file_name_item_full_path}")"
+      base_name_file_item_full_path="$(basename "${file_name_item_full_path}")"
+      filelist_base_name+=("$base_name_file_item_full_path")
    done
 
    local file_name_item_base_name
-   for file_name_item_base_name in ${filelist_base_name} ; do
+   for file_name_item_base_name in "${filelist_base_name[@]}" ; do
       test "${test_operator}" "${file_name_item_base_name}"
    done
 
@@ -322,7 +328,7 @@ libvirt_compress() {
       --xz \
       --directory="${dist_binary_build_folder}" \
       --file "$(basename "${xz_archive}")" \
-      ${filelist_base_name}
+      "${filelist_base_name[@]}"
 
    strip-nondeterminism "${xz_archive}"
 
