@@ -1,3 +1,87 @@
+commit 80a84a5980f80614c6f06c1cb1f95ca8fae0bd78
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 12:54:35 2025 -0400
+
+    fix
+
+commit ff097f365969b31a6e2e6808c1d1e18bb0357280
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 12:50:30 2025 -0400
+
+    fix
+
+commit f176ef4753def47a599979456a18479e7210eaa0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:39:38 2025 -0400
+
+    refactoring
+
+commit fe269ad4dd5e11062d95683899f24edaf69e2bf1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:16:54 2025 -0400
+
+    long option names
+
+commit 1b45b21d9622857b02fd990ffe7c302ce024073e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:15:58 2025 -0400
+
+    safe-rm
+
+commit 6c7fafdddc67b902656f67113470568587846f67
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:15:01 2025 -0400
+
+    end-of-options
+
+commit 833ed9e8d1c1d392d1f7faa3eafac1a7b1915338
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:12:09 2025 -0400
+
+    output
+
+commit 2aa77b05669eaf32b055c79ffbb80c0b74a44c5e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 11:06:27 2025 -0400
+
+    refactoring
+
+commit bfdfe6d308ab49a9b812cd621cc0f2a4e3e4655e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 10:19:58 2025 -0400
+
+    refactoring
+
+commit c905515fba63d31958407a7d7a754a0d98f85d82
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 12 17:17:40 2025 -0400
+
+    output
+
+commit abbba08ecdbdc17114918c13965b0347e073e5de
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 12 17:17:26 2025 -0400
+
+    refactoring
+
+commit 588a49e175af6a033c771fee9325a481c425d963
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 12 17:16:57 2025 -0400
+
+    end-of-options
+
+commit e350178178ef0a4161ed00a27cdde9b7efe34fc7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 12 17:12:58 2025 -0400
+
+    end-of-options
+
+commit bce9d6d589e9bdfad393afadbacfb574127d9dc8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Apr 9 15:13:53 2025 +0000
+
+    bumped changelog version
+
 commit 74f129b2bb5b5a135080b5c3382b06a48a9ec45c
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Apr 9 10:31:23 2025 -0400
