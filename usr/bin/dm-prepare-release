@@ -151,6 +151,10 @@ libvirt_compress() {
       return 0
    fi
 
+   if [ "${vm_multiple}" = "" ]; then
+      error "Variable vm_multiple is unset!"
+   fi
+
    legal_files_copy
 
    if [ "${dist_build_qcow2}" = "true" ]; then
@@ -348,6 +352,9 @@ virtualbox_export() {
 
    if [ "${vm_names_to_be_exported}" = "" ]; then
       error "Variable vm_names_to_be_exported is unset!"
+   fi
+   if [ "${vm_multiple}" = "" ]; then
+      error "Variable vm_multiple is unset!"
    fi
 
    legal_files_copy
@@ -688,19 +695,6 @@ main() {
    if [ "${dist_build_type_long}" = "gateway" ]; then
       true "$0: INFO: Skip, because dist_build_type_long is gateway. Not needed because of unified Whonix-Gateway and Whonix-Workstation images."
       return 0
-   fi
-
-   vm_multiple=false
-   if [ "${dist_build_type_long}" = "workstation" ]; then
-      vm_multiple=true
-      ## dist_build_desktop could be KDE, CLI, Xfce, RPi or CUSTOM
-      vm_names_to_be_exported="Whonix-Gateway-${dist_build_desktop} Whonix-Workstation-${dist_build_desktop}"
-   fi
-   if [ "${dist_build_type_long}" = "custom-workstation" ]; then
-      vm_names_to_be_exported="${VMNAME}"
-   fi
-   if [ "${dist_build_type_short}" = "kicksecure" ]; then
-      vm_names_to_be_exported="${VMNAME}"
    fi
 
    installer_dist
