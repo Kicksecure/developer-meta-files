@@ -206,12 +206,12 @@ libvirt_compress() {
       test -f "${libvirt_target_network_file_internal}"
 
       if [ "${dist_build_raw}" = "true" ]; then
-         test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw"
+         test -f "${binary_image_raw_file_for_unified}"
          test -f "${binary_image_raw_file}"
          true "INFO: Ok, all files to be added to ${libvirt_target_raw_xz_archive_file} exist."
       fi
       if [ "${dist_build_qcow2}" = "true" ]; then
-         test -f "${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2"
+         test -f "${binary_image_qcow2_file_for_unified}"
          test -f "${binary_image_qcow2_file}"
          true "INFO: Ok, all files to be added to ${libvirt_target_qcow2_xz_archive_file} exist."
       fi
@@ -264,12 +264,12 @@ libvirt_compress() {
 
       true "dist_build_raw for raw image: $dist_build_raw"
       if [ "${dist_build_raw}" = "true" ]; then
-         file_list_compress_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.raw "
+         file_list_compress_full_path+="${binary_image_raw_file_for_unified}"
          file_list_compress_full_path+="${binary_image_raw_file}"
       fi
       true "dist_build_qcow2 for qcow image: $dist_build_qcow2"
       if [ "${dist_build_qcow2}" = "true" ]; then
-         file_list_compress_full_path+="${dist_binary_build_folder}/Whonix-Gateway-${dist_build_desktop}-${dist_build_version}.${target_architecture_pretty_name}.qcow2 "
+         file_list_compress_full_path+="${binary_image_qcow2_file_for_unified}"
          file_list_compress_full_path+="${binary_image_qcow2_file} "
       fi
    fi
