@@ -230,16 +230,16 @@ libvirt_compress() {
    ## Not using tar --verbose:
    ## - slows down tar too much.
 
-   local file_list_compress_full_path
+   local -a file_list_compress_full_path
 
    if [ "${dist_build_source_archive}" = "true" ]; then
-      file_list_compress_full_path+="${source_code_folder_dist} "
+      file_list_compress_full_path+=("${source_code_folder_dist}")
    elif [ "${dist_build_type_short}" = "kicksecure" ]; then
-      file_list_compress_full_path+="${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT "
-      file_list_compress_full_path+="${dist_binary_build_folder}/KICKSECURE_DISCLAIMER "
+      file_list_compress_full_path+=("${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT")
+      file_list_compress_full_path+=("${dist_binary_build_folder}/KICKSECURE_DISCLAIMER")
    elif [ "${dist_build_type_short}" = "whonix" ]; then
-      file_list_compress_full_path+="${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT "
-      file_list_compress_full_path+="${dist_binary_build_folder}/WHONIX_DISCLAIMER "
+      file_list_compress_full_path+=("${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT")
+      file_list_compress_full_path+=("${dist_binary_build_folder}/WHONIX_DISCLAIMER")
    fi
 
    true "vm_multiple: $vm_multiple"
@@ -247,30 +247,30 @@ libvirt_compress() {
       true "dist_build_source_archive..."
    elif [ "${vm_multiple}" = "false" ]; then
       true "vm_multiple: false"
-      file_list_compress_full_path+="${dist_binary_build_folder}/${SHORT_VMNAME}.xml "
+      file_list_compress_full_path+=("${dist_binary_build_folder}/${SHORT_VMNAME}.xml")
 
       if [ "${dist_build_raw}" = "true" ]; then
-         file_list_compress_full_path+="${binary_image_raw_file}"
+         file_list_compress_full_path+=("${binary_image_raw_file}")
       fi
       if [ "${dist_build_qcow2}" = "true" ]; then
-         file_list_compress_full_path+="${binary_image_qcow2_file} "
+         file_list_compress_full_path+=("${binary_image_qcow2_file}")
       fi
    else
       true "vm_multiple: true"
-      file_list_compress_full_path+="${dist_binary_build_folder}/Whonix-Gateway.xml "
-      file_list_compress_full_path+="${dist_binary_build_folder}/Whonix-Workstation.xml "
-      file_list_compress_full_path+="${libvirt_target_network_file_external} "
-      file_list_compress_full_path+="${libvirt_target_network_file_internal} "
+      file_list_compress_full_path+=("${dist_binary_build_folder}/Whonix-Gateway.xml")
+      file_list_compress_full_path+=("${dist_binary_build_folder}/Whonix-Workstation.xml")
+      file_list_compress_full_path+=("${libvirt_target_network_file_external}")
+      file_list_compress_full_path+=("${libvirt_target_network_file_internal}")
 
       true "dist_build_raw for raw image: $dist_build_raw"
       if [ "${dist_build_raw}" = "true" ]; then
-         file_list_compress_full_path+="${binary_image_raw_file_for_unified}"
-         file_list_compress_full_path+="${binary_image_raw_file}"
+         file_list_compress_full_path+=("${binary_image_raw_file_for_unified}")
+         file_list_compress_full_path+=("${binary_image_raw_file}")
       fi
       true "dist_build_qcow2 for qcow image: $dist_build_qcow2"
       if [ "${dist_build_qcow2}" = "true" ]; then
-         file_list_compress_full_path+="${binary_image_qcow2_file_for_unified}"
-         file_list_compress_full_path+="${binary_image_qcow2_file} "
+         file_list_compress_full_path+=("${binary_image_qcow2_file_for_unified}")
+         file_list_compress_full_path+=("${binary_image_qcow2_file}")
       fi
    fi
 
@@ -289,7 +289,7 @@ libvirt_compress() {
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
 
-   true "file_list_compress_full_path: ${file_list_compress_full_path}"
+   true "file_list_compress_full_path: ${file_list_compress_full_path[@]}"
 
    local test_operator
    if [ "${dist_build_source_archive}" = "true" ]; then
@@ -301,7 +301,7 @@ libvirt_compress() {
    fi
 
    local file_name_item_full_path
-   for file_name_item_full_path in ${file_list_compress_full_path} ; do
+   for file_name_item_full_path in "${file_list_compress_full_path[@]}" ; do
       test "${test_operator}" "${file_name_item_full_path}"
       filelist_base_name+=" $(basename "${file_name_item_full_path}")"
    done
@@ -338,7 +338,7 @@ libvirt_compress() {
       return 0
    fi
 
-   for file_name_item_full_path in ${file_list_compress_full_path} ; do
+   for file_name_item_full_path in "${file_list_compress_full_path[@]}" ; do
       ## Safe disk space.
       ## Delete raw and ova images in ${dist_binary_build_folder} after xz archive has been created.
       safe-rm --force -- "${file_name_item_full_path}"
