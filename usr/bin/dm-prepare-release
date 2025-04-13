@@ -409,6 +409,8 @@ Please donate! [C]
    XZ_OPT="${XZ_OPT} -9"
    export XZ_OPT
 
+   true "INFO: vm_names_to_be_exported: $vm_names_to_be_exported"
+
    ## --vsys needs to precede --eulafile.
    if [ "${vm_multiple}" = "false" ]; then
       $SUDO_TO_VBOX_TEMP \
@@ -478,7 +480,7 @@ Please donate! [C]
 
    ## Sanity test.
    ##
-   ## A different --vmname is required, because ${VMNAME} does already exist
+   ## NOTE: A different --vmname is required, because ${VMNAME} does already exist
    ## in the list of imported VirtualBox machines.
    ##
    ## Not using $SUDO_TO_VBOX_TEMP because binary_image_ova_file is stored in
