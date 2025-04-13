@@ -114,7 +114,7 @@ windows_installer() {
    #git clean --force -d -X
    popd >/dev/null
 
-   rm --force -- "${binary_image_windows_installer_file}"
+   safe-rm --force -- "${binary_image_windows_installer_file}"
 
    pushd "${source_code_folder_dist}/windows/Whonix-Installer" >/dev/null
    git clean --force -d -X
@@ -158,15 +158,15 @@ libvirt_compress() {
    legal_files_copy
 
    if [ "${dist_build_qcow2}" = "true" ]; then
-      rm --force -- "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
+      safe-rm --force -- "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
    fi
    if [ "${dist_build_raw}" = "true" ]; then
-      rm --force -- "$(basename "${libvirt_target_raw_xz_archive_file}")"
+      safe-rm --force -- "$(basename "${libvirt_target_raw_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
    if [ "${dist_build_source_archive}" = "true" ]; then
-      rm --force -- "$(basename "${source_archive_xz_file}")"
+      safe-rm --force -- "$(basename "${source_archive_xz_file}")"
       true "INFO: Checking if all files to be added to source_archive_xz_file ${source_archive_xz_file} exist..."
    fi
 
@@ -294,7 +294,7 @@ libvirt_compress() {
    local test_operator
    if [ "${dist_build_source_archive}" = "true" ]; then
       test_operator="-d"
-      $SUDO_TO_ROOT rm --force --recursive -- "${dist_binary_build_folder}/derivative-maker"
+      $SUDO_TO_ROOT safe-rm --force --recursive -- "${dist_binary_build_folder}/derivative-maker"
       cp --archive --no-dereference --preserve=all -- "${source_code_folder_dist}" "${dist_binary_build_folder}"
    else
       test_operator="-f"
@@ -382,8 +382,8 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   $SUDO_TO_ROOT rm --force -- "${binary_image_ova_file}"
-   $SUDO_TO_ROOT rm --force -- "${HOMEVAR_VBOX_TEMP}/temp.ova"
+   $SUDO_TO_ROOT safe-rm --force -- "${binary_image_ova_file}"
+   $SUDO_TO_ROOT safe-rm --force -- "${HOMEVAR_VBOX_TEMP}/temp.ova"
 
    local eulafile_vbox_temp binary_image_text_vbox_temp
    eulafile_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
@@ -652,7 +652,7 @@ signatures_create() {
       local base_name
       base_name=$(basename "${file_item}")
 
-      rm --force -- "${file_item}.torrent"
+      safe-rm --force -- "${file_item}.torrent"
       mktorrent \
          --verbose \
          --announce="${TRACKERS}" \
