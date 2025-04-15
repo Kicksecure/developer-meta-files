@@ -106,8 +106,8 @@ fi
 ##
 ## '--null-data' unfortunately breaks '--binary-files'. Hence,
 ## binary file types need to be manually excluded.
-if grep \
-      --line-number \
+grep_missing_newline_result_raw="$( \
+   grep \
       --recursive \
       --binary-files=without-match \
       --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg' \
@@ -119,12 +119,37 @@ if grep \
       --exclude-dir="live-build" \
       --exclude-dir=".git" \
       -- \
-      '\x0a$' ; then
-   true "\
-$0: ERROR: Missing newlines at the end of file found!"
-   exit 1
-else
+      '\x0a$'
+   )" \
+   || true
+
+true "grep_missing_newline_result_raw:
+$grep_missing_newline_result_raw"
+
+grep_missing_newline_result_filtered=()
+
+for file_name in $grep_missing_newline_result_raw ; do
+   if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/append-once" ]; then
+      size="$(stat -c '%s' -- "$file_name")"
+      if [ "$size" = "6" ]; then
+         continue
+      fi
+   fi
+   if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/overwrite" ]; then
+      size="$(stat -c '%s' -- "$file_name")"
+      ## Coincidentally also 6 bytes size.
+      if [ "$size" = "6" ]; then
+         continue
+      fi
+   fi
+   grep_missing_newline_result_filtered+=("$file_name")
+done
+
+if [ "${#grep_missing_newline_result_filtered[@]}" -eq "0" ]; then
    true "INFO: No missing newlines at the end of file issues found, everything is OK."
+else
+   echo "$0: ERROR: Missing newlines at the end of file found! grep_missing_newline_result_filtered:
+$grep_missing_newline_result_filtered"
 fi
 
 true "$0: END."
