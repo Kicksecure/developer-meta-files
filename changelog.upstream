@@ -1,3 +1,21 @@
+commit 1522e0b8e4dd4ce125fff416a86a720a85c1d8c5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 15 16:33:27 2025 -0400
+
+    .
+
+commit 5df90de414a6a1488cc9a4e335af23fc1dc66d56
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 15 16:15:13 2025 -0400
+
+    whitelist symlinks which cannot have no newline at the end
+
+commit c148634a2a7d68c8d6c40a31e4123bf74517aab1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 13 17:23:19 2025 +0000
+
+    bumped changelog version
+
 commit 80a84a5980f80614c6f06c1cb1f95ca8fae0bd78
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Apr 13 12:54:35 2025 -0400
