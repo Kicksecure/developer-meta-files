@@ -129,19 +129,20 @@ $grep_missing_newline_result_raw"
 grep_missing_newline_result_filtered=()
 
 for file_name in $grep_missing_newline_result_raw ; do
-   if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/append-once" ]; then
-      size="$(stat -c '%s' -- "$file_name")"
-      if [ "$size" = "6" ]; then
-         continue
-      fi
-   fi
-   if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/overwrite" ]; then
-      size="$(stat -c '%s' -- "$file_name")"
-      ## Coincidentally also 6 bytes size.
-      if [ "$size" = "6" ]; then
-         continue
-      fi
-   fi
+   ## git style symlinks actually not allowed.
+#    if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/append-once" ]; then
+#       size="$(stat -c '%s' -- "$file_name")"
+#       if [ "$size" = "6" ]; then
+#          continue
+#       fi
+#    fi
+#    if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/overwrite" ]; then
+#       size="$(stat -c '%s' -- "$file_name")"
+#       ## Coincidentally also 6 bytes size.
+#       if [ "$size" = "6" ]; then
+#          continue
+#       fi
+#    fi
    grep_missing_newline_result_filtered+=("$file_name")
 done
 
