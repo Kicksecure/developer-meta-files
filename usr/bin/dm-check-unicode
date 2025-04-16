@@ -149,8 +149,8 @@ done
 if [ "${#grep_missing_newline_result_filtered[@]}" -eq "0" ]; then
    true "INFO: No missing newlines at the end of file issues found, everything is OK."
 else
-   echo "$0: ERROR: Missing newlines at the end of file found! grep_missing_newline_result_filtered:
-$grep_missing_newline_result_filtered"
+   printf "%s\n" "$0: ERROR: Missing newlines at the end of file found! grep_missing_newline_result_filtered:
+${grep_missing_newline_result_filtered[@]}"
 fi
 
 true "$0: END."
