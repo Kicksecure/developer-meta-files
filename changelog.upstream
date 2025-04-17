@@ -1,3 +1,15 @@
+commit 7ffb4cd5cda6133f0f83ccc100f97aa3abc88ddd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Apr 17 10:03:09 2025 -0400
+
+    git symlink whitelist
+
+commit a0f10841acf80c90090b64ee50f84ed7f0acb0e3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Apr 17 13:58:30 2025 +0000
+
+    bumped changelog version
+
 commit bb491e131aaba6415ea861afaa157960424a8c10
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Apr 17 09:49:43 2025 -0400
