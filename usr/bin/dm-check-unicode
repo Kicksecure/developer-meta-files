@@ -167,6 +167,15 @@ for file_name in $grep_missing_newline_result_raw ; do
 #          continue
 #       fi
 #    fi
+
+   ## git symlink when using 'symlinks = true' (git default setting)
+   if [ "$file_name" = "qubes/qubes-template-whonix/whonix-workstation" ]; then
+      file_content="$(stcat "$file_name")"
+      if [ "$file_content" = "whonix-gateway" ]; then
+         continue
+      fi
+   fi
+
    grep_missing_newline_result_filtered+=("$file_name")
 done
 
