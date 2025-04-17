@@ -18,7 +18,31 @@ wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-
 
 test -d "$folder"
 test -x "$wrapper"
+## Need to 'cd' for relative paths.
 cd "$folder"
+
+find_symlinks() {
+   found_symlink=""
+   while IFS= read -r -d '' symlink; do
+      readlink_result="$(readlink "$symlink")"
+      if [ "$symlink" = "./qubes/qubes-template-whonix/whonix-workstation" ]; then
+         if [ "$readlink_result" = "whonix-gateway" ]; then
+            continue
+         fi
+      fi
+      found_symlink=true
+      printf "%s\n" "$0: ERROR: Symlink found!" >&2
+      printf "%s\n" "symlink: '$symlink'" >&2
+      printf "%s\n" "readlink_result: '$readlink_result'" >&2
+      printf "%s\n" "----------" >&2
+   ## Need to use '"."' for relative paths.
+   done < <(find "." -type l -not -iwholename '*.git*' -print0)
+   if [ "$found_symlink" = "true" ]; then
+      exit 1
+   fi
+}
+
+find_symlinks
 
 ## overwrite with '|| true' because `grep` exits non-zero if no match was found.
 ##
