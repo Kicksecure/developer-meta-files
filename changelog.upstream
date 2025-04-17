@@ -1,3 +1,15 @@
+commit bb491e131aaba6415ea861afaa157960424a8c10
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Apr 17 09:49:43 2025 -0400
+
+    dm-check-unicode: check symlinks
+
+commit 4edc7ce001a6de62b89f39762a469b2334644f5d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Apr 16 22:46:06 2025 +0000
+
+    bumped changelog version
+
 commit 2471fd8c20b27efd629f7bc1ce97cd933d982213
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Apr 16 15:51:37 2025 -0400
