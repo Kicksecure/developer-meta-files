@@ -29,35 +29,32 @@ mirror_list="
 #    https://download.whonix.org/ova/
 # "
 
-adduser --home /tmp/check-mirrors --no-create-home --quiet --system --group checkmirrors || true
-
-mkdir --parents /tmp/check-mirrors
-chown --recursive checkmirrors:checkmirrors /tmp/check-mirrors
+adduser --quiet --system --group checkmirrors || true
 
 as_user="sudo --non-interactive -u checkmirrors"
 
-$as_user touch /tmp/check-mirrors/version.txt
+$as_user touch /home/checkmirrors/version.txt
 
-$as_user scurl $curl_built_in_args --url "https://www.whonix.org/w/index.php?title=Template:VersionNew&stable=0&action=raw" --output /tmp/check-mirrors/version.txt --silent
+$as_user scurl $curl_built_in_args --url "https://www.whonix.org/w/index.php?title=Template:VersionNew&stable=0&action=raw" --output /home/checkmirrors/version.txt --silent
 
-$as_user str_replace "<noinclude>[[Category:MultiWiki]]</noinclude>" "" /tmp/check-mirrors/version.txt >/dev/null
+$as_user str_replace "<noinclude>[[Category:MultiWiki]]</noinclude>" "" /home/checkmirrors/version.txt >/dev/null
 
-version=$(cat /tmp/check-mirrors/version.txt)
+version=$(stcat /home/checkmirrors/version.txt)
 
-#echo "version: '$version'"
+#stecho "version: '$version'"
 
 for mirror_item in $mirror_list ; do
    ## for prettier xtrace only
    mirror_item="$mirror_item"
 
    link="${mirror_item}/${version}/Whonix-Xfce-${version}.ova"
-   echo "link: $link"
+   stecho "link: $link"
 
    curl_exit_code=0
 
    ## TODO: --max-time
 
-   ## 2> /tmp/check-mirrors/stderr.txt \
+   ## 2> /home/checkmirrors/stderr.txt \
 
    scurl \
       $curl_built_in_args \
@@ -66,14 +63,14 @@ for mirror_item in $mirror_list ; do
       --retry 0 \
       --max-time 30 \
       --output /dev/null \
-      1> /tmp/check-mirrors/stdout.txt \
+      1> /home/checkmirrors/stdout.txt \
       || { curl_exit_code=$? ; true; };
 
-   stdout=$(cat /tmp/check-mirrors/stdout.txt)
-   #stderr=$(cat /tmp/check-mirrors/stderr.txt)
+   stdout=$(stcat /home/checkmirrors/stdout.txt)
+   #stderr=$(stcat /home/checkmirrors/stderr.txt)
 
-   echo "stdout: '$stdout'"
-   echo "stderr: '$stderr'"
+   stecho "stdout: '$stdout'"
+   stecho "stderr: '$stderr'"
 
    ## Curl return bytes per second as per curl default.
    bytes_per_second="$stdout"
@@ -81,9 +78,9 @@ for mirror_item in $mirror_list ; do
 
    mb_per_second="$(( $bytes_per_second / 1024 / 1024 ))"
 
-   echo "kb_per_second: '$kb_per_second'"
-   echo "mb_per_second: '$mb_per_second'"
+   stecho "kb_per_second: '$kb_per_second'"
+   stecho "mb_per_second: '$mb_per_second'"
 done
 
-echo ""
+stecho ""
 true ""
