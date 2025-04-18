@@ -21,6 +21,23 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
+command -v safe-rm >/dev/null
+
+temp_folder="$(mktemp --directory)"
+
+exit_handler() {
+  if [ "$temp_folder" = "" ]; then
+    return 0
+  fi
+  if ! test -d "$temp_folder" ; then
+    return 0
+  fi
+  safe-rm --verbose --force --recursive -- "$temp_folder" || true
+}
+
+trap exit_handler EXIT
+y
+
 # optional! install requirements
 install_dependencies() {
   apt-get install --yes --no-install-recommends make git fpc lazarus
@@ -31,16 +48,16 @@ install_ppcross() {
   #install_ppcross_using_debian_source_package
 }
 
-install_ppcross_using_debian_source_package() {
-  rm --force --recursive /tmp/fpc-compile-temp
+install_ppcross_using_debian_source_package()
+  safe-rm --force --recursive -- "$temp_folder"
 
-  mkdir --parents /tmp/fpc-compile-temp
+  mkdir --parents -- "$temp_folder"
 
-  cd /tmp/fpc-compile-temp
+  cd -- "$temp_folder"
 
   apt-get source fpc
 
-  cd fpc-*
+  cd -- fpc-*
 
   ## regenerate Makefile.fpc
   ## https://wiki.freepascal.org/Fpcmake
