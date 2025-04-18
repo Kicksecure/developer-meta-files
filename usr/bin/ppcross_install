@@ -36,7 +36,6 @@ exit_handler() {
 }
 
 trap exit_handler EXIT
-y
 
 # optional! install requirements
 install_dependencies() {
