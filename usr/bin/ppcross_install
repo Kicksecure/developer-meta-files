@@ -49,9 +49,7 @@ install_ppcross() {
   #install_ppcross_using_debian_source_package
 }
 
-install_ppcross_using_debian_source_package()
-  safe-rm --force --recursive -- "$temp_folder"
-
+install_ppcross_using_debian_source_package() {
   mkdir --parents -- "$temp_folder"
 
   cd -- "$temp_folder"
