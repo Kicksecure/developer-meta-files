@@ -1,3 +1,9 @@
+developer-meta-files (3:40.5-1) unstable; urgency=medium
+
+  * New upstream version (local package).
+
+ -- Patrick Schleizer <adrelanos@whonix.org>  Mon, 21 Apr 2025 18:42:26 +0000
+
 developer-meta-files (3:40.4-1) unstable; urgency=medium
 
   * New upstream version (local package).

@@ -1,3 +1,15 @@
+commit e370cc1e3d7dada3e415dc06622534be72c653e2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 21 14:39:37 2025 -0400
+
+    quote APTGETOPT variable
+
+commit 0e6217264e2d2d57cff7be53e09aca94aec9197a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 21 10:21:30 2025 +0000
+
+    bumped changelog version
+
 commit ddd69102ff861f8e4a6db39e4cd9d752b778b9ef
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Apr 21 05:29:41 2025 -0400
