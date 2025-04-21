@@ -59,8 +59,8 @@ main() {
    ## Out commented. Instructions leave that to the user. This is better,
    ## because this script would fail if some repository would not be reachable,
    ## such as torproject's Tor 0.2.4 apt repository.
-   #chroot_run apt-get ${APTGETOPT[@]} update
-   #chroot_run apt-get ${APTGETOPT[@]} --yes dist-upgrade
+   #chroot_run apt-get "${APTGETOPT[@]}" update
+   #chroot_run apt-get "${APTGETOPT[@]}" --yes dist-upgrade
 
    "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 
@@ -76,22 +76,22 @@ main() {
    fi
 
    ## Reading [apt repository containing snapshot.debian.org and] local repository containing Whonix's packages.
-   chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
+   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    ## TODO: ?
 #    if [ "$dist_build_flavor" = "whonix-gateway-xfce" ]; then
-#       chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
+#       chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install
 #    elif [ "$dist_build_flavor" = "whonix-gateway-cli" ]; then
-#       chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install
+#       chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install
 #    else
 #       local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
 #       error "$MSG"
 #    fi
 
    ## Upgrade Whonix Debian Packages.
-   chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes dist-upgrade
+   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes dist-upgrade
 
-   #chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
+   #chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
 
    "$dist_source_help_steps_folder/remove-local-temp-apt-repo" "$@"
 

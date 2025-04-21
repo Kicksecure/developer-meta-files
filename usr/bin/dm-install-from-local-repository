@@ -35,7 +35,7 @@ main() {
    "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 
    ## Reading local repository containing Whonix's packages.
-   chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
+   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "$pkg" = "" ]; then
       if [ "$dist_build_flavor" = "whonix-gateway-kde" ]; then
@@ -56,9 +56,9 @@ main() {
       fi
    fi
 
-   chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
+   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
 
-   #chroot_run apt-get ${APTGETOPT[@]} $apt_sourcelist_empty $apt_sourceparts -f install
+   #chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
 
    "$dist_source_help_steps_folder/remove-local-temp-apt-repo" "$@"
 
