@@ -21,19 +21,61 @@ test -x "$wrapper"
 ## Need to 'cd' for relative paths.
 cd "$folder"
 
+declare -A symlink_whitelist
+
+symlink_whitelist["./live-build/share/bootloaders/isolinux/isolinux.bin"]="/usr/lib/ISOLINUX/isolinux.bin"
+symlink_whitelist["./live-build/share/bootloaders/isolinux/ldlinux.c32"]="/usr/lib/syslinux/modules/bios/ldlinux.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/hdt.c32"]="/usr/lib/syslinux/modules/bios/hdt.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libgpl.c32"]="/usr/lib/syslinux/modules/bios/libgpl.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libutil.c32"]="/usr/lib/syslinux/modules/bios/libutil.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libcom32.c32"]="/usr/lib/syslinux/modules/bios/libcom32.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/vesamenu.c32"]="/usr/lib/syslinux/modules/bios/vesamenu.c32"
+symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libmenu.c32"]="/usr/lib/syslinux/modules/bios/libmenu.c32"
+symlink_whitelist["./live-build/share/bootloaders/pxelinux/pxelinux.0"]="/usr/lib/PXELINUX/pxelinux.0"
+symlink_whitelist["./live-build/share/bootloaders/pxelinux/ldlinux.c32"]="/usr/lib/syslinux/modules/bios/ldlinux.c32"
+symlink_whitelist["./live-build/data/debian-cd/bullseye"]="squeeze/"
+symlink_whitelist["./live-build/data/debian-cd/jessie"]="squeeze"
+symlink_whitelist["./live-build/data/debian-cd/stretch"]="squeeze"
+symlink_whitelist["./live-build/data/debian-cd/unstable"]="sid"
+symlink_whitelist["./live-build/data/debian-cd/buster"]="squeeze"
+symlink_whitelist["./live-build/data/debian-cd/kali-last-snapshot"]="sid"
+symlink_whitelist["./live-build/data/debian-cd/sid"]="trixie"
+symlink_whitelist["./live-build/data/debian-cd/bookworm"]="squeeze/"
+symlink_whitelist["./live-build/data/debian-cd/kali-dev"]="sid"
+symlink_whitelist["./live-build/data/debian-cd/kali-rolling"]="sid"
+symlink_whitelist["./live-build/data/debian-cd/testing"]="trixie"
+symlink_whitelist["./live-build-data/d-i-branding/logo_installer_dark.png"]="logo_debian.png"
+symlink_whitelist["./live-build-data/d-i-branding/logo_debian_dark.png"]="logo_debian.png"
+symlink_whitelist["./live-build-data/d-i-branding/logo_installer.png"]="logo_debian.png"
+symlink_whitelist["./qubes/qubes-template-whonix/whonix-workstation"]="whonix-gateway"
+
+check_symlink() {
+   local symlink
+   symlink="$1"
+   local target
+   target="$(readlink -- "$symlink")"
+
+   if [ "${symlink_whitelist[$symlink]+_}" ]; then
+      if [ "${symlink_whitelist[$symlink]}" == "$target" ]; then
+         printf "%s\n" "$0: INFO: Whitelisted symlink: '$symlink' -> '$target'" >/dev/null
+         return 0
+      fi
+      printf "%s\n" "$0: ERROR: Whitelisted symlink: '$symlink' but wrong target '$target'" >&2
+      return 1
+   fi
+
+   printf "%s\n" "$0: ERROR: NOT whitelisted symlink: '$symlink' -> '$target'" >&2
+   return 1
+}
+
 find_symlinks() {
+   local symlink found_symlink
    found_symlink=""
    while IFS= read -r -d '' symlink; do
-      readlink_result="$(readlink "$symlink")"
-      if [ "$symlink" = "./qubes/qubes-template-whonix/whonix-workstation" ]; then
-         if [ "$readlink_result" = "whonix-gateway" ]; then
-            continue
-         fi
+      if check_symlink "$symlink" ; then
+         continue
       fi
       found_symlink=true
-      printf "%s\n" "$0: ERROR: Symlink found!" >&2
-      printf "%s\n" "symlink: '$symlink'" >&2
-      printf "%s\n" "readlink_result: '$readlink_result'" >&2
       printf "%s\n" "----------" >&2
    ## Need to use '"."' for relative paths.
    done < <(find "." -type l -not -iwholename '*.git*' -print0)
@@ -88,7 +130,7 @@ if [ -z "$filtered_output" ]; then
 else
    printf "%s\n" "$filtered_output" >&2
 
-   true "\
+   printf "%s\n" "\
 $0: ERROR: Unicode found!
 
 See also:
