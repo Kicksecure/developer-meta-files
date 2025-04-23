@@ -1,7 +1,7 @@
 #!/bin/bash
-#
-# wiki-vbox-version-update - Find new versions of VirtualBox and update the
-#   links in the wiki accordingly.
+
+## wiki-vbox-version-update - Find new versions of VirtualBox and update the
+##   links in the wiki accordingly.
 
 set -o errexit
 set -o nounset
@@ -38,8 +38,8 @@ get_wiki_page_cached () {
 
    if [ -z "${wiki_cache[${cache_id}]:-}" ]; then
       2>/dev/null >/dev/null wiki_article_to_fetch="${wiki_page}" wiki_fetch_to_file="${tmpfile}" mw-fetch
-      wiki_cache[${cache_id}]="$(cat "${tmpfile}")"
-      safe-rm "${tmpfile}"
+      wiki_cache[${cache_id}]="$(cat -- "${tmpfile}")"
+      safe-rm -- "${tmpfile}"
    fi
 
    wiki_content="${wiki_cache["${cache_id}"]}"
@@ -126,10 +126,10 @@ replace_wiki_string () {
    tmpfile="$(mktemp)"
    append-once "${tmpfile}" "${wiki_content}"
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
-   wiki_content="$(cat "${tmpfile}")"
+   wiki_content="$(cat -- "${tmpfile}")"
    wiki_cache[${cache_id}]="${wiki_content}"
 
-   safe-rm "${tmpfile}"
+   safe-rm -- "${tmpfile}"
 }
 
 # TODO: Templates for future work
@@ -161,7 +161,7 @@ save_cached_page_to_wiki () {
    append-once "${tmpfile}" "${wiki_content}"
    mw-edit "${wiki_page}" "${tmpfile}"
 
-   safe-rm "${tmpfile}"
+   safe-rm -- "${tmpfile}"
 }
 
 declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_regex
