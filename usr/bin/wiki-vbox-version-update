@@ -8,7 +8,8 @@ set -o nounset
 set -o errtrace
 set -o pipefail
 
-command -v mw-fetch
+command -v mw-fetch >/dev/null
+command -v stprint >/dev/null
 
 declare -A url_cache
 declare -A wiki_cache
