@@ -66,7 +66,7 @@ extract_url () {
       fi
    done <<< "${content}"
 
-   echo "${regex_result}"
+   stprint "${regex_result}"
 }
 
 get_url_from_page () {
@@ -81,9 +81,9 @@ get_url_from_page () {
    readarray -t result < <(extract_url "${url_content}" "${release_regex}")
 
    if [ "${#result[@]}" != '1' ]; then
-      1>&2 echo 'WARNING - more than one URL found for download!'
+      1>&2 stprint 'WARNING - more than one URL found for download!'
    elif [ -z "${result[0]}" ]; then
-      1>&2 echo 'WARNING - no URL found!'
+      1>&2 stprint 'WARNING - no URL found!'
    fi
 
    func_result="${result[0]}"
@@ -101,9 +101,9 @@ get_url_from_wiki () {
    readarray -t result < <(extract_url "${wiki_content}" "${release_regex}")
 
    if [ "${#result[@]}" != '1' ]; then
-      1>&2 echo 'WARNING - more than one URL found for download!'
+      1>&2 stprint 'WARNING - more than one URL found for download!'
    elif [ -z "${result[0]}" ]; then
-      1>&2 echo 'WARNING - no URL found!'
+      1>&2 stprint 'WARNING - no URL found!'
    fi
 
    func_result="${result[0]}"
@@ -178,10 +178,10 @@ main () {
 
    update_done='false'
 #    if [ ! -v WIKI_API_USER_NAME ]; then
-#       echo "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
+#       stprint "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
 #       exit 1
 #    elif [ ! -v WIKI_API_USER_PASS ]; then
-#       echo "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
+#       stprint "ERROR: No user password provided! Please ensure WIKI_API_USER_PASS is set in the environment."
 #       exit 1
 #    fi
 
