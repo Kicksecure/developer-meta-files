@@ -173,7 +173,7 @@ vbox_macos_intel64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/Vir
 WIKI_URL='https://www.kicksecure.com/w'; export WIKI_URL
 
 main () {
-   local vbox_win_latest vbox_macos_latest vbox_win_current vbox_macos_current update_done
+   local vbox_win_latest vbox_macos_intel64_latest vbox_win_current vbox_macos_intel64_current update_done
 
    update_done='false'
 #    if [ ! -v WIKI_API_USER_NAME ]; then
@@ -185,16 +185,16 @@ main () {
 #    fi
 
    get_url_from_page "${vbox_download_page}" "${vbox_win_regex}";   vbox_win_latest="${func_result}"
-   get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_latest="${func_result}"
+   get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_latest="${func_result}"
    get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_win_regex}";   vbox_win_current="${func_result}"
-   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_current="${func_result}"
+   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
 
    if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
       replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
       update_done='true'
    fi
-   if [ "${vbox_macos_latest}" != "${vbox_macos_current}" ]; then
-      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_macos_current}" "${vbox_macos_latest}"
+   if [ "${vbox_macos_intel64_latest}" != "${vbox_macos_intel64_current}" ]; then
+      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"
       update_done='true'
    fi
 
