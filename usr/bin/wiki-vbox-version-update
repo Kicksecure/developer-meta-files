@@ -36,9 +36,9 @@ get_wiki_page_cached () {
 
    cache_id="${WIKI_URL} - ${wiki_page}"
 
-   if [ -z "${wiki_cache[${cache_id}]:-}" ]; then
+   if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
       2>/dev/null >/dev/null wiki_article_to_fetch="${wiki_page}" wiki_fetch_to_file="${tmpfile}" mw-fetch
-      wiki_cache[${cache_id}]="$(cat -- "${tmpfile}")"
+      wiki_cache["${cache_id}"]="$(cat -- "${tmpfile}")"
       safe-rm -- "${tmpfile}"
    fi
 
@@ -120,14 +120,14 @@ replace_wiki_string () {
    [ -z "${new_string}" ] && return 1
 
    cache_id="${WIKI_URL} - ${wiki_page}"
-   wiki_content="${wiki_cache[${cache_id}]}"
+   wiki_content="${wiki_cache["${cache_id}"]}"
    [ -z "${wiki_content}" ] && return 1
 
    tmpfile="$(mktemp)"
    append-once "${tmpfile}" "${wiki_content}"
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
    wiki_content="$(cat -- "${tmpfile}")"
-   wiki_cache[${cache_id}]="${wiki_content}"
+   wiki_cache["${cache_id}"]="${wiki_content}"
 
    safe-rm -- "${tmpfile}"
 }
