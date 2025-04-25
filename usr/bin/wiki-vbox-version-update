@@ -175,7 +175,7 @@ vbox_macos_arm64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/Virtu
 WIKI_URL='https://www.kicksecure.com/w'; export WIKI_URL
 
 main () {
-   local vbox_win_latest vbox_macos_intel64_latest vbox_win_current vbox_macos_intel64_current update_done
+   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done
 
    update_done='false'
 #    if [ ! -v WIKI_API_USER_NAME ]; then
