@@ -44,7 +44,7 @@ sign_cmd() {
 
 sign_cmd_signify() {
    ## To create a key for signify-openbsd:
-   ## as user "user"
+   ## as account "user"
    ## mkdir -p ~/.signify
    ## cd ~/.signify
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"

@@ -31,7 +31,7 @@ pinentry-gnome3
 
 # signify #
 
-To create a key for signify-openbsd as user "user":
+To create a key for signify-openbsd as account "user":
 
 ```
 sudo apt-get install signify-openbsd
