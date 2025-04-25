@@ -20,21 +20,21 @@ check_prerequisites() {
    # Failure of one of these prerequisites is a fatal error.
 
    [ -d "${derivative_maker_source_code_dir}" ] || {
-      echo "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} does not exist or is not a directory."
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} does not exist or is not a directory."
       exit 1
    }
 
    # Any arbitrary package under derivative-maker/packages/kicksecure will
    # work here, live-config-dist was chosen arbitrarily.
    test "$(find "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist" | wc -l)" -gt '1' || {
-      echo "FATAL ERROR: Hard prerequisite not met: git submodules under ${derivative_maker_source_code_dir} not populated."
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: git submodules under ${derivative_maker_source_code_dir} not populated."
       exit 1
    }
 
    # TODO: dm-check-unicode hardcodes the derivative-maker path. This should
    # eventually be corrected.
    dm-check-unicode || {
-      echo "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} contains Unicode or is mislocated."
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} contains Unicode or is mislocated."
       exit 1;
    }
 
@@ -45,11 +45,11 @@ check_prerequisites() {
    # Failure of one of these prerequisites is a possible issue but not fatal.
 
    [ -d "${derivative_binary_dir}" ] || {
-      echo "WARNING: Soft prerequisite not met: ${derivative_binary_dir} does not exist or is not a directory. Some features will be disabled."
+      printf "%s\n" "WARNING: Soft prerequisite not met: ${derivative_binary_dir} does not exist or is not a directory. Some features will be disabled."
    }
 
    [ "${derivative_maker_source_code_dir}" = "$HOME/derivative-maker" ] || {
-      echo "WARNING: Soft prerequisite not met: ${derivative_maker_source_code_dir} is not located at $HOME/derivative-maker. The script may break."
+      printf "%s\n" "WARNING: Soft prerequisite not met: ${derivative_maker_source_code_dir} is not located at $HOME/derivative-maker. The script may break."
    }
 
    ## . END Soft prerequisites
@@ -61,7 +61,7 @@ source_library_list() {
 
    for library in "${library_list[@]}"; do
       source "${library}" || {
-         echo "ERROR: Library not found: ${library}"
+         printf "%s\n" "ERROR: Library not found: ${library}"
          exit 1
       }
    done
@@ -113,45 +113,45 @@ commit_filter() {
 
    commit_msg_short="$1"
    [ -z "${commit_msg_short}" ] && {
-      echo "${red}${bold}FATAL ERROR: No argument provided to ${FUNCNAME[0]}!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: No argument provided to ${FUNCNAME[0]}!${reset}"
       exit 1;
    }
 
    set +x
 
-   if echo "${commit_msg_short}" | grep -i -q 'Merge remote-tracking branch' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Merge remote-tracking branch' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'Merge pull request' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Merge pull request' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'lintian FHS' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'lintian FHS' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'LANG=C' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'LANG=C' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'LC_ALL=C' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'LC_ALL=C' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'genmkfile manpages' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'genmkfile manpages' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'lintian' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'lintian' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'Standards-Version' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Standards-Version' ; then
       set -x
       return 1
    fi
-   if echo "${commit_msg_short}" | grep -i -q 'change license to AGPL-3+' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'change license to AGPL-3+' ; then
       set -x
       return 1
    fi
@@ -344,16 +344,16 @@ extract_description_from_debian_control() {
    target_file="${2:-}"
    headline_template="${3:-}"
    if [ -z "${source_file}" ]; then
-      echo "${red}${bold}FATAL ERROR: Empty source_file parameter provided!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Empty source_file parameter provided!${reset}"
       exit 1
    elif [ -z "${target_file}" ]; then
-      echo "${red}${bold}FATAL ERROR: Empty target_file parameter provided!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Empty target_file parameter provided!${reset}"
       exit 1
    elif [ -z "${headline_template}" ]; then
-      echo "${red}${bold}FATAL ERROR: Empty headline_template parameter provided!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Empty headline_template parameter provided!${reset}"
       exit 1
    elif ! grep -q 'XXX_REPLACE_ME_XXX' <<< "${headline_template}" ; then
-      echo "${red}${bold}FATAL ERROR: headline_template parameter lacks XXX_REPLACE_ME_XXX placeholder!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: headline_template parameter lacks XXX_REPLACE_ME_XXX placeholder!${reset}"
       exit 1
    fi
 
@@ -380,17 +380,17 @@ extract_description_from_debian_control() {
                headline="${headline:1}"
             fi
             headline_template="${headline_template//'XXX_REPLACE_ME_XXX'/"${headline}"}"
-            echo "${headline_template}" | tee -a -- "${target_file}" >/dev/null
-            echo '' | tee -a -- "${target_file}" >/dev/null
+            printf "%s\n" "${headline_template}" | tee -a -- "${target_file}" >/dev/null
+            printf "%s\n" '' | tee -a -- "${target_file}" >/dev/null
             headline_written='y'
             continue
          fi
          if [ "${line}" = ' .' ]; then
-            echo '' | tee -a -- "${target_file}" >/dev/null
+            printf "%s\n" '' | tee -a -- "${target_file}" >/dev/null
          else
             # Strip all leading whitespace
             read -r line <<< "${line}"
-            echo "${line}" | tee -a -- "${target_file}" >/dev/null
+            printf "%s\n" "${line}" | tee -a -- "${target_file}" >/dev/null
          fi
       fi
    done < "${source_file}"
@@ -409,40 +409,40 @@ internal_descr_writer() {
          if ! [ -e "${description_file}" ]; then
             control_file="${batch_current_package_path}/debian/control"
             if ! [ -f "${control_file}" ]; then
-               echo "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
+               printf "%s\n" "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
                exit 1
             fi
 
             touch "${description_file}"
 
-            echo "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
-            echo '' | tee -a -- "${description_file}" >/dev/null
-            echo "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
-            echo "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
+            printf "%s\n" '' | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
 
             extract_description_from_debian_control "${control_file}" "${description_file}" '=== XXX_REPLACE_ME_XXX ==='
 
          ## If the file does exist, make sure it's a real file
          elif ! [ -f "${description_file}" ]; then
-            echo "${red}${bold}FATAL ERROR: ${description_file} exists but is not a regular file!${reset}"
+            printf "%s\n" "${red}${bold}FATAL ERROR: ${description_file} exists but is not a regular file!${reset}"
             exit 1
          fi
 
          if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]}" = 'y' ]; then
-            echo "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
-            echo '' | tee -a -- "${description_file}" >/dev/null
-            echo "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_gateway_only}" = 'y' ] && echo '* gateway only<!--gateway-only-->' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_workstation_only}" = 'y' ] && echo '* workstation only<!--workstation-only-->' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && echo '* Non-Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_qubes_whonix_only}" = 'y' ] && echo '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_installed_by_default}" = 'n' ] && echo '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
-            echo '' | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" '' | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_gateway_only}" = 'y' ] && printf "%s\n" '* gateway only<!--gateway-only-->' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_workstation_only}" = 'y' ] && printf "%s\n" '* workstation only<!--workstation-only-->' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && printf "%s\n" '* Non-Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_qubes_whonix_only}" = 'y' ] && printf "%s\n" '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
+            [ "${batch_meta_installed_by_default}" = 'n' ] && printf "%s\n" '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
+            printf "%s\n" '' | tee -a -- "${description_file}" >/dev/null
 
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
 
-         echo "$@" | tee -a -- "${description_file}" >/dev/null
+         printf "%s\n" "$@" | tee -a -- "${description_file}" >/dev/null
       done
    done
 }
@@ -462,7 +462,7 @@ get_package_documentation_info_list() {
    elif [ "${info_type}" = 'project' ]; then
       info_idx='3'
    else
-      echo "${red}${bold}FATAL ERROR: info_type is not 'category' or 'project'!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: info_type is not 'category' or 'project'!${reset}"
       exit 1
    fi
 
@@ -485,7 +485,7 @@ get_package_documentation_info_list() {
       done
       if [ "${info_match_found}" = 'n' ]; then
          info_list+=( "${file_info}" )
-         echo "${file_info}"
+         printf "%s\n" "${file_info}"
       fi
    done
 }
@@ -511,10 +511,10 @@ internal_git_diff() {
    git_branch_one="${1:-}"
    git_branch_two="${2:-}"
    if [ -z "${git_branch_one}" ]; then
-      echo "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
       exit 1
    elif [ -z "${git_branch_two}" ]; then
-      echo "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
       exit 1
    fi
 
@@ -590,7 +590,7 @@ pkg_readme_creator_do() {
 
    generic_readme_template_file="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/README_generic_template_file.md"
    if ! [ -f "${generic_readme_template_file}" ]; then
-      echo "${red}${bold}FATAL ERROR: ${generic_readme_template_file} does not exist!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: ${generic_readme_template_file} does not exist!${reset}"
       exit 1
    fi
 
@@ -611,7 +611,7 @@ pkg_readme_creator_do() {
 
    extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
 
-   echo "" | tee -a -- "${readme_file}" >/dev/null
+   printf "%s\n" "" | tee -a -- "${readme_file}" >/dev/null
 
    cat -- "${generic_readme_template_file}" | tee -a -- "${readme_file}" >/dev/null
 
@@ -674,7 +674,7 @@ pkg_descr_creator() {
       fi
 
       if ! [ -f "${file_name}" ]; then
-         echo "${red}${bold}FATAL ERROR: ${file_name} does not exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: ${file_name} does not exist!${reset}"
          exit 1
       fi
 
@@ -697,14 +697,14 @@ pkg_descr_creator() {
             if [ "${second_word}" = 'meta' ]; then
                if [ "${third_word}" = 'start' ]; then
                   in_meta_section='y'
-                  echo '##################################################'
-                  echo "${file_name}"
+                  printf "%s\n" '##################################################'
+                  printf "%s\n" "${file_name}"
                   continue
                elif [ "${third_word}" = 'end' ]; then
                   in_meta_section='n'
                   break
                else
-                  echo "${red}${bold}FATAL ERROR: Unexpected meta subcommand '${third_word}'!${reset}"
+                  printf "%s\n" "${red}${bold}FATAL ERROR: Unexpected meta subcommand '${third_word}'!${reset}"
                   exit 1
                fi
             fi
@@ -718,7 +718,7 @@ pkg_descr_creator() {
                   readarray -d' ' -t batch_meta_project_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_project_list=( "${batch_meta_project_list[@]:0:((${#batch_meta_project_list[@]} - 1))}" )
-                  echo "batch_meta_project_list: ${batch_meta_project_list[*]}"
+                  printf "%s\n" "batch_meta_project_list: ${batch_meta_project_list[*]}"
                   continue
                elif [ "${second_word}" = 'non_qubes_whonix_only' ]; then
                   if [ "${third_word}" = 'yes' ]; then
@@ -753,7 +753,7 @@ pkg_descr_creator() {
                   readarray -d' ' -t batch_meta_category_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_category_list=( "${batch_meta_category_list[@]:0:((${#batch_meta_category_list[@]} - 1))}" )
-                  echo "batch_meta_category_list: ${batch_meta_category_list[*]}"
+                  printf "%s\n" "batch_meta_category_list: ${batch_meta_category_list[*]}"
                   continue
                elif [ "${second_word}" = 'description' ]; then
                   description_found='y'
@@ -847,7 +847,7 @@ pkg_descr_merger() {
                [ "${package_name}" = 'anon-apps-config' ] && machine='workstation'
                [ "${package_name}" = 'bindp' ] && machine='workstation'
             else
-               echo "${red}${bold}FATAL ERROR: Unrecognized project '${project}'!${reset}"
+               printf "%s\n" "${red}${bold}FATAL ERROR: Unrecognized project '${project}'!${reset}"
                exit 1
             fi
 
@@ -895,13 +895,13 @@ pkg_descr_merge_all() {
             true "all_merged_file: ${all_merged_file}"
 
             if [ "${machine}" = 'all' ]; then
-               echo '= Kicksecure =' | tee -a -- "${all_merged_file}" >/dev/null
+               printf "%s\n" '= Kicksecure =' | tee -a -- "${all_merged_file}" >/dev/null
             elif [ "${machine}" = 'gateway' ]; then
-               echo '= Whonix-Gateway =' | tee -a -- "${all_merged_file}" >/dev/null
+               printf "%s\n" '= Whonix-Gateway =' | tee -a -- "${all_merged_file}" >/dev/null
             elif [ "${machine}" = 'workstation' ]; then
-               echo '= Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+               printf "%s\n" '= Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
             elif [ "${machine}" = 'shared' ]; then
-               echo '= Shared by Whonix-Gateway and Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+               printf "%s\n" '= Shared by Whonix-Gateway and Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
             fi
 
             cat -- "${file_name_full_path}" | tee -a -- "${all_merged_file}" >/dev/null
@@ -912,29 +912,29 @@ pkg_descr_merge_all() {
 
 ## Echos repository links for all repositories.
 pkg_links_echo() {
-   echo "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}"
-   #echo "https://github.com/adrelanos/${batch_current_package_reponame}"
+   printf "%s\n" "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}"
+   #printf "%s\n" "https://github.com/adrelanos/${batch_current_package_reponame}"
 }
 
 ## Echos Markdown-formatted links for all repositories.
 pkg_links_markdown_echo() {
-   echo "[${batch_current_package_reponame}](https://github.com/${batch_current_project_name}/${batch_current_package_reponame})"
+   printf "%s\n" "[${batch_current_package_reponame}](https://github.com/${batch_current_project_name}/${batch_current_package_reponame})"
 }
 
 ## Echos links to all commits made by adrelanos for all repositories.
 pkg_echo_commits_adrelanos() {
-   echo "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/commits?author=adrelanos"
+   printf "%s\n" "https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/commits?author=adrelanos"
 }
 
 ## Echos the names of all packages.
 pkg_names_echo() {
-   echo "${batch_current_package_reponame}"
+   printf "%s\n" "${batch_current_package_reponame}"
 }
 
 ## Echos the names of all packages, along with the project each package is
 ## under.
 pkg_names_test() {
-   echo "${batch_current_package_reponame} | ${batch_current_project_name}"
+   printf "%s\n" "${batch_current_package_reponame} | ${batch_current_project_name}"
 }
 
 ## Opens all package links in Tor Browser.
@@ -974,7 +974,7 @@ pkg_git_remotes_add() {
       #git remote add     gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
       #git remote set-url gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
    else
-      echo "ERROR: batch_current_project_name wrong! (1)"
+      printf "%s\n" "ERROR: batch_current_project_name wrong! (1)"
    fi
 
    true
@@ -1042,7 +1042,7 @@ pkg_profile_d_zsh_creator() {
             continue
          fi
       fi
-      echo "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
+      printf "%s\n" "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
    done
    true
 }
@@ -1139,7 +1139,7 @@ pkg_packaging_files_diff() {
 
    if [ "${batch_func_init_done}" = 'n' ]; then
       if ! [ -f "${compare_with_full_path}/COPYING" ]; then
-         echo "${red}${bold}FATAL ERROR: ${compare_with_full_path}/COPYING does not exist!"
+         printf "%s\n" "${red}${bold}FATAL ERROR: ${compare_with_full_path}/COPYING does not exist!"
          exit 1
       fi
       batch_func_init_done='y'
@@ -1163,7 +1163,7 @@ pkg_packaging_files_diff() {
    done
    if ! [ "${package_lacks_contributing_md}" = 'y' ]; then
       if ! [ -f "${batch_current_package_path}/CONTRIBUTING.md" ]; then
-         echo "${red}${bold}FATAL ERROR: Package ${batch_current_package_reponame} is missing a CONTRIBUTING.md file!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: Package ${batch_current_package_reponame} is missing a CONTRIBUTING.md file!${reset}"
          exit 1
       fi
    fi
@@ -1171,7 +1171,7 @@ pkg_packaging_files_diff() {
    if ! [ -f "${batch_current_package_path}/README.md" ]; then
       if ! [ -f "${batch_current_package_path}/README.mediawiki" ]; then
          ## TODO: Should README_generic.d be taken into account here?
-         echo "${red}${bold}FATAL ERROR: Neither ${batch_current_package_path}/README.md nor ${batch_current_package_path}/README.mediawiki exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: Neither ${batch_current_package_path}/README.md nor ${batch_current_package_path}/README.mediawiki exist!${reset}"
          exit 1
       fi
    fi
@@ -1181,13 +1181,13 @@ pkg_packaging_files_diff() {
    if [ "${batch_current_package_reponame}" = 'corridor' ]; then
       ## Corridor has no COPYING but a LICENSE-ISC file.
       if ! [ -f "${batch_current_package_path}/LICENSE-ISC" ]; then
-         echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE-ISC does not exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE-ISC does not exist!${reset}"
          return 1
       fi
 #  elif [ "${batch_current_package_reponame}" = 'hardened_malloc' ]; then
 #     ## hardened_malloc has no COPYING but a LICENSE file.
 #     if ! [ -f "${batch_current_package_path}/LICENSE" ]; then
-#        echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE does not exist!${reset}"
+#        printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE does not exist!${reset}"
 #        return 1
 #     fi
    else
@@ -1205,7 +1205,7 @@ pkg_packaging_files_diff() {
 #          cp ~/derivative-maker/COPYING "${batch_current_package_path}/debian/copyright"
 #       else
 #          ## TODO: delete /tmp/list-of-packages
-#          echo "${batch_current_package_reponame}" | tee -a -- /tmp/list-of-packages >/dev/null
+#          printf "%s\n" "${batch_current_package_reponame}" | tee -a -- /tmp/list-of-packages >/dev/null
 #          mousepad "${batch_current_package_path}/COPYING"
 #          mousepad "${batch_current_package_path}/debian/copyright"
 #       fi
@@ -1221,7 +1221,7 @@ pkg_packaging_files_diff() {
    )
    for check_file in "${check_file_list[@]}"; do
       if ! [ -f "${batch_current_package_path}/${check_file}" ]; then
-         echo "${red}${bold}FATAL ERROR: ${batch_current_package_path}/${check_file} does not exist!"
+         printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/${check_file} does not exist!"
          exit 1
       fi
    done
@@ -1363,7 +1363,7 @@ pkg_git_debinstfile() {
    genmkfile debinstfile
 
    msg='add debian install file (generated using "genmkfile debinstfile")'
-   echo "PWD: '$PWD'"
+   printf "%s\n" "PWD: '$PWD'"
    git add "debian/${batch_current_package_reponame}.install" || true
    git commit -m "${msg}" || true
    git status
@@ -1408,7 +1408,7 @@ pkg_add_dh_changelogs_override_to_debian_rules() {
       return 0
     fi
 
-   echo "
+   printf "%s\n" "
 override_dh_installchangelogs:
   dh_installchangelogs changelog.upstream upstream" | tee -a -- "debian/rules" >/dev/null
    true
@@ -1497,7 +1497,7 @@ pkg_git_submodule_file_writer() {
    if [ "${batch_func_init_done}" = 'n' ]; then
       safe-rm -- "${derivative_maker_source_code_dir}/.gitmodules"
       batch_func_init_done='y'
-      echo '## This file is autogenerated by:
+      printf "%s\n" '## This file is autogenerated by:
 ## autogenerated by dm-packaging-helper-script function pkg_git_submodule_file_writer
 
 ## BEGIN hardcoded part BEGIN ##
@@ -1545,13 +1545,13 @@ pkg_git_submodule_file_writer() {
         url = https://github.com/${batch_current_project_name}/${batch_current_package_reponame}.git
         #url = https://gitlab.com/${batch_current_project_name,,}/${batch_current_package_reponame}.git"
 
-   echo "\
+   printf "%s\n" "\
 [submodule \"${batch_current_package_reponame}\"]
         path = packages/${batch_current_project_name,,}/${batch_current_package_reponame}
 $url" \
          | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 
-   echo "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
+   printf "%s\n" "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
 }
 
 ## Generates a release announcement.
@@ -1610,9 +1610,9 @@ pkg_git_packages_git_log_writer() {
       commit_msg_full="$(git log --format='%B' -n 1 "${commit_hash}")"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
-      commit_msg_full="$(echo "${commit_msg_full}" | sed '/^[[:space:]]*$/d')"
+      commit_msg_full="$(printf "%s\n" "${commit_msg_full}" | sed '/^[[:space:]]*$/d')"
       ## Replace new lines with spaces to unbreak links for multi line comments.
-      commit_msg_full="$(echo "${commit_msg_full}" | tr '\n' ' ')"
+      commit_msg_full="$(printf "%s\n" "${commit_msg_full}" | tr '\n' ' ')"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
 
@@ -1644,14 +1644,14 @@ pkg_git_packages_git_log_writer() {
       log_msg+="${credit_msg}"
 
       if [ "${package_header_written}" = 'n' ]; then
-         echo "* ${batch_current_package_reponame}:" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+         printf "%s\n" "* ${batch_current_package_reponame}:" | tee -a -- "${batch_current_package_changelog}" >/dev/null
          package_header_written='y'
       fi
 
-      echo "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+      printf "%s\n" "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
    done <<< "${commit_msg_short_list}"
 
-   echo '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
+   printf "%s\n" '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
 
    true
 }
@@ -1726,7 +1726,7 @@ pkg_need_version_bump_show() {
 
    batch_current_package_needs_version_bump='y'
 
-   echo "${batch_current_package_reponame}"
+   printf "%s\n" "${batch_current_package_reponame}"
    true
 }
 
@@ -1738,7 +1738,7 @@ pkg_upstream_and_debian_changelog_bump() {
 
    ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
    ## individual packages.
-   echo "version_numbers_by_upstream: ${version_numbers_by_upstream}"
+   printf "%s\n" "version_numbers_by_upstream: ${version_numbers_by_upstream}"
 
    ## TODO:
    ## Not the cleanest way. Other variables might be unwanted.
@@ -1780,7 +1780,7 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   echo "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
+   printf "%s\n" "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
@@ -1816,7 +1816,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       return 0
    fi
 
-   echo "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
+   printf "%s\n" "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_git_manpages
    pkg_git_debinstfile
@@ -1827,7 +1827,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    ## sets: needs_version_bump
    pkg_need_version_bump_do
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
-      echo "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
       exit 1
    fi
 
@@ -1876,7 +1876,7 @@ pkg_add_lintian_watch_gpg_override() {
 
    mkdir --parents './debian/source'
    if [ -f './debian/source/lintian-overrides' ] && ! grep 'debian-watch-does-not-check-openpgp-signature' './debian/source/lintian-overrides' ; then
-      echo "\
+      printf "%s\n" "\
 ## https://phabricator.whonix.org/T277
 debian-watch-does-not-check-openpgp-signature" >> "./debian/source/lintian-overrides"
    fi
@@ -1900,7 +1900,7 @@ added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-s
 debian_watch_file_create() {
    local msg
 
-   echo "## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+   printf "%s\n" "## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
@@ -1937,7 +1937,7 @@ pkg_tor_browser_version_update() {
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git_status_last_line="$(git status | tail -n1)"
    if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
-      echo "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
       exit 1
    fi
    popd
@@ -1946,23 +1946,23 @@ pkg_tor_browser_version_update() {
    ## tbbversion sets: ${tbb_version}
    2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
    tbbversion || {
-      echo "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
       exit 1
    }
    # shellcheck disable=SC2154
    current_tbb_version="${tbb_version}"
    2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_alpha_json_url}"
    tbbversion || {
-      echo "${red}${bold}FATAL ERROR: Could not parse alpha TBB version JSON!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Could not parse alpha TBB version JSON!${reset}"
       exit 1
    }
    # shellcheck disable=SC2154
    current_tbb_alpha_version="${tbb_version}"
    safe-rm -f -- "${tbb_hardcoded_version_file}"
-   echo "tbb_hardcoded_version=\"${current_tbb_version}\"" | sponge -a -- "${tbb_hardcoded_version_file}"
+   printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_version}\"" | sponge -a -- "${tbb_hardcoded_version_file}"
 
    safe-rm -f -- "${tbb_hardcoded_version_alpha_file}"
-   echo "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
+   printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git diff HEAD
@@ -2037,7 +2037,7 @@ https://www.${project_website}/wiki/Download
          error "invalid derivative_release_type!"
       fi
 
-      echo "\
+      printf "%s\n" "\
 ${project_name} ${derivative_version_new_main_short} - ${release_type_long}!
 
 ${header_text}
@@ -2098,7 +2098,7 @@ run_batch_command() {
    arg_list=( "$@" )
 
    [ -z "${batch_command}" ] && {
-      echo "${red}${bold}FATAL ERROR: No command provided to ${FUNCNAME[0]}!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: No command provided to ${FUNCNAME[0]}!${reset}"
       exit 1
    }
 
@@ -2128,7 +2128,7 @@ run_batch() {
              batch_current_project_name='Whonix'
              batch_current_project_website='whonix.org'
           else
-             echo 'ERROR: Project name detection failed!'
+             printf "%s\n" 'ERROR: Project name detection failed!'
              exit 1;
           fi
           if ! [ -d "${batch_current_package_path}" ]; then
@@ -2172,7 +2172,7 @@ main() {
    case "${target_cmd}" in
       'commit_filter')
          [ -z "${arg_list[0]}" ] && {
-            echo "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
+            printf "%s\n" "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
             exit 1
          }
          commit_filter "${arg_list[@]}"
