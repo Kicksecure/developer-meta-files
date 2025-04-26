@@ -13,10 +13,10 @@ dm-quickgittagsign
 
 cd ~/sourcesother/qubes-builder
 
-whonix_version="17"
+derivative_version="17"
 qubes_release="4.2"
 
-VMs="whonix-gateway-${whonix_version} whonix-workstation-${whonix_version}"
+VMs="kicksecure-${derivative_version} whonix-gateway-${derivative_version} whonix-workstation-${derivative_version}"
 
 true "press ctrl + c to abort"
 read question
