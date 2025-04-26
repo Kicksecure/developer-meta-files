@@ -6,9 +6,10 @@
 set -x
 set -e
 
-## XXX
-cd ~/sourcesown/qubes-template-whonix
-
+## XXX: hardcoded path
+cd ~/derivative-maker/qubes/qubes-template-kicksecure
+dm-quickgittagsign
+cd ~/derivative-maker/qubes/qubes-template-whonix
 dm-quickgittagsign
 
 cd ~/sourcesother/qubes-builder
