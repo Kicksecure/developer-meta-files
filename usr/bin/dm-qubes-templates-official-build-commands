@@ -41,3 +41,7 @@ true "press ctrl + c to abort"
 read question
 
 REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$template_oneline_string" template-github
+
+for template_item in "${template_list[@]}"; do
+  realpath -- "build-logs/template-github-$template_item.log"
+done
