@@ -5,21 +5,39 @@
 
 set -x
 set -e
+set -o pipefail
+set -o errtrace
+set -o nounset
 
-## XXX: hardcoded path
-cd ~/derivative-maker/qubes/qubes-template-kicksecure
-dm-quickgittagsign
-cd ~/derivative-maker/qubes/qubes-template-whonix
-dm-quickgittagsign
+init_variables() {
+  derivative_version="17"
+  qubes_release="4.2"
+
+  template_list=()
+  template_list+=("kicksecure-${derivative_version}")
+  template_list+=("whonix-gateway-${derivative_version}")
+  template_list+=("whonix-workstation-${derivative_version}")
+}
+
+git_tag_pushed_sanity_test() {
+  ## XXX: hardcoded path
+  cd ~/derivative-maker/qubes/qubes-template-kicksecure
+  dm-quickgittagsign
+  cd ~/derivative-maker/qubes/qubes-template-whonix
+  dm-quickgittagsign
+}
+
+init_variables
+git_tag_pushed_sanity_test
 
 cd ~/sourcesother/qubes-builder
 
-derivative_version="17"
-qubes_release="4.2"
+template_oneline_string="$(printf '%s ' "${template_list[@]}")"
+template_oneline_string="${template_oneline_string%"${template_oneline_string##*[![:space:]]}"}"
 
-VMs="kicksecure-${derivative_version} whonix-gateway-${derivative_version} whonix-workstation-${derivative_version}"
+echo REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$template_oneline_string" template-github
 
 true "press ctrl + c to abort"
 read question
 
-REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$VMs" template-github
+REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$template_oneline_string" template-github
