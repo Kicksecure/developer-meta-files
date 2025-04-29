@@ -178,7 +178,7 @@ grep_missing_newline_result_raw="$( \
       --binary-files=without-match \
       --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg' \
       --exclude='*.ico' --exclude='*.svg' --exclude='*.ai' \
-      --exclude='*.gpg' --exclude='*.kbx' \
+      --exclude='*.gpg' --exclude='*.kbx' --exclude='*.pf2' \
       --perl-regexp --null-data --files-with-matches --invert-match \
       --exclude="control.authcookie" \
       --exclude="RecommendedTBBVersions" \
