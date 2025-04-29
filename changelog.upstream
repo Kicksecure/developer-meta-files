@@ -1,3 +1,27 @@
+commit 77238379126b1d58427efe776194ce4b3aff8b93
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 29 07:03:31 2025 -0400
+
+    allow missing newlines in `.pf2` files (GRUB font files)
+
+commit 002d4b0880d8837417269805be05ac8ba585cfb6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 29 07:02:09 2025 -0400
+
+    .
+
+commit ffd693908574b5edf771ea85a8eb3f8a4432a9f1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Apr 29 05:55:01 2025 -0400
+
+    .
+
+commit 4fe6b8874d1e67d59a905dafef88b4739ed3fa85
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 27 20:18:45 2025 +0000
+
+    bumped changelog version
+
 commit a55b30639ad45a561b25defe06d013a721620206
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Apr 27 06:06:25 2025 -0400
