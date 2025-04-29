@@ -160,9 +160,18 @@ commit_filter() {
       'signed commit' \
       'rm_conffile' \
       'Typo' \
+      'end of options' \
+      'end-of-options' \
+      'todo' \
+      'sponge' \
       'Clarify' \
       'aa-logprof' \
       'bookworm aa-logprof' \
+      'improved error handling' \
+      'lower debugging' \
+      'printf' \
+      'stprint' \
+      'stecho' \
       'release-upgrade' \
       'Kicksecure' \
       'kicksecure' \
@@ -223,6 +232,10 @@ commit_filter() {
       'bumped version number' \
       'bumped changelog version' \
       'packaging' \
+      'shellcheck' \
+      'verbose' \
+      'safe-rm' \
+      'sanity test' \
       'fix' \
       'comment' \
       'comments' \
@@ -245,6 +258,13 @@ commit_filter() {
       'port to debian buster' \
       'port to debian bullseye' \
       'surpress lintian warning' \
+      'add error handler' \
+      'use full path' \
+      'colors' \
+      'build' \
+      'improve --dry-run' \
+      'migration' \
+      'add newline at the end' \
       'update' \
       'fix debian/watch lintian warning debian-watch-contains-dh_make-template' \
       'code simplification' \
@@ -270,6 +290,7 @@ commit_filter() {
       'improve error handler' \
       'cleanup' \
       'fix lintian warning' \
+      'local' \
       'bump' \
       'trailing spaces' \
       'coypright' \
