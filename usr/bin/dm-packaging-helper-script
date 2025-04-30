@@ -314,10 +314,10 @@ commit_filter() {
       'wrap-and-sort' \
       'Depends: pkexec' \
       '.'; do
-      if [ "${text}" = "${commit_msg_short}" ]; then
-         set -x
-         return 1
-      fi
+         if [ "${text}" = "${commit_msg_short}" ]; then
+            set -x
+            return 1
+         fi
    done
 
    set -x
