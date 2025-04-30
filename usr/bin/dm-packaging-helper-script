@@ -273,6 +273,27 @@ commit_filter() {
       'update path to pre.bsh' \
       'sudo' \
       'gksudo' \
+      'tbb_hardcoded_version update' \
+      'work towards nounset' \
+      'nounset' \
+      'dev-adrelanos' \
+      'improvements' \
+      'stricter shell options' \
+      'use long options' \
+      'remove trailing whitespace' \
+      'remove trailing whitespaces' \
+      'pylint' \
+      'use end of options' \
+      'usrmerge' \
+      'use long option name' \
+      'Adjust persistent mode wording' \
+      'identd style' \
+      'ident style' \
+      'ident' \
+      'autopep' \
+      'add more ignore patterns' \
+      'exit non-zero in more cases of warnings and errors' \
+      'check journal: exclude more patterns' \
       'description' \
       'buster' \
       'bullseye' \
