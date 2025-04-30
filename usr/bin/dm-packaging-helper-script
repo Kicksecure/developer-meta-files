@@ -285,6 +285,10 @@ commit_filter() {
       'pylint' \
       'use end of options' \
       'usrmerge' \
+      'unicode' \
+      'improve pkexec test' \
+      'only one TM' \
+      'debhelper' \
       'use long option name' \
       'Adjust persistent mode wording' \
       'identd style' \
