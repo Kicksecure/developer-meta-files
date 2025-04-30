@@ -108,7 +108,7 @@ show_debug_variable_info() {
 ## Takes a short commit message as input. Returns 0 if the commit message is
 ## not one of several common ones that should be ignored. Returns 1 otherwise.
 commit_filter() {
-   local commit_msg_short text
+   local commit_msg_short text_any_case text_lower_case
 
    commit_msg_short="$1"
    [ -z "${commit_msg_short}" ] && {
@@ -117,6 +117,8 @@ commit_filter() {
    }
 
    set +x
+
+   commit_msg_short="${commit_msg_short,,}"
 
    if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Merge remote-tracking branch' ; then
       set -x
@@ -155,7 +157,7 @@ commit_filter() {
       return 1
    fi
 
-   for text in \
+   for text_any_case in \
       'signed commit' \
       'rm_conffile' \
       'Typo' \
@@ -222,7 +224,6 @@ commit_filter() {
       'typo' \
       'update Depends' \
       'update copyright' \
-      'Update Copyright' \
       'remove faketime from Build-Depends:' \
       'remove debian/gain-root-command workaround' \
       'packaging simplification config-package-dev (>= 5.1) -> config-package-dev' \
@@ -297,7 +298,6 @@ commit_filter() {
       'shuffle' \
       'use pre.bsh' \
       'set -e' \
-      'Update control' \
       'update control' \
       'disable debugging' \
       'set -o pipefail' \
@@ -313,8 +313,10 @@ commit_filter() {
       'ISO' \
       'wrap-and-sort' \
       'Depends: pkexec' \
-      '.'; do
-         if [ "${text}" = "${commit_msg_short}" ]; then
+      '.' \
+      ; do
+         text_lower_case="${text_any_case,,}"
+         if [ "${text_lower_case}" = "${commit_msg_short}" ]; then
             set -x
             return 1
          fi
