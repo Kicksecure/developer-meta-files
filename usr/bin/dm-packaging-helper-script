@@ -330,6 +330,14 @@ commit_filter() {
       'style' \
       'upgrade license from GPLv2+ to GPLv3+' \
       'CI fix' \
+      'errtrace' \
+      'add link' \
+      'simplify boot menu names' \
+      'better boot menu entry naming' \
+      'bugfixes' \
+      'long option names' \
+      'newline at the end' \
+      'use end-of-options' \
       'delete empty file' \
       'wayland' \
       'nftabels' \
