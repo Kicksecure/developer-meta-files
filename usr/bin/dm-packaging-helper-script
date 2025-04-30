@@ -108,15 +108,16 @@ show_debug_variable_info() {
 ## Takes a short commit message as input. Returns 0 if the commit message is
 ## not one of several common ones that should be ignored. Returns 1 otherwise.
 commit_filter() {
+   set +x
+
    local commit_msg_short text_any_case text_lower_case
 
    commit_msg_short="$1"
    [ -z "${commit_msg_short}" ] && {
       printf "%s\n" "${red}${bold}FATAL ERROR: No argument provided to ${FUNCNAME[0]}!${reset}"
+      set -x
       exit 1;
    }
-
-   set +x
 
    commit_msg_short="${commit_msg_short,,}"
 
