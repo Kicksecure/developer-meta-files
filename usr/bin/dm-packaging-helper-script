@@ -31,12 +31,11 @@ check_prerequisites() {
       exit 1
    }
 
-   # TODO: dm-check-unicode hardcodes the derivative-maker path. This should
-   # eventually be corrected.
-   dm-check-unicode || {
+   ## TODO: 'dm-check-unicode' hardcodes the derivative-maker path. This should eventually be corrected.
+   if ! dm-check-unicode ; then
       printf "%s\n" "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} contains Unicode or is mislocated."
-      exit 1;
-   }
+      exit 1
+   fi
 
    ## . END Hard prerequisites
 
