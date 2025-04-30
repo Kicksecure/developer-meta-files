@@ -226,6 +226,7 @@ if [ "${#grep_missing_newline_result_filtered[@]}" -eq "0" ]; then
 else
    printf "%s\n" "$0: ERROR: Missing newlines at the end of file found! grep_missing_newline_result_filtered:
 ${grep_missing_newline_result_filtered[@]}"
+   exit 1
 fi
 
 true "$0: END."
