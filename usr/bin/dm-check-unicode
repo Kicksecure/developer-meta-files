@@ -94,7 +94,6 @@ find_symlinks
 ##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
-## https://github.com/grml/grml-debootstrap/issues/219
 grep_find_unicode_wrapper_output="$(\
    "$wrapper" \
       --recursive \
