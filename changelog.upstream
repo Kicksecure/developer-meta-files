@@ -1,3 +1,17 @@
+commit 45262653b1a953a3e8cc769b2e23d51035c1229a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 7 09:07:13 2025 -0400
+
+    always built Templates for Qubes stable and development version
+    
+    implements https://github.com/QubesOS/qubes-issues/issues/9948
+
+commit 5a7b24873c597f37611d20c4ccf08cd5d39f3ca1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 7 11:09:18 2025 +0000
+
+    bumped changelog version
+
 commit 29ce9cfb8e34c83a8d260b7b52552ae933dde826
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 7 05:13:39 2025 -0400
