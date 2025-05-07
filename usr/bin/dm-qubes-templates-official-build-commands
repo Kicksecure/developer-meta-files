@@ -11,7 +11,9 @@ set -o nounset
 
 init_variables() {
   derivative_version="17"
-  qubes_release="4.2"
+  qubes_release_list=()
+  qubes_release_item+=("R4.2")
+  qubes_release_item+=("R4.3")
 
   template_list=()
   template_list+=("kicksecure-${derivative_version}")
@@ -35,13 +37,17 @@ cd ~/sourcesother/qubes-builder
 template_oneline_string="$(printf '%s ' "${template_list[@]}")"
 template_oneline_string="${template_oneline_string%"${template_oneline_string##*[![:space:]]}"}"
 
-echo REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$template_oneline_string" template-github
+for qubes_release_item in "${qubes_release_item[@]}"; do
+  echo REPO_PROXY="" make RELEASE="$qubes_release_item" DISTS_VM="$template_oneline_string" template-github
+done
 
 true "press ctrl + c to abort"
 read question
 
-REPO_PROXY="" make RELEASE="$qubes_release" DISTS_VM="$template_oneline_string" template-github
+for qubes_release_item in "${qubes_release_item[@]}"; do
+  REPO_PROXY="" make RELEASE="$qubes_release_item" DISTS_VM="$template_oneline_string" template-github
 
-for template_item in "${template_list[@]}"; do
-  realpath -- "build-logs/template-github-$template_item.log"
+  for template_item in "${template_list[@]}"; do
+    realpath -- "build-logs/template-github-$template_item.log"
+  done
 done
