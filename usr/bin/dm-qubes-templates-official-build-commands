@@ -25,6 +25,7 @@ git_tag_pushed_sanity_test() {
   ## XXX: hardcoded path
   cd ~/derivative-maker/qubes/qubes-template-kicksecure
   dm-quickgittagsign
+  ## XXX: hardcoded path
   cd ~/derivative-maker/qubes/qubes-template-whonix
   dm-quickgittagsign
 }

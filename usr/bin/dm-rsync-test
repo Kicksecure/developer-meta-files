@@ -12,6 +12,7 @@ dist_build_internal_run="true"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
+## XXX: hardcoded path
 source ~/derivative-maker/help-steps/pre
 source ~/derivative-maker/help-steps/colors
 source ~/derivative-maker/help-steps/variables
