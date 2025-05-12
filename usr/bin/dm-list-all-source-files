@@ -13,7 +13,7 @@ recurse() {
         #echo "dir: $i"
         recurse "$i"
     elif [ -f "$i" ]; then
-        echo "$i"
+        printf '%s\n' "$i"
     fi
  done
 }

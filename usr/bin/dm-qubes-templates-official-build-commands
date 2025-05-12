@@ -33,6 +33,7 @@ git_tag_pushed_sanity_test() {
 init_variables
 git_tag_pushed_sanity_test
 
+## XXX: hardcoded path
 cd "$HOME/sourcesother/qubes-builder"
 
 template_oneline_string="$(printf '%s ' "${template_list[@]}")"

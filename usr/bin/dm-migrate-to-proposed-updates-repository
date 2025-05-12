@@ -14,6 +14,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 mydir_backup="$MYDIR"
 cd "$MYDIR"
 
+## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/colors"
 source "$HOME/derivative-maker/help-steps/variables"

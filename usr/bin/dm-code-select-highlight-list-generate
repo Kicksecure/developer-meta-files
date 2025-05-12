@@ -6,6 +6,6 @@
 while read -r line ; do
 
    list_item="'${line}',"
-   echo "    $list_item"
+   printf '%s\n' "    $list_item"
 
 done < <( dm-list-all-usr-bin-sbin | sort )

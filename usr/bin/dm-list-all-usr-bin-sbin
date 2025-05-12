@@ -6,6 +6,6 @@
 while read -r line ; do
 
    base_name="${line##*/}"
-   echo "$base_name"
+   printf '%s\n' "$base_name"
 
 done < <( dm-list-all-source-files | grep --fixed-strings -e "/usr/bin/" -e "/sbin/" )

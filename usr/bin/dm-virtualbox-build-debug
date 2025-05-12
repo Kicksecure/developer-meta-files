@@ -9,7 +9,7 @@ set -e
 true "$0: START"
 
 debug_args_maybe=()
-debug_args_maybe+=(--remote-derivative-packages true)
+debug_args_maybe+=("--remote-derivative-packages" "true")
 
 ## XXX: hardcoded path
 "$HOME/derivative-maker/help-steps/dm-build-official" "${debug_args_maybe[@]}"
