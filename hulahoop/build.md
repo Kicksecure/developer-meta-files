@@ -41,5 +41,5 @@ Example usage...
 Note: The version number `8.5.5` needs to be updated if needed. Check https://aus1.torproject.org/torbrowser/update_3/release/downloads.json for latest stable Tor Browser version.
 
 ```
-tbb_version="8.5.5" ~/derivative-maker/derivative-maker --target qcow2 --flavor whonix-workstation-xfce
+tbb_version="8.5.5" "$HOME/derivative-maker/derivative-maker" --target qcow2 --flavor whonix-workstation-xfce
 ```

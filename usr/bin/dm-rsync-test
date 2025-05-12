@@ -13,9 +13,9 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
 ## XXX: hardcoded path
-source ~/derivative-maker/help-steps/pre
-source ~/derivative-maker/help-steps/colors
-source ~/derivative-maker/help-steps/variables
+source "$HOME/derivative-maker/help-steps/pre"
+source "$HOME/derivative-maker/help-steps/colors"
+source "$HOME/derivative-maker/help-steps/variables"
 
 trap "exithandler" EXIT
 

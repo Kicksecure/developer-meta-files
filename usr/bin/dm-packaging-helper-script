@@ -1257,8 +1257,8 @@ pkg_packaging_files_diff() {
       #diff "${compare_with_full_path}/COPYING" "${batch_current_package_path}/COPYING"
 
 #       if diff ~/old-copying "${batch_current_package_path}/COPYING" &>/dev/null ; then
-#          cp ~/derivative-maker/COPYING "${batch_current_package_path}/COPYING"
-#          cp ~/derivative-maker/COPYING "${batch_current_package_path}/debian/copyright"
+#          cp "$HOME/derivative-maker/COPYING" "${batch_current_package_path}/COPYING"
+#          cp "$HOME/derivative-maker/COPYING" "${batch_current_package_path}/debian/copyright"
 #       else
 #          ## TODO: delete /tmp/list-of-packages
 #          printf "%s\n" "${batch_current_package_reponame}" | tee -a -- /tmp/list-of-packages >/dev/null

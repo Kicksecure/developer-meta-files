@@ -6,7 +6,8 @@
 #set -x
 set -e
 
-cd ~/derivative-maker
+## XXX: hardcoded path
+cd "$HOME/derivative-maker"
 
 ## NOTE: does not support spaces
 replace_list=$(echo "\

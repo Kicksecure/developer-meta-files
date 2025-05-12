@@ -13,8 +13,8 @@ set -o pipefail
 true "$0: START."
 
 ### XXX: hardcoded
-folder=~/derivative-maker
-wrapper=~/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper
+folder="$HOME/derivative-maker"
+wrapper="$HOME/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
 
 test -d "$folder"
 test -x "$wrapper"

@@ -25,8 +25,8 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd "$MYDIR"
 
-## XXX
-cd ~/derivative-maker
+## XXX: hardcoded path
+cd "$HOME/derivative-maker"
 
 ## Debugging.
 pwd

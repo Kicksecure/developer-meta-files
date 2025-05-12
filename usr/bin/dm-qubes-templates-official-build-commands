@@ -23,17 +23,17 @@ init_variables() {
 
 git_tag_pushed_sanity_test() {
   ## XXX: hardcoded path
-  cd ~/derivative-maker/qubes/qubes-template-kicksecure
+  cd "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
   dm-quickgittagsign
   ## XXX: hardcoded path
-  cd ~/derivative-maker/qubes/qubes-template-whonix
+  cd "$HOME/derivative-maker/qubes/qubes-template-whonix"
   dm-quickgittagsign
 }
 
 init_variables
 git_tag_pushed_sanity_test
 
-cd ~/sourcesother/qubes-builder
+cd "$HOME/sourcesother/qubes-builder"
 
 template_oneline_string="$(printf '%s ' "${template_list[@]}")"
 template_oneline_string="${template_oneline_string%"${template_oneline_string##*[![:space:]]}"}"

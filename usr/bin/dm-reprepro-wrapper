@@ -23,9 +23,10 @@ if test -d "$dist_source_help_steps_folder" ; then
    source "$dist_source_help_steps_folder/colors"
    source "$dist_source_help_steps_folder/variables"
 else
-   source ~/derivative-maker/help-steps/pre
-   source ~/derivative-maker/help-steps/colors
-   source ~/derivative-maker/help-steps/variables
+   ## XXX: hardcoded path
+   source "$HOME/derivative-maker/help-steps/pre"
+   source "$HOME/derivative-maker/help-steps/colors"
+   source "$HOME/derivative-maker/help-steps/variables"
 fi
 
 reprepro_wrap() {

@@ -7,6 +7,7 @@
 ## http://stackoverflow.com/a/2154277
 
 recurse() {
+ local i
  for i in "$1"/*;do
     if [ -d "$i" ];then
         #echo "dir: $i"
@@ -17,4 +18,5 @@ recurse() {
  done
 }
 
-recurse ~/derivative-maker
+## XXX: hardcoded path
+recurse "$HOME/derivative-maker"

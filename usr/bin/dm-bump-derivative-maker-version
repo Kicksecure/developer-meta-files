@@ -9,7 +9,8 @@
 #set -x
 set -e
 
-cd ~/derivative-maker
+## XXX: hardcoded path
+cd "$HOME/derivative-maker"
 
 genmkfile deb-uachl-bumpup-major
 

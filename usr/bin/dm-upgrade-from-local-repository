@@ -11,9 +11,10 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$MYDIR"
 
-source ~/derivative-maker/help-steps/pre
-source ~/derivative-maker/help-steps/colors
-source ~/derivative-maker/help-steps/variables
+## XXX: hardcoded path
+source "$HOME/derivative-maker/help-steps/pre"
+source "$HOME/derivative-maker/help-steps/colors"
+source "$HOME/derivative-maker/help-steps/variables"
 
 main() {
    trap "exception_handler_unchroot_unmount" ERR INT TERM

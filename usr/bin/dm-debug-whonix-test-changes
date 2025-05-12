@@ -16,7 +16,8 @@ ${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
 
 trap "build_all_error_handler" ERR
 
-[[ -v derivative_maker_main_source_code ]] || derivative_maker_main_source_code=~/derivative-maker
+## XXX: hardcoded path
+[[ -v derivative_maker_main_source_code ]] || derivative_maker_main_source_code="$HOME/derivative-maker"
 
 pushd "$derivative_maker_main_source_code"
 
