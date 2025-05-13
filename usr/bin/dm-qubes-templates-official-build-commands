@@ -12,13 +12,15 @@ set -o nounset
 init_variables() {
   derivative_version="17"
   qubes_release_list=()
-  qubes_release_list+=("R4.2")
-  qubes_release_list+=("R4.3")
+  qubes_release_list+=("4.2")
+  qubes_release_list+=("4.3")
 
   template_list=()
   template_list+=("kicksecure-${derivative_version}")
   template_list+=("whonix-gateway-${derivative_version}")
   template_list+=("whonix-workstation-${derivative_version}")
+
+  template_oneline_string="${template_list[*]}"
 }
 
 git_tag_pushed_sanity_test() {
@@ -36,20 +38,19 @@ git_tag_pushed_sanity_test
 ## XXX: hardcoded path
 cd "$HOME/sourcesother/qubes-builder"
 
-template_oneline_string="$(printf '%s ' "${template_list[@]}")"
-template_oneline_string="${template_oneline_string%"${template_oneline_string##*[![:space:]]}"}"
-
 for qubes_release_item in "${qubes_release_list[@]}"; do
-  echo REPO_PROXY="" make RELEASE="$qubes_release_item" DISTS_VM="$template_oneline_string" template-github
+  cmd_list=(
+    env
+    REPO_PROXY=''
+    make
+    RELEASE="$qubes_release_item"
+    DISTS_VM="$template_oneline_string"
+    template-github
+  )
+
+  "${cmd_list[@]}"
 done
 
-true "press ctrl + c to abort"
-read question
-
-for qubes_release_item in "${qubes_release_list[@]}"; do
-  REPO_PROXY="" make RELEASE="$qubes_release_item" DISTS_VM="$template_oneline_string" template-github
-
-  for template_item in "${template_list[@]}"; do
-    realpath -- "build-logs/template-github-$template_item.log"
-  done
+for template_item in "${template_list[@]}"; do
+  realpath -- "build-logs/template-github-$template_item.log"
 done
