@@ -9,14 +9,19 @@ for repo in github-derivative-maker github-kicksecure gitlab-kicksecure github-w
    if git remote get-url "$repo" &>/dev/null ; then
       if git rev-parse --verify main &>/dev/null ; then
          git push "$repo" main &
+         pid_list+=" $!"
       fi
       if git rev-parse --verify master &>/dev/null ; then
          git push "$repo" master &
+         pid_list+=" $!"
       fi
       if [ ! "$git_tag_nearest" = "" ]; then
          git push "$repo" "$git_tag_nearest" &
+         pid_list+=" $!"
       fi
    fi
 done
+
+wait -- $pid_list
 
 true "$0: OK"
