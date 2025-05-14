@@ -16,13 +16,5 @@ if ! git rev-parse --verify "$tag" ; then
   git tag -s "$tag" -m .
 fi
 
-git verify-tag "$tag"
-
-for remote_name in adrelanos github-kicksecure gitlab-kicksecure github-whonix gitlab-whonix ; do
-  if &>/dev/null git remote get-url "$remote_name" ; then
-    git push "$remote_name" "$tag" &
-    pid_list+=" $!"
-  fi
-done
-
-wait -- $pid_list
+## Done before push in 'dm-push'.
+#git verify-tag "$tag"
