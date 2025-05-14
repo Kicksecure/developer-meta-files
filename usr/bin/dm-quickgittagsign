@@ -7,8 +7,16 @@ set -x
 set -e
 
 commit="$(git rev-parse --verify HEAD)"
+
+git verify-commit "$commit"
+
 tag="adrelanos_${commit}"
-git tag -s "$tag" -m .
+
+if ! git rev-parse --verify "$tag" ; then
+  git tag -s "$tag" -m .
+fi
+
+git verify-tag "$tag"
 
 for remote_name in adrelanos github-kicksecure gitlab-kicksecure github-whonix gitlab-whonix ; do
   if &>/dev/null git remote get-url "$remote_name" ; then
