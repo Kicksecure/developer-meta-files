@@ -4,6 +4,7 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -e
 
 commit="$(git rev-parse --verify HEAD)"
 tag="adrelanos_${commit}"
