@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -x
+
+commit="$(git rev-parse --verify HEAD)"
+tag="adrelanos_${commit}"
+git tag -s "$tag" -m .
+
+for remote_name in adrelanos github-kicksecure gitlab-kicksecure github-whonix gitlab-whonix ; do
+  if &>/dev/null git remote get-url "$remote_name" ; then
+    git push "$remote_name" "$tag" &
+    pid_list+=" $!"
+  fi
+done
+
+wait -- $pid_list

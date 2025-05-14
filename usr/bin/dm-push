@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -x
+set -e
+
+git_tag_nearest="$(git describe --always --abbrev=0)"
+
+for repo in github-derivative-maker github-kicksecure gitlab-kicksecure github-whonix adrelanos gitlab-whonix ; do
+   if git remote get-url "$repo" &>/dev/null ; then
+      if git rev-parse --verify main &>/dev/null ; then
+         git push "$repo" main &
+      fi
+      if git rev-parse --verify master &>/dev/null ; then
+         git push "$repo" master &
+      fi
+      if [ ! "$git_tag_nearest" = "" ]; then
+         git push "$repo" "$git_tag_nearest" &
+      fi
+   fi
+done
+
+true "$0: OK"
