@@ -87,7 +87,7 @@ show_debug_variable_info() {
    true "git_commit_all_msg: ${git_commit_all_msg}"
    true "makefile_generic_version: ${makefile_generic_version}"
    true "packaging_files_diff_template_package_relative_path: ${packaging_files_diff_template_package_relative_path}"
-   true
+   true ""
    true "Global variables:"
    true "announcements_drafts_dir: ${announcements_drafts_dir}"
    true "derivative_maker_dir_name: ${derivative_maker_dir_name}"
