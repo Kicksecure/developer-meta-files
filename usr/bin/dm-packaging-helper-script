@@ -56,11 +56,11 @@ check_prerequisites() {
 
 ## Sources all libraries found in the global 'library_list' variable.
 source_library_list() {
-   local library
+   local library_item
 
-   for library in "${library_list[@]}"; do
-      source "${library}" || {
-         printf "%s\n" "ERROR: Library not found: ${library}"
+   for library_item in "${library_list[@]}"; do
+      source "${library_item}" || {
+         printf "%s\n" "ERROR: Library not found or failed loading: ${library_item}"
          exit 1
       }
    done
@@ -76,7 +76,7 @@ prepare_system() {
 ## Shows debugging information for all non-volatile global variables.
 ## TODO Make sure this is up-to-date!
 show_debug_variable_info() {
-   local library
+   local library_item
 
    true "Global tunables:"
    true "derivative_binary_dir: ${derivative_binary_dir}"
@@ -96,8 +96,9 @@ show_debug_variable_info() {
    true "package_documentation_dir: ${package_documentation_dir}"
    true "script_absolute_dir: ${script_absolute_dir}"
    true "script_package_name: ${script_package_name}"
-   for library in "${library_list[@]}"; do
-      true "library_list library: ${library}"
+
+   for library_item in "${library_list[@]}"; do
+      true "library_item: ${library_item}"
    done
 }
 
