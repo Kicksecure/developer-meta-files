@@ -10,48 +10,46 @@ set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [ "$MYDIR" = "/usr/bin" ]; then
+   true "INFO: Run from: /usr/bin"
+   ## XXX: hardcoded path
+   derivative_maker_source_code_dir="$HOME/derivative-maker"
+else
+   true "INFO: Run from: source code folder"
+   derivative_maker_source_code_dir="$(cd "../../../" && pwd)"
+fi
+
 ## BEGIN Initialization functions {
 
-## Checks script prerequisites, aborting the script or printing a warning if
-## one or more prerequisites are missing.
 check_prerequisites() {
-   ## BEGIN Hard prerequisites
-   #
-   # Failure of one of these prerequisites is a fatal error.
-
-   [ -d "${derivative_maker_source_code_dir}" ] || {
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} does not exist or is not a directory."
-      exit 1
-   }
-
-   # Any arbitrary package under derivative-maker/packages/kicksecure will
-   # work here, live-config-dist was chosen arbitrarily.
-   test "$(find "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist" | wc -l)" -gt '1' || {
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: git submodules under ${derivative_maker_source_code_dir} not populated."
-      exit 1
-   }
-
-   ## TODO: 'dm-check-unicode' hardcodes the derivative-maker path. This should eventually be corrected.
-   if ! dm-check-unicode ; then
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: ${derivative_maker_source_code_dir} contains Unicode or is mislocated."
+   if ! test -d "${derivative_maker_source_code_dir}"; then
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' does not exist or is not a directory."
       exit 1
    fi
 
-   ## . END Hard prerequisites
+   # Any arbitrary package under derivative-maker/packages/kicksecure will
+   # work here, live-config-dist was chosen arbitrarily.
+   if ! test -d "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist"; then
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: git submodules under derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' not populated."
+      exit 1
+   fi
 
-   ## BEGIN Soft prerequisites
-   #
-   # Failure of one of these prerequisites is a possible issue but not fatal.
-
-   [ -d "${derivative_binary_dir}" ] || {
-      printf "%s\n" "WARNING: Soft prerequisite not met: ${derivative_binary_dir} does not exist or is not a directory. Some features will be disabled."
-   }
+   if ! "${MYDIR}/dm-check-unicode"; then
+      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
+      exit 1
+   fi
 
    [ "${derivative_maker_source_code_dir}" = "$HOME/derivative-maker" ] || {
-      printf "%s\n" "WARNING: Soft prerequisite not met: ${derivative_maker_source_code_dir} is not located at $HOME/derivative-maker. The script may break."
+      printf "%s\n" "WARNING: Soft prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' is not located at '$HOME/derivative-maker'. The script may break."
    }
 
-   ## . END Soft prerequisites
+   [ -d "${derivative_binary_dir}" ] || {
+      printf "%s\n" "WARNING: Soft prerequisite not met: derivative_binary_dir '${derivative_binary_dir}' does not exist or is not a directory. Some features will be disabled."
+      ## Soft failure.
+      #exit 1
+   }
 }
 
 ## Sources all libraries found in the global 'library_list' variable.
@@ -94,8 +92,7 @@ show_debug_variable_info() {
    true "make_cowbuilder_dist_dir: ${make_cowbuilder_dist_dir}"
    true "nothing_to_commit_msg: ${nothing_to_commit_msg}"
    true "package_documentation_dir: ${package_documentation_dir}"
-   true "script_absolute_dir: ${script_absolute_dir}"
-   true "script_package_name: ${script_package_name}"
+   true "MYDIR: ${MYDIR}"
 
    for library_item in "${library_list[@]}"; do
       true "library_item: ${library_item}"
@@ -2253,7 +2250,6 @@ main() {
 
 ## Global tunables, adjust these as necessary
 derivative_binary_dir="$HOME/derivative-binary"
-derivative_maker_source_code_dir="$HOME/derivative-maker"
 derivative_name_list=( 'kicksecure' 'whonix' )
 derivative_version_old_main='17.3.9.2-developers-only'
 derivative_version_new_main='17.3.9.9-developers-only'
@@ -2269,8 +2265,6 @@ derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
 nothing_to_commit_msg="nothing to commit, working tree clean"
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
-script_absolute_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-script_package_name="$(cd "${script_absolute_dir}/../.." && basename "${PWD}")"
 
 library_list=(
    "${derivative_maker_source_code_dir}/help-steps/colors"

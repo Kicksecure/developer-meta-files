@@ -12,14 +12,25 @@ set -o pipefail
 
 true "$0: START."
 
-### XXX: hardcoded
-folder="$HOME/derivative-maker"
-wrapper="$HOME/derivative-maker/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-test -d "$folder"
-test -x "$wrapper"
+if [ "$MYDIR" = "/usr/bin" ]; then
+   true "INFO: Run from: /usr/bin"
+   ## XXX: hardcoded path
+   derivative_maker_source_code_dir="$HOME/derivative-maker"
+   grep_find_unicode_wrapper="/usr/bin/grep-find-unicode-wrapper"
+else
+   true "INFO: Run from: source code folder"
+   derivative_maker_source_code_dir="$(cd "../../../" && pwd)"
+   grep_find_unicode_wrapper="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
+fi
+
+## Sanity tests.
+test -d "$derivative_maker_source_code_dir"
+test -x "$grep_find_unicode_wrapper"
+
 ## Need to 'cd' for relative paths.
-cd "$folder"
+cd "$derivative_maker_source_code_dir"
 
 declare -A symlink_whitelist
 
@@ -94,8 +105,8 @@ find_symlinks
 ##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
-grep_find_unicode_wrapper_output="$(\
-   "$wrapper" \
+grep_find_unicode_grep_find_unicode_wrapper_output="$(\
+   "$grep_find_unicode_wrapper" \
       --recursive \
       --binary-files=without-match \
       --exclude=control.authcookie \
@@ -122,7 +133,7 @@ whitelist_list=(
 )
 whitelist_pattern="($(IFS=$'\n'; echo -n "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
 
-filtered_output=$(printf "%s\n" "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
+filtered_output=$(printf "%s\n" "$grep_find_unicode_grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
 
 if [ -z "$filtered_output" ]; then
    true "INFO: No Unicode issues found, everything is OK."
