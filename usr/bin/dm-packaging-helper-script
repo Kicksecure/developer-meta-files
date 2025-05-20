@@ -24,8 +24,8 @@ fi
 ## required by: make-helper-one.bsh
 cd "$derivative_maker_source_code_dir"
 
-"${derivative_maker_source_code_dir}/help-steps/colors"
-"${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+source "${derivative_maker_source_code_dir}/help-steps/colors"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 
 ## BEGIN Initialization functions {
 
