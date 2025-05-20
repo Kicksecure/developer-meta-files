@@ -453,7 +453,7 @@ internal_descr_writer() {
          if ! [ -e "${description_file}" ]; then
             control_file="${batch_current_package_path}/debian/control"
             if ! [ -f "${control_file}" ]; then
-               printf "%s\n" "${red}${bold}FATAL ERROR: ${control_file} does not exist or is not a regular file!${reset}"
+               printf "%s\n" "${red}${bold}FATAL ERROR: control_file '${control_file}' does not exist or is not a regular file!${reset}"
                exit 1
             fi
 
@@ -634,7 +634,7 @@ pkg_readme_creator_do() {
 
    generic_readme_template_file="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/README_generic_template_file.md"
    if ! [ -f "${generic_readme_template_file}" ]; then
-      printf "%s\n" "${red}${bold}FATAL ERROR: ${generic_readme_template_file} does not exist!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: generic_readme_template_file '${generic_readme_template_file}' does not exist!${reset}"
       exit 1
    fi
 
@@ -718,7 +718,7 @@ pkg_descr_creator() {
       fi
 
       if ! [ -f "${file_name}" ]; then
-         printf "%s\n" "${red}${bold}FATAL ERROR: ${file_name} does not exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: pkg_descr_creator: file_name '${file_name}' does not exist!${reset}"
          exit 1
       fi
 
@@ -748,7 +748,7 @@ pkg_descr_creator() {
                   in_meta_section='n'
                   break
                else
-                  printf "%s\n" "${red}${bold}FATAL ERROR: Unexpected meta subcommand '${third_word}'!${reset}"
+                  printf "%s\n" "${red}${bold}FATAL ERROR: Unexpected meta subcommand third_word '${third_word}'!${reset}"
                   exit 1
                fi
             fi
@@ -762,7 +762,7 @@ pkg_descr_creator() {
                   readarray -d' ' -t batch_meta_project_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_project_list=( "${batch_meta_project_list[@]:0:((${#batch_meta_project_list[@]} - 1))}" )
-                  printf "%s\n" "batch_meta_project_list: ${batch_meta_project_list[*]}"
+                  printf "%s\n" "batch_meta_project_list: '${batch_meta_project_list[*]}'"
                   continue
                elif [ "${second_word}" = 'non_qubes_whonix_only' ]; then
                   if [ "${third_word}" = 'yes' ]; then
@@ -797,7 +797,7 @@ pkg_descr_creator() {
                   readarray -d' ' -t batch_meta_category_list <<< "${temp}"
                   # Remove a mangled entry at the end.
                   batch_meta_category_list=( "${batch_meta_category_list[@]:0:((${#batch_meta_category_list[@]} - 1))}" )
-                  printf "%s\n" "batch_meta_category_list: ${batch_meta_category_list[*]}"
+                  printf "%s\n" "batch_meta_category_list: '${batch_meta_category_list[*]}'"
                   continue
                elif [ "${second_word}" = 'description' ]; then
                   description_found='y'
@@ -1183,7 +1183,7 @@ pkg_packaging_files_diff() {
 
    if [ "${batch_func_init_done}" = 'n' ]; then
       if ! [ -f "${compare_with_full_path}/COPYING" ]; then
-         printf "%s\n" "${red}${bold}FATAL ERROR: ${compare_with_full_path}/COPYING does not exist!"
+         printf "%s\n" "${red}${bold}FATAL ERROR: '${compare_with_full_path}/COPYING' does not exist!"
          exit 1
       fi
       batch_func_init_done='y'
@@ -1207,7 +1207,7 @@ pkg_packaging_files_diff() {
    done
    if ! [ "${package_lacks_contributing_md}" = 'y' ]; then
       if ! [ -f "${batch_current_package_path}/CONTRIBUTING.md" ]; then
-         printf "%s\n" "${red}${bold}FATAL ERROR: Package ${batch_current_package_reponame} is missing a CONTRIBUTING.md file!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: Package '${batch_current_package_reponame}' is missing a CONTRIBUTING.md file!${reset}"
          exit 1
       fi
    fi
@@ -1215,7 +1215,7 @@ pkg_packaging_files_diff() {
    if ! [ -f "${batch_current_package_path}/README.md" ]; then
       if ! [ -f "${batch_current_package_path}/README.mediawiki" ]; then
          ## TODO: Should README_generic.d be taken into account here?
-         printf "%s\n" "${red}${bold}FATAL ERROR: Neither ${batch_current_package_path}/README.md nor ${batch_current_package_path}/README.mediawiki exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: Neither '${batch_current_package_path}/README.md' nor '${batch_current_package_path}/README.mediawiki' exist!${reset}"
          exit 1
       fi
    fi
@@ -1225,13 +1225,13 @@ pkg_packaging_files_diff() {
    if [ "${batch_current_package_reponame}" = 'corridor' ]; then
       ## Corridor has no COPYING but a LICENSE-ISC file.
       if ! [ -f "${batch_current_package_path}/LICENSE-ISC" ]; then
-         printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE-ISC does not exist!${reset}"
+         printf "%s\n" "${red}${bold}FATAL ERROR: '${batch_current_package_path}/LICENSE-ISC' does not exist!${reset}"
          return 1
       fi
 #  elif [ "${batch_current_package_reponame}" = 'hardened_malloc' ]; then
 #     ## hardened_malloc has no COPYING but a LICENSE file.
 #     if ! [ -f "${batch_current_package_path}/LICENSE" ]; then
-#        printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/LICENSE does not exist!${reset}"
+#        printf "%s\n" "${red}${bold}FATAL ERROR: '${batch_current_package_path}/LICENSE' does not exist!${reset}"
 #        return 1
 #     fi
    else
@@ -1265,7 +1265,7 @@ pkg_packaging_files_diff() {
    )
    for check_file in "${check_file_list[@]}"; do
       if ! [ -f "${batch_current_package_path}/${check_file}" ]; then
-         printf "%s\n" "${red}${bold}FATAL ERROR: ${batch_current_package_path}/${check_file} does not exist!"
+         printf "%s\n" "${red}${bold}FATAL ERROR: check_file '${batch_current_package_path}/${check_file}' does not exist!"
          exit 1
       fi
    done
@@ -1782,7 +1782,7 @@ pkg_upstream_and_debian_changelog_bump() {
 
    ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
    ## individual packages.
-   printf "%s\n" "version_numbers_by_upstream: ${version_numbers_by_upstream}"
+   printf "%s\n" "version_numbers_by_upstream: '${version_numbers_by_upstream}'"
 
    ## TODO:
    ## Not the cleanest way. Other variables might be unwanted.
@@ -1824,7 +1824,7 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   printf "%s\n" "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
+   printf "%s\n" "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
@@ -1860,7 +1860,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       return 0
    fi
 
-   printf "%s\n" "${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
+   printf "%s\n" "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
 
    pkg_git_manpages
    pkg_git_debinstfile
@@ -1921,7 +1921,7 @@ pkg_add_lintian_watch_gpg_override() {
    mkdir --parents './debian/source'
    if [ -f './debian/source/lintian-overrides' ] && ! grep 'debian-watch-does-not-check-openpgp-signature' './debian/source/lintian-overrides' ; then
       printf "%s\n" "\
-## https://phabricator.whonix.org/T277
+## https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124
 debian-watch-does-not-check-openpgp-signature" >> "./debian/source/lintian-overrides"
    fi
 }
@@ -1935,7 +1935,8 @@ pkg_git_commit_lintian_watch_gpg_override() {
 
    git add './debian/source/lintian-overrides' || true
    msg="\
-added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning - https://phabricator.whonix.org/T277"
+added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning
+https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124"
    git commit -m "${msg}" || true
    true
 }
@@ -1944,7 +1945,8 @@ added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-s
 debian_watch_file_create() {
    local msg
 
-   printf "%s\n" "## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+   printf "%s\n" "\
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
