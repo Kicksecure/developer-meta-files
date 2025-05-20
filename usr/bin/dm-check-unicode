@@ -18,12 +18,12 @@ if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
    ## XXX: hardcoded path
    derivative_maker_source_code_dir="$HOME/derivative-maker"
-   grep_find_unicode_wrapper="/usr/bin/grep-find-unicode-wrapper"
 else
    true "INFO: Run from: source code folder"
    derivative_maker_source_code_dir="$(cd "../../../" && pwd)"
-   grep_find_unicode_wrapper="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
 fi
+
+grep_find_unicode_wrapper="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
 
 ## Sanity tests.
 test -d "$derivative_maker_source_code_dir"
