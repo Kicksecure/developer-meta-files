@@ -1,3 +1,51 @@
+commit fae104789281cb9b325da4ad93cecfae27a4e855
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:33:48 2025 -0400
+
+    .
+
+commit b095c213f591e508b3757d2d6bba8aeb30b32cbf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:31:02 2025 -0400
+
+    .
+
+commit ab729a7dc634979454a3eaf11b3a9c5eb0e1d989
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:29:43 2025 -0400
+
+    .
+
+commit d07906716f6be00de3e141e0b1715d47f7b96335
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:22:30 2025 -0400
+
+    .
+
+commit 69714a0b03e46c9973e009da8e683b6dd899ecd3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:13:19 2025 -0400
+
+    .
+
+commit 3d2ecea81e9a519f168a03ff68fdf69f8c8f45ac
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 10:10:56 2025 -0400
+
+    .
+
+commit 0945bf173e2e8e31b9e0355158722777776e78be
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 07:51:54 2025 -0400
+
+    improve relative path support
+
+commit f63e6d69e1201e200c3399693f19d0f84bd0b9ff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 20 11:39:05 2025 +0000
+
+    bumped changelog version
+
 commit b12a523381c081a2eea6bc0ef344b143bf40da90
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 19 08:06:25 2025 -0400
