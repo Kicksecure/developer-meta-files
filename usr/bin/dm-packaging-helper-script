@@ -31,28 +31,30 @@ cd "$derivative_maker_source_code_dir"
 
 check_prerequisites() {
    if ! test -d "${derivative_maker_source_code_dir}"; then
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' does not exist or is not a directory."
+      printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' does not exist or is not a directory."
       exit 1
    fi
 
    # Any arbitrary package under derivative-maker/packages/kicksecure will
    # work here, live-config-dist was chosen arbitrarily.
    if ! test -d "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist"; then
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: git submodules under derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' not populated."
+      printf "%s\n" "FATAL ERROR: git submodules under derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' not populated."
       exit 1
    fi
 
+   test -x "${MYDIR}/dm-check-unicode"
+
    if ! "${MYDIR}/dm-check-unicode"; then
-      printf "%s\n" "FATAL ERROR: Hard prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
+      printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
       exit 1
    fi
 
    [ "${derivative_maker_source_code_dir}" = "$HOME/derivative-maker" ] || {
-      printf "%s\n" "WARNING: Soft prerequisite not met: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' is not located at '$HOME/derivative-maker'. The script may break."
+      printf "%s\n" "WARNING: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' is not located at '$HOME/derivative-maker'. The script may break."
    }
 
    [ -d "${derivative_binary_dir}" ] || {
-      printf "%s\n" "WARNING: Soft prerequisite not met: derivative_binary_dir '${derivative_binary_dir}' does not exist or is not a directory. Some features will be disabled."
+      printf "%s\n" "WARNING: derivative_binary_dir '${derivative_binary_dir}' does not exist or is not a directory. Some features will be disabled."
       ## Soft failure.
       #exit 1
    }
@@ -1792,6 +1794,7 @@ pkg_upstream_and_debian_changelog_bump() {
    #make_init ## includes make_get_variables
    ## sets maybe: version_numbers_by_upstream
    make_source_overrides_file
+   make_source_overrides_folder
 
    ## If version_numbers_by_upstream=true then 'genmkfile deb-uachl-bumpup-major'
    ## would be bumping only the package revision number. Not the version number.
