@@ -21,6 +21,9 @@ else
    derivative_maker_source_code_dir="$(cd "../../../" && pwd)"
 fi
 
+"${derivative_maker_source_code_dir}/help-steps/colors"
+"${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+
 ## BEGIN Initialization functions {
 
 check_prerequisites() {
@@ -52,18 +55,6 @@ check_prerequisites() {
    }
 }
 
-## Sources all libraries found in the global 'library_list' variable.
-source_library_list() {
-   local library_item
-
-   for library_item in "${library_list[@]}"; do
-      source "${library_item}" || {
-         printf "%s\n" "ERROR: Library not found or failed loading: ${library_item}"
-         exit 1
-      }
-   done
-}
-
 ## Ensures that the system is prepared to run the script (right now this just
 ## makes sure directories that need to exist actually exist).
 prepare_system() {
@@ -93,10 +84,6 @@ show_debug_variable_info() {
    true "nothing_to_commit_msg: ${nothing_to_commit_msg}"
    true "package_documentation_dir: ${package_documentation_dir}"
    true "MYDIR: ${MYDIR}"
-
-   for library_item in "${library_list[@]}"; do
-      true "library_item: ${library_item}"
-   done
 }
 
 ## . END Initialization functions }
@@ -2266,11 +2253,6 @@ make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages
 nothing_to_commit_msg="nothing to commit, working tree clean"
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
 
-library_list=(
-   "${derivative_maker_source_code_dir}/help-steps/colors"
-   "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
-)
-
 ## Global state variables, do not adjust
 batch_current_package_changelog=''
 batch_current_package_needs_version_bump='n'
@@ -2300,7 +2282,6 @@ post_run_hook_list=( 'wait_for_git_processes' )
 
 ## Initialization and launch
 check_prerequisites
-source_library_list
 prepare_system
 show_debug_variable_info
 main "$@"
