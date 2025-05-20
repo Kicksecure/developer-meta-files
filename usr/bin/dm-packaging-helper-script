@@ -21,6 +21,9 @@ else
    derivative_maker_source_code_dir="$(cd "../../../" && pwd)"
 fi
 
+## required by: make-helper-one.bsh
+cd "$derivative_maker_source_code_dir"
+
 "${derivative_maker_source_code_dir}/help-steps/colors"
 "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 
