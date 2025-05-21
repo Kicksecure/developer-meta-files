@@ -37,11 +37,11 @@ reprepro_wrap() {
       "$@" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
 
-   if echo "$reprepro_output" | grep --quiet --ignore-case "is already registered with different checksums!" ; then
+   if printf '%s\n' "$reprepro_output" | grep --ignore-case "is already registered with different checksums!" >/dev/null 2>/dev/null; then
       error "Not added. Because is already registered with different checksums, ok."
    fi
 
-   if echo "$reprepro_output" | grep --quiet --ignore-case "Will not copy as not found" ; then
+   if printf '%s\n' "$reprepro_output" | grep --ignore-case "Will not copy as not found" >/dev/null 2>/dev/null; then
       true "ERROR: Will not copy as not found!"
       exit 1
    fi

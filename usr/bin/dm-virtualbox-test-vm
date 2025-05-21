@@ -156,7 +156,7 @@ snapshot_vm_create() {
 
    ## Do not create another snapshot with the same name.
    snapshot_list_output="$($vboxmanage_cmd snapshot "$vmname" list --machinereadable)"
-   if echo "$snapshot_list_output" | grep -q "$snapshot_name" ; then
+   if printf '%s\n' "$snapshot_list_output" | grep -- "$snapshot_name" >/dev/null 2>/dev/null; then
       return 0
    fi
 
