@@ -111,39 +111,39 @@ commit_filter() {
 
    commit_msg_short="${commit_msg_short,,}"
 
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Merge remote-tracking branch' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Merge remote-tracking branch' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Merge pull request' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Merge pull request' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'lintian FHS' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'lintian FHS' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'LANG=C' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'LANG=C' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'LC_ALL=C' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'LC_ALL=C' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'genmkfile manpages' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'genmkfile manpages' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'lintian' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'lintian' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'Standards-Version' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Standards-Version' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i -q 'change license to AGPL-3+' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'change license to AGPL-3+' ; then
       set -x
       return 1
    fi
