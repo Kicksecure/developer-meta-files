@@ -882,7 +882,7 @@ pkg_descr_merger() {
             elif [ "${project}" = 'Whonix' ]; then
                if grep -q '\-gw-' <<< "${package_name}" ; then
                   machine='gateway'
-               elif grep '\-ws-' <<< "${package_name}" ; then
+               elif grep -q '\-ws-' <<< "${package_name}" ; then
                   machine='workstation'
                else
                   machine='shared'
