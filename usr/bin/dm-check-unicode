@@ -105,7 +105,7 @@ find_symlinks
 ##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
-grep_find_unicode_grep_find_unicode_wrapper_output="$(\
+grep_find_unicode_wrapper_output="$(\
    "$grep_find_unicode_wrapper" \
       --recursive \
       --binary-files=without-match \
@@ -133,7 +133,7 @@ whitelist_list=(
 )
 whitelist_pattern="($(IFS=$'\n'; echo -n "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
 
-filtered_output=$(printf "%s\n" "$grep_find_unicode_grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
+filtered_output=$(printf "%s\n" "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
 
 if [ -z "$filtered_output" ]; then
    true "INFO: No Unicode issues found, everything is OK."
