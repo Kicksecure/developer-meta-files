@@ -398,7 +398,7 @@ extract_description_from_debian_control() {
    elif [ -z "${headline_template}" ]; then
       printf "%s\n" "${red}${bold}FATAL ERROR: Empty headline_template parameter provided!${reset}"
       exit 1
-   elif ! grep -q 'XXX_REPLACE_ME_XXX' <<< "${headline_template}" ; then
+   elif ! grep --quiet 'XXX_REPLACE_ME_XXX' <<< "${headline_template}" ; then
       printf "%s\n" "${red}${bold}FATAL ERROR: headline_template parameter lacks XXX_REPLACE_ME_XXX placeholder!${reset}"
       exit 1
    fi
@@ -880,9 +880,9 @@ pkg_descr_merger() {
             if [ "${project}" = 'Kicksecure' ]; then
                machine='all'
             elif [ "${project}" = 'Whonix' ]; then
-               if grep -q '\-gw-' <<< "${package_name}" ; then
+               if grep --quiet '\-gw-' <<< "${package_name}" ; then
                   machine='gateway'
-               elif grep -q '\-ws-' <<< "${package_name}" ; then
+               elif grep --quiet '\-ws-' <<< "${package_name}" ; then
                   machine='workstation'
                else
                   machine='shared'
@@ -1450,7 +1450,7 @@ pkg_git_commit_packaging() {
 pkg_add_dh_changelogs_override_to_debian_rules() {
    repo_skip 'derivative-maker' || return 0
 
-   if grep -q 'override_dh_installchangelogs' 'debian/rules'; then
+   if grep --quiet 'override_dh_installchangelogs' 'debian/rules'; then
       return 0
     fi
 
