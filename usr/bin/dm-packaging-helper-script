@@ -488,7 +488,7 @@ internal_descr_writer() {
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
 
-         printf "%s\n" "$@" | tee -a -- "${description_file}" >/dev/null
+         printf "%s\n" "$*" | tee -a -- "${description_file}" >/dev/null
       done
    done
 }
