@@ -35,27 +35,4 @@ if [ "$(id -u)" = "0" ]; then
    error "Do not run this as root!"
 fi
 
-if [ ! "$(git status --porcelain)" = "" ]; then
-   error "Command git status --porcelain failed at the beginning!"
-fi
-
-git fetch --jobs=200 origin
-
-git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
-
-git verify-tag "$git_tag_latest"
-
-git verify-commit "${git_tag_latest}^{commit}"
-
-git checkout "$git_tag_latest"
-
-git submodule sync --recursive >/dev/null
-
-#git submodule update --init --recursive --jobs=200 >/dev/null
-git -c merge.verifySignatures=true submodule update --init --recursive --jobs=200 --merge >/dev/null
-
-if [ ! "$(git status --porcelain)" = "" ]; then
-   error "Command git status --porcelain failed at the end!"
-fi
-
-git describe
+./derivative-update --tag latest
