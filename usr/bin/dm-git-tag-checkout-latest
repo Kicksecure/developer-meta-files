@@ -36,3 +36,6 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 ./derivative-update --tag latest
+
+## Informational.
+git describe
