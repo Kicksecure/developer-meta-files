@@ -14,7 +14,7 @@ tag="adrelanos_${commit}"
 
 if git rev-parse --verify "$tag" &>/dev/null ; then
   true "$0: INFO: tag already signed, ok."
-  return 0
+  exit 0
 fi
 
 git tag -s "$tag" -m .
