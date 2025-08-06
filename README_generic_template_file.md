@@ -17,7 +17,7 @@ sudo cp ~/derivative.asc /usr/share/keyrings/derivative.asc
 3\. Add the derivative repository.
 
 ```
-echo "deb [signed-by=/usr/share/keyrings/derivative.asc] https://deb.%%project_clearnet%% bookworm main contrib non-free" | sudo tee /etc/apt/sources.list.d/derivative.list
+echo "deb [signed-by=/usr/share/keyrings/derivative.asc] https://deb.%%project_clearnet%% trixie main contrib non-free" | sudo tee /etc/apt/sources.list.d/derivative.list
 ```
 
 4\. Update your package lists.
