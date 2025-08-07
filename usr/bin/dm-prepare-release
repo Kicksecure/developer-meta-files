@@ -500,11 +500,13 @@ Please donate! [C]
    ## Not using $SUDO_TO_VBOX_TEMP because binary_image_ova_file is stored in
    ## normal user home folder. Not in dm-vbox-temp user home folder.
    if [ "${vm_multiple}" = "false" ]; then
-      VBoxManage \
-         import "${binary_image_ova_file}" \
-         --vsys "0" \
-         --eula show \
-         --vmname "${VMNAME}-${dist_build_version}"
+      ## Bug:
+      ## VBoxManage: error: Cannot import until the license agreement listed above is accepted.
+#       VBoxManage \
+#          import "${binary_image_ova_file}" \
+#          --vsys "0" \
+#          --eula show \
+#          --vmname "${VMNAME}-${dist_build_version}"
 
       VBoxManage \
          import "${binary_image_ova_file}" \
