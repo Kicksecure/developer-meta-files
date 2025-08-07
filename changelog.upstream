@@ -1,3 +1,23 @@
+commit 57ccb94ca54153b1e1bb4cebd56ae7a59ba633d2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Aug 7 06:04:28 2025 -0400
+
+    fix: disable `--eula show` sanity test due to VirtualBox bug
+    
+    > VBoxManage: error: Cannot import until the license agreement listed above is accepted.
+
+commit 5393d17355d854b5391ccff436f6eb2e9028825c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Aug 7 05:31:20 2025 -0400
+
+    .
+
+commit c66cdce7394a5773d02824aadc3dae3ec2eb9c22
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 16 07:50:03 2025 +0000
+
+    bumped changelog version
+
 commit 63e834a06731321c1801baa9f3edf0cef302bb0c
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jul 16 03:06:06 2025 -0400
