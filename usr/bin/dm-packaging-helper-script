@@ -1289,14 +1289,17 @@ pkg_git_fetch_remotes() {
 
 ## Pushes local changes to all Git remotes for all repos.
 pkg_git_push_remotes() {
-   local package_remote git_pid
+   local package_remote branch_name_item git_pid
+   branch_name_list=( "master" "bookworm" )
 
    for package_remote in "${batch_current_package_remote_list[@]}"; do
-      if internal_git_diff 'master' "${package_remote}/master"; then
-         git push "${package_remote}" 'master' &
-         git_pid="$!"
-         git_pid_list_str="${git_pid_list_str} ${git_pid}"
-      fi
+      for branch_name_item in "${branch_name_list[@]}"; do
+         if internal_git_diff "${branch_name_item}" "${package_remote}/${branch_name_item}"; then
+            git push "${package_remote}" "${branch_name_item}" &
+            git_pid="$!"
+            git_pid_list_str="${git_pid_list_str} ${git_pid}"
+         fi
+      done
    done
 
    true
