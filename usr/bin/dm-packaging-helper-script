@@ -1052,7 +1052,6 @@ pkg_git_branch_checkout_bookworm() {
 
 pkg_git_update_bookworm_branch_from_master_branch() {
    repo_skip 'derivative-maker' || return 0
-   repo_skip 'developer-meta-files' || return 0
    git checkout bookworm
    git merge --ff-only master
    git checkout master
