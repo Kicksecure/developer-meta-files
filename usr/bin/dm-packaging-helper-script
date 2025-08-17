@@ -1050,6 +1050,14 @@ pkg_git_branch_checkout_bookworm() {
    true
 }
 
+pkg_git_update_bookworm_branch_from_master_branch() {
+   repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
+   git checkout bookworm
+   git merge --ff-only master
+   git checkout master
+}
+
 ## Runs `git diff master` on all repos.
 pkg_git_diff_branch_master() {
    git diff master
