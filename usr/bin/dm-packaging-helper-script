@@ -1055,6 +1055,7 @@ pkg_git_update_bookworm_branch_from_master_branch() {
    git checkout bookworm
    git merge --ff-only master
    git checkout master
+   true
 }
 
 ## Runs `git diff master` on all repos.
