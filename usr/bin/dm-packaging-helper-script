@@ -219,6 +219,7 @@ commit_filter() {
       'remove debian/gain-root-command workaround' \
       'packaging simplification config-package-dev (>= 5.1) -> config-package-dev' \
       'packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support' \
+      'bumped Standards-Version' \
       'bump version number' \
       'bumped version number' \
       'bumped changelog version' \
@@ -1420,6 +1421,16 @@ pkg_git_commit_copyright() {
       git add 'COPYING'
    fi
    msg='copyright'
+   git commit -m "${msg}" || true
+   git status
+   true
+}
+
+pkg_git_commit_debian_control() {
+   local msg
+
+   git add 'debian/control'
+   msg='bumped Standards-Version'
    git commit -m "${msg}" || true
    git status
    true
