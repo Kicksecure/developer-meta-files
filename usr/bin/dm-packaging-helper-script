@@ -1088,6 +1088,7 @@ pkg_git_diff_branch_development() {
 
 pkg_git_diff_branch_trixie() {
    repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
 
    ## Check if branch exists.
    if ! git --no-pager diff --stat ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
