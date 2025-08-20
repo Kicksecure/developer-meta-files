@@ -1097,6 +1097,11 @@ pkg_git_diff_branch_trixie() {
    fi
    ## Branch exists.
 
+   if [ "$(git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+      ## No diff. Branch already merged.
+      return 0
+   fi
+
    if [ "$(git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie)" = "" ]; then
       ## No diff. Branch already merged.
       return 0
