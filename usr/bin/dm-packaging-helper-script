@@ -1087,14 +1087,30 @@ pkg_git_diff_branch_development() {
 
 pkg_git_diff_branch_trixie() {
    repo_skip 'derivative-maker' || return 0
-   if git --no-pager diff --stat ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
-      printf '%s\n' "${batch_current_package_reponame}"
-      git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie
-      git --no-pager diff -C ArrayBolt3/arraybolt3/trixie
-      git --no-pager kdiff -C ArrayBolt3/arraybolt3/trixie
+
+   ## Check if branch exists.
+   if ! git --no-pager diff --stat ...ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
+      ## No such branch.
+      return 0
    fi
+   ## Branch exists.
+
+   if [ "$(git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+      ## No diff. Branch already merged.
+      return 0
+   fi
+
+   printf '%s\n' "${batch_current_package_reponame}"
+   git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie
+   git --no-pager diff -C ...ArrayBolt3/arraybolt3/trixie
+   git --no-pager kdiff -C ...ArrayBolt3/arraybolt3/trixie
+   git merge --ff-only ...ArrayBolt3/arraybolt3/trixie
+
    printf '%s\n' "--------------------------------------------------"
    true
+
+   ## Manually re-run script.
+   exit
 }
 
 ## Detects packages with Bash profile.d files, and adds symlink lines to zsh's
