@@ -1104,7 +1104,7 @@ pkg_git_diff_branch_trixie() {
    git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie
    git --no-pager diff -C ...ArrayBolt3/arraybolt3/trixie
    git --no-pager kdiff -C ...ArrayBolt3/arraybolt3/trixie
-   git merge --ff-only ...ArrayBolt3/arraybolt3/trixie
+   git merge --ff-only ArrayBolt3/arraybolt3/trixie
 
    printf '%s\n' "--------------------------------------------------"
    true
