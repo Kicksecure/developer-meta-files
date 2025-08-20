@@ -1085,6 +1085,18 @@ pkg_git_diff_branch_development() {
    true
 }
 
+pkg_git_diff_branch_trixie() {
+   repo_skip 'derivative-maker' || return 0
+   if git --no-pager diff --stat ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
+      printf '%s\n' "${batch_current_package_reponame}"
+      git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie
+      git --no-pager diff -C ArrayBolt3/arraybolt3/trixie
+      git --no-pager kdiff -C ArrayBolt3/arraybolt3/trixie
+   fi
+   printf '%s\n' "--------------------------------------------------"
+   true
+}
+
 ## Detects packages with Bash profile.d files, and adds symlink lines to zsh's
 ## zprofile.d directory to the Debian packaging if needed.
 pkg_profile_d_zsh_creator() {
