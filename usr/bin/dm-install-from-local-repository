@@ -31,7 +31,7 @@ main() {
    fi
 
    ## This file doesn't include Whonix's APT repository.
-   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.list" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.sources" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
 
    "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 

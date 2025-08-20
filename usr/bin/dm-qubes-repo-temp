@@ -45,17 +45,22 @@ mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
 cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
 cp -r "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
 
-echo "deb [trusted=yes] file:/var/cache/aptrepo_temp_copy $dist_build_apt_codename main" > "$binary_build_folder_dist/derivative_repo_temp.list"
-cat "$binary_build_folder_dist/derivative_repo_temp.list"
+echo "Types: deb
+URIs: file:/var/cache/aptrepo_temp_copy
+Suites: $dist_build_apt_codename
+Components: main
+Enabled: yes
+Trusted: yes" > "$binary_build_folder_dist/derivative_repo_temp.sources"
+cat "$binary_build_folder_dist/derivative_repo_temp.sources"
 
 qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
-qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/derivative_repo_temp.list"
-qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/derivative_repo_temp.list"
+qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources"
+qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/derivative_repo_temp.sources"
 
-qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/derivative_repo_temp.list"
+qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/derivative_repo_temp.sources"
 qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/aptrepo_temp_copy/"
 
-qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/derivative_repo_temp.list /etc/apt/sources.list.d/derivative_repo_temp.list"
+qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources /etc/apt/sources.list.d/derivative_repo_temp.sources"
 
 qvm-run "$target_vm" "sudo rm -r -f /var/cache/aptrepo_temp_copy"
 qvm-run "$target_vm" "sudo cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"

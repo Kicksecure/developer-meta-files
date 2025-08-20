@@ -1029,9 +1029,9 @@ pkg_git_remotes_add() {
    true
 }
 
-## Creates a 'bookworm' branch for all repos.
-pkg_git_branch_bookworm() {
-   git branch bookworm || true
+## Creates a 'trixie' branch for all repos.
+pkg_git_branch_trixie() {
+   git branch trixie || true
    true
 }
 
@@ -1047,9 +1047,9 @@ pkg_git_branch_checkout_bullseye() {
    true
 }
 
-## Checks out the 'bookworm' branch of all repos.
-pkg_git_branch_checkout_bookworm() {
-   git checkout bookworm
+## Checks out the 'trixie' branch of all repos.
+pkg_git_branch_checkout_trixie() {
+   git checkout trixie
    true
 }
 
@@ -1455,7 +1455,7 @@ pkg_git_debinstfile() {
 }
 
 ## Commits packaging-related files for all repos. TODO: Perhaps don't hardcode
-## the word 'bookworm' here? Could be broken out into a tunable
+## the word 'trixie' here? Could be broken out into a tunable
 pkg_git_commit_packaging() {
    declare git_status_last_line msg
 
@@ -1476,7 +1476,7 @@ pkg_git_commit_packaging() {
    #git add 'debian'/*'.install'
    git add 'debian/control'
    #git add -A
-   msg='bookworm'
+   msg='trixie'
    git commit -m "${msg}"
    git status
    true
