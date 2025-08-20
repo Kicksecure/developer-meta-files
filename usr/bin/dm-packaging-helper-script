@@ -995,6 +995,9 @@ pkg_git_remotes_add() {
    git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
    git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
+   git remote add     ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+   git remote set-url ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
       git remote add     github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
       git remote set-url github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
@@ -1047,6 +1050,18 @@ pkg_git_branch_checkout_bullseye() {
 ## Checks out the 'bookworm' branch of all repos.
 pkg_git_branch_checkout_bookworm() {
    git checkout bookworm
+   true
+}
+
+pkg_git_branch_fetch_all() {
+   local git_pid
+
+   for package_remote in "ArrayBolt3"; do
+      git fetch "${package_remote}" &
+      git_pid="$!"
+      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+   done
+
    true
 }
 
