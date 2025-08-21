@@ -80,7 +80,7 @@ main() {
    chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    ## TODO: ?
-#    if [ "$dist_build_flavor" = "whonix-gateway-xfce" ]; then
+#    if [ "$dist_build_flavor" = "whonix-gateway-lxqt" ]; then
 #       chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install
 #    elif [ "$dist_build_flavor" = "whonix-gateway-cli" ]; then
 #       chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install

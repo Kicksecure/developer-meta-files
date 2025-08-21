@@ -47,7 +47,7 @@ for mirror_item in $mirror_list ; do
    ## for prettier xtrace only
    mirror_item="$mirror_item"
 
-   link="${mirror_item}/${version}/Whonix-Xfce-${version}.ova"
+   link="${mirror_item}/${version}/Whonix-LXQt-${version}.ova"
    stecho "link: $link"
 
    curl_exit_code=0
