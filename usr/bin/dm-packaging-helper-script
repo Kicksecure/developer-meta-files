@@ -219,6 +219,7 @@ commit_filter() {
       'remove debian/gain-root-command workaround' \
       'packaging simplification config-package-dev (>= 5.1) -> config-package-dev' \
       'packaging, bumped Standards-Version from 3.9.6 to 3.9.8 for jessie support' \
+      'bumped Standards-Version' \
       'bump version number' \
       'bumped version number' \
       'bumped changelog version' \
@@ -995,6 +996,9 @@ pkg_git_remotes_add() {
    git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
    git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
+   git remote add     ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+   git remote set-url ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
       git remote add     github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
       git remote set-url github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
@@ -1050,6 +1054,26 @@ pkg_git_branch_checkout_trixie() {
    true
 }
 
+pkg_git_branch_fetch_all() {
+   local git_pid
+
+   for package_remote in "ArrayBolt3"; do
+      git fetch "${package_remote}" &
+      git_pid="$!"
+      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+   done
+
+   true
+}
+
+pkg_git_update_bookworm_branch_from_master_branch() {
+   repo_skip 'derivative-maker' || return 0
+   git checkout bookworm
+   git merge --ff-only master
+   git checkout master
+   true
+}
+
 ## Runs `git diff master` on all repos.
 pkg_git_diff_branch_master() {
    git diff master
@@ -1060,6 +1084,40 @@ pkg_git_diff_branch_master() {
 pkg_git_diff_branch_development() {
    git diff development || true
    true
+}
+
+pkg_git_diff_branch_trixie() {
+   repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
+
+   ## Check if branch exists.
+   if ! git --no-pager diff --stat ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
+      ## No such branch.
+      return 0
+   fi
+   ## Branch exists.
+
+   if [ "$(git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+      ## No diff. Branch already merged.
+      return 0
+   fi
+
+   if [ "$(git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+      ## No diff. Branch already merged.
+      return 0
+   fi
+
+   printf '%s\n' "${batch_current_package_reponame}"
+   git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie
+   git --no-pager diff -C ArrayBolt3/arraybolt3/trixie
+   git --no-pager kdiff -C ArrayBolt3/arraybolt3/trixie
+   git merge ArrayBolt3/arraybolt3/trixie
+
+   printf '%s\n' "--------------------------------------------------"
+   true
+
+   ## Manually re-run script.
+   exit
 }
 
 ## Detects packages with Bash profile.d files, and adds symlink lines to zsh's
@@ -1369,6 +1427,16 @@ pkg_git_commit_copyright() {
       git add 'COPYING'
    fi
    msg='copyright'
+   git commit -m "${msg}" || true
+   git status
+   true
+}
+
+pkg_git_commit_debian_control() {
+   local msg
+
+   git add 'debian/control'
+   msg='bumped Standards-Version'
    git commit -m "${msg}" || true
    git status
    true

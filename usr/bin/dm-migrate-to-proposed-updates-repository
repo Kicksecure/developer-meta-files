@@ -25,7 +25,7 @@ for derivative_name_item in $derivative_name_list ; do
    derivative_repository_name="$derivative_name_item"
    export derivative_repository_name
 
-   #dm-reprepro-wrapper copymatched bullseye-proposed-updates bullseye-testers "*"
+   #dm-reprepro-wrapper copymatched bookworm-proposed-updates bookworm-testers "*"
    dm-reprepro-wrapper copymatched trixie-proposed-updates trixie-testers "*"
 
    true "${cyan}INFO: Done. Migrated testers repository to proposed-updates repository. Do not forget to upload it.${reset}"
