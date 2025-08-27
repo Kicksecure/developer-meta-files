@@ -1,0 +1,934 @@
+#!/bin/python3
+
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@kicksecure.com>
+## See the file COPYING for copying conditions.
+
+# pylint: disable=broad-exception-caught,invalid-name
+
+"""
+This script's job is to manage the control files for
+kicksecure-meta-packages and anon-meta-packages. These packages work in the
+following manner:
+
+* There is a "master" file which describes all metapackages that can make
+  up parts of Kicksecure and Whonix. There are many of these metapackages,
+  and a lot of them will be empty, so we don't use this master file
+  directly. Actual depended-upon packages are added to the metapackages in
+  this master file. Kicksecure and Whonix share a master file since info
+  about Kicksecure's metapackages is needed to build Whonix's properly.
+* From the "master" files, the real control files are derived. This is done
+  by finding non-empty metapackages in the master files and extracting them
+  into separate true control files for Kicksecure and Whonix.
+
+The metapackage structure is defined by the node map below. The purposes of
+the nodes and how they relate to each other is described in
+https://www.kicksecure.com/wiki/Dev/Metapackages. However, instead of each
+metapackage depending on one or more child metapackages, the metapackages
+are independent, except for a select few "parent" metapackages that define
+a single variant of Kicksecure or Whonix. These parent metapackages then
+depend on all child metapackages that they need.
+
+The script can either generate new metapackage structures, or it can update
+existing ones to reflect changes to the node map and parent metapackage
+list.
+"""
+
+import sys
+import os
+import copy
+from pathlib import Path
+from enum import Enum
+from typing import NoReturn
+from debian.deb822 import Deb822
+
+###################################
+#### --- CLASS DEFINITIONS --- ####
+###################################
+
+
+class UpdateMode(Enum):
+    """
+    An enumeration describing what is being updated (the master file or a real
+    control file).
+    """
+
+    UPDATE_MASTER = 1
+    UPDATE_CONTROL = 2
+
+
+class DistId(Enum):
+    """
+    An enumeration describing a distribution supported by the tool.
+    """
+
+    KICKSECURE = 1
+    WHONIX = 2
+
+
+# pylint: disable=too-few-public-methods
+class Node:
+    """
+    A package definition node.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        short_description: str,
+        long_description: str,
+        dependency_list: list[str],
+    ):
+        """
+        Instantiates a package definition node object.
+        """
+
+        self.name = name
+        self.short_description = short_description
+        self.long_description = long_description
+        self.dependency_list = dependency_list
+
+
+#########################################
+#### --- METAPACKAGE DEFINITIONS --- ####
+#########################################
+
+## Each group of nodes intended to be placed in the same position of the
+## metapackage name are put inside a containing list, and node_map wraps those
+## containing lists.
+node_map: list[list[Node]] = [
+    [],
+    [],
+    [],
+]
+
+## There doesn't seem to be a nicer way to load objects into a list other than
+## list comprehension which is not useful here. See:
+## https://stackoverflow.com/questions/3182183/how-to-create-a-list-of-objects
+node_map[0].append(Node("dist", "All systems", "For all hardened systems.", []))
+node_map[0].append(
+    Node(
+        "kicksecure",
+        "Kicksecure systems",
+        "For Kicksecure systems.",
+        ["dist"],
+    )
+)
+node_map[0].append(
+    Node("whonix", "Whonix systems", "For all Whonix systems.", ["dist"])
+)
+node_map[0].append(
+    Node(
+        "whonix-gateway",
+        "Whonix-Gateway systems",
+        "For Whonix-Gateway systems.",
+        ["whonix", "dist"],
+    )
+)
+node_map[0].append(
+    Node(
+        "whonix-workstation",
+        "Whonix-Workstation systems",
+        "For Whonix-Workstation systems.",
+        ["whonix", "dist"],
+    )
+)
+
+## ----
+
+node_map[1].append(
+    Node("general", "all hardware", "For all hardware platforms.", [])
+)
+node_map[1].append(
+    Node("qubes", "Qubes VMs", "For Qubes virtual machines.", ["general"])
+)
+node_map[1].append(
+    Node(
+        "nonqubes",
+        "not Qubes VMs",
+        "For machines other than Qubes virtual machines.",
+        ["general"],
+    )
+)
+node_map[1].append(
+    Node(
+        "baremetal",
+        "physical hardware",
+        "For physical hardware.",
+        ["nonqubes", "general"],
+    )
+)
+node_map[1].append(
+    Node(
+        "vm", "VMs", "For non-Qubes virtual machines.", ["nonqubes", "general"]
+    )
+)
+
+## ----
+
+node_map[2].append(
+    Node(
+        "cli",
+        "command-line packages",
+        "Provides packages for basic command-line-only installations.",
+        [],
+    )
+)
+node_map[2].append(
+    Node(
+        "server",
+        "server packages",
+        "Provides packages for server installations.",
+        ["cli"],
+    )
+)
+node_map[2].append(
+    Node(
+        "gui-all",
+        "GUI packages",
+        "Provides packages for all graphical desktop installations.",
+        ["cli"],
+    )
+)
+node_map[2].append(
+    Node(
+        "gui-lxqt",
+        "LXQt GUI packages",
+        "Provides packages for LXQt graphical desktop installations.",
+        ["gui-all", "cli"],
+    )
+)
+
+## Each package listed here is a "parent" metapackage that directly depends on
+## all child metapackages it needs. One metapackage show be defined for each
+## officially supported variant of Kicksecure or Whonix. Each item in the list
+## is a list of nodes corresponding to a package name.
+##
+## N.B.: VirtualBox and KVM both use the *-vm-* parent metapackages.
+parent_metapackage_list: list[list[str]] = [
+    ["kicksecure", "qubes", "server"],
+    ["kicksecure", "qubes", "gui-lxqt"],
+    ["kicksecure", "baremetal", "server"],
+    ["kicksecure", "baremetal", "gui-lxqt"],
+    ["kicksecure", "vm", "server"],
+    ["kicksecure", "vm", "gui-lxqt"],
+    ["whonix-gateway", "qubes", "server"],
+    ["whonix-gateway", "qubes", "gui-lxqt"],
+    ["whonix-gateway", "baremetal", "server"],
+    ["whonix-gateway", "baremetal", "gui-lxqt"],
+    ["whonix-gateway", "vm", "server"],
+    ["whonix-gateway", "vm", "gui-lxqt"],
+    ["whonix-workstation", "qubes", "server"],
+    ["whonix-workstation", "qubes", "gui-lxqt"],
+    ["whonix-workstation", "baremetal", "server"],
+    ["whonix-workstation", "baremetal", "gui-lxqt"],
+    ["whonix-workstation", "vm", "server"],
+    ["whonix-workstation", "vm", "gui-lxqt"],
+]
+
+## The metapackage source headers for Kicksecure and Whonix.
+kicksecure_metapackage_source_header: str = """\
+Source: kicksecure-meta-packages
+Section: metapackages
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@kicksecure.com>
+Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
+Homepage: https://github.com/Kicksecure/kicksecure-meta-packages
+Vcs-Browser: https://github.com/Kicksecure/kicksecure-meta-packages
+Vcs-Git: https://github.com/Kicksecure/kicksecure-meta-packages.git
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+"""
+
+whonix_metapackage_source_header: str = """\
+Source: anon-meta-packages
+Section: metapackages
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@whonix.org>
+Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
+Homepage: https://github.com/Whonix/anon-meta-packages
+Vcs-Browser: https://github.com/Whonix/anon-meta-packages
+Vcs-Git: https://github.com/Whonix/anon-meta-packages.git
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+"""
+
+#########################################
+#### --- NODE HANDLING FUNCTIONS --- ####
+#########################################
+
+
+def is_master_metapackage(package_nodes: list[str]) -> bool:
+    """
+    Returns True if the specified package is a master metapackage,
+    False otherwise.
+    """
+
+    for parent_package_nodes in parent_metapackage_list:
+        package_match_found: bool = True
+        for idx, _ in enumerate(parent_package_nodes):
+            if parent_package_nodes[idx] != package_nodes[idx]:
+                package_match_found = False
+                break
+        if package_match_found:
+            return True
+    return False
+
+
+def get_node_from_name(node_name: str, node_pos: int) -> Node | None:
+    """
+    Gets the node corresponding to a particular node name and position.
+    """
+
+    for node in node_map[node_pos]:
+        if node.name == node_name:
+            return node
+    return None
+
+
+def get_description_for_package(package_nodes: list[str]) -> str:
+    """
+    Gets the description for a package from the node map.
+    """
+
+    short_description_str: str = ""
+    long_description_str: str = ""
+
+    for idx, node_str in enumerate(package_nodes):
+        target_node: Node | None = get_node_from_name(node_str, idx)
+        if target_node is None:
+            raise ValueError("Package nodes contain non-existent node")
+
+        short_description_str += target_node.short_description
+        long_description_str += f" {target_node.long_description}"
+        if idx != len(package_nodes) - 1:
+            short_description_str += ", "
+            long_description_str += "\n .\n"
+
+    return f"{short_description_str}\n{long_description_str}"
+
+
+def increment_counter_list(
+    counter_list: list[int],
+    limit_list: list[int],
+    counter_index: int | None = None,
+) -> bool:
+    """
+    Increments a counter defined by a list of integers, ensuring no integer in
+    counter_list ends up equal to the limit in the corresponding index of a
+    limit list. Returns True if the counter list is now set to a higher value,
+    or False if the counter list overflowed and rolled back to 0.
+    """
+
+    if counter_index is None:
+        ## Default to incrementing the lowest counter in the list.
+        counter_index = len(counter_list) - 1
+
+    counter_list[counter_index] += 1
+    if counter_list[counter_index] < limit_list[counter_index]:
+        ## A naive increment of the counter worked, we're done.
+        return True
+
+    ## Set the current counter to zero, then call ourselves recursively to
+    ## increment the counter one element "higher" in the list.
+    counter_list[counter_index] = 0
+    if counter_index - 1 == -1:
+        ## We're at the highest counter in the list, thus the counter list
+        ## has overflowed and is now set to all 0.
+        return False
+    return increment_counter_list(
+        counter_list,
+        limit_list,
+        counter_index - 1,
+    )
+
+
+def get_dependencies_for_package(
+    package_node_list: list[str],
+) -> list[list[str]]:
+    """
+    Returns a list of node groups representing all packages the specified
+    package depends on according to the node list. This is done by generating
+    all possible combinations of node names in the provided package node list,
+    and the nodes they depend on.
+    """
+
+    if len(package_node_list) != len(node_map):
+        raise ValueError("List length mismatch")
+
+    mix_list: list[list[str]] = []
+    for _ in range(0, len(node_map)):
+        mix_list.append([])
+    result_list: list[list[str]] = []
+
+    for package_node_idx, package_node_str in enumerate(package_node_list):
+        mix_list[package_node_idx].append(package_node_str)
+        for node in node_map[package_node_idx]:
+            if node.name == package_node_str:
+                mix_list[package_node_idx].extend(node.dependency_list)
+
+    counter_list: list[int] = [0] * len(mix_list)
+    limit_list: list[int] = [len(x) for x in mix_list]
+
+    while True:
+        ## Skip the instance in which all elements of the counter list are
+        ## zero. If we didn't skip it, we'd echo the name of the package in
+        ## question as part of the dependency list, which would make the
+        ## package depend on itself.
+        if all(x == 0 for x in counter_list):
+            if not increment_counter_list(counter_list, limit_list):
+                break
+
+        result_item: list[str] = []
+        for node_idx, item_idx in enumerate(counter_list):
+            result_item.append(mix_list[node_idx][item_idx])
+        result_list.append(result_item)
+
+        if not increment_counter_list(counter_list, limit_list):
+            break
+
+    return result_list
+
+
+def get_package_list_from_node_map() -> list[list[str]]:
+    """
+    Returns a list of node groups representing all packages defined by the
+    specified node map. This is done by generating all possible combinations
+    of node names in the node map.
+    """
+
+    counter_list: list[int] = [0] * len(node_map)
+    limit_list: list[int] = [len(x) for x in node_map]
+    result_list: list[list[str]] = []
+
+    while True:
+        result_item: list[str] = []
+
+        for node_idx, item_idx in enumerate(counter_list):
+            result_item.append(node_map[node_idx][item_idx].name)
+        result_list.append(result_item)
+
+        if not increment_counter_list(counter_list, limit_list):
+            break
+
+    return result_list
+
+
+################################################
+#### --- CONTROL FILE HANDLING ROUTINES --- ####
+################################################
+
+
+def control_data_entry_idx(
+    control_data: list[Deb822],
+    entry_key: str,
+    entry_val: str | list[str],
+) -> int:
+    """
+    Returns the index of the item in the control_data that contains the
+    specified key and value. Returns -1 if the key-value pair cannot be found.
+    """
+
+    for idx, control_data_entry in enumerate(control_data):
+        if entry_key in control_data_entry:
+            if control_data_entry[entry_key] == entry_val:
+                return idx
+    return -1
+
+
+def add_metapackages_to_control_data(
+    core_package_list: list[list[str]],
+    master_control_data: list[Deb822],
+    final_control_data: list[Deb822],
+    control_data_dist: DistId,
+) -> None:
+    """
+    Adds a set of metapackages for the specified distribution to the
+    final_control_data list.
+    """
+
+    for core_package in core_package_list:
+        if control_data_dist == DistId.KICKSECURE:
+            if core_package[0].startswith("whonix"):
+                continue
+        else:
+            if not core_package[0].startswith("whonix"):
+                continue
+
+        new_deb822 = Deb822()
+        existing_package_index = control_data_entry_idx(
+            master_control_data, "Package", "-".join(core_package)
+        )
+        if existing_package_index != -1:
+            new_deb822 = master_control_data[existing_package_index]
+
+        new_deb822["Package"] = "-".join(core_package)
+        new_deb822["Architecture"] = "all"
+        ## FIXME: Pre-Depends might not only contain legacy-dist!
+        new_deb822["Pre-Depends"] = "legacy-dist"
+
+        if is_master_metapackage(core_package):
+            depends_list: list[str] = []
+            if "Depends" in new_deb822:
+                depends_list.extend(
+                    [x.strip() for x in new_deb822["Depends"].split(",")]
+                )
+            for depends_item in copy.copy(depends_list):
+                for first_node in node_map[0]:
+                    if depends_item.startswith(first_node.name + "-"):
+                        depends_list.remove(depends_item)
+                        break
+
+            new_depends_list: list[str] = [
+                "-".join(x) for x in get_dependencies_for_package(core_package)
+            ]
+            new_depends_list.extend(depends_list)
+            new_deb822["Depends"] = ",\n ".join(new_depends_list)
+
+        new_deb822["Description"] = get_description_for_package(core_package)
+
+        final_control_data.append(new_deb822)
+
+
+def update_master_control_data(
+    master_control_data: list[Deb822],
+) -> None:
+    """
+    Updates the master control data for Kicksecure and Whonix so it matches
+    the node map.
+
+    WARNING: This *will* delete metapackages from the master control file that
+    are no longer defined by the node map! This may result in data loss if not
+    used with care!
+    """
+
+    ## The format of a "raw" master file is:
+    ##
+    ## Package: dist-general-server
+    ## Architecture: all
+    ## Pre-Depends: legacy-dist
+    ## Description: All systems, all hardware, server packages
+    ##  For all hardened systems.
+    ##  .
+    ##  For all hardware.
+    ##  .
+    ##  Provides packages for server installations.
+    ##
+    ## ... (more package definitions)
+    ##
+    ## Package: kicksecure-qubes-server
+    ## Architecture: all
+    ## Pre-Depends: legacy-dist
+    ## Depends: dist-general-cli,
+    ##  dist-general-server,
+    ##  dist-qubes-cli,
+    ##  ... (more metapackage dependencies)
+    ## Description: Kicksecure systems, Qubes VMs, server packages
+    ##  For Kicksecure systems.
+    ##  .
+    ##  For Qubes virtual machines.
+    ##  .
+    ##  Provides packages for server installations.
+    ##
+    ## ... (more package definitions)
+    ##
+    ## Only "parent metapackages" have any dependencies by default, all other
+    ## packages have no dependencies. However, the user will add dependencies
+    ## to the non-parent metapackages as needed (this is how we can tell what
+    ## metapackages are and are not used when updating a true control file,
+    ## metapackages without dependencies are unused, metapackages with
+    ## dependencies are used).
+    ##
+    ## Package names are used to differentiate Kicksecure packages from Whonix
+    ## packages. The source control file headers are not present in the master
+    ## data by design.
+
+    core_package_list: list[list[str]] = get_package_list_from_node_map()
+
+    final_control_data: list[Deb822] = []
+    add_metapackages_to_control_data(
+        core_package_list,
+        master_control_data,
+        final_control_data,
+        control_data_dist=DistId.KICKSECURE,
+    )
+    add_metapackages_to_control_data(
+        core_package_list,
+        master_control_data,
+        final_control_data,
+        control_data_dist=DistId.WHONIX,
+    )
+
+    master_control_data.clear()
+    master_control_data.extend(final_control_data)
+
+
+def remove_package_from_control_data(
+    target_item: Deb822,
+    control_data: list[Deb822],
+) -> None:
+    """
+    Removes the specified package from the list, and removes it from the
+    package dependency lists of all other packages in the list.
+    """
+
+    if not "Package" in target_item:
+        raise ValueError("Package key not found in target item")
+
+    for control_item in control_data:
+        if "Depends" not in control_item:
+            continue
+
+        depends_list: list[str] = [
+            x.strip() for x in control_item["Depends"].split(",")
+        ]
+        if target_item["Package"] in depends_list:
+            depends_list.remove(target_item["Package"])
+            if len(depends_list) > 0:
+                control_item["Depends"] = ",\n ".join(depends_list)
+            else:
+                del control_item["Depends"]
+
+    if target_item in control_data:
+        control_data.remove(target_item)
+
+
+def extract_non_standard_packages(
+    orig_control_data: list[Deb822],
+    dest_control_data: list[Deb822],
+) -> None:
+    """
+    Adds metapackages to dest_control_data that aren't defined in the node
+    list, but are defined in orig_control_data.
+    """
+
+    for orig_control_deb822 in orig_control_data:
+        if not "Package" in orig_control_deb822:
+            ## This isn't a binary package stanza, skip it
+            continue
+        for first_node in node_map[0]:
+            if orig_control_deb822["Package"].startswith(first_node.name + "-"):
+                continue
+        dest_control_data.append(orig_control_deb822)
+
+
+# pylint: disable=too-many-branches
+def update_true_control_data(
+    kicksecure_control_data: list[Deb822],
+    whonix_control_data: list[Deb822],
+    master_control_data: list[Deb822],
+) -> None:
+    """
+    Finds non-empty metapackages in master_control_data that aren't yet
+    present in main_control_data, and adds them to main_control_data. Also
+    updates dependencies in relevant parent metapackages in main_control_data.
+    main_control_data_type specifies whether main_control_data represents
+    the Kicksecure or Whonix control file.
+
+    This function will not remove metapackages that are now unused, nor will
+    it remove those packages from parent metapackage dependency lists.
+    """
+
+    ## Append the appropriate source control headers.
+    final_ks_control_data: list[Deb822] = []
+    final_ks_control_data.append(Deb822(kicksecure_metapackage_source_header))
+    final_wx_control_data: list[Deb822] = []
+    final_wx_control_data.append(Deb822(whonix_metapackage_source_header))
+
+    ## Add all appropriate metapackage stanzas from the master control data to
+    ## the control file.
+    for master_control_deb822 in master_control_data:
+        if not "Package" in master_control_deb822:
+            raise ValueError("No package key in control data stanza")
+        if master_control_deb822["Package"].startswith("whonix"):
+            final_wx_control_data.append(master_control_deb822)
+        else:
+            final_ks_control_data.append(master_control_deb822)
+
+    ## Pick up "extra" metapackages
+    extract_non_standard_packages(
+        kicksecure_control_data, final_ks_control_data
+    )
+    extract_non_standard_packages(
+        whonix_control_data, final_wx_control_data
+    )
+
+    ## Remove unused packages.
+    for final_ks_control_deb822 in copy.copy(final_ks_control_data):
+        if (
+            "Package" in final_ks_control_deb822
+            and "Depends" not in final_ks_control_deb822
+            and "Breaks" not in final_ks_control_deb822
+            and "Replaces" not in final_ks_control_deb822
+        ):
+            ## This package looks unused, but make sure it's not already
+            ## present in kicksecure_control_data first...
+            if final_ks_control_deb822["Package"] not in [
+                x["Package"] for x in kicksecure_control_data if "Package" in x
+            ]:
+                ## The package is unused, remove it from the list and from the
+                ## dependencies of all metapackages in the list.
+                remove_package_from_control_data(
+                    final_ks_control_deb822, final_ks_control_data
+                )
+                remove_package_from_control_data(
+                    final_ks_control_deb822, final_wx_control_data
+                )
+    for final_wx_control_deb822 in copy.copy(final_wx_control_data):
+        ## TODO: Is there a way to make these key checks less verbose?
+        if (
+            "Package" in final_wx_control_deb822
+            and "Depends" not in final_wx_control_deb822
+            and "Breaks" not in final_wx_control_deb822
+            and "Replaces" not in final_wx_control_deb822
+            and "Provides" not in final_wx_control_deb822
+        ):
+            if final_wx_control_deb822["Package"] not in [
+                x["Package"] for x in whonix_control_data if "Package" in x
+            ]:
+                remove_package_from_control_data(
+                    final_wx_control_deb822, final_wx_control_data
+                )
+
+    kicksecure_control_data.clear()
+    kicksecure_control_data.extend(final_ks_control_data)
+    whonix_control_data.clear()
+    whonix_control_data.extend(final_wx_control_data)
+
+
+def write_control_data_to_file(
+    control_data: list[Deb822],
+    file_path: Path,
+) -> None:
+    """
+    Writes the contents of a control data list to the specified file.
+    """
+
+    try:
+        with open(file_path, "w", encoding="utf-8") as file_handle:
+            for idx, control_deb822 in enumerate(control_data):
+                file_handle.write(control_deb822.dump())
+                if idx != len(control_data) - 1:
+                    file_handle.write("\n")
+    except Exception:
+        print(
+            f"ERROR: Failed to write to file '{file_path}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+################################
+#### --- USER INTERFACE --- ####
+################################
+
+
+def print_usage() -> None:
+    """
+    Prints usage information.
+    """
+
+    usage_info: str = f"""
+{sys.argv[0]}: Assists the management of Kicksecure and Whonix metapackages.
+
+Options:
+  --update-master <file>
+    Updates or generates the master metapackage file to match the node map in
+    the script.
+  --update-control <kicksecure_control_file> <whonix_control_file> <master_file>
+    Updates or generates a control file for the specified distribution, using
+    the specified master file as a base.
+  --help
+    Displays this documentation.
+"""
+    print(usage_info, file=sys.stderr)
+
+
+def check_permissions(target_path: Path) -> bool:
+    """
+    Check if we can write to the specified path. If the file pointed to by the
+    path exists, we check if we can write to it, otherwise we check if its
+    parent directory exists and we can write to that.
+    """
+
+    if target_path.is_file():
+        return bool(os.access(target_path, os.R_OK | os.W_OK))
+
+    if not target_path.parent.is_dir():
+        return False
+
+    return bool(os.access(target_path.parent, os.R_OK | os.W_OK))
+
+
+def get_control_data_for_file(control_file_path: Path) -> list[Deb822]:
+    """
+    Reads Debian control data from a file and returns it as a list of Deb822
+    stanzas.
+    """
+
+    control_data: list[Deb822] = []
+
+    if not check_permissions(control_file_path):
+        print(
+            f"ERROR: Cannot access file path '{control_file_path}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if control_file_path.is_file():
+        with open(
+            control_file_path, "r", encoding="utf-8"
+        ) as control_file_handle:
+            try:
+                for deb822_obj in Deb822.iter_paragraphs(control_file_handle):
+                    control_data.append(deb822_obj)
+            except Exception:
+                print(
+                    f"ERROR: Failed to process file '{control_file_path}'!",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+    return control_data
+
+
+def update_master_handler(
+    master_file_path: Path,
+    master_control_data: list[Deb822],
+) -> None:
+    """
+    Handles the --update-master option, which updates the master control file.
+    """
+
+    if master_file_path is None:
+        print(
+            "ERROR: No master file provided, this should never happen!",
+            file=sys.stderr,
+        )
+        print_usage()
+        sys.exit(1)
+
+    update_master_control_data(master_control_data)
+    try:
+        write_control_data_to_file(master_control_data, master_file_path)
+    except Exception:
+        print(
+            f"ERROR: Failed to write to file '{master_file_path}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def update_control_handler(
+    kicksecure_control_file_path: Path,
+    whonix_control_file_path: Path,
+    master_control_data: list[Deb822],
+    kicksecure_control_data: list[Deb822],
+    whonix_control_data: list[Deb822],
+) -> None:
+    """
+    Handles the --update-control option, which updates individual metapackage
+    control files.
+    """
+
+    update_true_control_data(
+        kicksecure_control_data, whonix_control_data, master_control_data
+    )
+    write_control_data_to_file(
+        kicksecure_control_data, kicksecure_control_file_path
+    )
+    write_control_data_to_file(
+        whonix_control_data, whonix_control_file_path
+    )
+
+
+# pylint: disable=too-many-statements
+def main() -> NoReturn:
+    """
+    Main function.
+    """
+
+    if len(sys.argv) < 2:
+        print("ERROR: Too few arguments!", file=sys.stderr)
+        print_usage()
+        sys.exit(1)
+
+    mode_enum: UpdateMode | None = None
+    master_file_path: Path | None = None
+    main_control_file_path: Path | None = None
+    alt_control_file_path: Path | None = None
+
+    match sys.argv[1]:
+        case "--help":
+            print_usage()
+            sys.exit(0)
+
+        case "--update-master":
+            if len(sys.argv) != 3:
+                print("ERROR: Wrong number of arguments!", file=sys.stderr)
+                print_usage()
+                sys.exit(1)
+            mode_enum = UpdateMode.UPDATE_MASTER
+            master_file_path = Path(sys.argv[2])
+
+        case "--update-control":
+            if len(sys.argv) != 5:
+                print("ERROR: Wrong number of arguments!", file=sys.stderr)
+                print_usage()
+                sys.exit(1)
+            mode_enum = UpdateMode.UPDATE_CONTROL
+            main_control_file_path = Path(sys.argv[2])
+            alt_control_file_path = Path(sys.argv[3])
+            master_file_path = Path(sys.argv[4])
+
+        case _:
+            print(
+                f"ERROR: Unrecognized option '{sys.argv[1]}'!", file=sys.stderr
+            )
+            print_usage()
+            sys.exit(1)
+
+    if mode_enum is None:
+        print(
+            "ERROR: No mode provided, this should never happen!",
+            file=sys.stderr,
+        )
+        print_usage()
+        sys.exit(1)
+
+    master_control_data: list[Deb822] | None = None
+    main_control_data: list[Deb822] | None = None
+    alt_control_data: list[Deb822] | None = None
+
+    if master_file_path is not None:
+        master_control_data = get_control_data_for_file(master_file_path)
+
+    if main_control_file_path is not None:
+        main_control_data = get_control_data_for_file(main_control_file_path)
+
+    if alt_control_file_path is not None:
+        alt_control_data = get_control_data_for_file(alt_control_file_path)
+
+    if mode_enum == UpdateMode.UPDATE_MASTER:
+        assert master_file_path is not None
+        assert master_control_data is not None
+        update_master_handler(master_file_path, master_control_data)
+
+    if mode_enum == UpdateMode.UPDATE_CONTROL:
+        assert main_control_file_path is not None
+        assert alt_control_file_path is not None
+        assert master_control_data is not None
+        assert main_control_data is not None
+        assert alt_control_data is not None
+        update_control_handler(
+            main_control_file_path,
+            alt_control_file_path,
+            master_control_data,
+            main_control_data,
+            alt_control_data,
+        )
+
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
