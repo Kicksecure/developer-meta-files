@@ -1,8 +1,113 @@
+commit ee109682c5584b9794f387681d68c3de83152893
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 08:42:23 2025 -0400
+
+    .
+
+commit dffd88543939cbc36f983cecc9d130389cfe5883
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 07:14:46 2025 -0400
+
+    .
+
+commit c2356e521723d46b6a51cb164ee97f62a84657cd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 06:57:48 2025 -0400
+
+    .
+
+commit c7af02c9b33e05c3a431ede8f0a8613d5179242b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 06:52:22 2025 -0400
+
+    .
+
+commit 11b8a2e307f9e9aac78b27d6d389759e80a0fe9d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 05:29:44 2025 -0400
+
+    .
+
+commit 5846bef86197fb66c10497c22f39afaba3f1cbe2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 05:28:09 2025 -0400
+
+    .
+
+commit 70016c17fd51bfc301893b05dd5774d79ff4726a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 02:59:50 2025 -0400
+
+    .
+
+commit 0400a00210f55ecdae1a25d711f50a8597efc167
+Merge: 306339e c579e80
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 02:56:37 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 306339ed712c0cae211179849c524231a3c78c42
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 02:51:51 2025 -0400
+
+    .
+
+commit 3bdd17ee659746b9679839c9272f84fee3375dbf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 02:34:41 2025 -0400
+
+    .
+
+commit cdb2fb2b39c9e78dcf9905275b4fdc37ad6b145c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 20 02:27:19 2025 -0400
+
+    .
+
+commit a3829676d793d7b6cf87d8fdde7f53376a0fc466
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 17 09:35:10 2025 -0400
+
+    .
+
+commit bf273f330e8a30a8fcf719a329b14bbc877e12e4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Aug 17 09:34:55 2025 -0400
+
+    .
+
+commit c579e8044d12741704c31224693dfcc55570c6c0
+Merge: 0922ec0 ad53db0
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Aug 15 15:55:34 2025 -0500
+
+    Merge branch 'bookworm' into arraybolt3/trixie
+
+commit 0922ec03afd9608d9e8a3b7baf9aab76502f9dee
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Aug 10 20:04:29 2025 -0500
+
+    Switch to using deb822 sources
+
+commit ad53db0eda7a1a2a3541d5b7964eff6579a474a3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 13 05:27:52 2025 +0000
+
+    bumped changelog version
+
 commit e20bb82beef7b2f9618c1b8144f4816e7578208e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Aug 12 03:55:23 2025 -0400
 
     .
+
+commit d52502b8b0401af1a99c21e9743fbd1705cef8e3
+Merge: c0ae349 fa80722
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Aug 9 21:33:13 2025 -0500
+
+    Merge branch 'bookworm' into arraybolt3/trixie
 
 commit fa80722a560f2fb1676752f6c839461ab3d0cc7c
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -15,6 +120,13 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Aug 9 03:13:16 2025 -0400
 
     .
+
+commit c0ae3497b0c99d38f48db7e7bd90ca072dc16baa
+Merge: 523e1bb cbb94ca
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Thu Aug 7 19:33:58 2025 -0500
+
+    Merge branch 'master' into arraybolt3/trixie
 
 commit cbb94ca099794a85e4e512f7e34b51900431a7cf
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -35,6 +147,12 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Aug 7 05:31:20 2025 -0400
 
     .
+
+commit 523e1bb432007d1af4a73a09837480c88cb454f0
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Tue Aug 5 22:57:59 2025 -0500
+
+    Port to Trixie.
 
 commit c66cdce7394a5773d02824aadc3dae3ec2eb9c22
 Author: Patrick Schleizer <adrelanos@whonix.org>
