@@ -1,3 +1,42 @@
+commit f815575bd0b39ec19e7fa096a462d8818db32c2b
+Merge: 0696c3f 28260a6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 27 05:00:17 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 28260a68646a42c082cf4268d3792fec80fc47dd
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Wed Aug 27 00:10:01 2025 -0500
+
+    Add dm-metapackage-helper
+
+commit 904e31ea866797554d364a94a2e0fd704b68ab32
+Merge: 3242529 0696c3f
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Tue Aug 26 19:15:36 2025 -0500
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit 0696c3f334a76172fe9b46adaf1749e975116b8d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Aug 26 08:53:24 2025 +0000
+
+    bumped changelog version
+
+commit 3242529ea27c48d97c6ba4c1a0573acb6164b5e3
+Merge: 7e84e3b ee10968
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Thu Aug 21 19:44:10 2025 -0500
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit 7e84e3bdd7b8e8633500d97061a5d1a86c618ac5
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Thu Aug 21 18:14:08 2025 -0500
+
+    Adjust for new LXQt OS image names
+
 commit ee109682c5584b9794f387681d68c3de83152893
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Aug 20 08:42:23 2025 -0400
