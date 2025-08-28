@@ -1,0 +1,1645 @@
+Package: dist-general-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: dracut,
+ systemd-cryptsetup,
+ apparmor-profile-dist,
+ apt-transport-tor,
+ apt-utils,
+ bootclockrandomization,
+ ca-certificates,
+ desktop-config-dist,
+ dialog,
+ dist-base-files,
+ gawk,
+ init,
+ initializer-dist,
+ locales,
+ menu,
+ repository-dist,
+ sdwdate,
+ security-misc,
+ setup-dist,
+ sudo,
+ timesanitycheck,
+ usbguard,
+ usrmerge,
+ apparmor-profiles-kicksecure | dummy-dependency-apparmor-profiles-kicksecure,
+ apparmor-utils,
+ bash-completion,
+ boot-info-script,
+ btrfs-progs,
+ bzip2,
+ curl,
+ debian-keyring,
+ dbus-user-session,
+ distro-info-data,
+ bind9-dnsutils | dnsutils,
+ e2fsprogs,
+ eject,
+ file,
+ haveged,
+ hunspell-en-us,
+ iotop,
+ iproute2,
+ iputils-ping,
+ jitterentropy-rngd,
+ less,
+ libblockdev-crypto3,
+ libpam-tmpdir,
+ lsof,
+ man-db,
+ mesa-utils,
+ most,
+ nano,
+ net-tools,
+ open-link-confirmation,
+ openvpn,
+ 7zip,
+ pciutils,
+ pcmciautils,
+ procps,
+ secure-delete,
+ sensible-utils,
+ strace,
+ sysfsutils,
+ systemcheck,
+ torsocks,
+ traceroute,
+ udisks2,
+ unar,
+ unzip,
+ usability-misc,
+ usbutils,
+ vim,
+ xz-utils,
+ zip,
+ codecrypt,
+ diceware,
+ dirmngr,
+ equivs,
+ extrepo,
+ fuse,
+ gpg,
+ gpg-agent,
+ magic-wormhole,
+ makepasswd,
+ pwgen,
+ ${misc:Depends}
+Breaks: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
+Replaces: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
+Description: All systems, all hardware, command-line packages
+ For all hardened systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: dist-general-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, all hardware, server packages
+ For all hardened systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for server installations.
+
+Package: dist-general-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: desktop-config-dist,
+ desktop-config-dist-dependencies,
+ gtk2-engines-pixbuf,
+ libgl1-mesa-dri,
+ mesa-vulkan-drivers,
+ upower,
+ labwc,
+ lxqt-policykit,
+ xdg-desktop-portal,
+ browser-choice | dummy-dependency,
+ catfish,
+ electrum | dummy-dependency-electrum,
+ flatpak,
+ keepassxc,
+ kicksecure-welcome-page,
+ msgcollector-gui,
+ repository-dist-wizard,
+ lximage-qt,
+ sdwdate-gui,
+ setup-wizard-dist,
+ vlc,
+ ${misc:Depends}
+Breaks: kicksecure-desktop-environment-essential-gui, kicksecure-desktop-applications-recommended
+Replaces: kicksecure-desktop-environment-essential-gui, kicksecure-desktop-applications-recommended
+Description: All systems, all hardware, GUI packages
+ For all hardened systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: dist-general-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: accountsservice,
+ dummy-dependency-sway,
+ featherpad,
+ gnome-keyring,
+ greetd,
+ lximage-qt,
+ lxqt-about,
+ lxqt-admin,
+ lxqt-archiver,
+ lxqt-core,
+ lxqt-openssh-askpass,
+ lxqt-powermanagement,
+ lxqt-sudo,
+ lxqt-wayland-session,
+ network-manager-gnome,
+ papirus-icon-theme,
+ pavucontrol-qt,
+ qps,
+ qt6-svg-plugins,
+ qt6-translations-l10n,
+ qt6-wayland,
+ qterminal,
+ swaybg,
+ wdisplays,
+ wlgreet,
+ xdg-desktop-portal-gtk,
+ xdg-desktop-portal-lxqt,
+ gvfs,
+ pkexec,
+ polkitd,
+ swayidle,
+ swaylock,
+ sysmaint-panel,
+ pcmanfm-qt,
+ ddrescueview,
+ discover,
+ gddrescue,
+ grub-live-dracut | grub-live-boot | boot-live,
+ gsmartcontrol,
+ htop,
+ hwinfo,
+ icon-pack-dist,
+ laptop-detect,
+ lm-sensors,
+ lshw,
+ nvme-cli,
+ psensor,
+ partitionmanager,
+ pv,
+ screengrab,
+ sdwdate-gui,
+ smart-notifier,
+ smartmontools,
+ ${misc:Depends}
+Breaks: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
+Replaces: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
+Description: All systems, all hardware, LXQt GUI packages
+ For all hardened systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: dist-qubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, Qubes VMs, command-line packages
+ For all hardened systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: dist-qubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, Qubes VMs, server packages
+ For all hardened systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: dist-qubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, Qubes VMs, GUI packages
+ For all hardened systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: dist-qubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, Qubes VMs, LXQt GUI packages
+ For all hardened systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: dist-nonqubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: acpi-support,
+ console-common,
+ console-setup,
+ cryptsetup,
+ dmsetup,
+ grub-live-dracut | grub-live-boot | boot-live,
+ kbd,
+ keyboard-configuration,
+ swap-file-creator,
+ tirdad,
+ udev,
+ ${misc:Depends}
+Breaks: non-qubes-enhancements-cli
+Replaces: non-qubes-enhancements-cli
+Description: All systems, not Qubes VMs, command-line packages
+ For all hardened systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: dist-nonqubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, not Qubes VMs, server packages
+ For all hardened systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: dist-nonqubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: rads,
+ waybar,
+ libasound2t64,
+ pavucontrol-qt,
+ pipewire-audio | pulseaudio,
+ pipewire-pulse | pulseaudio,
+ rtkit | pulseaudio,
+ wireplumber | pulseaudio,
+ ${misc:Depends}
+Breaks: non-qubes-enhancements-gui, non-qubes-audio
+Replaces: non-qubes-enhancements-gui, non-qubes-audio
+Description: All systems, not Qubes VMs, GUI packages
+ For all hardened systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: dist-nonqubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, not Qubes VMs, LXQt GUI packages
+ For all hardened systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: dist-baremetal-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, physical hardware, command-line packages
+ For all hardened systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: dist-baremetal-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, physical hardware, server packages
+ For all hardened systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for server installations.
+
+Package: dist-baremetal-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, physical hardware, GUI packages
+ For all hardened systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: dist-baremetal-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, physical hardware, LXQt GUI packages
+ For all hardened systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: dist-vm-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, VMs, command-line packages
+ For all hardened systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: dist-vm-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, VMs, server packages
+ For all hardened systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: dist-vm-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, VMs, GUI packages
+ For all hardened systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: dist-vm-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: All systems, VMs, LXQt GUI packages
+ For all hardened systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: kicksecure-general-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: anon-apt-sources-list,
+ dosfstools,
+ kicksecure-base-files,
+ lvm2,
+ ntfs-3g,
+ obfs4proxy,
+ ${misc:Depends}
+Breaks: kicksecure-cli
+Replaces: kicksecure-cli
+Description: Kicksecure systems, all hardware, command-line packages
+ For Kicksecure systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: kicksecure-general-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, all hardware, server packages
+ For Kicksecure systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for server installations.
+
+Package: kicksecure-general-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, all hardware, GUI packages
+ For Kicksecure systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: kicksecure-general-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Breaks: kicksecure-lxqt
+Replaces: kicksecure-lxqt
+Description: Kicksecure systems, all hardware, LXQt GUI packages
+ For Kicksecure systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: kicksecure-qubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: qubes-core-agent-networking,
+ qubes-input-proxy-sender,
+ qubes-kernel-vm-support,
+ qubes-usb-proxy,
+ ${misc:Depends}
+Description: Kicksecure systems, Qubes VMs, command-line packages
+ For Kicksecure systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: kicksecure-qubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-qubes-cli,
+ kicksecure-general-server,
+ kicksecure-general-cli,
+ dist-qubes-server,
+ dist-qubes-cli,
+ dist-general-server,
+ dist-general-cli
+Description: Kicksecure systems, Qubes VMs, server packages
+ For Kicksecure systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: kicksecure-qubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, Qubes VMs, GUI packages
+ For Kicksecure systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: kicksecure-qubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-qubes-gui-all,
+ kicksecure-qubes-cli,
+ kicksecure-general-gui-lxqt,
+ kicksecure-general-gui-all,
+ kicksecure-general-cli,
+ dist-qubes-gui-lxqt,
+ dist-qubes-gui-all,
+ dist-qubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ lxqt-config,
+ qubes-core-agent-thunar,
+ qubes-gpg-split,
+ qubes-gui-agent-lxqt,
+ qubes-img-converter,
+ qubes-pdf-converter,
+ qubesdb-vm,
+ pipewire-qubes | pulseaudio-qubes,
+ pipewire-pulse | pulseaudio-qubes,
+ wireplumber | pulseaudio-qubes,
+ rtkit | pulseaudio-qubes,
+ dbus-user-session,
+ ${misc:Depends}
+Breaks: kicksecure-qubes-gui
+Replaces: kicksecure-qubes-gui
+Description: Kicksecure systems, Qubes VMs, LXQt GUI packages
+ For Kicksecure systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: kicksecure-nonqubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, not Qubes VMs, command-line packages
+ For Kicksecure systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: kicksecure-nonqubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, not Qubes VMs, server packages
+ For Kicksecure systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: kicksecure-nonqubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, not Qubes VMs, GUI packages
+ For Kicksecure systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: kicksecure-nonqubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, not Qubes VMs, LXQt GUI packages
+ For Kicksecure systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: kicksecure-baremetal-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: tirdad,
+ ${misc:Depends}
+Breaks: kicksecure-cli-host, kicksecure-cli-host-packages-recommended
+Replaces: kicksecure-cli-host, kicksecure-cli-host-packages-recommended
+Description: Kicksecure systems, physical hardware, command-line packages
+ For Kicksecure systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: kicksecure-baremetal-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-baremetal-cli,
+ kicksecure-nonqubes-server,
+ kicksecure-nonqubes-cli,
+ kicksecure-general-server,
+ kicksecure-general-cli,
+ dist-baremetal-server,
+ dist-baremetal-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Kicksecure systems, physical hardware, server packages
+ For Kicksecure systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for server installations.
+
+Package: kicksecure-baremetal-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, physical hardware, GUI packages
+ For Kicksecure systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: kicksecure-baremetal-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-baremetal-gui-all,
+ kicksecure-baremetal-cli,
+ kicksecure-nonqubes-gui-lxqt,
+ kicksecure-nonqubes-gui-all,
+ kicksecure-nonqubes-cli,
+ kicksecure-general-gui-lxqt,
+ kicksecure-general-gui-all,
+ kicksecure-general-cli,
+ dist-baremetal-gui-lxqt,
+ dist-baremetal-gui-all,
+ dist-baremetal-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ kicksecure-network-conf,
+ kicksecure-network-conf-gui,
+ ${misc:Depends}
+Breaks: kicksecure-lxqt-host
+Replaces: kicksecure-lxqt-host
+Description: Kicksecure systems, physical hardware, LXQt GUI packages
+ For Kicksecure systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: kicksecure-vm-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-network-conf,
+ vm-config-dist,
+ ${misc:Depends}
+Breaks: kicksecure-cli-vm
+Replaces: kicksecure-cli-vm
+Description: Kicksecure systems, VMs, command-line packages
+ For Kicksecure systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: kicksecure-vm-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-vm-cli,
+ kicksecure-nonqubes-server,
+ kicksecure-nonqubes-cli,
+ kicksecure-general-server,
+ kicksecure-general-cli,
+ dist-vm-server,
+ dist-vm-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli
+Description: Kicksecure systems, VMs, server packages
+ For Kicksecure systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: kicksecure-vm-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Kicksecure systems, VMs, GUI packages
+ For Kicksecure systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: kicksecure-vm-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kicksecure-vm-gui-all,
+ kicksecure-vm-cli,
+ kicksecure-nonqubes-gui-lxqt,
+ kicksecure-nonqubes-gui-all,
+ kicksecure-nonqubes-cli,
+ kicksecure-general-gui-lxqt,
+ kicksecure-general-gui-all,
+ kicksecure-general-cli,
+ dist-vm-gui-lxqt,
+ dist-vm-gui-all,
+ dist-vm-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ kicksecure-network-conf-gui,
+ ${misc:Depends}
+Breaks: kicksecure-lxqt-vm
+Replaces: kicksecure-lxqt-vm
+Description: Kicksecure systems, VMs, LXQt GUI packages
+ For Kicksecure systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-general-cli
+Architecture: all
+Pre-Depends: anon-apps-config, legacy-dist
+Depends: anon-apt-sources-list,
+ dist-base-files,
+ whonix-base-files,
+ whonix-firewall,
+ systemcheck,
+ tor-ctrl,
+ uwt,
+ ${misc:Depends}
+Breaks: whonix-shared-packages-dependencies-cli, whonix-shared-packages-recommended-cli
+Replaces: whonix-shared-packages-dependencies-cli, whonix-shared-packages-recommended-cli
+Description: Whonix systems, all hardware, command-line packages
+ For all Whonix systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-general-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, all hardware, server packages
+ For all Whonix systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for server installations.
+
+Package: whonix-general-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: icon-pack-dist,
+ msgcollector-gui,
+ repository-dist-wizard,
+ sdwdate-gui,
+ setup-wizard-dist,
+ ${misc:Depends}
+Breaks: whonix-shared-default-applications-gui
+Replaces: whonix-shared-default-applications-gui
+Description: Whonix systems, all hardware, GUI packages
+ For all Whonix systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-general-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, all hardware, LXQt GUI packages
+ For all Whonix systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-qubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, Qubes VMs, command-line packages
+ For all Whonix systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-qubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, Qubes VMs, server packages
+ For all Whonix systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-qubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, Qubes VMs, GUI packages
+ For all Whonix systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-qubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, Qubes VMs, LXQt GUI packages
+ For all Whonix systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-nonqubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, not Qubes VMs, command-line packages
+ For all Whonix systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-nonqubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, not Qubes VMs, server packages
+ For all Whonix systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-nonqubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, not Qubes VMs, GUI packages
+ For all Whonix systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-nonqubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, not Qubes VMs, LXQt GUI packages
+ For all Whonix systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-baremetal-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, physical hardware, command-line packages
+ For all Whonix systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-baremetal-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, physical hardware, server packages
+ For all Whonix systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for server installations.
+
+Package: whonix-baremetal-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, physical hardware, GUI packages
+ For all Whonix systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-baremetal-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, physical hardware, LXQt GUI packages
+ For all Whonix systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-vm-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, VMs, command-line packages
+ For all Whonix systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-vm-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, VMs, server packages
+ For all Whonix systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-vm-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, VMs, GUI packages
+ For all Whonix systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-vm-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix systems, VMs, LXQt GUI packages
+ For all Whonix systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-gateway-general-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: anon-gw-anonymizer-config,
+ anon-gw-base-files,
+ basez,
+ nyx,
+ obfs4proxy,
+ onion-grater,
+ snowflake-client,
+ tor,
+ tor-geoipdb,
+ whonix-gateway-packages-dependencies-pre,
+ ${misc:Depends}
+Breaks: whonix-gateway-packages-dependencies-cli
+Replaces: whonix-gateway-packages-dependencies-cli
+Description: Whonix-Gateway systems, all hardware, command-line packages
+ For Whonix-Gateway systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-gateway-general-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, all hardware, server packages
+ For Whonix-Gateway systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for server installations.
+
+Package: whonix-gateway-general-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: anon-connection-wizard,
+ onioncircuits,
+ tor-control-panel,
+ ${misc:Depends}
+Breaks: whonix-gateway-default-applications-gui, whonix-gateway-shared-packages-shared-meta
+Replaces: whonix-gateway-default-applications-gui, whonix-gateway-shared-packages-shared-meta
+Description: Whonix-Gateway systems, all hardware, GUI packages
+ For Whonix-Gateway systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-gateway-general-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, all hardware, LXQt GUI packages
+ For Whonix-Gateway systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-gateway-qubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, Qubes VMs, command-line packages
+ For Whonix-Gateway systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-gateway-qubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-qubes-cli,
+ whonix-gateway-general-server,
+ whonix-gateway-general-cli,
+ whonix-qubes-server,
+ whonix-qubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-qubes-server,
+ dist-qubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Gateway systems, Qubes VMs, server packages
+ For Whonix-Gateway systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-gateway-qubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, Qubes VMs, GUI packages
+ For Whonix-Gateway systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-gateway-qubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-qubes-gui-all,
+ whonix-gateway-qubes-cli,
+ whonix-gateway-general-gui-lxqt,
+ whonix-gateway-general-gui-all,
+ whonix-gateway-general-cli,
+ whonix-qubes-gui-lxqt,
+ whonix-qubes-gui-all,
+ whonix-qubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-qubes-gui-lxqt,
+ dist-qubes-gui-all,
+ dist-qubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ qubes-whonix,
+ qubes-whonix-gateway-packages-recommended,
+ qubes-whonix-shared-packages-recommended,
+ vm-config-dist,
+ ${misc:Depends}
+Breaks: qubes-whonix-gateway
+Replaces: qubes-whonix-gateway
+Description: Whonix-Gateway systems, Qubes VMs, LXQt GUI packages
+ For Whonix-Gateway systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-gateway-nonqubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: anon-connection-wizard,
+ vm-config-dist,
+ tor-control-panel,
+ ${misc:Depends}
+Breaks: non-qubes-whonix-gateway-cli
+Replaces: non-qubes-whonix-gateway-cli
+Description: Whonix-Gateway systems, not Qubes VMs, command-line packages
+ For Whonix-Gateway systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-gateway-nonqubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, not Qubes VMs, server packages
+ For Whonix-Gateway systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-gateway-nonqubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, not Qubes VMs, GUI packages
+ For Whonix-Gateway systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-gateway-nonqubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Breaks: non-qubes-whonix-gateway-lxqt
+Replaces: non-qubes-whonix-gateway-lxqt
+Description: Whonix-Gateway systems, not Qubes VMs, LXQt GUI packages
+ For Whonix-Gateway systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-gateway-baremetal-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, physical hardware, command-line packages
+ For Whonix-Gateway systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-gateway-baremetal-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-baremetal-cli,
+ whonix-gateway-nonqubes-server,
+ whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-server,
+ whonix-gateway-general-cli,
+ whonix-baremetal-server,
+ whonix-baremetal-cli,
+ whonix-nonqubes-server,
+ whonix-nonqubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-baremetal-server,
+ dist-baremetal-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Gateway systems, physical hardware, server packages
+ For Whonix-Gateway systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for server installations.
+
+Package: whonix-gateway-baremetal-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, physical hardware, GUI packages
+ For Whonix-Gateway systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-gateway-baremetal-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-baremetal-gui-all,
+ whonix-gateway-baremetal-cli,
+ whonix-gateway-nonqubes-gui-lxqt,
+ whonix-gateway-nonqubes-gui-all,
+ whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-gui-lxqt,
+ whonix-gateway-general-gui-all,
+ whonix-gateway-general-cli,
+ whonix-baremetal-gui-lxqt,
+ whonix-baremetal-gui-all,
+ whonix-baremetal-cli,
+ whonix-nonqubes-gui-lxqt,
+ whonix-nonqubes-gui-all,
+ whonix-nonqubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-baremetal-gui-lxqt,
+ dist-baremetal-gui-all,
+ dist-baremetal-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Gateway systems, physical hardware, LXQt GUI packages
+ For Whonix-Gateway systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-gateway-vm-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, VMs, command-line packages
+ For Whonix-Gateway systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-gateway-vm-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-vm-cli,
+ whonix-gateway-nonqubes-server,
+ whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-server,
+ whonix-gateway-general-cli,
+ whonix-vm-server,
+ whonix-vm-cli,
+ whonix-nonqubes-server,
+ whonix-nonqubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-vm-server,
+ dist-vm-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Gateway systems, VMs, server packages
+ For Whonix-Gateway systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-gateway-vm-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Gateway systems, VMs, GUI packages
+ For Whonix-Gateway systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-gateway-vm-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-gateway-vm-gui-all,
+ whonix-gateway-vm-cli,
+ whonix-gateway-nonqubes-gui-lxqt,
+ whonix-gateway-nonqubes-gui-all,
+ whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-gui-lxqt,
+ whonix-gateway-general-gui-all,
+ whonix-gateway-general-cli,
+ whonix-vm-gui-lxqt,
+ whonix-vm-gui-all,
+ whonix-vm-cli,
+ whonix-nonqubes-gui-lxqt,
+ whonix-nonqubes-gui-all,
+ whonix-nonqubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-vm-gui-lxqt,
+ dist-vm-gui-all,
+ dist-vm-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Gateway systems, VMs, LXQt GUI packages
+ For Whonix-Gateway systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-workstation-general-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: anon-ws-base-files,
+ whonix-workstation-packages-dependencies-pre,
+ anon-ws-disable-stacked-tor,
+ bindp | dummy-dependency-bindp,
+ ${misc:Depends}
+Breaks: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
+Replaces: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
+Description: Whonix-Workstation systems, all hardware, command-line packages
+ For Whonix-Workstation systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-workstation-general-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, all hardware, server packages
+ For Whonix-Workstation systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for server installations.
+
+Package: whonix-workstation-general-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: catfish,
+ electrum | dummy-dependency-electrum,
+ flatpak,
+ ffmpeg,
+ gnome-keyring,
+ keepassxc,
+ lximage-qt,
+ mat2,
+ metadata-cleaner,
+ pinentry-qt | pinentry-x11,
+ tb-starter | dummy-dependency,
+ tb-updater | dummy-dependency,
+ vlc,
+ whonix-welcome-page,
+ xpdf,
+ yt-dlp,
+ ${misc:Depends}
+Breaks: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
+Replaces: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
+Description: Whonix-Workstation systems, all hardware, GUI packages
+ For Whonix-Workstation systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-workstation-general-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
+ For Whonix-Workstation systems.
+ .
+ For all hardware platforms.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-workstation-qubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, Qubes VMs, command-line packages
+ For Whonix-Workstation systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-workstation-qubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-qubes-cli,
+ whonix-workstation-general-server,
+ whonix-workstation-general-cli,
+ whonix-qubes-server,
+ whonix-qubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-qubes-server,
+ dist-qubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Workstation systems, Qubes VMs, server packages
+ For Whonix-Workstation systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-workstation-qubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, Qubes VMs, GUI packages
+ For Whonix-Workstation systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-workstation-qubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-qubes-gui-all,
+ whonix-workstation-qubes-cli,
+ whonix-workstation-general-gui-lxqt,
+ whonix-workstation-general-gui-all,
+ whonix-workstation-general-cli,
+ whonix-qubes-gui-lxqt,
+ whonix-qubes-gui-all,
+ whonix-qubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-qubes-gui-lxqt,
+ dist-qubes-gui-all,
+ dist-qubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ qubes-whonix,
+ qubes-whonix-shared-packages-recommended,
+ qubes-whonix-workstation-packages-recommended,
+ vm-config-dist,
+ ${misc:Depends}
+Breaks: qubes-whonix-workstation
+Replaces: qubes-whonix-workstation
+Description: Whonix-Workstation systems, Qubes VMs, LXQt GUI packages
+ For Whonix-Workstation systems.
+ .
+ For Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-workstation-nonqubes-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: kloak | dummy-dependency-kloak,
+ vm-config-dist,
+ ${misc:Depends}
+Breaks: non-qubes-whonix-workstation-cli
+Replaces: non-qubes-whonix-workstation-cli
+Description: Whonix-Workstation systems, not Qubes VMs, command-line packages
+ For Whonix-Workstation systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-workstation-nonqubes-server
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, not Qubes VMs, server packages
+ For Whonix-Workstation systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-workstation-nonqubes-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, not Qubes VMs, GUI packages
+ For Whonix-Workstation systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-workstation-nonqubes-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Breaks: non-qubes-whonix-workstation-lxqt
+Replaces: non-qubes-whonix-workstation-lxqt
+Description: Whonix-Workstation systems, not Qubes VMs, LXQt GUI packages
+ For Whonix-Workstation systems.
+ .
+ For machines other than Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-workstation-baremetal-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, physical hardware, command-line packages
+ For Whonix-Workstation systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-workstation-baremetal-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-baremetal-cli,
+ whonix-workstation-nonqubes-server,
+ whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-server,
+ whonix-workstation-general-cli,
+ whonix-baremetal-server,
+ whonix-baremetal-cli,
+ whonix-nonqubes-server,
+ whonix-nonqubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-baremetal-server,
+ dist-baremetal-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Workstation systems, physical hardware, server packages
+ For Whonix-Workstation systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for server installations.
+
+Package: whonix-workstation-baremetal-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, physical hardware, GUI packages
+ For Whonix-Workstation systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-workstation-baremetal-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-baremetal-gui-all,
+ whonix-workstation-baremetal-cli,
+ whonix-workstation-nonqubes-gui-lxqt,
+ whonix-workstation-nonqubes-gui-all,
+ whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-gui-lxqt,
+ whonix-workstation-general-gui-all,
+ whonix-workstation-general-cli,
+ whonix-baremetal-gui-lxqt,
+ whonix-baremetal-gui-all,
+ whonix-baremetal-cli,
+ whonix-nonqubes-gui-lxqt,
+ whonix-nonqubes-gui-all,
+ whonix-nonqubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-baremetal-gui-lxqt,
+ dist-baremetal-gui-all,
+ dist-baremetal-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Workstation systems, physical hardware, LXQt GUI packages
+ For Whonix-Workstation systems.
+ .
+ For physical hardware.
+ .
+ Provides packages for LXQt graphical desktop installations.
+
+Package: whonix-workstation-vm-cli
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, VMs, command-line packages
+ For Whonix-Workstation systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for basic command-line-only installations.
+
+Package: whonix-workstation-vm-server
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-vm-cli,
+ whonix-workstation-nonqubes-server,
+ whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-server,
+ whonix-workstation-general-cli,
+ whonix-vm-server,
+ whonix-vm-cli,
+ whonix-nonqubes-server,
+ whonix-nonqubes-cli,
+ whonix-general-server,
+ whonix-general-cli,
+ dist-vm-server,
+ dist-vm-cli,
+ dist-nonqubes-server,
+ dist-nonqubes-cli,
+ dist-general-server,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Workstation systems, VMs, server packages
+ For Whonix-Workstation systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for server installations.
+
+Package: whonix-workstation-vm-gui-all
+Architecture: all
+Pre-Depends: legacy-dist
+Description: Whonix-Workstation systems, VMs, GUI packages
+ For Whonix-Workstation systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for all graphical desktop installations.
+
+Package: whonix-workstation-vm-gui-lxqt
+Architecture: all
+Pre-Depends: legacy-dist
+Depends: whonix-workstation-vm-gui-all,
+ whonix-workstation-vm-cli,
+ whonix-workstation-nonqubes-gui-lxqt,
+ whonix-workstation-nonqubes-gui-all,
+ whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-gui-lxqt,
+ whonix-workstation-general-gui-all,
+ whonix-workstation-general-cli,
+ whonix-vm-gui-lxqt,
+ whonix-vm-gui-all,
+ whonix-vm-cli,
+ whonix-nonqubes-gui-lxqt,
+ whonix-nonqubes-gui-all,
+ whonix-nonqubes-cli,
+ whonix-general-gui-lxqt,
+ whonix-general-gui-all,
+ whonix-general-cli,
+ dist-vm-gui-lxqt,
+ dist-vm-gui-all,
+ dist-vm-cli,
+ dist-nonqubes-gui-lxqt,
+ dist-nonqubes-gui-all,
+ dist-nonqubes-cli,
+ dist-general-gui-lxqt,
+ dist-general-gui-all,
+ dist-general-cli,
+ ${misc:Depends}
+Description: Whonix-Workstation systems, VMs, LXQt GUI packages
+ For Whonix-Workstation systems.
+ .
+ For non-Qubes virtual machines.
+ .
+ Provides packages for LXQt graphical desktop installations.
