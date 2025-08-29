@@ -88,6 +88,7 @@ Depends: dracut,
  dmsetup,
  udev,
  anon-apt-sources-list,
+ tor,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
 Replaces: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
@@ -396,7 +397,6 @@ Depends: dosfstools,
  ntfs-3g,
  obfs4proxy,
  gddrescue,
- tor,
  ${misc:Depends}
 Breaks: kicksecure-cli
 Replaces: kicksecure-cli
@@ -935,7 +935,6 @@ Depends: anon-gw-anonymizer-config,
  obfs4proxy,
  onion-grater,
  snowflake-client,
- tor,
  tor-geoipdb,
  whonix-gateway-packages-dependencies-pre,
  ${misc:Depends}
