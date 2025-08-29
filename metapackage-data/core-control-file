@@ -8,7 +8,6 @@ Depends: dracut,
  apt-utils,
  bootclockrandomization,
  ca-certificates,
- desktop-config-dist,
  dialog,
  dist-base-files,
  gawk,
@@ -49,11 +48,9 @@ Depends: dracut,
  libpam-tmpdir,
  lsof,
  man-db,
- mesa-utils,
  most,
  nano,
  net-tools,
- open-link-confirmation,
  openvpn,
  7zip,
  pciutils,
@@ -85,6 +82,12 @@ Depends: dracut,
  magic-wormhole,
  makepasswd,
  pwgen,
+ htop,
+ pv,
+ cryptsetup,
+ dmsetup,
+ udev,
+ anon-apt-sources-list,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
 Replaces: kicksecure-dependencies-system, kicksecure-dependencies-cli, kicksecure-recommended-cli, kicksecure-default-applications-cli
@@ -115,20 +118,19 @@ Depends: desktop-config-dist,
  mesa-vulkan-drivers,
  upower,
  labwc,
- lxqt-policykit,
+ mate-polkit,
  xdg-desktop-portal,
- browser-choice | dummy-dependency,
  catfish,
  electrum | dummy-dependency-electrum,
- flatpak,
- keepassxc,
- kicksecure-welcome-page,
  msgcollector-gui,
  repository-dist-wizard,
- lximage-qt,
  sdwdate-gui,
  setup-wizard-dist,
- vlc,
+ mesa-utils,
+ open-link-confirmation,
+ accountsservice,
+ icon-pack-dist,
+ libasound2t64,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-gui, kicksecure-desktop-applications-recommended
 Replaces: kicksecure-desktop-environment-essential-gui, kicksecure-desktop-applications-recommended
@@ -142,23 +144,18 @@ Description: All systems, all hardware, GUI packages
 Package: dist-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: accountsservice,
- dummy-dependency-sway,
+Depends: dummy-dependency-sway,
  featherpad,
  gnome-keyring,
  greetd,
- lximage-qt,
  lxqt-about,
  lxqt-admin,
- lxqt-archiver,
  lxqt-core,
  lxqt-openssh-askpass,
  lxqt-powermanagement,
  lxqt-sudo,
  lxqt-wayland-session,
- network-manager-gnome,
  papirus-icon-theme,
- pavucontrol-qt,
  qps,
  qt6-svg-plugins,
  qt6-translations-l10n,
@@ -172,29 +169,18 @@ Depends: accountsservice,
  gvfs,
  pkexec,
  polkitd,
- swayidle,
- swaylock,
  sysmaint-panel,
  pcmanfm-qt,
- ddrescueview,
  discover,
- gddrescue,
  grub-live-dracut | grub-live-boot | boot-live,
- gsmartcontrol,
- htop,
  hwinfo,
- icon-pack-dist,
  laptop-detect,
  lm-sensors,
  lshw,
- nvme-cli,
  psensor,
  partitionmanager,
- pv,
  screengrab,
- sdwdate-gui,
  smart-notifier,
- smartmontools,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
 Replaces: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
@@ -208,6 +194,13 @@ Description: All systems, all hardware, LXQt GUI packages
 Package: dist-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-core-agent-networking,
+ qubes-input-proxy-sender,
+ qubes-kernel-vm-support,
+ qubes-usb-proxy,
+ qubesdb-vm,
+ vm-config-dist,
+ ${misc:Depends}
 Description: All systems, Qubes VMs, command-line packages
  For all hardened systems.
  .
@@ -238,6 +231,9 @@ Description: All systems, Qubes VMs, GUI packages
 Package: dist-qubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: lxqt-config,
+ qubes-core-agent-thunar,
+ ${misc:Depends}
 Description: All systems, Qubes VMs, LXQt GUI packages
  For all hardened systems.
  .
@@ -251,14 +247,12 @@ Pre-Depends: legacy-dist
 Depends: acpi-support,
  console-common,
  console-setup,
- cryptsetup,
- dmsetup,
  grub-live-dracut | grub-live-boot | boot-live,
  kbd,
  keyboard-configuration,
  swap-file-creator,
  tirdad,
- udev,
+ smartmontools,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-cli
 Replaces: non-qubes-enhancements-cli
@@ -284,12 +278,7 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: rads,
  waybar,
- libasound2t64,
- pavucontrol-qt,
- pipewire-audio | pulseaudio,
- pipewire-pulse | pulseaudio,
- rtkit | pulseaudio,
- wireplumber | pulseaudio,
+ gsmartcontrol,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-gui, non-qubes-audio
 Replaces: non-qubes-enhancements-gui, non-qubes-audio
@@ -303,6 +292,9 @@ Description: All systems, not Qubes VMs, GUI packages
 Package: dist-nonqubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: swayidle,
+ swaylock,
+ ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.
  .
@@ -313,6 +305,9 @@ Description: All systems, not Qubes VMs, LXQt GUI packages
 Package: dist-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: nvme-cli,
+ tirdad,
+ ${misc:Depends}
 Description: All systems, physical hardware, command-line packages
  For all hardened systems.
  .
@@ -353,6 +348,8 @@ Description: All systems, physical hardware, LXQt GUI packages
 Package: dist-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: vm-config-dist,
+ ${misc:Depends}
 Description: All systems, VMs, command-line packages
  For all hardened systems.
  .
@@ -393,12 +390,13 @@ Description: All systems, VMs, LXQt GUI packages
 Package: kicksecure-general-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: anon-apt-sources-list,
- dosfstools,
+Depends: dosfstools,
  kicksecure-base-files,
  lvm2,
  ntfs-3g,
  obfs4proxy,
+ gddrescue,
+ tor,
  ${misc:Depends}
 Breaks: kicksecure-cli
 Replaces: kicksecure-cli
@@ -422,6 +420,18 @@ Description: Kicksecure systems, all hardware, server packages
 Package: kicksecure-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: browser-choice | dummy-dependency,
+ flatpak,
+ keepassxc,
+ kicksecure-welcome-page,
+ lximage-qt,
+ vlc,
+ ddrescueview,
+ pipewire-audio | pulseaudio,
+ pipewire-pulse | pulseaudio,
+ wireplumber | pulseaudio,
+ rtkit | pulseaudio,
+ ${misc:Depends}
 Description: Kicksecure systems, all hardware, GUI packages
  For Kicksecure systems.
  .
@@ -432,6 +442,10 @@ Description: Kicksecure systems, all hardware, GUI packages
 Package: kicksecure-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: lxqt-archiver,
+ network-manager-gnome,
+ pavucontrol-qt,
+ ${misc:Depends}
 Breaks: kicksecure-lxqt
 Replaces: kicksecure-lxqt
 Description: Kicksecure systems, all hardware, LXQt GUI packages
@@ -444,10 +458,9 @@ Description: Kicksecure systems, all hardware, LXQt GUI packages
 Package: kicksecure-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-core-agent-networking,
- qubes-input-proxy-sender,
- qubes-kernel-vm-support,
- qubes-usb-proxy,
+Depends: qubes-gpg-split,
+ qubes-img-converter,
+ qubes-pdf-converter,
  ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, command-line packages
  For Kicksecure systems.
@@ -476,6 +489,8 @@ Description: Kicksecure systems, Qubes VMs, server packages
 Package: kicksecure-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: pipewire-qubes,
+ ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, GUI packages
  For Kicksecure systems.
  .
@@ -497,18 +512,6 @@ Depends: kicksecure-qubes-gui-all,
  dist-general-gui-lxqt,
  dist-general-gui-all,
  dist-general-cli,
- lxqt-config,
- qubes-core-agent-thunar,
- qubes-gpg-split,
- qubes-gui-agent-lxqt,
- qubes-img-converter,
- qubes-pdf-converter,
- qubesdb-vm,
- pipewire-qubes | pulseaudio-qubes,
- pipewire-pulse | pulseaudio-qubes,
- wireplumber | pulseaudio-qubes,
- rtkit | pulseaudio-qubes,
- dbus-user-session,
  ${misc:Depends}
 Breaks: kicksecure-qubes-gui
 Replaces: kicksecure-qubes-gui
@@ -522,6 +525,8 @@ Description: Kicksecure systems, Qubes VMs, LXQt GUI packages
 Package: kicksecure-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: kicksecure-network-conf,
+ ${misc:Depends}
 Description: Kicksecure systems, not Qubes VMs, command-line packages
  For Kicksecure systems.
  .
@@ -542,6 +547,8 @@ Description: Kicksecure systems, not Qubes VMs, server packages
 Package: kicksecure-nonqubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: kicksecure-network-conf-gui,
+ ${misc:Depends}
 Description: Kicksecure systems, not Qubes VMs, GUI packages
  For Kicksecure systems.
  .
@@ -562,8 +569,6 @@ Description: Kicksecure systems, not Qubes VMs, LXQt GUI packages
 Package: kicksecure-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: tirdad,
- ${misc:Depends}
 Breaks: kicksecure-cli-host, kicksecure-cli-host-packages-recommended
 Replaces: kicksecure-cli-host, kicksecure-cli-host-packages-recommended
 Description: Kicksecure systems, physical hardware, command-line packages
@@ -625,8 +630,6 @@ Depends: kicksecure-baremetal-gui-all,
  dist-general-gui-lxqt,
  dist-general-gui-all,
  dist-general-cli,
- kicksecure-network-conf,
- kicksecure-network-conf-gui,
  ${misc:Depends}
 Breaks: kicksecure-lxqt-host
 Replaces: kicksecure-lxqt-host
@@ -640,9 +643,6 @@ Description: Kicksecure systems, physical hardware, LXQt GUI packages
 Package: kicksecure-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: kicksecure-network-conf,
- vm-config-dist,
- ${misc:Depends}
 Breaks: kicksecure-cli-vm
 Replaces: kicksecure-cli-vm
 Description: Kicksecure systems, VMs, command-line packages
@@ -703,7 +703,6 @@ Depends: kicksecure-vm-gui-all,
  dist-general-gui-lxqt,
  dist-general-gui-all,
  dist-general-cli,
- kicksecure-network-conf-gui,
  ${misc:Depends}
 Breaks: kicksecure-lxqt-vm
 Replaces: kicksecure-lxqt-vm
@@ -717,11 +716,8 @@ Description: Kicksecure systems, VMs, LXQt GUI packages
 Package: whonix-general-cli
 Architecture: all
 Pre-Depends: anon-apps-config, legacy-dist
-Depends: anon-apt-sources-list,
- dist-base-files,
- whonix-base-files,
+Depends: whonix-base-files,
  whonix-firewall,
- systemcheck,
  tor-ctrl,
  uwt,
  ${misc:Depends}
@@ -747,12 +743,6 @@ Description: Whonix systems, all hardware, server packages
 Package: whonix-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: icon-pack-dist,
- msgcollector-gui,
- repository-dist-wizard,
- sdwdate-gui,
- setup-wizard-dist,
- ${misc:Depends}
 Breaks: whonix-shared-default-applications-gui
 Replaces: whonix-shared-default-applications-gui
 Description: Whonix systems, all hardware, GUI packages
@@ -795,6 +785,9 @@ Description: Whonix systems, Qubes VMs, server packages
 Package: whonix-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-whonix,
+ qubes-whonix-shared-packages-recommended,
+ ${misc:Depends}
 Description: Whonix systems, Qubes VMs, GUI packages
  For all Whonix systems.
  .
@@ -1026,6 +1019,8 @@ Description: Whonix-Gateway systems, Qubes VMs, server packages
 Package: whonix-gateway-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-whonix-shared-packages-recommended,
+ ${misc:Depends}
 Description: Whonix-Gateway systems, Qubes VMs, GUI packages
  For Whonix-Gateway systems.
  .
@@ -1053,10 +1048,6 @@ Depends: whonix-gateway-qubes-gui-all,
  dist-general-gui-lxqt,
  dist-general-gui-all,
  dist-general-cli,
- qubes-whonix,
- qubes-whonix-gateway-packages-recommended,
- qubes-whonix-shared-packages-recommended,
- vm-config-dist,
  ${misc:Depends}
 Breaks: qubes-whonix-gateway
 Replaces: qubes-whonix-gateway
@@ -1070,10 +1061,6 @@ Description: Whonix-Gateway systems, Qubes VMs, LXQt GUI packages
 Package: whonix-gateway-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: anon-connection-wizard,
- vm-config-dist,
- tor-control-panel,
- ${misc:Depends}
 Breaks: non-qubes-whonix-gateway-cli
 Replaces: non-qubes-whonix-gateway-cli
 Description: Whonix-Gateway systems, not Qubes VMs, command-line packages
@@ -1292,6 +1279,10 @@ Depends: anon-ws-base-files,
  whonix-workstation-packages-dependencies-pre,
  anon-ws-disable-stacked-tor,
  bindp | dummy-dependency-bindp,
+ gddrescue,
+ lvm2,
+ ntfs-3g,
+ mat2,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
 Replaces: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
@@ -1317,12 +1308,9 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: catfish,
  electrum | dummy-dependency-electrum,
- flatpak,
  ffmpeg,
- gnome-keyring,
  keepassxc,
  lximage-qt,
- mat2,
  metadata-cleaner,
  pinentry-qt | pinentry-x11,
  tb-starter | dummy-dependency,
@@ -1331,6 +1319,12 @@ Depends: catfish,
  whonix-welcome-page,
  xpdf,
  yt-dlp,
+ flatpak,
+ ddrescueview,
+ pipewire-audio | pulseaudio,
+ pipewire-pulse | pulseaudio,
+ wireplumber | pulseaudio,
+ rtkit | pulseaudio,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
 Replaces: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
@@ -1344,6 +1338,10 @@ Description: Whonix-Workstation systems, all hardware, GUI packages
 Package: whonix-workstation-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: lxqt-archiver,
+ pavucontrol-qt,
+ gnome-keyring,
+ ${misc:Depends}
 Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
  For Whonix-Workstation systems.
  .
@@ -1354,6 +1352,11 @@ Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
 Package: whonix-workstation-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-gpg-split,
+ qubes-img-converter,
+ qubes-pdf-converter,
+ qubes-whonix-workstation-packages-recommended,
+ ${misc:Depends}
 Description: Whonix-Workstation systems, Qubes VMs, command-line packages
  For Whonix-Workstation systems.
  .
@@ -1386,6 +1389,8 @@ Description: Whonix-Workstation systems, Qubes VMs, server packages
 Package: whonix-workstation-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: pipewire-qubes,
+ ${misc:Depends}
 Description: Whonix-Workstation systems, Qubes VMs, GUI packages
  For Whonix-Workstation systems.
  .
@@ -1413,10 +1418,6 @@ Depends: whonix-workstation-qubes-gui-all,
  dist-general-gui-lxqt,
  dist-general-gui-all,
  dist-general-cli,
- qubes-whonix,
- qubes-whonix-shared-packages-recommended,
- qubes-whonix-workstation-packages-recommended,
- vm-config-dist,
  ${misc:Depends}
 Breaks: qubes-whonix-workstation
 Replaces: qubes-whonix-workstation
@@ -1431,7 +1432,6 @@ Package: whonix-workstation-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: kloak | dummy-dependency-kloak,
- vm-config-dist,
  ${misc:Depends}
 Breaks: non-qubes-whonix-workstation-cli
 Replaces: non-qubes-whonix-workstation-cli
