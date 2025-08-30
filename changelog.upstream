@@ -1,3 +1,40 @@
+commit a274046180c965adb6e48e6c2571767c5cfa431e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 30 10:10:29 2025 -0400
+
+    .
+
+commit c9faf80d8d428622d9c2fd4c5dd1c5adbc6e6ad9
+Merge: 744cc40 21f8c31
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Aug 30 07:53:10 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 21f8c316f463bca4eb9a09e2354770db58363a9b
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Aug 29 16:32:17 2025 -0500
+
+    Make Tor universally installed
+
+commit 3b4cc5fd45967d6b08578d190d364443a64c86c8
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Thu Aug 28 22:47:54 2025 -0500
+
+    Metapackage master file audit, move packages to more appropriate metapackages
+
+commit 8adf5e72dab544147ad4afb4093874e5ad6b68f1
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Wed Aug 27 19:34:38 2025 -0500
+
+    dm-metapackage-helper bug fixes, add core control file for metapackages
+
+commit 744cc40b06ae0234491ede577d11e82529c11fa5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Aug 27 19:20:02 2025 +0000
+
+    bumped changelog version
+
 commit b007bd9f7299561426f5cbf0a7e41c74f2c373e0
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Aug 27 15:19:16 2025 -0400
