@@ -1930,6 +1930,10 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
+
+   ## TODO: disable
+   batch_current_package_needs_version_bump=n
+
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       return 0
    fi
