@@ -87,171 +87,6 @@ class Node:
         self.long_description = long_description
         self.dependency_list = dependency_list
 
-
-#########################################
-#### --- METAPACKAGE DEFINITIONS --- ####
-#########################################
-
-## Each group of nodes intended to be placed in the same position of the
-## metapackage name are put inside a containing list, and node_map wraps those
-## containing lists.
-node_map: list[list[Node]] = [
-    [],
-    [],
-    [],
-]
-
-## There doesn't seem to be a nicer way to load objects into a list other than
-## list comprehension which is not useful here. See:
-## https://stackoverflow.com/questions/3182183/how-to-create-a-list-of-objects
-node_map[0].append(Node("dist", "All systems", "For all hardened systems.", []))
-node_map[0].append(
-    Node(
-        "kicksecure",
-        "Kicksecure systems",
-        "For Kicksecure systems.",
-        ["dist"],
-    )
-)
-node_map[0].append(
-    Node("whonix", "Whonix systems", "For all Whonix systems.", ["dist"])
-)
-node_map[0].append(
-    Node(
-        "whonix-gateway",
-        "Whonix-Gateway systems",
-        "For Whonix-Gateway systems.",
-        ["whonix", "dist"],
-    )
-)
-node_map[0].append(
-    Node(
-        "whonix-workstation",
-        "Whonix-Workstation systems",
-        "For Whonix-Workstation systems.",
-        ["whonix", "dist"],
-    )
-)
-
-## ----
-
-node_map[1].append(
-    Node("general", "all hardware", "For all hardware platforms.", [])
-)
-node_map[1].append(
-    Node("qubes", "Qubes VMs", "For Qubes virtual machines.", ["general"])
-)
-node_map[1].append(
-    Node(
-        "nonqubes",
-        "not Qubes VMs",
-        "For machines other than Qubes virtual machines.",
-        ["general"],
-    )
-)
-node_map[1].append(
-    Node(
-        "baremetal",
-        "physical hardware",
-        "For physical hardware.",
-        ["nonqubes", "general"],
-    )
-)
-node_map[1].append(
-    Node(
-        "vm", "VMs", "For non-Qubes virtual machines.", ["nonqubes", "general"]
-    )
-)
-
-## ----
-
-node_map[2].append(
-    Node(
-        "cli",
-        "command-line packages",
-        "Provides packages for basic command-line-only installations.",
-        [],
-    )
-)
-node_map[2].append(
-    Node(
-        "server",
-        "server packages",
-        "Provides packages for server installations.",
-        ["cli"],
-    )
-)
-node_map[2].append(
-    Node(
-        "gui-all",
-        "GUI packages",
-        "Provides packages for all graphical desktop installations.",
-        ["cli"],
-    )
-)
-node_map[2].append(
-    Node(
-        "gui-lxqt",
-        "LXQt GUI packages",
-        "Provides packages for LXQt graphical desktop installations.",
-        ["gui-all", "cli"],
-    )
-)
-
-## Each package listed here is a "parent" metapackage that directly depends on
-## all child metapackages it needs. One metapackage show be defined for each
-## officially supported variant of Kicksecure or Whonix. Each item in the list
-## is a list of nodes corresponding to a package name.
-##
-## N.B.: VirtualBox and KVM both use the *-vm-* parent metapackages.
-parent_metapackage_list: list[list[str]] = [
-    ["kicksecure", "qubes", "server"],
-    ["kicksecure", "qubes", "gui-lxqt"],
-    ["kicksecure", "baremetal", "server"],
-    ["kicksecure", "baremetal", "gui-lxqt"],
-    ["kicksecure", "vm", "server"],
-    ["kicksecure", "vm", "gui-lxqt"],
-    ["whonix-gateway", "qubes", "server"],
-    ["whonix-gateway", "qubes", "gui-lxqt"],
-    ["whonix-gateway", "baremetal", "server"],
-    ["whonix-gateway", "baremetal", "gui-lxqt"],
-    ["whonix-gateway", "vm", "server"],
-    ["whonix-gateway", "vm", "gui-lxqt"],
-    ["whonix-workstation", "qubes", "server"],
-    ["whonix-workstation", "qubes", "gui-lxqt"],
-    ["whonix-workstation", "baremetal", "server"],
-    ["whonix-workstation", "baremetal", "gui-lxqt"],
-    ["whonix-workstation", "vm", "server"],
-    ["whonix-workstation", "vm", "gui-lxqt"],
-]
-
-## The metapackage source headers for Kicksecure and Whonix.
-kicksecure_metapackage_source_header: str = """\
-Source: kicksecure-meta-packages
-Section: metapackages
-Priority: optional
-Maintainer: Patrick Schleizer <adrelanos@kicksecure.com>
-Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
-Homepage: https://github.com/Kicksecure/kicksecure-meta-packages
-Vcs-Browser: https://github.com/Kicksecure/kicksecure-meta-packages
-Vcs-Git: https://github.com/Kicksecure/kicksecure-meta-packages.git
-Standards-Version: 4.7.2
-Rules-Requires-Root: no
-"""
-
-whonix_metapackage_source_header: str = """\
-Source: anon-meta-packages
-Section: metapackages
-Priority: optional
-Maintainer: Patrick Schleizer <adrelanos@whonix.org>
-Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
-Homepage: https://github.com/Whonix/anon-meta-packages
-Vcs-Browser: https://github.com/Whonix/anon-meta-packages
-Vcs-Git: https://github.com/Whonix/anon-meta-packages.git
-Standards-Version: 4.7.2
-Rules-Requires-Root: no
-"""
-
 #########################################
 #### --- NODE HANDLING FUNCTIONS --- ####
 #########################################
@@ -413,6 +248,188 @@ def get_package_list_from_node_map() -> list[list[str]]:
     return result_list
 
 
+def check_package_in_node_map(package_name: str) -> bool:
+    """
+    Determines if a package is or is not defined in the node map.
+    """
+
+    for core_package_nodes in core_package_list:
+        core_package_name = "-".join(core_package_nodes)
+        if package_name == core_package_name:
+            return True
+    return False
+
+
+#########################################
+#### --- METAPACKAGE DEFINITIONS --- ####
+#########################################
+
+## WARNING: This has to come after the node handling functions, as one of the
+## globals declared here is populated by get_package_list_from_node_map().
+
+## Each group of nodes intended to be placed in the same position of the
+## metapackage name are put inside a containing list, and node_map wraps those
+## containing lists.
+node_map: list[list[Node]] = [
+    [],
+    [],
+    [],
+]
+
+## There doesn't seem to be a nicer way to load objects into a list other than
+## list comprehension which is not useful here. See:
+## https://stackoverflow.com/questions/3182183/how-to-create-a-list-of-objects
+node_map[0].append(Node("dist", "All systems", "For all hardened systems.", []))
+node_map[0].append(
+    Node(
+        "kicksecure",
+        "Kicksecure systems",
+        "For Kicksecure systems.",
+        ["dist"],
+    )
+)
+node_map[0].append(
+    Node("whonix", "Whonix systems", "For all Whonix systems.", ["dist"])
+)
+node_map[0].append(
+    Node(
+        "whonix-gateway",
+        "Whonix-Gateway systems",
+        "For Whonix-Gateway systems.",
+        ["whonix", "dist"],
+    )
+)
+node_map[0].append(
+    Node(
+        "whonix-workstation",
+        "Whonix-Workstation systems",
+        "For Whonix-Workstation systems.",
+        ["whonix", "dist"],
+    )
+)
+
+## ----
+
+node_map[1].append(
+    Node("general", "all hardware", "For all hardware platforms.", [])
+)
+node_map[1].append(
+    Node("qubes", "Qubes VMs", "For Qubes virtual machines.", ["general"])
+)
+node_map[1].append(
+    Node(
+        "nonqubes",
+        "not Qubes VMs",
+        "For machines other than Qubes virtual machines.",
+        ["general"],
+    )
+)
+node_map[1].append(
+    Node(
+        "baremetal",
+        "physical hardware",
+        "For physical hardware.",
+        ["nonqubes", "general"],
+    )
+)
+node_map[1].append(
+    Node(
+        "vm", "VMs", "For non-Qubes virtual machines.", ["nonqubes", "general"]
+    )
+)
+
+## ----
+
+node_map[2].append(
+    Node(
+        "cli",
+        "command-line packages",
+        "Provides packages for basic command-line-only installations.",
+        [],
+    )
+)
+node_map[2].append(
+    Node(
+        "server",
+        "server packages",
+        "Provides packages for server installations.",
+        ["cli"],
+    )
+)
+node_map[2].append(
+    Node(
+        "gui-all",
+        "GUI packages",
+        "Provides packages for all graphical desktop installations.",
+        ["cli"],
+    )
+)
+node_map[2].append(
+    Node(
+        "gui-lxqt",
+        "LXQt GUI packages",
+        "Provides packages for LXQt graphical desktop installations.",
+        ["gui-all", "cli"],
+    )
+)
+
+## Each package listed here is a "parent" metapackage that directly depends on
+## all child metapackages it needs. One metapackage show be defined for each
+## officially supported variant of Kicksecure or Whonix. Each item in the list
+## is a list of nodes corresponding to a package name.
+##
+## N.B.: VirtualBox and KVM both use the *-vm-* parent metapackages.
+parent_metapackage_list: list[list[str]] = [
+    ["kicksecure", "qubes", "server"],
+    ["kicksecure", "qubes", "gui-lxqt"],
+    ["kicksecure", "baremetal", "server"],
+    ["kicksecure", "baremetal", "gui-lxqt"],
+    ["kicksecure", "vm", "server"],
+    ["kicksecure", "vm", "gui-lxqt"],
+    ["whonix-gateway", "qubes", "server"],
+    ["whonix-gateway", "qubes", "gui-lxqt"],
+    ["whonix-gateway", "baremetal", "server"],
+    ["whonix-gateway", "baremetal", "gui-lxqt"],
+    ["whonix-gateway", "vm", "server"],
+    ["whonix-gateway", "vm", "gui-lxqt"],
+    ["whonix-workstation", "qubes", "server"],
+    ["whonix-workstation", "qubes", "gui-lxqt"],
+    ["whonix-workstation", "baremetal", "server"],
+    ["whonix-workstation", "baremetal", "gui-lxqt"],
+    ["whonix-workstation", "vm", "server"],
+    ["whonix-workstation", "vm", "gui-lxqt"],
+]
+
+## The metapackage source headers for Kicksecure and Whonix.
+kicksecure_metapackage_source_header: str = """\
+Source: kicksecure-meta-packages
+Section: metapackages
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@kicksecure.com>
+Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
+Homepage: https://github.com/Kicksecure/kicksecure-meta-packages
+Vcs-Browser: https://github.com/Kicksecure/kicksecure-meta-packages
+Vcs-Git: https://github.com/Kicksecure/kicksecure-meta-packages.git
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+"""
+
+whonix_metapackage_source_header: str = """\
+Source: anon-meta-packages
+Section: metapackages
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@whonix.org>
+Build-Depends: debhelper (>= 13), debhelper-compat (= 13)
+Homepage: https://github.com/Whonix/anon-meta-packages
+Vcs-Browser: https://github.com/Whonix/anon-meta-packages
+Vcs-Git: https://github.com/Whonix/anon-meta-packages.git
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+"""
+
+core_package_list: list[list[str]] = get_package_list_from_node_map()
+
+
 ################################################
 #### --- CONTROL FILE HANDLING ROUTINES --- ####
 ################################################
@@ -436,7 +453,6 @@ def control_data_entry_idx(
 
 
 def add_metapackages_to_control_data(
-    core_package_list: list[list[str]],
     master_control_data: list[Deb822],
     final_control_data: list[Deb822],
     control_data_dist: DistId,
@@ -463,8 +479,16 @@ def add_metapackages_to_control_data(
 
         new_deb822["Package"] = "-".join(core_package)
         new_deb822["Architecture"] = "all"
-        ## FIXME: Pre-Depends might not only contain legacy-dist!
-        new_deb822["Pre-Depends"] = "legacy-dist"
+
+        ## Add legacy-dist to Pre-Depends if it isn't already
+        pre_depends_list: list[str] = []
+        if "Pre-Depends" in new_deb822:
+            pre_depends_list.extend(
+                [x.strip() for x in new_deb822["Pre-Depends"].split(",")]
+            )
+        if "legacy-dist" not in pre_depends_list:
+            pre_depends_list.append("legacy_dist")
+        new_deb822["Pre-Depends"] = ",\n ".join(pre_depends_list)
 
         if is_master_metapackage(core_package):
             depends_list: list[str] = []
@@ -473,10 +497,8 @@ def add_metapackages_to_control_data(
                     [x.strip() for x in new_deb822["Depends"].split(",")]
                 )
             for depends_item in copy.copy(depends_list):
-                for first_node in node_map[0]:
-                    if depends_item.startswith(first_node.name + "-"):
-                        depends_list.remove(depends_item)
-                        break
+                if check_package_in_node_map(depends_item):
+                    depends_list.remove(depends_item)
 
             new_depends_list: list[str] = [
                 "-".join(x) for x in get_dependencies_for_package(core_package)
@@ -542,17 +564,13 @@ def update_master_control_data(
     ## packages. The source control file headers are not present in the master
     ## data by design.
 
-    core_package_list: list[list[str]] = get_package_list_from_node_map()
-
     final_control_data: list[Deb822] = []
     add_metapackages_to_control_data(
-        core_package_list,
         master_control_data,
         final_control_data,
         control_data_dist=DistId.KICKSECURE,
     )
     add_metapackages_to_control_data(
-        core_package_list,
         master_control_data,
         final_control_data,
         control_data_dist=DistId.WHONIX,
@@ -605,9 +623,8 @@ def extract_non_standard_packages(
         if not "Package" in orig_control_deb822:
             ## This isn't a binary package stanza, skip it
             continue
-        for first_node in node_map[0]:
-            if orig_control_deb822["Package"].startswith(first_node.name + "-"):
-                continue
+        if check_package_in_node_map(orig_control_deb822["Package"]):
+            continue
         dest_control_data.append(orig_control_deb822)
 
 
