@@ -2366,10 +2366,7 @@ batch_meta_qubes_whonix_only='n'
 batch_meta_relative_file_name=''
 batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
-
 batch_meta_force_version_bump='n'
-## TODO: remove!
-batch_meta_force_version_bump='y'
 
 declare -A -g batch_meta_file_header_done_list
 batch_run_counter=0
