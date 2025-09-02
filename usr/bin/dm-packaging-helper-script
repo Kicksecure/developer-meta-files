@@ -1827,7 +1827,11 @@ pkg_need_version_bump_show() {
    last_log_entry="$(git log --format=%s -1)"
 
    if [ 'bumped changelog version' = "${last_log_entry}" ]; then
-      return 0
+      if [ "$batch_meta_force_version_bump" = "y" ]; then
+         true "Forced version bump."
+      else
+         return 0
+      fi
    fi
 
    git_status_last_line="$(git status | tail -n1)"
@@ -1938,9 +1942,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    ## sets: batch_current_package_needs_version_bump
    pkg_need_version_bump_show
 
-   ## TODO: disable
-   batch_current_package_needs_version_bump=y
-
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       return 0
    fi
@@ -1955,9 +1956,6 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    ## sets: needs_version_bump
    pkg_need_version_bump_do
-
-   ## TODO: disable
-   batch_current_package_needs_version_bump=y
 
    if [ ! "${batch_current_package_needs_version_bump}" = 'y' ]; then
       printf "%s\n" "${red}${bold}FATAL ERROR: batch_current_package_needs_version_bump before true but now not!?${reset}"
@@ -2368,6 +2366,11 @@ batch_meta_qubes_whonix_only='n'
 batch_meta_relative_file_name=''
 batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
+
+batch_meta_force_version_bump='n'
+## TODO: remove!
+batch_meta_force_version_bump='y'
+
 declare -A -g batch_meta_file_header_done_list
 batch_run_counter=0
 git_pid_list_str=''
