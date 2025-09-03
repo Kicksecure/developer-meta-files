@@ -11,6 +11,7 @@ Depends: dracut,
  dialog,
  dist-base-files,
  gawk,
+ gpg,
  init,
  initializer-dist,
  locales,
@@ -64,7 +65,6 @@ Depends: dracut,
  torsocks,
  traceroute,
  udisks2,
- unar,
  unzip,
  usability-misc,
  usbutils,
@@ -79,7 +79,6 @@ Depends: dracut,
  fuse,
  gpg,
  gpg-agent,
- magic-wormhole,
  makepasswd,
  pwgen,
  htop,
@@ -119,10 +118,9 @@ Depends: desktop-config-dist,
  mesa-vulkan-drivers,
  upower,
  labwc,
+ libfuse2t64,
  mate-polkit,
  xdg-desktop-portal,
- catfish,
- electrum | dummy-dependency-electrum,
  msgcollector-gui,
  repository-dist-wizard,
  sdwdate-gui,
@@ -179,9 +177,10 @@ Depends: dummy-dependency-sway,
  lm-sensors,
  lshw,
  psensor,
- partitionmanager,
+ gparted,
  screengrab,
  smart-notifier,
+ lxqt-archiver,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
 Replaces: kicksecure-desktop-environment-essential-lxqt, kicksecure-desktop-applications-lxqt, kicksecure-shared-host-lxqt
@@ -431,6 +430,8 @@ Depends: browser-choice | dummy-dependency,
  pipewire-pulse | pulseaudio,
  wireplumber | pulseaudio,
  rtkit | pulseaudio,
+ catfish,
+ electrum | dummy-dependency-electrum,
  ${misc:Depends}
 Description: Kicksecure systems, all hardware, GUI packages
  For Kicksecure systems.
@@ -442,8 +443,8 @@ Description: Kicksecure systems, all hardware, GUI packages
 Package: kicksecure-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: lxqt-archiver,
- network-manager-gnome,
+Depends: network-manager-applet,
+ nm-connection-editor,
  pavucontrol-qt,
  ${misc:Depends}
 Breaks: kicksecure-lxqt
@@ -1281,7 +1282,6 @@ Depends: anon-ws-base-files,
  gddrescue,
  lvm2,
  ntfs-3g,
- mat2,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
 Replaces: whonix-workstation-packages-dependencies-cli, whonix-workstation-packages-recommended-cli
@@ -1324,6 +1324,8 @@ Depends: catfish,
  pipewire-pulse | pulseaudio,
  wireplumber | pulseaudio,
  rtkit | pulseaudio,
+ catfish,
+ mat2,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
 Replaces: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
@@ -1337,8 +1339,7 @@ Description: Whonix-Workstation systems, all hardware, GUI packages
 Package: whonix-workstation-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: lxqt-archiver,
- pavucontrol-qt,
+Depends: pavucontrol-qt,
  gnome-keyring,
  ${misc:Depends}
 Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
