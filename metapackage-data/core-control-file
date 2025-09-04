@@ -117,7 +117,6 @@ Depends: desktop-config-dist,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
  upower,
- labwc,
  libfuse2t64,
  mate-polkit,
  xdg-desktop-portal,
@@ -277,6 +276,7 @@ Package: dist-nonqubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: rads,
+ labwc,
  waybar,
  gsmartcontrol,
  ${misc:Depends}
