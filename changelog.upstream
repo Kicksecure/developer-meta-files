@@ -1,3 +1,15 @@
+commit c79dbf8d166b8ad4fa2b66e155603fb83c9817cb
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Sep 4 10:06:18 2025 -0400
+
+    remove duplication
+
+commit 5c9958c898cde4d97f70222dc79bcc8ba8d8bd02
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Sep 4 13:33:21 2025 +0000
+
+    bumped changelog version
+
 commit 1d94e25468527b5e83e761f8dc9fb9cda4bdf8a0
 Merge: 07c618f 1493fcd
 Author: Patrick Schleizer <adrelanos@whonix.org>
