@@ -1324,7 +1324,6 @@ Depends: catfish,
  pipewire-pulse | pulseaudio,
  wireplumber | pulseaudio,
  rtkit | pulseaudio,
- catfish,
  mat2,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
