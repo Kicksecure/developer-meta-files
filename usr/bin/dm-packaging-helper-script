@@ -2062,8 +2062,8 @@ pkg_tor_browser_version_update() {
 
    tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
    tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
-   tbb_stable_json_url='https://aus1.torproject.org/torbrowser/update_3/release/downloads.json'
-   tbb_alpha_json_url='https://aus1.torproject.org/torbrowser/update_3/alpha/downloads.json'
+   tbb_stable_json_url='https://aus1.torproject.org/torbrowser/update_3/release/download-linux-x86_64.json'
+   tbb_alpha_json_url='https://aus1.torproject.org/torbrowser/update_3/alpha/download-linux-x86_64.json'
    RecommendedTBBVersions="$(mktemp)"
    export RecommendedTBBVersions
 
