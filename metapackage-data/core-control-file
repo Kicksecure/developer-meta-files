@@ -1,9 +1,7 @@
 Package: dist-general-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: dracut,
- systemd-cryptsetup,
- apparmor-profile-dist,
+Depends: apparmor-profile-dist,
  apt-transport-tor,
  apt-utils,
  bootclockrandomization,
@@ -111,7 +109,6 @@ Package: dist-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: desktop-config-dist,
- desktop-config-dist-dependencies,
  gtk2-engines-pixbuf,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
@@ -142,34 +139,35 @@ Package: dist-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: dummy-dependency-sway,
+ dummy-dependency-lxqt-policykit,
  featherpad,
  gnome-keyring,
- greetd,
  lxqt-about,
  lxqt-admin,
- lxqt-core,
+ desktop-file-utils,
+ lxqt-themes,
+ lxqt-system-theme,
+ lxqt-config,
+ lxqt-notificationd,
+ lxqt-globalkeys,
+ lxqt-qtplugin,
+ pcmanfm-qt,
+ qterminal,
+ qtxdg-tools,
  lxqt-openssh-askpass,
- lxqt-powermanagement,
  lxqt-sudo,
- lxqt-wayland-session,
  papirus-icon-theme,
  qps,
  qt6-svg-plugins,
  qt6-translations-l10n,
  qt6-wayland,
- qterminal,
- swaybg,
- wdisplays,
- wlgreet,
  xdg-desktop-portal-gtk,
  xdg-desktop-portal-lxqt,
  gvfs,
  pkexec,
  polkitd,
  sysmaint-panel,
- pcmanfm-qt,
  discover,
- grub-live-dracut | grub-live-boot | boot-live,
  hwinfo,
  laptop-detect,
  lm-sensors,
@@ -229,8 +227,7 @@ Description: All systems, Qubes VMs, GUI packages
 Package: dist-qubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: lxqt-config,
- qubes-core-agent-thunar,
+Depends: qubes-core-agent-thunar,
  ${misc:Depends}
 Description: All systems, Qubes VMs, LXQt GUI packages
  For all hardened systems.
@@ -242,7 +239,10 @@ Description: All systems, Qubes VMs, LXQt GUI packages
 Package: dist-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: acpi-support,
+Depends: dracut,
+ systemd-cryptsetup,
+ grub-live-dracut | grub-live-boot | boot-live,
+ acpi-support,
  console-common,
  console-setup,
  grub-live-dracut | grub-live-boot | boot-live,
@@ -275,6 +275,7 @@ Package: dist-nonqubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: rads,
+ desktop-config-dist-dependencies,
  labwc,
  waybar,
  gsmartcontrol,
@@ -293,6 +294,15 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: swayidle,
  swaylock,
+ greetd,
+ wlgreet,
+ lxqt-powermanagement,
+ lxqt-panel,
+ lxqt-runner,
+ lxqt-session,
+ lxqt-wayland-session,
+ swaybg,
+ wdisplays,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.
@@ -444,7 +454,6 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: network-manager-applet,
  nm-connection-editor,
- pavucontrol-qt,
  ${misc:Depends}
 Breaks: kicksecure-lxqt
 Replaces: kicksecure-lxqt
@@ -559,6 +568,8 @@ Description: Kicksecure systems, not Qubes VMs, GUI packages
 Package: kicksecure-nonqubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: pavucontrol-qt,
+ ${misc:Depends}
 Description: Kicksecure systems, not Qubes VMs, LXQt GUI packages
  For Kicksecure systems.
  .
@@ -1337,8 +1348,7 @@ Description: Whonix-Workstation systems, all hardware, GUI packages
 Package: whonix-workstation-general-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: pavucontrol-qt,
- gnome-keyring,
+Depends: gnome-keyring,
  ${misc:Depends}
 Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
  For Whonix-Workstation systems.
@@ -1463,6 +1473,8 @@ Description: Whonix-Workstation systems, not Qubes VMs, GUI packages
 Package: whonix-workstation-nonqubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: pavucontrol-qt,
+ ${misc:Depends}
 Breaks: non-qubes-whonix-workstation-lxqt
 Replaces: non-qubes-whonix-workstation-lxqt
 Description: Whonix-Workstation systems, not Qubes VMs, LXQt GUI packages
