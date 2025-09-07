@@ -21,7 +21,7 @@ Depends: apparmor-profile-dist,
  timesanitycheck,
  usbguard,
  usrmerge,
- apparmor-profiles-kicksecure | dummy-dependency-apparmor-profiles-kicksecure,
+ apparmor-profiles-kicksecure,
  apparmor-utils,
  bash-completion,
  boot-info-script,
@@ -31,7 +31,7 @@ Depends: apparmor-profile-dist,
  debian-keyring,
  dbus-user-session,
  distro-info-data,
- bind9-dnsutils | dnsutils,
+ bind9-dnsutils,
  e2fsprogs,
  eject,
  file,
@@ -243,7 +243,7 @@ Depends: dracut,
  acpi-support,
  console-common,
  console-setup,
- grub-live-dracut | grub-live-boot | boot-live,
+ grub-live-dracut,
  kbd,
  keyboard-configuration,
  swap-file-creator,
@@ -428,19 +428,19 @@ Description: Kicksecure systems, all hardware, server packages
 Package: kicksecure-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: browser-choice | dummy-dependency,
+Depends: browser-choice,
  flatpak,
  keepassxc,
  kicksecure-welcome-page,
  lximage-qt,
  vlc,
  ddrescueview,
- pipewire-audio | pulseaudio,
- pipewire-pulse | pulseaudio,
- wireplumber | pulseaudio,
- rtkit | pulseaudio,
+ pipewire-audio,
+ pipewire-pulse,
+ wireplumber,
+ rtkit,
  catfish,
- electrum | dummy-dependency-electrum,
+ electrum,
  ${misc:Depends}
 Description: Kicksecure systems, all hardware, GUI packages
  For Kicksecure systems.
@@ -1288,7 +1288,7 @@ Pre-Depends: legacy-dist
 Depends: anon-ws-base-files,
  whonix-workstation-packages-dependencies-pre,
  anon-ws-disable-stacked-tor,
- bindp | dummy-dependency-bindp,
+ bindp,
  gddrescue,
  lvm2,
  ntfs-3g,
@@ -1316,24 +1316,24 @@ Package: whonix-workstation-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: catfish,
- electrum | dummy-dependency-electrum,
+ electrum,
  ffmpeg,
  keepassxc,
  lximage-qt,
  metadata-cleaner,
- pinentry-qt | pinentry-x11,
- tb-starter | dummy-dependency,
- tb-updater | dummy-dependency,
+ pinentry-qt,
+ tb-starter,
+ tb-updater,
  vlc,
  whonix-welcome-page,
  xpdf,
  yt-dlp,
  flatpak,
  ddrescueview,
- pipewire-audio | pulseaudio,
- pipewire-pulse | pulseaudio,
- wireplumber | pulseaudio,
- rtkit | pulseaudio,
+ pipewire-audio,
+ pipewire-pulse,
+ wireplumber,
+ rtkit,
  mat2,
  ${misc:Depends}
 Breaks: whonix-workstation-packages-recommended-gui, whonix-workstation-shared-packages-shared-meta
@@ -1439,7 +1439,7 @@ Description: Whonix-Workstation systems, Qubes VMs, LXQt GUI packages
 Package: whonix-workstation-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: kloak | dummy-dependency-kloak,
+Depends: kloak,
  ${misc:Depends}
 Breaks: non-qubes-whonix-workstation-cli
 Replaces: non-qubes-whonix-workstation-cli
