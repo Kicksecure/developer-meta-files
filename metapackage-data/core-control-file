@@ -174,7 +174,6 @@ Depends: dummy-dependency-sway,
  lshw,
  psensor,
  gparted,
- screengrab,
  smart-notifier,
  lxqt-archiver,
  ${misc:Depends}
@@ -303,6 +302,8 @@ Depends: swayidle,
  lxqt-wayland-session,
  swaybg,
  wdisplays,
+ flameshot,
+ xdg-desktop-portal-wlr,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.
