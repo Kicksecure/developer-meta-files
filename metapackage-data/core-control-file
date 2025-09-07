@@ -302,6 +302,7 @@ Depends: swayidle,
  swaybg,
  wdisplays,
  flameshot,
+ grim,
  xdg-desktop-portal-wlr,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
