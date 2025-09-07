@@ -240,7 +240,6 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: dracut,
  systemd-cryptsetup,
- grub-live-dracut | grub-live-boot | boot-live,
  acpi-support,
  console-common,
  console-setup,
