@@ -1,3 +1,15 @@
+commit 12049d3416d3291715e2a155dbaa3aa400be4dd1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 9 12:08:58 2025 -0400
+
+    add qubes-core-agent-network-manager
+
+commit 240365641b71cf79348ed2c9368703ef21df9e17
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 9 15:53:00 2025 +0000
+
+    bumped changelog version
+
 commit 217de9bcd6b07fb59ee1c419483b8cf75205e1f5
 Merge: d9fc0ca 1fd9a1d
 Author: Patrick Schleizer <adrelanos@whonix.org>
