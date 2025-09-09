@@ -1,3 +1,40 @@
+commit 217de9bcd6b07fb59ee1c419483b8cf75205e1f5
+Merge: d9fc0ca 1fd9a1d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 9 11:46:53 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit d9fc0ca7105cd46d02faf47215121692085ed8ec
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 9 11:45:55 2025 -0400
+
+    .
+
+commit 1fd9a1d48466190bec684d51199f4bb9fd6e9d2e
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Mon Sep 8 18:46:01 2025 -0500
+
+    Fix spacing, add Breaks/Replaces against Xfce metapackages
+
+commit 134ee6511aee78c6583d06c475f13fad0df6e1c0
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Sep 7 17:11:01 2025 -0500
+
+    Add a missing Flameshot dependency
+
+commit a08b8187f46199e1f6e982ed14b7cb74699c9e8e
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sun Sep 7 11:50:20 2025 -0500
+
+    Avoid either/or dependency bug
+
+commit 2bc10cc1ac1fb5e936aafce02e99ce55cc8b67a0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Sep 7 08:17:50 2025 +0000
+
+    bumped changelog version
+
 commit 88000e2646efe1084a424fe23d37d86656b9f9ef
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Sep 7 04:11:42 2025 -0400
