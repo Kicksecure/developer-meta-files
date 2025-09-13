@@ -131,6 +131,7 @@ Depends: desktop-config-dist,
  accountsservice,
  icon-pack-dist,
  libasound2t64,
+ usbguard-notifier,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-gui,
  kicksecure-desktop-applications-recommended
