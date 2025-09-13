@@ -1074,18 +1074,6 @@ pkg_git_update_bookworm_branch_from_master_branch() {
    true
 }
 
-## Runs `git diff master` on all repos.
-pkg_git_diff_branch_master() {
-   git diff master
-   true
-}
-
-## Runs `git diff development` on all repos.
-pkg_git_diff_branch_development() {
-   git diff development || true
-   true
-}
-
 pkg_git_diff_branch_trixie() {
    repo_skip 'derivative-maker' || return 0
 
