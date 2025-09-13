@@ -1074,31 +1074,33 @@ pkg_git_update_bookworm_branch_from_master_branch() {
    true
 }
 
-pkg_git_diff_branch_trixie() {
+pkg_git_diff_branch() {
    repo_skip 'derivative-maker' || return 0
 
+   origin_branch="ArrayBolt3/arraybolt3/trixie"
+
    ## Check if branch exists.
-   if ! git --no-pager diff --stat ArrayBolt3/arraybolt3/trixie &>/dev/null ; then
+   if ! git --no-pager diff --stat "${origin_branch}" &>/dev/null ; then
       ## No such branch.
       return 0
    fi
    ## Branch exists.
 
-   if [ "$(git --no-pager diff -C --stat ...ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+   if [ "$(git --no-pager diff -C --stat ..."${origin_branch}")" = "" ]; then
       ## No diff. Branch already merged.
       return 0
    fi
 
-   if [ "$(git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie)" = "" ]; then
+   if [ "$(git --no-pager diff -C --stat "${origin_branch}")" = "" ]; then
       ## No diff. Branch already merged.
       return 0
    fi
 
    printf '%s\n' "${batch_current_package_reponame}"
-   git --no-pager diff -C --stat ArrayBolt3/arraybolt3/trixie
-   git --no-pager diff -C ArrayBolt3/arraybolt3/trixie
-   git --no-pager kdiff -C ArrayBolt3/arraybolt3/trixie
-   git merge ArrayBolt3/arraybolt3/trixie
+   git --no-pager diff -C --stat "${origin_branch}"
+   git --no-pager diff -C "${origin_branch}"
+   git --no-pager kdiff -C "${origin_branch}"
+   git merge "${origin_branch}"
 
    printf '%s\n' "--------------------------------------------------"
    true
