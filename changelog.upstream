@@ -1,3 +1,22 @@
+commit 15ac45b722404c77671377cb40f88c16ce3204b4
+Merge: b664a5c 837f312
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Sep 13 04:03:02 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 837f31270e3f08170537c41ae8036c89b5e867ac
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Sep 12 18:04:13 2025 -0500
+
+    Add usbguard-notifier to dist-general-gui-all metapackage
+
+commit b664a5c9936dbfcbcce9ee6d09bdb91a5927bb1f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 9 16:10:30 2025 +0000
+
+    bumped changelog version
+
 commit 12049d3416d3291715e2a155dbaa3aa400be4dd1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Sep 9 12:08:58 2025 -0400
