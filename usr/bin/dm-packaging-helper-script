@@ -1077,6 +1077,9 @@ pkg_git_update_bookworm_branch_from_master_branch() {
 pkg_git_diff_branch() {
    repo_skip 'derivative-maker' || return 0
 
+   repo_skip 'dist-base-files' || return 0
+   repo_skip 'desktop-config-dist' || return 0
+
    origin_branch="ArrayBolt3/arraybolt3/trixie"
 
    ## Check if branch exists.
