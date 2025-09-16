@@ -8,7 +8,7 @@ set -e
 
 git_tag_nearest="$(git describe --always --abbrev=0)"
 
-for repo in github-derivative-maker github-kicksecure gitlab-kicksecure github-whonix adrelanos gitlab-whonix ; do
+for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; do
    if git remote get-url "$repo" &>/dev/null ; then
       if git rev-parse --verify main &>/dev/null ; then
          git verify-commit main
