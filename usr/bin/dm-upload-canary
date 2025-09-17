@@ -43,7 +43,7 @@ for upload_location in root@whonix.org root@kicksecure.com ; do
       read temp
    fi
 
-   true "${cyan}INFO $BASH_SOURCE: Running pool with --dry-run...${reset}"
+   true "${cyan}INFO $BASH_SOURCE: Test only. Running rsync with --dry-run...${reset}"
    rsync \
       --dry-run \
       $rsync_opts \
