@@ -78,7 +78,6 @@ show_debug_variable_info() {
    true "derivative_version_old_main: ${derivative_version_old_main}"
    true "derivative_version_new_main: ${derivative_version_new_main}"
    true "derivative_release_type: ${derivative_release_type}"
-   true "git_commit_all_msg: ${git_commit_all_msg}"
    true "makefile_generic_version: ${makefile_generic_version}"
    true "packaging_files_diff_template_package_relative_path: ${packaging_files_diff_template_package_relative_path}"
    true ""
@@ -1435,6 +1434,8 @@ pkg_git_commit_debian_control() {
 
 ## Commits all changes to all repos with a tunable-set message.
 pkg_git_commit_all() {
+   echo TODO
+   exit 1
    git add -A
    git commit -m "${git_commit_all_msg}" || true
    git status
@@ -1556,7 +1557,7 @@ pkg_git_diff_and_commit() {
    #read -r temp
 
    git add -A
-   git commit -m "${git_commit_all_msg}"
+   git commit -m "comment"
 
    git_status_last_line="$(git status | tail -n1)"
    if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
@@ -2327,7 +2328,6 @@ derivative_version_old_main='17.4.4.3-developers-only'
 derivative_version_new_main='17.4.4.6-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
-git_commit_all_msg='fix'
 makefile_generic_version='1.5'
 packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources-list'
 
