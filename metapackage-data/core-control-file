@@ -8,6 +8,7 @@ Depends: apparmor-profile-dist,
  ca-certificates,
  dialog,
  dist-base-files,
+ dummy-dependency-mta,
  gawk,
  init,
  initializer-dist,
@@ -115,7 +116,6 @@ Package: dist-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: desktop-config-dist,
- gtk2-engines-pixbuf,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
  upower,
@@ -181,7 +181,6 @@ Depends: dummy-dependency-sway,
  laptop-detect,
  lm-sensors,
  lshw,
- psensor,
  gparted,
  smart-notifier,
  lxqt-archiver,
@@ -209,7 +208,6 @@ Package: dist-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-core-agent-networking,
- qubes-core-agent-network-manager,
  qubes-input-proxy-sender,
  qubes-kernel-vm-support,
  qubes-usb-proxy,
@@ -370,6 +368,8 @@ Description: All systems, physical hardware, GUI packages
 Package: dist-baremetal-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: psensor,
+ ${misc:Depends}
 Description: All systems, physical hardware, LXQt GUI packages
  For all hardened systems.
  .
@@ -495,6 +495,7 @@ Pre-Depends: legacy-dist
 Depends: qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
+ qubes-core-agent-network-manager,
  ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, command-line packages
  For Kicksecure systems.
