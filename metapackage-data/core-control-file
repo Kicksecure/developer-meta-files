@@ -234,6 +234,11 @@ Description: All systems, Qubes VMs, server packages
 Package: dist-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-core-agent-thunar,
+ qubes-core-agent-nautilus,
+ ${misc:Depends}
+Breaks: qubes-whonix-shared-packages-recommended
+Replaces: qubes-whonix-shared-packages-recommended
 Description: All systems, Qubes VMs, GUI packages
  For all hardened systems.
  .
@@ -244,8 +249,6 @@ Description: All systems, Qubes VMs, GUI packages
 Package: dist-qubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-core-agent-thunar,
- ${misc:Depends}
 Description: All systems, Qubes VMs, LXQt GUI packages
  For all hardened systems.
  .
@@ -831,7 +834,6 @@ Package: whonix-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-whonix,
- qubes-whonix-shared-packages-recommended,
  ${misc:Depends}
 Description: Whonix systems, Qubes VMs, GUI packages
  For all Whonix systems.
@@ -1033,6 +1035,12 @@ Description: Whonix-Gateway systems, all hardware, LXQt GUI packages
 Package: whonix-gateway-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: tinyproxy,
+ dnf,
+ qubes-core-agent-dom0-updates,
+ ${misc:Depends}
+Breaks: qubes-whonix-gateway-packages-recommended
+Replaces: qubes-whonix-gateway-packages-recommended
 Description: Whonix-Gateway systems, Qubes VMs, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1065,8 +1073,6 @@ Description: Whonix-Gateway systems, Qubes VMs, server packages
 Package: whonix-gateway-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-whonix-shared-packages-recommended,
- ${misc:Depends}
 Description: Whonix-Gateway systems, Qubes VMs, GUI packages
  For Whonix-Gateway systems.
  .
@@ -1405,8 +1411,14 @@ Pre-Depends: legacy-dist
 Depends: qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
- qubes-whonix-workstation-packages-recommended,
+ pipewire-qubes,
+ pipewire-pulse,
+ wireplumber,
+ rtkit,
+ dbus-user-session,
  ${misc:Depends}
+Breaks: qubes-whonix-workstation-packages-recommended
+Replaces: qubes-whonix-workstation-packages-recommended
 Description: Whonix-Workstation systems, Qubes VMs, command-line packages
  For Whonix-Workstation systems.
  .
