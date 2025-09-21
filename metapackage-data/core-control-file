@@ -16,7 +16,7 @@ Depends: apparmor-profile-dist,
  menu,
  repository-dist,
  sdwdate,
- security-misc,
+ security-misc-shared,
  setup-dist,
  sudo,
  timesanitycheck,
@@ -105,6 +105,8 @@ Description: All systems, all hardware, command-line packages
 Package: dist-general-server
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: security-misc-server,
+ ${misc:Depends}
 Description: All systems, all hardware, server packages
  For all hardened systems.
  .
@@ -126,6 +128,7 @@ Depends: desktop-config-dist,
  repository-dist-wizard,
  sdwdate-gui,
  setup-wizard-dist,
+ security-misc-desktop,
  mesa-utils,
  open-link-confirmation,
  accountsservice,
