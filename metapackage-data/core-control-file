@@ -8,6 +8,7 @@ Depends: apparmor-profile-dist,
  ca-certificates,
  dialog,
  dist-base-files,
+ dummy-dependency-mta,
  gawk,
  init,
  initializer-dist,
@@ -15,7 +16,7 @@ Depends: apparmor-profile-dist,
  menu,
  repository-dist,
  sdwdate,
- security-misc,
+ security-misc-shared,
  setup-dist,
  sudo,
  timesanitycheck,
@@ -104,6 +105,8 @@ Description: All systems, all hardware, command-line packages
 Package: dist-general-server
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: security-misc-server,
+ ${misc:Depends}
 Description: All systems, all hardware, server packages
  For all hardened systems.
  .
@@ -115,7 +118,6 @@ Package: dist-general-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: desktop-config-dist,
- gtk2-engines-pixbuf,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
  upower,
@@ -126,6 +128,7 @@ Depends: desktop-config-dist,
  repository-dist-wizard,
  sdwdate-gui,
  setup-wizard-dist,
+ security-misc-desktop,
  mesa-utils,
  open-link-confirmation,
  accountsservice,
@@ -181,7 +184,6 @@ Depends: dummy-dependency-sway,
  laptop-detect,
  lm-sensors,
  lshw,
- psensor,
  gparted,
  smart-notifier,
  lxqt-archiver,
@@ -209,7 +211,6 @@ Package: dist-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-core-agent-networking,
- qubes-core-agent-network-manager,
  qubes-input-proxy-sender,
  qubes-kernel-vm-support,
  qubes-usb-proxy,
@@ -236,6 +237,11 @@ Description: All systems, Qubes VMs, server packages
 Package: dist-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: qubes-core-agent-thunar,
+ qubes-core-agent-nautilus,
+ ${misc:Depends}
+Breaks: qubes-whonix-shared-packages-recommended
+Replaces: qubes-whonix-shared-packages-recommended
 Description: All systems, Qubes VMs, GUI packages
  For all hardened systems.
  .
@@ -246,8 +252,6 @@ Description: All systems, Qubes VMs, GUI packages
 Package: dist-qubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-core-agent-thunar,
- ${misc:Depends}
 Description: All systems, Qubes VMs, LXQt GUI packages
  For all hardened systems.
  .
@@ -370,6 +374,8 @@ Description: All systems, physical hardware, GUI packages
 Package: dist-baremetal-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: psensor,
+ ${misc:Depends}
 Description: All systems, physical hardware, LXQt GUI packages
  For all hardened systems.
  .
@@ -495,6 +501,7 @@ Pre-Depends: legacy-dist
 Depends: qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
+ qubes-core-agent-network-manager,
  ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, command-line packages
  For Kicksecure systems.
@@ -830,7 +837,6 @@ Package: whonix-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-whonix,
- qubes-whonix-shared-packages-recommended,
  ${misc:Depends}
 Description: Whonix systems, Qubes VMs, GUI packages
  For all Whonix systems.
@@ -1032,6 +1038,12 @@ Description: Whonix-Gateway systems, all hardware, LXQt GUI packages
 Package: whonix-gateway-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: tinyproxy,
+ dnf,
+ qubes-core-agent-dom0-updates,
+ ${misc:Depends}
+Breaks: qubes-whonix-gateway-packages-recommended
+Replaces: qubes-whonix-gateway-packages-recommended
 Description: Whonix-Gateway systems, Qubes VMs, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1064,8 +1076,6 @@ Description: Whonix-Gateway systems, Qubes VMs, server packages
 Package: whonix-gateway-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-whonix-shared-packages-recommended,
- ${misc:Depends}
 Description: Whonix-Gateway systems, Qubes VMs, GUI packages
  For Whonix-Gateway systems.
  .
@@ -1404,8 +1414,14 @@ Pre-Depends: legacy-dist
 Depends: qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
- qubes-whonix-workstation-packages-recommended,
+ pipewire-qubes,
+ pipewire-pulse,
+ wireplumber,
+ rtkit,
+ dbus-user-session,
  ${misc:Depends}
+Breaks: qubes-whonix-workstation-packages-recommended
+Replaces: qubes-whonix-workstation-packages-recommended
 Description: Whonix-Workstation systems, Qubes VMs, command-line packages
  For Whonix-Workstation systems.
  .
