@@ -1077,6 +1077,7 @@ Description: Whonix-Gateway systems, Qubes VMs, server packages
 Package: whonix-gateway-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: ${misc:Depends}
 Description: Whonix-Gateway systems, Qubes VMs, GUI packages
  For Whonix-Gateway systems.
  .
