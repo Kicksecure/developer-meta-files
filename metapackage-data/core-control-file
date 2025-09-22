@@ -252,6 +252,7 @@ Description: All systems, Qubes VMs, GUI packages
 Package: dist-qubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: ${misc:Depends}
 Description: All systems, Qubes VMs, LXQt GUI packages
  For all hardened systems.
  .
