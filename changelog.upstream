@@ -1,3 +1,15 @@
+commit c1f2ba38b61d7a0f143e5b8936bee9cf7be08362
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Sep 22 13:40:23 2025 -0400
+
+    safe-rm
+
+commit 458e5bad48c783121f7a743d8164cda43a7e9018
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Sep 22 17:30:01 2025 +0000
+
+    bumped changelog version
+
 commit 23eda4b56ce3475cb24dfb05cdba0ddcff15cf1f
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 22 13:29:48 2025 -0400
