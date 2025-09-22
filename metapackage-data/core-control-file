@@ -503,6 +503,7 @@ Depends: qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
  qubes-core-agent-network-manager,
+ wpasupplicant,
  ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, command-line packages
  For Kicksecure systems.
@@ -613,6 +614,7 @@ Description: Kicksecure systems, not Qubes VMs, LXQt GUI packages
 Package: kicksecure-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: wpasupplicant
 Breaks: kicksecure-cli-host,
  kicksecure-cli-host-packages-recommended
 Replaces: kicksecure-cli-host,
