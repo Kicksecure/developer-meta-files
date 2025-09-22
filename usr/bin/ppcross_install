@@ -76,7 +76,7 @@ install_ppcross_using_git_from_upstream() {
     cd /usr/share/fpcsrc
 
     fpc_version_path="/usr/lib/fpc/$FPC_VERSION"
-    rm --recursive --force "$fpc_version_path"
+    safe-rm --recursive --force -- "$fpc_version_path"
     mkdir --parents "$fpc_version_path"
     cd "$fpc_version_path"
 
