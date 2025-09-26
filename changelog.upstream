@@ -1,3 +1,22 @@
+commit f50b916360651b9db767a0883f980026126b7396
+Merge: c4aa1ce 1049847
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Sep 26 04:24:34 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 1049847b772c4a8b0caf48faa9b66e2926961870
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Thu Sep 25 19:04:19 2025 -0500
+
+    Switch image viewer from lximage-qt to loupe
+
+commit c4aa1ce4c3acb155a62a79d8853189659a30ee35
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 24 14:06:45 2025 +0000
+
+    bumped changelog version
+
 commit 433f9f267614d84d28de3e7cf5d438cc5a63a3bb
 Merge: 0e27cec 7d82fab
 Author: Patrick Schleizer <adrelanos@whonix.org>
