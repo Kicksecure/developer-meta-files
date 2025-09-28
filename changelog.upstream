@@ -1,3 +1,15 @@
+commit 58820261e61db8537884a65f1392fc5ad03759d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Sep 28 08:05:52 2025 -0400
+
+    install ram-wipe by default
+
+commit 8bd38db7037debac41c0ee40a6bb2a1862fce993
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Sep 26 08:37:03 2025 +0000
+
+    bumped changelog version
+
 commit f50b916360651b9db767a0883f980026126b7396
 Merge: c4aa1ce 1049847
 Author: Patrick Schleizer <adrelanos@whonix.org>
