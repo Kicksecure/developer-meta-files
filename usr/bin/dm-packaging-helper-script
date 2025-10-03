@@ -1352,6 +1352,10 @@ pkg_git_push_remotes() {
             git push "${package_remote}" "${branch_name_item}" &
             git_pid="$!"
             git_pid_list_str="${git_pid_list_str} ${git_pid}"
+            ## TODO: Disable debugging.
+            ## Word splitting is used here intentionally.
+            # shellcheck disable=SC2086
+            wait $git_pid_list_str
          fi
       done
    done
@@ -2120,7 +2124,7 @@ pkg_tor_browser_version_update() {
 
 wait_for_git_processes() {
    if [ "${git_pid_list_str}" != '' ]; then
-      # Word splitting is used here intentionally.
+      ## Word splitting is used here intentionally.
       # shellcheck disable=SC2086
       wait $git_pid_list_str
    fi
