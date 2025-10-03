@@ -1338,7 +1338,14 @@ pkg_git_fetch_remotes() {
 ## Pushes local changes to all Git remotes for all repos.
 pkg_git_push_remotes() {
    local package_remote branch_name_item git_pid
-   branch_name_list=( "master" )
+
+   if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
+      branch_name_list=( "master" "bookworm" "trixie" )
+   elif [ "$batch_current_package_reponame" = "qubes-template-whonix" ]; then
+      branch_name_list=( "master" "bookworm" "trixie" )
+   else
+      branch_name_list=( "master" )
+   fi
 
    for package_remote in "${batch_current_package_remote_list[@]}"; do
       for branch_name_item in "${branch_name_list[@]}"; do
@@ -2247,7 +2254,7 @@ run_batch() {
    local derivative_name post_run_hook
 
    for derivative_name in "${derivative_name_list[@]}" ; do
-      for batch_current_package_path in "${derivative_maker_source_code_dir}/packages/${derivative_name}"/* ; do
+      for batch_current_package_path in "${derivative_maker_source_code_dir}/packages/${derivative_name}"/*; do
          if [ "${derivative_name}" = 'kicksecure' ]; then
             batch_current_project_name='Kicksecure'
             batch_current_project_website='kicksecure.com'
@@ -2256,7 +2263,7 @@ run_batch() {
              batch_current_project_website='whonix.org'
           else
              printf "%s\n" 'ERROR: Project name detection failed!'
-             exit 1;
+             exit 1
           fi
           if ! [ -d "${batch_current_package_path}" ]; then
              continue
@@ -2266,6 +2273,22 @@ run_batch() {
           run_batch_command "$@"
       done
    done
+
+   # Special-case for qubes-template-kicksecure
+   batch_current_project_name='Kicksecure'
+   batch_current_package_reponame='qubes-template-kicksecure'
+   batch_current_project_website='kicksecure.com'
+   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+   batch_current_package_path="qubes/qubes-template-kicksecure"
+   run_batch_command "$@"
+
+   # Special-case for qubes-template-whonix
+   batch_current_project_name='Whonix'
+   batch_current_package_reponame='qubes-template-whonix'
+   batch_current_project_website='whonix.org'
+   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+   batch_current_package_path="qubes/qubes-template-whonix"
+   run_batch_command "$@"
 
    # Special-case for derivative-maker
    batch_current_project_name='derivative-maker'

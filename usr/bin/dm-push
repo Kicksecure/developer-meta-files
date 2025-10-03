@@ -8,6 +8,8 @@ set -e
 
 git_tag_nearest="$(git describe --always --abbrev=0)"
 
+## TODO: qubes-template-kicksecure qubes-template-whonix
+
 for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; do
    if git remote get-url "$repo" &>/dev/null ; then
       if git rev-parse --verify main &>/dev/null ; then
@@ -18,6 +20,11 @@ for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; 
       if git rev-parse --verify master &>/dev/null ; then
          git verify-commit master
          git push "$repo" master &
+         pid_list+=" $!"
+      fi
+      if git rev-parse --verify trixie &>/dev/null ; then
+         git verify-commit trixie
+         git push "$repo" trixie &
          pid_list+=" $!"
       fi
       if [ ! "$git_tag_nearest" = "" ]; then
