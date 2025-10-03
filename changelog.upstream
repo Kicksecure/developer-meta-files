@@ -1,3 +1,21 @@
+commit 3967831d3be2270853fa4fbf8898b4e24869d12f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 3 09:52:12 2025 -0400
+
+    support scripted git push also for Windows related components
+
+commit bec4a8b73ebba482fc84144385d7f743ae1fc8d7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 3 09:46:59 2025 -0400
+
+    support scripted git push also for Qubes Templates
+
+commit 2ed50ea86d8180cc7a8e0e0ff4a86d3038eecdfe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Sep 28 12:07:08 2025 +0000
+
+    bumped changelog version
+
 commit 58820261e61db8537884a65f1392fc5ad03759d9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Sep 28 08:05:52 2025 -0400
