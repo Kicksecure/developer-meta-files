@@ -1065,7 +1065,7 @@ pkg_git_branch_fetch_all() {
    true
 }
 
-pkg_git_diff_branch() {
+pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
    origin_branch="ArrayBolt3/arraybolt3/trixie"
