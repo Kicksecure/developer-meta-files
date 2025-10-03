@@ -2290,6 +2290,30 @@ run_batch() {
    batch_current_package_path="qubes/qubes-template-whonix"
    run_batch_command "$@"
 
+   # Special-case for virtualbox
+   batch_current_project_name='Kicksecure'
+   batch_current_package_reponame='virtualbox'
+   batch_current_project_website='kicksecure.com'
+   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+   batch_current_package_path="windows/virtualbox"
+   run_batch_command "$@"
+
+   # Special-case for Whonix-Installer
+   batch_current_project_name='Whonix'
+   batch_current_package_reponame='Whonix-Installer'
+   batch_current_project_website='whonix.org'
+   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+   batch_current_package_path="windows/Whonix-Installer"
+   run_batch_command "$@"
+
+   # Special-case for Whonix-Starter
+   batch_current_project_name='Whonix'
+   batch_current_package_reponame='Whonix-Starter'
+   batch_current_project_website='whonix.org'
+   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+   batch_current_package_path="windows/Whonix-Starter"
+   run_batch_command "$@"
+
    # Special-case for derivative-maker
    batch_current_project_name='derivative-maker'
    batch_current_package_reponame='derivative-maker'
