@@ -1065,14 +1065,6 @@ pkg_git_branch_fetch_all() {
    true
 }
 
-pkg_git_update_bookworm_branch_from_master_branch() {
-   repo_skip 'derivative-maker' || return 0
-   git checkout bookworm
-   git merge --ff-only master
-   git checkout master
-   true
-}
-
 pkg_git_diff_branch() {
    #repo_skip 'derivative-maker' || return 0
 
