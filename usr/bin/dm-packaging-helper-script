@@ -1138,7 +1138,6 @@ pkg_profile_d_zsh_creator() {
 pkg_copy_contributing_file() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'kloak' || return 0
-   # repo_skip 'corridor' || return 0
 
    cp "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
    git add "${batch_current_package_path}/CONTRIBUTING.md"
