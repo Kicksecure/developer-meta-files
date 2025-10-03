@@ -625,7 +625,7 @@ pkg_readme_creator_do() {
 
    repo_skip 'derivative-maker' || return 0
 
-   ##TODO: genmkfile not requires. Easy "dpkg-buildpackage -b".
+   ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
    repo_skip "tirdad" || return 0
 
    control_file='debian/control'
@@ -1074,7 +1074,7 @@ pkg_git_update_bookworm_branch_from_master_branch() {
 }
 
 pkg_git_diff_branch() {
-   repo_skip 'derivative-maker' || return 0
+   #repo_skip 'derivative-maker' || return 0
 
    origin_branch="ArrayBolt3/arraybolt3/trixie"
    #origin_branch="github-kicksecure/master"
@@ -1930,6 +1930,11 @@ pkg_need_version_bump_do() {
 ## 2>/dev/null.
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    repo_skip 'derivative-maker' || return 0
+   repo_skip 'qubes-template-kicksecure' || return 0
+   repo_skip 'qubes-template-whonix' || return 0
+   repo_skip 'virtualbox' || return 0
+   repo_skip 'Whonix-Installer' || return 0
+   repo_skip 'Whonix-Starter' || return 0
 
    #if [ "${batch_current_package_reponame}" = "kloak" ]; then
    #   continue_yes=true
