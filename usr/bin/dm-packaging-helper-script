@@ -360,6 +360,15 @@ repo_skip() {
    fi
 }
 
+repo_skip_non_package() {
+   repo_skip 'derivative-maker' || return 1
+   repo_skip 'qubes-template-kicksecure' || return 1
+   repo_skip 'qubes-template-whonix' || return 1
+   repo_skip 'virtualbox' || return 1
+   repo_skip 'Whonix-Installer' || return 1
+   repo_skip 'Whonix-Starter' || return 1
+}
+
 ## Resets all batch_meta_* global state variables to default values.
 reset_batch_meta_globals() {
    batch_meta_category_list=()
@@ -1919,12 +1928,7 @@ pkg_need_version_bump_do() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip 'derivative-maker' || return 0
-   repo_skip 'qubes-template-kicksecure' || return 0
-   repo_skip 'qubes-template-whonix' || return 0
-   repo_skip 'virtualbox' || return 0
-   repo_skip 'Whonix-Installer' || return 0
-   repo_skip 'Whonix-Starter' || return 0
+   repo_skip_non_package || return 0
 
    #if [ "${batch_current_package_reponame}" = "kloak" ]; then
    #   continue_yes=true
@@ -1975,7 +1979,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
 ## Builds all packages.
 pkg_only_build_all() {
-   repo_skip 'derivative-maker' || return 0
+   repo_skip_non_package || return 0
 
    export make_lintian=true
    export make_use_cowbuilder=true
@@ -1986,7 +1990,7 @@ pkg_only_build_all() {
 
 ## Adds all packages to a reprepro repository.
 pkg_only_reprepro_add() {
-   repo_skip 'derivative-maker' || return 0
+   repo_skip_non_package || return 0
 
    export make_use_cowbuilder=true
    genmkfile reprepro-add
@@ -1997,7 +2001,7 @@ pkg_only_reprepro_add() {
 ## Creates a lintian-overrides file for all repositories, ignoring
 ## debian-watch-does-not-check-openpgp-signature warnings.
 pkg_add_lintian_watch_gpg_override() {
-   repo_skip 'derivative-maker' || return 0
+   repo_skip_non_package || return 0
 
    mkdir --parents './debian/source'
    if [ -f './debian/source/lintian-overrides' ] && ! grep 'debian-watch-does-not-check-openpgp-signature' './debian/source/lintian-overrides' ; then
@@ -2012,7 +2016,7 @@ debian-watch-does-not-check-openpgp-signature" >> "./debian/source/lintian-overr
 pkg_git_commit_lintian_watch_gpg_override() {
    local msg
 
-   repo_skip 'derivative-maker' || return 0
+   repo_skip_non_package || return 0
 
    git add './debian/source/lintian-overrides' || true
    msg="\
