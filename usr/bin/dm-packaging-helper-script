@@ -1159,7 +1159,6 @@ pkg_build_depends_systemd() {
    local search replace
 
    repo_skip 'derivative-maker' || return 0
-   repo_skip 'developer-meta-files' || return 0
 
    if ! find . -not -iwholename '*.git*' | grep --fixed-strings 'usr/lib/systemd/system' | grep --color '.service$' ; then
       return 0
