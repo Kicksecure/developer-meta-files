@@ -26,6 +26,7 @@ cd "$derivative_maker_source_code_dir"
 
 command -v mw-fetch >/dev/null
 command -v stecho >/dev/null
+command -v stsponge >/dev/null
 command -v overwrite >/dev/null
 
 declare -A url_cache
@@ -189,10 +190,11 @@ vbox_win_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*
 vbox_macos_intel64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*OSX.dmg'
 vbox_macos_arm64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*macOSArm64.dmg'
 
-WIKI_URL='https://www.kicksecure.com/w'; export WIKI_URL
+WIKI_URL='https://www.kicksecure.com/w'
+export WIKI_URL
 
 main () {
-   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done
+   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done sha_link_root sha_link_full
 
    update_done='false'
 #    if [ ! -v WIKI_API_USER_NAME ]; then
@@ -227,7 +229,18 @@ main () {
       save_cached_page_to_wiki "${kicksecure_wiki_vbox_page}"
    fi
 
+   sha_link_root="$(dirname -- "${vbox_win_latest}")"
+   ## example sha_link_full
+   ## https://download.virtualbox.org/virtualbox/7.2.2/SHA256SUMS
+   sha_link_full="${sha_link_root}/SHA256SUMS"
+
+   ## vbox_win_latest example:
+   ## https://download.virtualbox.org/virtualbox/7.2.2/VirtualBox-7.2.2-170484-Win.exe
    overwrite "${derivative_maker_source_code_dir}/windows/virtualbox/download.txt" "${vbox_win_latest}"
+   ## Useful as audit trail. Not functionally required.
+   overwrite "${derivative_maker_source_code_dir}/windows/virtualbox/weblink_SHA256SUMS" "${sha_link_full}"
+
+   scurl "${sha_link_full}" | stsponge "${derivative_maker_source_code_dir}/windows/virtualbox/weblink_SHA256SUMS"
 
    true "SUCCESS"
 }
