@@ -1,3 +1,35 @@
+commit 46ac3b417635d973a469ef067e72dacce5464f14
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Oct 4 14:16:31 2025 -0400
+
+    fix
+
+commit 7932da50eb19424b665d69d6c1939edf9d8dca66
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Oct 4 14:14:54 2025 -0400
+
+    more consistent naming
+    
+    renamed: usr/bin/wiki-vbox-version-update -> usr/bin/dm-virtualbox-update-local-and-wiki-links
+
+commit 580d03323b2f820942bb662e21dc58538ab2cc4a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Oct 4 14:13:29 2025 -0400
+
+    automatically update VirtualBox Windows SHA256 file
+
+commit 0c2d4a69c1ce2752708483ac37ae1f6b5dc08158
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Oct 4 14:02:22 2025 -0400
+
+    automatically update Windows download link
+
+commit 0eb87f3968ff42b4082505f44aa53598d4bfbb1f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 3 19:34:25 2025 +0000
+
+    bumped changelog version
+
 commit 73f7a02c1976b4b822068ed5936b8d5cc30da561
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Oct 3 15:32:56 2025 -0400
