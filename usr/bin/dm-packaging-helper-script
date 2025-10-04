@@ -1352,7 +1352,8 @@ pkg_git_push_remotes() {
             git push "${package_remote}" "${branch_name_item}" &
             git_pid="$!"
             git_pid_list_str="${git_pid_list_str} ${git_pid}"
-            ## TODO: Disable debugging.
+            ## TODO: Disable.
+            ## Debugging.
             ## Word splitting is used here intentionally.
             # shellcheck disable=SC2086
             wait $git_pid_list_str
