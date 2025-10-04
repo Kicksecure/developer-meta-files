@@ -240,7 +240,7 @@ main () {
    ## Useful as audit trail. Not functionally required.
    overwrite "${derivative_maker_source_code_dir}/windows/virtualbox/weblink_SHA256SUMS" "${sha_link_full}"
 
-   scurl "${sha_link_full}" | stsponge "${derivative_maker_source_code_dir}/windows/virtualbox/weblink_SHA256SUMS"
+   scurl "${sha_link_full}" | stsponge "${derivative_maker_source_code_dir}/windows/virtualbox/SHA256SUMS"
 
    true "SUCCESS"
 }
