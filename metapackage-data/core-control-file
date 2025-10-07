@@ -237,7 +237,7 @@ Description: All systems, Qubes VMs, server packages
 Package: dist-qubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-core-agent-thunar,
+Depends: qubes-core-agent-pcmanfm-qt,
  qubes-core-agent-nautilus,
  ${misc:Depends}
 Breaks: qubes-whonix-shared-packages-recommended
