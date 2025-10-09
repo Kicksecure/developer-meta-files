@@ -187,6 +187,7 @@ Depends: dummy-dependency-sway,
  gparted,
  smart-notifier,
  lxqt-archiver,
+ wvkbd,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-lxqt,
  kicksecure-desktop-applications-lxqt,
