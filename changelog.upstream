@@ -1,3 +1,15 @@
+commit e08c550f1c86630b2336e42149ce62a7ba748642
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 10 05:02:49 2025 -0400
+
+    do not install wvkbd in Qubes
+
+commit 477771fe75bbff6e8a90ee99c8a6225699cbdf9b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 10 08:02:01 2025 +0000
+
+    bumped changelog version
+
 commit fbcc9939bc4433876646caf1ad8772d91e67a28f
 Merge: 6a1fa47 7f68384
 Author: Patrick Schleizer <adrelanos@whonix.org>
