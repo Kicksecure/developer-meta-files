@@ -332,6 +332,7 @@ Depends: swayidle,
  flameshot,
  grim,
  xdg-desktop-portal-wlr,
+ kanshi,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.

@@ -2119,6 +2119,14 @@ pkg_tor_browser_version_update() {
    true
 }
 
+## Checks the current Tor version in the local repository against the Tor
+## version available from deb.torproject.org, and downloads the remote version
+## if the local one is out of date. (Thin wrapper around
+## dm-tor-update-repository, which is implemented in Python.)
+pkg_tor_repo_update() {
+   "${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/usr/bin/dm-tor-update-repository" || return 1
+}
+
 ## . END Commands }
 
 ## BEGIN Post-run hooks {
@@ -2363,6 +2371,9 @@ main() {
          ;;
       'pkg_tor_browser_version_update')
          pkg_tor_browser_version_update
+         ;;
+      'pkg_tor_repo_update')
+         pkg_tor_repo_update
          ;;
       *)
          run_batch "${target_cmd}"
