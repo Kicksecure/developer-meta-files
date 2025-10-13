@@ -1,0 +1,376 @@
+#!/usr/bin/python3 -su
+
+## Copyright (C) 2025 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@kicksecure.com>
+## See the file COPYING for copying conditions.
+
+# pylint: disable=invalid-name, broad-exception-caught
+
+"""
+This script detects when a newer version of Tor is available from
+deb.torproject.org, and installs it into the local repository if so.
+
+Note that this script manually verifies the authenticity of the metadata
+downloaded from the tpo repository. This is likely simpler and less fragile
+than attempting to get apt to download and verify the metadata using a chroot
+or similar, requires less network bandwidth, and has fewer unknowns involved.
+"""
+
+import sys
+import os
+import tempfile
+import subprocess
+import hashlib
+from pathlib import Path
+from typing import NoReturn
+
+import requests
+from debian.deb822 import Deb822
+
+# pylint: disable=too-few-public-methods
+class GlobalData:
+    """
+    Global data for script.
+    """
+
+    derivative_maker_source_code_dir: str = ""
+    tpo_signing_key_path: str = ""
+    local_repo_packages_file_path: str = ""
+    tpo_metadata_url: str = "https://deb.torproject.org/torproject.org/dists"
+    target_release: str = "trixie"
+
+def save_url_to_file(
+    url_str: str,
+    file_path: Path,
+) -> None:
+    """
+    Makes an HTTP request to the specified URL and saves the response to a
+    file.
+    """
+    req_response: requests.Response = requests.get(url_str, timeout=30)
+    if req_response.status_code != 200:
+        print(
+            f"ERROR: Could not get file '{file_path.name}', server returned "
+            f"error code {req_response.status_code}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    try:
+        file_path.write_text(req_response.text)
+    except Exception:
+        print(
+            f"ERROR: Could not save file '{file_path.name}' to "
+            f"'{str(file_path)}'!",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+def download_tor_metadata(temp_dir: str) -> None:
+    """
+    Downloads the Release, Release.gpg, and main/binary-amd64/Packages files
+    from torproject.org.
+    """
+    save_url_to_file(
+        f"{GlobalData.tpo_metadata_url}"
+        f"/{GlobalData.target_release}/Release",
+        Path(f"{temp_dir}/Release"),
+    )
+    save_url_to_file(
+        f"{GlobalData.tpo_metadata_url}"
+        f"/{GlobalData.target_release}/Release.gpg",
+        Path(f"{temp_dir}/Release.gpg"),
+    )
+    save_url_to_file(
+        f"{GlobalData.tpo_metadata_url}"
+        f"/{GlobalData.target_release}/main/binary-amd64/Packages",
+        Path(f"{temp_dir}/Packages")
+    )
+
+def verify_tor_metadata_authenticity(temp_dir: str) -> None:
+    """
+    Verifies the authenticity of the downloaded metadata.
+    """
+
+    gpg_keyring: str = f"{temp_dir}/temp_keyring"
+
+    try:
+        subprocess.run(
+            [
+                "/usr/bin/gpg",
+                "--keyring",
+                f"{gpg_keyring}",
+                "--no-default-keyring",
+                "--import",
+                f"{GlobalData.tpo_signing_key_path}",
+            ],
+            # gpg returns non-zero despite success here, ignore it
+            check=False,
+        )
+    except Exception:
+        print(
+            "ERROR: Could not create temporary keyring for gpg!",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    try:
+        subprocess.run(
+            [
+                "/usr/bin/gpg",
+                "--keyring",
+                f"{gpg_keyring}",
+                "--no-default-keyring",
+                "--verify",
+                f"{temp_dir}/Release.gpg",
+                f"{temp_dir}/Release",
+            ],
+            check=True,
+        )
+    except Exception:
+        print(
+            "ERROR: Release file flunked verification!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    try:
+        release_deb822: Deb822 = Deb822(
+            Path(f"{temp_dir}/Release").read_text(encoding="utf-8")
+        )
+    except Exception:
+        print(
+            "ERROR: Unable to read or parse Release file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    release_sha256_lines: list[str] = [
+        x.strip() for x in release_deb822["SHA256"].split("\n") if x != ""
+    ]
+
+    packages_sha256: str | None = None
+    packages_file_size: int | None = None
+    for line in release_sha256_lines:
+        if line.endswith(" main/binary-amd64/Packages"):
+            line_parts: list[str] = line.split(" ")
+            packages_sha256 = line_parts[0]
+            try:
+                packages_file_size = int(line_parts[1])
+            except Exception:
+                print(
+                    "ERROR: File size field for packages file is not an "
+                    "integer!",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            break
+
+    if None in (packages_sha256, packages_file_size):
+        print(
+            "ERROR: Missing SHA256 data or file size data for packages file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    packages_real_file_size: int = Path(f"{temp_dir}/Packages").stat().st_size
+    if packages_real_file_size != packages_file_size:
+        print(
+            "ERROR: Packages file size mismatch, expected "
+            f"'{packages_file_size}', got '{packages_real_file_size}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    hasher = hashlib.sha256()
+    packages_real_sha256: str | None = None
+    try:
+        with open(f"{temp_dir}/Packages", "rb") as f:
+            hasher.update(f.read())
+    except Exception:
+        print(
+            "ERROR: Could not read or compute hash of Packages file!",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    packages_real_sha256 = hasher.hexdigest()
+    if packages_real_sha256 != packages_sha256:
+        print(
+            "ERROR: Packages sha256 mismatch, expected "
+            f"'{packages_sha256}', got '{packages_real_sha256}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+def extract_tor_entry_from_packages_file(file_path: str) -> Deb822 | None:
+    """
+    Loops through the paragraphs of a packages file and returns the one
+    corresponding to the "tor" package.
+    """
+    try:
+        with open(
+            file_path, "r", encoding="utf-8"
+        ) as local_packages_handle:
+            for local_deb822 in Deb822.iter_paragraphs(local_packages_handle):
+                if (
+                        "Package" in local_deb822
+                        and local_deb822["Package"] == "tor"
+                ):
+                    return local_deb822
+    except Exception:
+        print(
+            f"ERROR: Unable to read or parse packages file at '{file_path}'!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    return None
+
+def does_local_tor_version_differ_from_remote(temp_dir: str) -> bool:
+    """
+    Checks the local tor version against the remote one. Note that this will
+    return True on *any* mismatch between the local and remote version, it
+    is not capable of comparing package versions semantically.
+    """
+
+    local_tor_deb822: Deb822 | None = extract_tor_entry_from_packages_file(
+        GlobalData.local_repo_packages_file_path
+    )
+    if local_tor_deb822 is None:
+        print(
+            "ERROR: Could not find Tor package entry in local packages file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    remote_tor_deb822: Deb822 | None = extract_tor_entry_from_packages_file(
+        f"{temp_dir}/Packages"
+    )
+    if remote_tor_deb822 is None:
+        print(
+            "ERROR: Could not find Tor package entry in remote packages "
+            "file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if "Version" not in local_tor_deb822:
+        print(
+            "ERROR: No version information in Tor package entry in local "
+            "packages file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if "Version" not in remote_tor_deb822:
+        print(
+            "ERROR: No version information in Tor package entry in remote "
+            "packages file!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if local_tor_deb822["Version"] != remote_tor_deb822["Version"]:
+        print(
+            "INFO: Tor package version mismatch, downloading new package.",
+            file=sys.stderr,
+        )
+        return True
+    print(
+        "INFO: Tor package version matches, not downloading new package.",
+        file=sys.stderr,
+    )
+    return False
+
+def download_latest_tor_package() -> None:
+    """
+    Starts 'approx' and uses '2100_create-debian-packages' to  download the
+    Tor package to the local repository.
+    """
+    try:
+        subprocess.run(
+            [
+                "/usr/bin/sudo",
+                "/usr/bin/systemctl",
+                "restart",
+                "approx-derivative-maker.socket",
+            ],
+            check=True
+        )
+    except Exception:
+        print(
+            "ERROR: Could not (re)start approx-derivative-maker.socket!",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    try:
+        os.chdir(GlobalData.derivative_maker_source_code_dir)
+    except Exception:
+        print(
+            "ERROR: Could not change to derivative-maker source code dir!",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    try:
+        subprocess.run(
+            [
+                "./build-steps.d/2100_create-debian-packages",
+                "--flavor",
+                "internal",
+                "--target",
+                "virtualbox",
+                "--function",
+                "download_tpo_packages"
+            ],
+            check=True
+        )
+    except Exception:
+        print("ERROR: Could not download Tor package!", file=sys.stderr)
+        sys.exit(1)
+    print("INFO: Tor package download successful.", file=sys.stderr)
+
+def main() -> NoReturn:
+    """
+    Main function.
+    """
+
+    if os.getcwd().endswith(
+        "derivative-maker/packages/kicksecure/developer-meta-files/usr/bin"
+    ):
+        ## We are running from the source directory directly.
+        GlobalData.derivative_maker_source_code_dir = "../../../../../"
+    else:
+        ## We are running from somewhere else, guess the source code
+        ## directory.
+        GlobalData.derivative_maker_source_code_dir = (
+            f"{str(Path.home())}/derivative-maker"
+        )
+    GlobalData.tpo_signing_key_path = (
+        f"{GlobalData.derivative_maker_source_code_dir}"
+        "/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share"
+        "/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d"
+        "/torprojectarchive.asc"
+    )
+    GlobalData.local_repo_packages_file_path = (
+        f"{GlobalData.derivative_maker_source_code_dir}"
+        "/../derivative-binary/aptrepo_local/kicksecure/dists/local/main"
+        "/binary-amd64/Packages"
+    )
+
+    try:
+        # pylint: disable=consider-using-with
+        temp_dir = tempfile.TemporaryDirectory()
+    except Exception:
+        print("ERROR: Could not create temporary directory!", file=sys.stderr)
+        sys.exit(1)
+
+    with temp_dir:
+        download_tor_metadata(temp_dir.name)
+        verify_tor_metadata_authenticity(temp_dir.name)
+        if does_local_tor_version_differ_from_remote(temp_dir.name):
+            download_latest_tor_package()
+
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
