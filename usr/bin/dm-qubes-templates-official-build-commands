@@ -10,11 +10,12 @@ set -o errtrace
 set -o nounset
 
 init_variables() {
-  derivative_version="17"
+  #derivative_version="17"
+  derivative_version="18"
 
   qubes_release_list=()
   ## NOTE: Do not add 'R' prefix, for example, do not write 'R4.2'.
-  qubes_release_list+=("4.2")
+  #qubes_release_list+=("4.2")
   qubes_release_list+=("4.3")
 
   template_list=()
@@ -27,11 +28,11 @@ init_variables() {
 
 git_tag_pushed_sanity_test() {
   ## XXX: hardcoded path
-  cd "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
+  cd -- "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
   dm-quickgittagsign
   dm-push
   ## XXX: hardcoded path
-  cd "$HOME/derivative-maker/qubes/qubes-template-whonix"
+  cd -- "$HOME/derivative-maker/qubes/qubes-template-whonix"
   dm-quickgittagsign
   dm-push
 }
@@ -40,7 +41,7 @@ init_variables
 git_tag_pushed_sanity_test
 
 ## XXX: hardcoded path
-cd "$HOME/sourcesother/qubes-builder"
+cd -- "$HOME/sourcesother/qubes-builder"
 
 for qubes_release_item in "${qubes_release_list[@]}"; do
   cmd_list=(
