@@ -239,6 +239,7 @@ Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-core-agent-pcmanfm-qt,
  qubes-core-agent-nautilus,
+ qubes-notification-agent,
  ${misc:Depends}
 Breaks: qubes-whonix-shared-packages-recommended
 Replaces: qubes-whonix-shared-packages-recommended
