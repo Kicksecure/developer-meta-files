@@ -85,7 +85,6 @@ show_debug_variable_info() {
    true "announcements_drafts_dir: ${announcements_drafts_dir}"
    true "derivative_maker_dir_name: ${derivative_maker_dir_name}"
    true "make_cowbuilder_dist_dir: ${make_cowbuilder_dist_dir}"
-   true "nothing_to_commit_msg_one: ${nothing_to_commit_msg_one}"
    true "package_documentation_dir: ${package_documentation_dir}"
    true "MYDIR: ${MYDIR}"
 }
@@ -387,6 +386,17 @@ reset_batch_meta_globals() {
    declare -A -g batch_meta_file_header_done_list
 }
 
+nothing_to_commit() {
+   local nothing_to_commit_msg_one git_status_last_line
+   nothing_to_commit_msg_one="nothing to commit, working tree clean"
+
+   git_status_last_line="$(git status | tail -n1)" || true
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+      return 0
+   fi
+   return 1
+}
+
 ## Extracts a package description from a debian/control file, writing it to
 ## the specified file using a special template for the headline. The template
 ## can be an arbitrary string, but must contain the string XXX_REPLACE_ME_XXX
@@ -599,7 +609,7 @@ internal_git_diff() {
 
 ## Commits changes to all project README files.
 pkg_readme_creator_commit() {
-   local readme_file git_status_last_line
+   local readme_file
 
    repo_skip 'derivative-maker' || return 0
 
@@ -615,8 +625,7 @@ pkg_readme_creator_commit() {
 
    git add "${readme_file}" || true
 
-   git_status_last_line="$(git status | tail -n1)" || true
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if nothing_to_commit; then
       return 0
    fi
 
@@ -1493,12 +1502,11 @@ pkg_git_debinstfile() {
 ## Commits packaging-related files for all repos. TODO: Perhaps don't hardcode
 ## the word 'trixie' here? Could be broken out into a tunable
 pkg_git_commit_packaging() {
-   declare git_status_last_line msg
+   local msg
 
    repo_skip 'derivative-maker' || return 0
 
-   git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if nothing_to_commit; then
       ## TODO: should we just get rid of this `true` call?
       true "press enter to continue_not"
       #read -r temp
@@ -1545,8 +1553,6 @@ pkg_git_reset() {
 ## Does a git diff follwed by a git commit on all repos with changes, except
 ## for derivative-maker.
 pkg_git_diff_and_commit() {
-   local git_status_last_line
-
    repo_skip 'derivative-maker' || return 0
 
    ## Remove extra new lines.
@@ -1554,8 +1560,7 @@ pkg_git_diff_and_commit() {
    #a=$(<debian/rules); printf '%s\n' "$a" > debian/rules
    #continue
 
-   git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if nothing_to_commit; then
       true "press enter to continue_not"
       #read -r temp
       return
@@ -1570,8 +1575,7 @@ pkg_git_diff_and_commit() {
    git add -A
    git commit -m "comment"
 
-   git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if nothing_to_commit; then
       true "press enter to continue_not"
       #read -r temp
       return
@@ -1821,7 +1825,7 @@ pkg_verify_signed_commit_and_tag() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local last_log_entry git_status_last_line
+   local last_log_entry
 
    batch_current_package_needs_version_bump='n'
 
@@ -1837,8 +1841,7 @@ pkg_need_version_bump_show() {
       fi
    fi
 
-   git_status_last_line="$(git status | tail -n1)"
-   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if ! nothing_to_commit; then
       true "uncommited changes #1"
       return 1
    fi
@@ -2055,7 +2058,7 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
 ## that this function does NOT go through the batch processing mechanism.
 pkg_tor_browser_version_update() {
    local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
-      tbb_stable_json_url tbb_alpha_json_url git_status_last_line \
+      tbb_stable_json_url tbb_alpha_json_url \
       current_tbb_version current_tbb_alpha_version tbb_dl_arm_page \
       tbb_arm_json current_tbb_arm_version
 
@@ -2071,8 +2074,7 @@ pkg_tor_browser_version_update() {
    export RecommendedTBBVersions
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
-   git_status_last_line="$(git status | tail -n1)"
-   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+   if ! nothing_to_commit; then
       printf "%s\n" "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
       exit 1
    fi
@@ -2397,7 +2399,6 @@ packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources
 announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
 derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
-nothing_to_commit_msg_one="nothing to commit, working tree clean"
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
 
 ## Global state variables, do not adjust
