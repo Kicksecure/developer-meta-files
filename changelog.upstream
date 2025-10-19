@@ -1,3 +1,17 @@
+commit 1494e4bdd549cf1d18b4c34f93a0fabf18d691de
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Oct 19 04:36:24 2025 -0400
+
+    install firmware-nonfreedom by default on Qubes
+    
+    useful for sys-net
+
+commit 6c472e4a79877641057ffff0acb6b14076c69406
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Oct 19 07:10:51 2025 +0000
+
+    bumped changelog version
+
 commit e60cace414a5891372fe15cb1b03b504deeab360
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Oct 19 03:08:47 2025 -0400
