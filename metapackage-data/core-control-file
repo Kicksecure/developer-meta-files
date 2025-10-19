@@ -379,6 +379,7 @@ Package: dist-baremetal-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: psensor,
+ liblxqt-backlight-helper,
  ${misc:Depends}
 Description: All systems, physical hardware, LXQt GUI packages
  For all hardened systems.
