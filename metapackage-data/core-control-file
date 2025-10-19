@@ -508,6 +508,7 @@ Depends: qubes-gpg-split,
  qubes-pdf-converter,
  qubes-core-agent-network-manager,
  wpasupplicant,
+ firmware-nonfreedom,
  ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, command-line packages
  For Kicksecure systems.
