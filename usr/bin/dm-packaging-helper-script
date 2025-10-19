@@ -85,7 +85,7 @@ show_debug_variable_info() {
    true "announcements_drafts_dir: ${announcements_drafts_dir}"
    true "derivative_maker_dir_name: ${derivative_maker_dir_name}"
    true "make_cowbuilder_dist_dir: ${make_cowbuilder_dist_dir}"
-   true "nothing_to_commit_msg: ${nothing_to_commit_msg}"
+   true "nothing_to_commit_msg_one: ${nothing_to_commit_msg_one}"
    true "package_documentation_dir: ${package_documentation_dir}"
    true "MYDIR: ${MYDIR}"
 }
@@ -616,7 +616,7 @@ pkg_readme_creator_commit() {
    git add "${readme_file}" || true
 
    git_status_last_line="$(git status | tail -n1)" || true
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       return 0
    fi
 
@@ -1498,7 +1498,7 @@ pkg_git_commit_packaging() {
    repo_skip 'derivative-maker' || return 0
 
    git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       ## TODO: should we just get rid of this `true` call?
       true "press enter to continue_not"
       #read -r temp
@@ -1555,7 +1555,7 @@ pkg_git_diff_and_commit() {
    #continue
 
    git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       true "press enter to continue_not"
       #read -r temp
       return
@@ -1571,7 +1571,7 @@ pkg_git_diff_and_commit() {
    git commit -m "comment"
 
    git_status_last_line="$(git status | tail -n1)"
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       true "press enter to continue_not"
       #read -r temp
       return
@@ -1838,7 +1838,7 @@ pkg_need_version_bump_show() {
    fi
 
    git_status_last_line="$(git status | tail -n1)"
-   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       true "uncommited changes #1"
       return 1
    fi
@@ -2072,7 +2072,7 @@ pkg_tor_browser_version_update() {
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    git_status_last_line="$(git status | tail -n1)"
-   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg}" ]; then
+   if [ ! "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
       printf "%s\n" "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
       exit 1
    fi
@@ -2397,7 +2397,7 @@ packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources
 announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
 derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
-nothing_to_commit_msg="nothing to commit, working tree clean"
+nothing_to_commit_msg_one="nothing to commit, working tree clean"
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
 
 ## Global state variables, do not adjust
