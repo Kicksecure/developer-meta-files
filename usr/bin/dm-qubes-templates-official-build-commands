@@ -32,6 +32,8 @@ git_tag_pushed_sanity_test() {
   git checkout master
   ## TODO: Debian 14 / forky
   git merge --ff-only trixie
+  dm-quickgittagsign
+  dm-push
   git checkout trixie
   dm-quickgittagsign
   dm-push
@@ -40,6 +42,8 @@ git_tag_pushed_sanity_test() {
   cd -- "$HOME/derivative-maker/qubes/qubes-template-whonix"
   ## TODO: Debian 14 / forky
   git merge --ff-only trixie
+  dm-quickgittagsign
+  dm-push
   git checkout trixie
   dm-quickgittagsign
   dm-push
