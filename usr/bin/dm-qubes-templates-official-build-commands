@@ -29,10 +29,18 @@ init_variables() {
 git_tag_pushed_sanity_test() {
   ## XXX: hardcoded path
   cd -- "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
+  git checkout master
+  ## TODO: Debian 14 / forky
+  git merge --ff-only trixie
+  git checkout trixie
   dm-quickgittagsign
   dm-push
+
   ## XXX: hardcoded path
   cd -- "$HOME/derivative-maker/qubes/qubes-template-whonix"
+  ## TODO: Debian 14 / forky
+  git merge --ff-only trixie
+  git checkout trixie
   dm-quickgittagsign
   dm-push
 }

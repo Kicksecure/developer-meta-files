@@ -22,6 +22,7 @@ for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; 
          git push "$repo" master &
          pid_list+=" $!"
       fi
+      ## TODO: Debian 14 / forky
       if git rev-parse --verify trixie &>/dev/null ; then
          git verify-commit trixie
          git push "$repo" trixie &
