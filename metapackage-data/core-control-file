@@ -121,7 +121,6 @@ Pre-Depends: legacy-dist
 Depends: desktop-config-dist,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
- upower,
  libfuse2t64,
  mate-polkit,
  xdg-desktop-portal,
@@ -304,6 +303,7 @@ Depends: rads,
  waybar,
  wvkbd,
  gsmartcontrol,
+ upower,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-gui,
  non-qubes-audio
