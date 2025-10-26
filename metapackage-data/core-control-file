@@ -121,7 +121,6 @@ Pre-Depends: legacy-dist
 Depends: desktop-config-dist,
  libgl1-mesa-dri,
  mesa-vulkan-drivers,
- upower,
  libfuse2t64,
  mate-polkit,
  xdg-desktop-portal,
@@ -186,7 +185,6 @@ Depends: dummy-dependency-sway,
  lm-sensors,
  lshw,
  gparted,
- smart-notifier,
  lxqt-archiver,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-lxqt,
@@ -306,6 +304,7 @@ Depends: rads,
  waybar,
  wvkbd,
  gsmartcontrol,
+ upower,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-gui,
  non-qubes-audio
@@ -336,6 +335,7 @@ Depends: swayidle,
  grim,
  xdg-desktop-portal-wlr,
  kanshi,
+ smart-notifier,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.
