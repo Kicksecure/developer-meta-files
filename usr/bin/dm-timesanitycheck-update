@@ -10,6 +10,8 @@ set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
+source /usr/libexec/helper-scripts/git.sh
+
 ## XXX: hardcoded path
 derivative_maker_source_code_dir="$HOME/derivative-maker"
 
@@ -17,6 +19,10 @@ derivative_maker_source_code_dir="$HOME/derivative-maker"
 cd "$HOME/derivative-maker/packages/kicksecure/timesanitycheck"
 
 ./usr/share/timesanitycheck/date-minimum-file-create
+
+if nothing_to_commit; then
+  exit 0
+fi
 
 git diff HEAD
 

@@ -10,20 +10,10 @@ set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
+source /usr/libexec/helper-scripts/git.sh
+
 ## XXX: hardcoded path
 derivative_maker_source_code_dir="$HOME/derivative-maker"
-
-## XXX: Duplicated.
-nothing_to_commit() {
-   local nothing_to_commit_msg_one git_status_last_line
-   nothing_to_commit_msg_one="nothing to commit, working tree clean"
-
-   git_status_last_line="$(git status | tail -n1)" || true
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
-      return 0
-   fi
-   return 1
-}
 
 pkg_tor_browser_version_update() {
    local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
@@ -74,6 +64,11 @@ pkg_tor_browser_version_update() {
    printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+
+   if nothing_to_commit; then
+     exit 0
+   fi
+
    git diff HEAD
 
    true "press enter to continue"
