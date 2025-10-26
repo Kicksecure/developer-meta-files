@@ -31,7 +31,7 @@ git_tag_pushed_sanity_test() {
   cd -- "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
   git checkout master
   ## TODO: Debian 14 / forky
-  git merge --ff-only trixie
+  git merge trixie
   dm-quickgittagsign
   dm-push
   git checkout trixie
@@ -41,7 +41,7 @@ git_tag_pushed_sanity_test() {
   ## XXX: hardcoded path
   cd -- "$HOME/derivative-maker/qubes/qubes-template-whonix"
   ## TODO: Debian 14 / forky
-  git merge --ff-only trixie
+  git merge trixie
   dm-quickgittagsign
   dm-push
   git checkout trixie
