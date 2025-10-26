@@ -212,6 +212,7 @@ Package: dist-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: qubes-core-agent-networking,
+ qubes-core-agent-dom0-updates,
  qubes-input-proxy-sender,
  qubes-kernel-vm-support,
  qubes-usb-proxy,
