@@ -186,7 +186,6 @@ Depends: dummy-dependency-sway,
  lm-sensors,
  lshw,
  gparted,
- smart-notifier,
  lxqt-archiver,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-lxqt,
@@ -335,6 +334,7 @@ Depends: swayidle,
  grim,
  xdg-desktop-portal-wlr,
  kanshi,
+ smart-notifier,
  ${misc:Depends}
 Description: All systems, not Qubes VMs, LXQt GUI packages
  For all hardened systems.
