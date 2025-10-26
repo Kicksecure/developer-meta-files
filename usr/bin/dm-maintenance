@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+## XXX: hardcoded path
+
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-timesanitycheck-update"
+
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-update-local-and-wiki-links"
+
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tbb-update"
+
+## TODO: sequoia
+#"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tor-update-repository"
+
+true "$0: OK."

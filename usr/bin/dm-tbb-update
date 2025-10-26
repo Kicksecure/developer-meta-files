@@ -1,0 +1,95 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+set -o pipefail
+set -o errtrace
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+## XXX: hardcoded path
+derivative_maker_source_code_dir="$HOME/derivative-maker"
+
+## XXX: Duplicated.
+nothing_to_commit() {
+   local nothing_to_commit_msg_one git_status_last_line
+   nothing_to_commit_msg_one="nothing to commit, working tree clean"
+
+   git_status_last_line="$(git status | tail -n1)" || true
+   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
+      return 0
+   fi
+   return 1
+}
+
+pkg_tor_browser_version_update() {
+   local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
+      tbb_stable_json_url tbb_alpha_json_url \
+      current_tbb_version current_tbb_alpha_version tbb_dl_arm_page \
+      tbb_arm_json current_tbb_arm_version
+
+   ## Source tb-updater version-validator script to get tbbversion function.
+   ## Uses environment variables RecommendedTBBVersions
+   source "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/libexec/tb-updater/version-validator"
+
+   tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
+   tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
+   tbb_stable_json_url='https://aus1.torproject.org/torbrowser/update_3/release/download-linux-x86_64.json'
+   tbb_alpha_json_url='https://aus1.torproject.org/torbrowser/update_3/alpha/download-linux-x86_64.json'
+   RecommendedTBBVersions="$(mktemp)"
+   export RecommendedTBBVersions
+
+   pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+   if ! nothing_to_commit; then
+      printf "%s\n" "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
+      exit 1
+   fi
+   popd
+
+   ## tbbversion requires: ${RecommendedTBBVersions}
+   ## tbbversion sets: ${tbb_version}
+   2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_stable_json_url}"
+   tbbversion || {
+      printf "%s\n" "${red}${bold}FATAL ERROR: Could not parse stable TBB version JSON!${reset}"
+      exit 1
+   }
+   # shellcheck disable=SC2154
+   current_tbb_version="${tbb_version}"
+
+   2>/dev/null scurl --output "${RecommendedTBBVersions}" "${tbb_alpha_json_url}"
+   tbbversion || {
+      printf "%s\n" "${red}${bold}FATAL ERROR: Could not parse alpha TBB version JSON!${reset}"
+      exit 1
+   }
+   # shellcheck disable=SC2154
+   current_tbb_alpha_version="${tbb_version}"
+
+   safe-rm -f -- "${tbb_hardcoded_version_file}"
+   printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_version}\"" | sponge -a -- "${tbb_hardcoded_version_file}"
+
+   safe-rm -f -- "${tbb_hardcoded_version_alpha_file}"
+   printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
+
+   pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+   git diff HEAD
+
+   true "press enter to continue"
+   read -r temp
+
+   git add 'usr/share/tb-updater/tbb_hardcoded_version'
+   git add 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
+   git commit -m 'tbb_hardcoded_version update'
+
+   popd
+
+   # Clean up temp file
+   safe-rm -- "${RecommendedTBBVersions}"
+   true
+}
+
+pkg_tor_browser_version_update
+
+true "$0: INFO: OK"

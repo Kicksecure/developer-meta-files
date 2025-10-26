@@ -1,0 +1,29 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+set -o pipefail
+set -o errtrace
+
+true "INFO: Currently running script: $BASH_SOURCE $@"
+
+## XXX: hardcoded path
+derivative_maker_source_code_dir="$HOME/derivative-maker"
+
+## XXX: hardcoded path
+cd "$HOME/derivative-maker/packages/kicksecure/timesanitycheck"
+
+./usr/share/timesanitycheck/date-minimum-file-create
+
+git diff HEAD
+
+true "press enter to continue"
+read -r temp
+
+git add 'usr/share/timesanitycheck/minimum_unixtime'
+git commit -m 'update minimum_unixtime'
+
+true "$0: INFO: OK"

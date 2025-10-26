@@ -36,6 +36,7 @@ class GlobalData:
     tpo_signing_key_path: str = ""
     local_repo_packages_file_path: str = ""
     tpo_metadata_url: str = "https://deb.torproject.org/torproject.org/dists"
+    ## TODO: Debian 14 / forky
     target_release: str = "trixie"
 
 def save_url_to_file(
