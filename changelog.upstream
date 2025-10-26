@@ -1,3 +1,40 @@
+commit 71ec87b1c9173e95bf22c227b4d9b15ff67ae551
+Merge: c227a89 9ac989d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Oct 26 04:08:25 2025 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit c227a89dac7a82e39978f12c8e8c3d844a5d8985
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Oct 26 03:37:44 2025 -0400
+
+    install qubes-core-agent-dom0-updates by default in Kicksecure for Qubes
+
+commit 41e7abb7d4e5837c939238bdfcc50146ae99c400
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Oct 26 03:29:24 2025 -0400
+
+    .
+
+commit 9ac989d6b42db614b2a49fcf22cc17073e89eb82
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Oct 25 20:17:19 2025 -0500
+
+    Remove upower from Qubes machines
+
+commit fb217ee7ee58279ca6d53612ef3dde284efed3f2
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Oct 25 19:52:38 2025 -0500
+
+    Remove smart-notifier from Qubes machines
+
+commit 0d9e074495756fb0fba366409ce2caf531c3dc32
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 24 04:26:58 2025 +0000
+
+    bumped changelog version
+
 commit ff14d01e0aac9a06eafeb41c0c35e3a348394be6
 Merge: a12f40a a5178ec
 Author: Patrick Schleizer <adrelanos@whonix.org>
