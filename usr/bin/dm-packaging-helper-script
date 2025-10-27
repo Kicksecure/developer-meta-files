@@ -613,6 +613,7 @@ pkg_readme_creator_commit() {
    local readme_file
 
    repo_skip 'derivative-maker' || return 0
+   repo_skip 'lxqt-wayland-session' || return 0
 
    ## global readme file
    if [ -f 'README_generic.md' ]; then
