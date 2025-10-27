@@ -630,6 +630,8 @@ pkg_readme_creator_commit() {
       return 0
    fi
 
+   git diff --cached
+
    git commit -m 'readme' || true
 }
 
