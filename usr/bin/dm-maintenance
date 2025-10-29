@@ -10,11 +10,11 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## XXX: hardcoded path
 
-"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-timesanitycheck-update"
-
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-update-local-and-wiki-links"
 
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tbb-update"
+
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-timesanitycheck-update"
 
 ## TODO: sequoia
 #"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tor-update-repository"
