@@ -25,6 +25,7 @@ fi
 cd "$derivative_maker_source_code_dir"
 
 command -v mw-fetch >/dev/null
+command -v mw-edit >/dev/null
 command -v stecho >/dev/null
 command -v stsponge >/dev/null
 command -v overwrite >/dev/null
@@ -56,7 +57,7 @@ get_wiki_page_cached () {
    cache_id="${WIKI_URL} - ${wiki_page}"
 
    if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
-      2>/dev/null >/dev/null wiki_article_to_fetch="${wiki_page}" wiki_fetch_to_file="${tmpfile}" mw-fetch
+      mw-fetch "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
       wiki_cache["${cache_id}"]="$(cat -- "${tmpfile}")"
       safe-rm -- "${tmpfile}"
    fi
@@ -178,7 +179,7 @@ save_cached_page_to_wiki () {
 
    get_wiki_page_cached "${wiki_page}"
    append-once "${tmpfile}" "${wiki_content}"
-   mw-edit "${wiki_page}" "${tmpfile}"
+   mw-edit "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
 
    safe-rm -- "${tmpfile}"
 }
