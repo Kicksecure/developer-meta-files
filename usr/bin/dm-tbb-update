@@ -16,7 +16,7 @@ source /usr/libexec/helper-scripts/git.sh
 derivative_maker_source_code_dir="$HOME/derivative-maker"
 
 version_check() {
-   if [ "$1,," = "unknown" ]; then
+   if [ "${1,,}" = "unknown" ]; then
       printf "%s\n" "${red}${bold}FATAL ERROR: Invalid version!${reset}"
       exit 1
    fi
