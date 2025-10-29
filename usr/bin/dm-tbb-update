@@ -28,7 +28,7 @@ pkg_tor_browser_version_update() {
       current_tbb_version current_tbb_alpha_version tbb_dl_arm_page \
       tbb_arm_json current_tbb_arm_version
 
-   ## Source tb-updater version-validator script to get tbbversion function.
+   ## `source` tb-updater 'version-validator' script to get 'tbbversion' function.
    ## Uses environment variables RecommendedTBBVersions
    source "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/libexec/tb-updater/version-validator"
 
