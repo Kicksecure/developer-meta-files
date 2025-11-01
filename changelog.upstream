@@ -1,3 +1,19 @@
+commit 00ffd7c05ba36dc2bee7ab14280bc348e850d9dd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Nov 1 04:22:48 2025 -0400
+
+    install `nmap` by default (contains `nping`) (TCP based ping utility)
+    
+    useful for debugging network issues
+    
+    https://forums.whonix.org/t/ping-operation-permitted/11056
+
+commit 72ca0a9fd74c2bf915e97492efdf3ba775c6be05
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Nov 1 08:14:36 2025 +0000
+
+    bumped changelog version
+
 commit 903f5a280e148dbd4cc6f81ddf3b292871ad9c9e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Nov 1 03:37:27 2025 -0400
