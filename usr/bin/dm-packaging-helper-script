@@ -1579,7 +1579,8 @@ pkg_git_diff_and_commit() {
    read -r temp
 
    git add -A
-   git commit -m "no longer depend on sudo"
+   ## TODO
+   git commit -m ""
 
    if nothing_to_commit; then
       true "press enter to continue_not"
