@@ -1575,11 +1575,11 @@ pkg_git_diff_and_commit() {
    git add -A
    git diff --cached
 
-   #true "press enter to continue"
-   #read -r temp
+   true "press enter to continue"
+   read -r temp
 
    git add -A
-   git commit -m "comment"
+   git commit -m "no longer depend on sudo"
 
    if nothing_to_commit; then
       true "press enter to continue_not"
