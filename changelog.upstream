@@ -1,3 +1,22 @@
+commit 4f24509109a952fb4abb6fd4460dd2506f6d8ac2
+Merge: 172f95f 556c122
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Nov 8 01:28:01 2025 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 556c122e475b696674432f4295614822921605b1
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Fri Nov 7 16:41:16 2025 -0600
+
+    Only install usbguard on Kicksecure
+
+commit 172f95f47161a331eb84022e41f6ca7bf8353034
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Nov 1 09:14:17 2025 +0000
+
+    bumped changelog version
+
 commit 00ffd7c05ba36dc2bee7ab14280bc348e850d9dd
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Nov 1 04:22:48 2025 -0400
