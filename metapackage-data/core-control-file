@@ -21,7 +21,6 @@ Depends: apparmor-profile-dist,
  setup-dist,
  sudo,
  timesanitycheck,
- usbguard,
  usrmerge,
  apparmor-profiles-kicksecure,
  apparmor-utils,
@@ -135,7 +134,6 @@ Depends: desktop-config-dist,
  accountsservice,
  icon-pack-dist,
  libasound2t64,
- usbguard-notifier,
  ${misc:Depends}
 Breaks: kicksecure-desktop-environment-essential-gui,
  kicksecure-desktop-applications-recommended
@@ -442,6 +440,7 @@ Depends: dosfstools,
  ntfs-3g,
  obfs4proxy,
  gddrescue,
+ usbguard,
  ${misc:Depends}
 Breaks: kicksecure-cli
 Replaces: kicksecure-cli
@@ -478,6 +477,7 @@ Depends: browser-choice,
  rtkit,
  catfish,
  electrum,
+ usbguard-notifier,
  ${misc:Depends}
 Description: Kicksecure systems, all hardware, GUI packages
  For Kicksecure systems.
