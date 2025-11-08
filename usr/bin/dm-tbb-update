@@ -30,7 +30,10 @@ pkg_tor_browser_version_update() {
 
    ## `source` tb-updater 'version-validator' script to get 'tbbversion' function.
    ## Uses environment variables RecommendedTBBVersions
-   source "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/libexec/tb-updater/version-validator"
+   ## Do not `source` source code file location.
+   #source "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/libexec/tb-updater/version-validator"
+   ## Instead `source` system location because 'version-validator' requires '/usr/libexec/tb-updater/version-parser'.
+   source /usr/libexec/tb-updater/version-validator
 
    tbb_hardcoded_version_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version"
    tbb_hardcoded_version_alpha_file="${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater/usr/share/tb-updater/tbb_hardcoded_version_alpha"
