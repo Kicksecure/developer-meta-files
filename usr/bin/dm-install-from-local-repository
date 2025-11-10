@@ -26,12 +26,13 @@ main() {
    ## Move existing /etc/apt/sources.list out of the way.
    if ! test -e /etc/apt/sources.list.backup ; then
       if test -e /etc/apt/sources.list ; then
-         mv /etc/apt/sources.list /etc/apt/sources.list.backup || true
+         mv -- /etc/apt/sources.list /etc/apt/sources.list.backup || true
       fi
    fi
 
    ## This file doesn't include Whonix's APT repository.
-   cp "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.sources" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp -- "$source_code_folder_dist/packages/anon-apt-sources-list/etc/apt/sources.list.d/debian.sources" "$CHROOT_FOLDER/etc/apt/sources.list.d/debian.sources"
+   chmod o+r -- "$CHROOT_FOLDER/etc/apt/sources.list.d/debian.sources"
 
    "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 

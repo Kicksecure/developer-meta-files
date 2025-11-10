@@ -40,19 +40,23 @@ main() {
    ## No longer required, we are no longer shipping /etc/apt/sources.list.
    #if [ -f "$CHROOT_FOLDER/etc/apt/sources.list" ]; then
       #cp --no-clobber --recursive --preserve "$CHROOT_FOLDER/etc/apt/sources.list" "$CHROOT_FOLDER/etc/apt/sources.list.backup"
+      #chmod o+r -- "$CHROOT_FOLDER/etc/apt/sources.list.backup"
    #fi
 
    ## We have to manually fix /etc/apt/sources.list, because the list which comes with
    ## grml-debootstrap is incomplete (does not complain debian security repository) and points to 127.0.0.1.
 
    ## This file doesn't include the derivative's APT repository.
-   cp "$source_code_folder_dist/packages/kicksecure/anon-apt-sources-list/etc/apt/sources.list.d/debian.sources" "$CHROOT_FOLDER/etc/apt/sources.list.d/"
+   cp -- "$source_code_folder_dist/packages/kicksecure/anon-apt-sources-list/etc/apt/sources.list.d/debian.sources" "$CHROOT_FOLDER/etc/apt/sources.list.d/debian.sources"
+   chmod o+r -- "$CHROOT_FOLDER/etc/apt/sources.list.d/debian.sources"
 
    ## Not using any /etc/apt/preferences.d snippets at the moment.
    #cp "$source_code_folder_dist/packages/...todo.../etc/apt/preferences.d/"* "$CHROOT_FOLDER/etc/apt/preferences.d/"
+   #chmod...
 
    ## Not using any important /etc/apt/apt.conf.d snippets at the moment.
    #cp "$source_code_folder_dist/packages/...todo.../etc/apt/apt.conf.d/"* "$CHROOT_FOLDER/etc/apt/apt.conf.d/"
+   #chmod...
 
    sync
 
