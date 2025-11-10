@@ -87,6 +87,7 @@ Depends: apparmor-profile-dist,
  udev,
  anon-apt-sources-list,
  tor,
+ vm-config-dist,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system,
  kicksecure-dependencies-cli,
@@ -214,7 +215,6 @@ Depends: qubes-core-agent-networking,
  qubes-kernel-vm-support,
  qubes-usb-proxy,
  qubesdb-vm,
- vm-config-dist,
  ${misc:Depends}
 Description: All systems, Qubes VMs, command-line packages
  For all hardened systems.
@@ -392,8 +392,7 @@ Description: All systems, physical hardware, LXQt GUI packages
 Package: dist-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: vm-config-dist,
- ${misc:Depends}
+Depends: ${misc:Depends}
 Description: All systems, VMs, command-line packages
  For all hardened systems.
  .
