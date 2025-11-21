@@ -30,6 +30,8 @@ source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/sh
 ## BEGIN Initialization functions {
 
 check_prerequisites() {
+   local empty_directories
+
    if ! test -d "${derivative_maker_source_code_dir}"; then
       printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' does not exist or is not a directory."
       exit 1
@@ -46,6 +48,14 @@ check_prerequisites() {
 
    if ! "${MYDIR}/dm-check-unicode"; then
       printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
+      exit 1
+   fi
+
+   empty_directories="$(find "${derivative_maker_source_code_dir}" -not -ipath '*.git*' -type d -empty)"
+
+   if ! [ "${empty_directories}"  = "" ]; then
+      printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains empty directories or is mislocated. empty_directories:
+'${empty_directories}'"
       exit 1
    fi
 
