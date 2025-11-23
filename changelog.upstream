@@ -1,3 +1,15 @@
+commit eb3c603035965da1c653542def6bcbf64a2b02d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Nov 23 06:20:31 2025 -0500
+
+    reject cache directories
+
+commit 7a9c54ba24fc3c7f28ed3f831367d50059945f6d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Nov 21 15:01:00 2025 +0000
+
+    bumped changelog version
+
 commit c0956f6bea0c659f316e4406cb7a0b366371bec5
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Nov 21 08:39:13 2025 -0500
