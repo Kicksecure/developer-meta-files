@@ -357,7 +357,7 @@ commit_filter() {
       'Depends: pkexec' \
       'sysmaint' \
       'Port to Trixie.' \
-      'Merge branch 'master' into arraybolt3/trixie' \
+      "Merge branch 'master' into arraybolt3/trixie" \
       'Add Wayland compatibility' \
       'remove duplication' \
       '--no-install-recommends' \
