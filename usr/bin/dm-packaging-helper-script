@@ -356,54 +356,53 @@ commit_filter() {
       'wrap-and-sort' \
       'Depends: pkexec' \
       'sysmaint' \
-      Port to Trixie.
-      Merge branch 'master' into arraybolt3/trixie
-      Add Wayland compatibility
-      remove duplication
-      --no-install-recommends
-      test
-      remove duplication
-      duplicate
-      pipe
-      add
-      dev
-      indent
-      stcat
-      improvement
-      improve lockfile
-      trixie
-      python3 -su
-      bump breaks version
-      idempotent
-      bump version
-      more fixes
-      long option name
-      long option names
-      no longer depend on sudo
-      newline
-      Remove link
-      Remove duplicate comment
-      add root_check
-      add root check
-      ignore
-      ignore more journal messages
-      refactoring; comments
-      add `wc -l` test
-      check apparmor
-      Adjust for Wayland and LXQt compatibility
-      Adjust for metapackage restructure
-      update minimum_unixtime
-      forky
-      debian-tor
-      links
-      use TEMPDIR
-      regenerate
-      remove trailing space
-      remove trailing spaces
-      Depends: python3
-      /usr/bin/touch
-      newlines
-      line endings
+      'Port to Trixie.' \
+      'Merge branch 'master' into arraybolt3/trixie' \
+      'Add Wayland compatibility' \
+      'remove duplication' \
+      '--no-install-recommends' \
+      'test' \
+      'duplicate' \
+      'pipe' \
+      'add' \
+      'dev' \
+      'indent' \
+      'stcat' \
+      'improvement' \
+      'improve lockfile' \
+      'trixie' \
+      'python3 -su' \
+      'bump breaks version' \
+      'idempotent' \
+      'bump version' \
+      'more fixes' \
+      'long option name' \
+      'long option names' \
+      'no longer depend on sudo' \
+      'newline' \
+      'Remove link' \
+      'Remove duplicate comment' \
+      'add root_check' \
+      'add root check' \
+      'ignore' \
+      'ignore more journal messages' \
+      'refactoring; comments' \
+      'add `wc -l` test' \
+      'check apparmor' \
+      'Adjust for Wayland and LXQt compatibility' \
+      'Adjust for metapackage restructure' \
+      'update minimum_unixtime' \
+      'forky' \
+      'debian-tor' \
+      'links' \
+      'use TEMPDIR' \
+      'regenerate' \
+      'remove trailing space' \
+      'remove trailing spaces' \
+      'Depends: python3' \
+      '/usr/bin/touch' \
+      'newlines' \
+      'line endings' \
       '-' \
       '.' \
       ; do
