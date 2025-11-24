@@ -2332,8 +2332,8 @@ main() {
 ## Global tunables, adjust these as necessary
 derivative_binary_dir="$HOME/derivative-binary"
 derivative_name_list=( 'kicksecure' 'whonix' )
-derivative_version_old_main='17.4.4.3-developers-only'
-derivative_version_new_main='17.4.4.6-developers-only'
+derivative_version_old_main='17.4.4.6-developers-only'
+derivative_version_new_main='18.0.7.5-developers-only'
 derivative_release_type='point'
 #derivative_release_type='testers'
 makefile_generic_version='1.5'
