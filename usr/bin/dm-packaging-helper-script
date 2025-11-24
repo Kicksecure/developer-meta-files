@@ -1797,6 +1797,8 @@ pkg_git_packages_git_log_writer() {
       commit_msg_short_list="$(git --no-pager log --pretty='%H %s')"
    fi
 
+   package_header_written='n'
+
    while read -r commit_hash commit_msg_short ; do
       if ! commit_filter "${commit_msg_short}" ; then
          true "SKIP: ${commit_msg_short}"
