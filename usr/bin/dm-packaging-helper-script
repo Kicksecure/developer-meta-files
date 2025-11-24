@@ -1710,9 +1710,6 @@ pkg_git_packages_git_log_writer() {
       new_package commit_msg_short_list commit_hash commit_msg_short \
       committer_person commit_msg_full log_msg
 
-   repo_skip 'lkrg' || return 0
-   repo_skip 'hardened_malloc' || return 0
-
    if [ "${batch_func_init_done}" = 'n' ]; then
       post_run_hook_list+=( 'generate_announcement' )
       safe-rm -f -- "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
