@@ -82,8 +82,8 @@ check_prerequisites() {
 ## Ensures that the system is prepared to run the script (right now this just
 ## makes sure directories that need to exist actually exist).
 prepare_system() {
-   mkdir -p "${announcements_drafts_dir}"
-   mkdir -p "${package_documentation_dir}"
+   mkdir --parents -- "${announcements_drafts_dir}"
+   mkdir --parents -- "${package_documentation_dir}"
 }
 
 ## Shows debugging information for all non-volatile global variables.
