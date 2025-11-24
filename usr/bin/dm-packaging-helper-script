@@ -1708,7 +1708,7 @@ $url" \
 pkg_git_packages_git_log_writer() {
    local package_header_written package_version_old package_version_new \
       new_package commit_msg_short_list commit_hash commit_msg_short \
-      committer_person commit_msg_full log_msg
+      committer_person commit_msg_full log_msg temp_folder_path
 
    if [ "${batch_func_init_done}" = 'n' ]; then
       post_run_hook_list+=( 'generate_announcement' )
@@ -1718,16 +1718,18 @@ pkg_git_packages_git_log_writer() {
       batch_func_init_done='y'
    fi
 
-   package_header_written='n'
+   repo_skip 'virtualbox' || return 0
+
+   temp_folder_path="${PWD#"/home/user/derivative-maker/"}"
 
    if [ "${batch_current_package_reponame}" != 'derivative-maker' ]; then
       pushd .. >/dev/null
-      if package_version_old="$(git rev-parse "${derivative_version_old_main}:packages/${batch_current_project_name,,}/${batch_current_package_reponame}")" ; then
+      if package_version_old="$(git rev-parse "${derivative_version_old_main}:${temp_folder_path}")" ; then
          new_package='n'
       else
          new_package='y'
       fi
-      package_version_new="$(git rev-parse "${derivative_version_new_main}:packages/${batch_current_project_name,,}/${batch_current_package_reponame}")"
+      package_version_new="$(git rev-parse "${derivative_version_new_main}:${temp_folder_path}")"
       popd >/dev/null
    else
       new_package='n'
