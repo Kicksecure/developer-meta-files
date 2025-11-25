@@ -165,7 +165,8 @@ commit_filter() {
       return 1
    fi
 
-   for text_any_case in
+   for text_any_case in \
+      'add debian install file (generated using "genmkfile debinstfile")' \
       'signed commit' \
       'rm_conffile' \
       'Typo' \
