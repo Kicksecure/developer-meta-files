@@ -388,6 +388,10 @@ commit_filter() {
       '/usr/bin/touch' \
       'newlines' \
       'line endings' \
+      'Add Wayland support' \
+      'warning' \
+      'lockfile' \
+      'consistency' \
       '-' \
       '.' \
       ; do
