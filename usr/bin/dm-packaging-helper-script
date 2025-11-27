@@ -128,15 +128,15 @@ commit_filter() {
 
    commit_msg_short="${commit_msg_short,,}"
 
-   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge remote-tracking branch' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet -- 'Merge remote-tracking branch' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge pull request' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet -- 'Merge pull request' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge branch' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet -- 'Merge branch' ; then
       set -x
       return 1
    fi
@@ -392,10 +392,15 @@ commit_filter() {
       'warning' \
       'lockfile' \
       'consistency' \
+      're-generate man pages (generated using "genmkfile manpages")' \
+      'add todo' \
+      'todo' \
       '-' \
       '.' \
       ; do
-         if [ "${text_lower_case,,}" = "${commit_msg_short,,}" ]; then
+         ## Done above already.
+         #commit_msg_short="${commit_msg_short,,}"
+         if [ "${text_any_case,,}" = "${commit_msg_short}" ]; then
             set -x
             return 1
          fi
@@ -1839,7 +1844,10 @@ pkg_git_packages_git_log_writer() {
       printf "%s\n" "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
    done <<< "${commit_msg_short_list}"
 
-   printf "%s\n" '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
+   if [ "${package_header_written}" = 'y' ]; then
+      ## Add newline but only if there were actually changelog lines.
+      printf "%s\n" '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
+   fi
 
    true
 }
