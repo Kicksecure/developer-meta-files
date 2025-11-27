@@ -404,10 +404,10 @@ Please donate! [C]
    binary_image_text_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-binary-image-text.txt"
 
    $SUDO_TO_ROOT cp -- "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
-   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" -- "${eulafile_vbox_temp}"
+   $SUDO_TO_ROOT chown -- "dm-vbox-temp:dm-vbox-temp" "${eulafile_vbox_temp}"
 
-   $SUDO_TO_ROOT cp "${binary_image_text}" "${binary_image_text_vbox_temp}"
-   $SUDO_TO_ROOT chown "dm-vbox-temp:dm-vbox-temp" -- "${binary_image_text_vbox_temp}"
+   $SUDO_TO_ROOT cp -- "${binary_image_text}" "${binary_image_text_vbox_temp}"
+   $SUDO_TO_ROOT chown -- "dm-vbox-temp:dm-vbox-temp" "${binary_image_text_vbox_temp}"
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
    TAR_OPTIONS="\
@@ -480,12 +480,12 @@ Please donate! [C]
    ## Move from dm-vbox-temp user home folder to normal user home folder.
    $SUDO_TO_ROOT mv --verbose -- "${HOMEVAR_VBOX_TEMP}/temp.ova" "${binary_image_ova_file}"
    ## Fix permissions because file previously needed to be moved from one user to another using root rights.
-   $SUDO_TO_ROOT chown "$user_name:$user_name" -- "${binary_image_ova_file}"
+   $SUDO_TO_ROOT chown -- "$user_name:$user_name" "${binary_image_ova_file}"
 
    ## Only important for redistribution.
    ## VirtualBox creates ${binary_image_ova_file} with u+r only, which is problematic
    ## with respect to rsync.
-   chmod ugo+r "${binary_image_ova_file}"
+   chmod ugo+r -- "${binary_image_ova_file}"
 
    sync
 
