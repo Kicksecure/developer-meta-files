@@ -123,53 +123,37 @@ commit_filter() {
    [ -z "${commit_msg_short}" ] && {
       printf "%s\n" "${red}${bold}FATAL ERROR: No argument provided to ${FUNCNAME[0]}!${reset}"
       set -x
-      exit 1;
+      exit 1
    }
 
    commit_msg_short="${commit_msg_short,,}"
 
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Merge remote-tracking branch' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge remote-tracking branch' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Merge pull request' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge pull request' ; then
       set -x
       return 1
    fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'lintian FHS' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'LANG=C' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'LC_ALL=C' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'genmkfile manpages' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'lintian' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'Standards-Version' ; then
-      set -x
-      return 1
-   fi
-   if printf "%s\n" "${commit_msg_short}" | grep -i --quiet 'change license to AGPL-3+' ; then
+   if printf "%s\n" "${commit_msg_short}" | grep --ignore-case --quiet 'Merge branch' ; then
       set -x
       return 1
    fi
 
    for text_any_case in \
       'add debian install file (generated using "genmkfile debinstfile")' \
+      'Insert empty new line' \
+      "Merge branch 'master' into master" \
+      'Remove whitespace' \
+      'lintian' \
+      'genmkfile manpages' \
+      'LC_ALL=C' \
+      'LANG=C' \
       'signed commit' \
       'rm_conffile' \
       'Typo' \
+      'Typo fixes' \
       'end of options' \
       'end-of-options' \
       'todo' \
@@ -407,8 +391,7 @@ commit_filter() {
       '-' \
       '.' \
       ; do
-         text_lower_case="${text_any_case,,}"
-         if [ "${text_lower_case}" = "${commit_msg_short}" ]; then
+         if [ "${text_lower_case,,}" = "${commit_msg_short,,}" ]; then
             set -x
             return 1
          fi
