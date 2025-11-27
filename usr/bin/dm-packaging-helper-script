@@ -143,6 +143,7 @@ commit_filter() {
 
    for text_any_case in \
       'add debian install file (generated using "genmkfile debinstfile")' \
+      'use long option names' \
       'Insert empty new line' \
       "Merge branch 'master' into master" \
       'Remove whitespace' \
