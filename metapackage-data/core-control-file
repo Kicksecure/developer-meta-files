@@ -88,6 +88,7 @@ Depends: apparmor-profile-dist,
  anon-apt-sources-list,
  tor,
  vm-config-dist,
+ tor-ctrl,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system,
  kicksecure-dependencies-cli,
@@ -777,7 +778,6 @@ Architecture: all
 Pre-Depends: anon-apps-config, legacy-dist
 Depends: whonix-base-files,
  whonix-firewall,
- tor-ctrl,
  uwt,
  ${misc:Depends}
 Breaks: whonix-shared-packages-dependencies-cli,
