@@ -1,3 +1,22 @@
+commit 205678906b2f292409e6c5afcf6c8349f0cb5907
+Merge: 70c7963 7ca7258
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Dec 1 23:34:32 2025 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 7ca7258abc93ad1976886a38caa13951ab63d545
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Mon Dec 1 21:32:08 2025 -0600
+
+    Move tor-ctrl from whonix-general-cli to dist-general-cli
+
+commit 70c79631a9217a5dac77dc9d78859c5d6dfc83fe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Nov 29 06:06:46 2025 +0000
+
+    bumped changelog version
+
 commit 2c1f27b8233a778e1a347b14fdf3ae352abcf6bc
 Merge: fe0a4c2 84ac9c4
 Author: Patrick Schleizer <adrelanos@whonix.org>
