@@ -1413,7 +1413,7 @@ pkg_git_fetch_remotes() {
 
 ## Pushes local changes to all Git remotes for all repos.
 pkg_git_push_remotes() {
-   local package_remote branch_name_item git_pid
+   local branch_name_list package_remote branch_name_item git_pid
 
    if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
       branch_name_list=( "master" "bookworm" "trixie" )
