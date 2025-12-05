@@ -86,7 +86,9 @@ check_prerequisites() {
       #exit 1
    }
 
-   ## TODO: check correct branches
+   main pkg_git_check_current_branch
+
+   true
 }
 
 ## Ensures that the system is prepared to run the script (right now this just
@@ -1123,6 +1125,26 @@ pkg_git_remotes_add() {
    fi
 
    true
+}
+
+pkg_git_check_current_branch() {
+   local current_branch expected_branch
+   current_branch="$(git branch --show-current)"
+
+   if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
+      expected_branch="trixie"
+   elif [ "$batch_current_package_reponame" = "qubes-template-whonix" ]; then
+      expected_branch="trixie"
+   else
+      expected_branch="master"
+   fi
+
+   if [ "$current_branch" = "$expected_branch" ]; then
+      return 0
+   fi
+
+   printf "%s\n" "unexpected branch! batch_current_package_reponame: '$batch_current_package_reponame' | current_branch: '$current_branch'"
+   return 1
 }
 
 ## Creates a 'trixie' branch for all repos.
