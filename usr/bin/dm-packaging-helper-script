@@ -68,6 +68,14 @@ check_prerequisites() {
       exit 1
    fi
 
+   empty_directories="$(find "${derivative_maker_source_code_dir}" -not -ipath '*.git*' -type d -empty)"
+
+   if ! [ "${empty_directories}" = "" ]; then
+      printf "%s\n" "${red}${bold}$0: ERROR:${reset} Empty directory found! empty_directories:
+'${empty_directories}'"
+      exit 1
+   fi
+
    [ "${derivative_maker_source_code_dir}" = "$HOME/derivative-maker" ] || {
       printf "%s\n" "WARNING: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' is not located at '$HOME/derivative-maker'. The script may break."
    }
@@ -77,6 +85,8 @@ check_prerequisites() {
       ## Soft failure.
       #exit 1
    }
+
+   ## TODO: check correct branches
 }
 
 ## Ensures that the system is prepared to run the script (right now this just
