@@ -102,6 +102,7 @@ find_symlinks
 ## Using because a real name contains a special character.
 ## XXX: This is clearly a non-ideal solution but fixing this is an issue for
 ##      whole Free and Open Source community. See also:
+##      https://www.kicksecure.com/wiki/Unicode
 ##      https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 ## --exclude=LICENSE
 ## --exclude=lkrg-openrc.sh
@@ -144,7 +145,8 @@ else
 $0: ERROR: Unicode found!
 
 See also:
-https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
+- https://www.kicksecure.com/wiki/Unicode
+- https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754
 "
    exit 1
 fi
