@@ -10,6 +10,9 @@ true "INFO: Currently running script: $BASH_SOURCE $@"
 
 ## XXX: hardcoded path
 
+## XXX: Automatically commit. Probably needs no update more than once per major release.
+"$HOME/derivative-maker/packages/kicksecure/helper-scripts/usr/share/helper-scripts/localectl-static-list-update"
+
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-update-local-and-wiki-links"
 
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tbb-update"
