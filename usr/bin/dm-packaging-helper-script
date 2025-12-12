@@ -1189,6 +1189,7 @@ pkg_git_diff_and_merge_branch() {
    ## TODO: remove after revert
    repo_skip 'dist-base-files' || return 0
    repo_skip 'grub-live' || return 0
+   repo_skip 'user-sysmaint-split' || return 0
 
    origin_branch="ArrayBolt3/arraybolt3/trixie"
    #origin_branch="github-kicksecure/master"
