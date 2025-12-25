@@ -29,8 +29,7 @@ version_check() {
 pkg_tor_browser_version_update() {
    local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
       tbb_stable_json_url tbb_alpha_json_url \
-      current_tbb_version current_tbb_alpha_version tbb_dl_arm_page \
-      tbb_arm_json current_tbb_arm_version
+      current_tbb_version current_tbb_alpha_version
 
    ## `source` tb-updater 'version-validator' script to get 'tbbversion' function.
    ## Uses environment variables RecommendedTBBVersions
