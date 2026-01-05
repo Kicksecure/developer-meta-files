@@ -1172,13 +1172,18 @@ pkg_git_branch_checkout_trixie() {
 }
 
 pkg_git_branch_fetch_all() {
-   local package_remote_item git_pid
+   local origin_name package_remote_item git_pid
 
-   for package_remote_item in "ArrayBolt3"; do
+   #origin_name="github-${batch_current_project_name,,}"
+   origin_name="ArrayBolt3"
+
+   for package_remote_item in "${origin_name}"; do
       git fetch "${package_remote_item}" &
       git_pid="$!"
       git_pid_list_str="${git_pid_list_str} ${git_pid}"
    done
+
+   #wait $git_pid_list_str
 
    true
 }
@@ -1191,9 +1196,8 @@ pkg_git_diff_and_merge_branch() {
    repo_skip 'grub-live' || return 0
    repo_skip 'user-sysmaint-split' || return 0
 
+   #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="ArrayBolt3/arraybolt3/trixie"
-   #origin_branch="github-kicksecure/master"
-   #origin_branch="github-whonix/master"
 
    ## Check if branch exists.
    if ! git --no-pager diff --stat "${origin_branch}" &>/dev/null ; then
@@ -1216,6 +1220,7 @@ pkg_git_diff_and_merge_branch() {
    git --no-pager diff -C --stat "${origin_branch}"
    git --no-pager diff -C "${origin_branch}"
    git --no-pager kdiff -C "${origin_branch}"
+
    git merge "${origin_branch}"
 
    printf '%s\n' "--------------------------------------------------"
