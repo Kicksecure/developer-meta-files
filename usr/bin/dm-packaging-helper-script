@@ -1191,6 +1191,10 @@ pkg_git_branch_fetch_all() {
 pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
+   ## TODO: remove after revert
+   repo_skip 'dist-base-files' || return 0
+   repo_skip 'grub-live' || return 0
+
    #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="ArrayBolt3/arraybolt3/trixie"
 
