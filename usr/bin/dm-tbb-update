@@ -47,7 +47,7 @@ pkg_tor_browser_version_update() {
 
    pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    if ! nothing_to_commit; then
-      printf "%s\n" "${red}${bold}FATAL ERROR: Uncommited changes!${reset}"
+      printf "%s\n" "${red}${bold}FATAL ERROR: Uncommitted changes!${reset}"
       exit 1
    fi
    popd

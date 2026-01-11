@@ -53,7 +53,7 @@ paypal_create() {
 
    paypal_write '<input type="hidden" name="business" value="patrick_schleizer@web.de">
 <input type="hidden" name="lc" value="US">
-<input type="hidden" name="item_name" value="Whonix Prefered Support">'
+<input type="hidden" name="item_name" value="Whonix Preferred Support">'
 
    if [ "$onetime" = "true" ]; then
       paypal_write '<input type="hidden" name="button_subtype" value="services">'

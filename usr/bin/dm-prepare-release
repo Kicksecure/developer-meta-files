@@ -114,7 +114,7 @@ windows_installer() {
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
    pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
-   ## Make sure everything is rebuilt and no previously auto generated files are accidentally re-used.
+   ## Make sure everything is rebuilt and no previously auto generated files are accidentally reused.
    git clean --force -d -X
    ## Creates WhonixStarterInstaller.msi
    ./build_on_linux_for_win64

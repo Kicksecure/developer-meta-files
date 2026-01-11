@@ -1655,7 +1655,7 @@ pkg_git_reset() {
    git clean -dff
 }
 
-## Does a git diff follwed by a git commit on all repos with changes, except
+## Does a git diff followed by a git commit on all repos with changes, except
 ## for derivative-maker.
 pkg_git_diff_and_commit() {
    repo_skip 'derivative-maker' || return 0
@@ -1675,11 +1675,11 @@ pkg_git_diff_and_commit() {
    git diff --cached
 
    true "press enter to continue"
-   read -r temp
+   #read -r temp
 
    git add -A
    ## TODO
-   git commit -m ""
+   git commit -m "typo"
 
    if nothing_to_commit; then
       true "press enter to continue_not"
@@ -1952,7 +1952,7 @@ pkg_need_version_bump_show() {
    fi
 
    if ! nothing_to_commit; then
-      true "uncommited changes #1"
+      true "uncommitted changes #1"
       return 1
    fi
 
