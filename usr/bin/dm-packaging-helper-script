@@ -723,9 +723,6 @@ pkg_readme_creator_do() {
    ## TODO
    repo_skip 'lxqt-wayland-session' || return 0
 
-   ## TODO: genmkfile not required. Easy "dpkg-buildpackage -b".
-   repo_skip "tirdad" || return 0
-
    control_file='debian/control'
    if ! [ -f "${control_file}" ]; then
       true "No file"
