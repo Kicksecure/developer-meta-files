@@ -286,7 +286,6 @@ Depends: dracut,
  kbd,
  keyboard-configuration,
  swap-file-creator,
- tirdad,
  smartmontools,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-cli
@@ -365,7 +364,6 @@ Package: dist-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: nvme-cli,
- tirdad,
  ${misc:Depends}
 Description: All systems, physical hardware, command-line packages
  For all hardened systems.
