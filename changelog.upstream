@@ -1,3 +1,28 @@
+commit 9a6a33b1cc77e73e91f9c88c32137c19f60a517b
+Merge: 730e203 b1606ac
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jan 25 02:37:28 2026 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit b1606ac262ec47db973cb38aa3fd1280b88f478e
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Jan 24 21:28:25 2026 -0600
+
+    Remove dependencies on tirdad
+
+commit 99c763457ebd773757c8a1976f9d746faefd8ab2
+Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
+Date:   Sat Jan 24 20:12:01 2026 -0600
+
+    Remove dependencies on kicksecure-network-conf{,-gui}
+
+commit 730e203e8f0c7fd7b03b45a33d4de5c1c350e514
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jan 14 08:24:12 2026 +0000
+
+    bumped changelog version
+
 commit 2d25cae87d2c311bcad5670a6a98d6ff2e5ea4f8
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jan 13 16:25:12 2026 -0500
