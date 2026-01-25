@@ -286,7 +286,6 @@ Depends: dracut,
  kbd,
  keyboard-configuration,
  swap-file-creator,
- tirdad,
  smartmontools,
  ${misc:Depends}
 Breaks: non-qubes-enhancements-cli
@@ -365,7 +364,6 @@ Package: dist-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: nvme-cli,
- tirdad,
  ${misc:Depends}
 Description: All systems, physical hardware, command-line packages
  For all hardened systems.
@@ -593,8 +591,7 @@ Description: Kicksecure systems, Qubes VMs, LXQt GUI packages
 Package: kicksecure-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: kicksecure-network-conf,
- ${misc:Depends}
+Depends: ${misc:Depends}
 Description: Kicksecure systems, not Qubes VMs, command-line packages
  For Kicksecure systems.
  .
@@ -615,8 +612,7 @@ Description: Kicksecure systems, not Qubes VMs, server packages
 Package: kicksecure-nonqubes-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: kicksecure-network-conf-gui,
- ${misc:Depends}
+Depends: ${misc:Depends}
 Description: Kicksecure systems, not Qubes VMs, GUI packages
  For Kicksecure systems.
  .
