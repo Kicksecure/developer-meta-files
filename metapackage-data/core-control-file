@@ -546,7 +546,8 @@ Depends: kicksecure-qubes-cli,
  dist-qubes-server,
  dist-qubes-cli,
  dist-general-server,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Kicksecure systems, Qubes VMs, server packages
  For Kicksecure systems.
  .
@@ -644,7 +645,8 @@ Depends: kicksecure-nonqubes-cli,
  dist-nonqubes-cli,
  dist-general-cli,
  ram-wipe,
- wpasupplicant
+ wpasupplicant,
+ ${misc:Depends}
 Breaks: kicksecure-cli-host,
  kicksecure-cli-host-packages-recommended
 Replaces: kicksecure-cli-host,
@@ -727,7 +729,8 @@ Depends: kicksecure-nonqubes-cli,
  kicksecure-general-cli,
  dist-vm-cli,
  dist-nonqubes-cli,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Breaks: kicksecure-cli-vm
 Replaces: kicksecure-cli-vm
 Description: Kicksecure systems, VMs, command-line packages
@@ -750,7 +753,8 @@ Depends: kicksecure-vm-cli,
  dist-nonqubes-server,
  dist-nonqubes-cli,
  dist-general-server,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Kicksecure systems, VMs, server packages
  For Kicksecure systems.
  .
@@ -1213,7 +1217,8 @@ Depends: whonix-gateway-nonqubes-cli,
  whonix-general-cli,
  dist-baremetal-cli,
  dist-nonqubes-cli,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Whonix-Gateway systems, physical hardware, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1306,7 +1311,8 @@ Depends: whonix-gateway-nonqubes-cli,
  whonix-general-cli,
  dist-vm-cli,
  dist-nonqubes-cli,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Whonix-Gateway systems, VMs, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1617,7 +1623,8 @@ Depends: whonix-workstation-nonqubes-cli,
  whonix-general-cli,
  dist-baremetal-cli,
  dist-nonqubes-cli,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Whonix-Workstation systems, physical hardware, command-line packages
  For Whonix-Workstation systems.
  .
@@ -1710,7 +1717,8 @@ Depends: whonix-workstation-nonqubes-cli,
  whonix-general-cli,
  dist-vm-cli,
  dist-nonqubes-cli,
- dist-general-cli
+ dist-general-cli,
+ ${misc:Depends}
 Description: Whonix-Workstation systems, VMs, command-line packages
  For Whonix-Workstation systems.
  .
