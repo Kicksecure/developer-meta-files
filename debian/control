@@ -14,7 +14,7 @@ Rules-Requires-Root: no
 
 Package: developer-meta-files
 Architecture: all
-Depends: python3, bc, jq, ${misc:Depends}
+Depends: python3, python3-debian, bc, jq, ${misc:Depends}
 Description: Linux Distributions Maintenance Helper Scripts
  Todo
  .
