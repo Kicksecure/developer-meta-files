@@ -521,7 +521,10 @@ Description: Kicksecure systems, all hardware, LXQt GUI packages
 Package: kicksecure-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-gpg-split,
+Depends: kicksecure-general-cli,
+ dist-qubes-cli,
+ dist-general-cli,
+ qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
  qubes-core-agent-network-manager,
@@ -635,7 +638,13 @@ Description: Kicksecure systems, not Qubes VMs, LXQt GUI packages
 Package: kicksecure-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: ram-wipe, wpasupplicant
+Depends: kicksecure-nonqubes-cli,
+ kicksecure-general-cli,
+ dist-baremetal-cli,
+ dist-nonqubes-cli,
+ dist-general-cli,
+ ram-wipe,
+ wpasupplicant
 Breaks: kicksecure-cli-host,
  kicksecure-cli-host-packages-recommended
 Replaces: kicksecure-cli-host,
@@ -714,6 +723,11 @@ Description: Kicksecure systems, physical hardware, LXQt GUI packages
 Package: kicksecure-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: kicksecure-nonqubes-cli,
+ kicksecure-general-cli,
+ dist-vm-cli,
+ dist-nonqubes-cli,
+ dist-general-cli
 Breaks: kicksecure-cli-vm
 Replaces: kicksecure-cli-vm
 Description: Kicksecure systems, VMs, command-line packages
@@ -788,7 +802,8 @@ Description: Kicksecure systems, VMs, LXQt GUI packages
 
 Package: whonix-general-cli
 Architecture: all
-Pre-Depends: anon-apps-config, legacy-dist
+Pre-Depends: anon-apps-config,
+ legacy-dist
 Depends: whonix-base-files,
  whonix-firewall,
  uwt,
@@ -1061,7 +1076,12 @@ Description: Whonix-Gateway systems, all hardware, LXQt GUI packages
 Package: whonix-gateway-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: tinyproxy,
+Depends: whonix-gateway-general-cli,
+ whonix-qubes-cli,
+ whonix-general-cli,
+ dist-qubes-cli,
+ dist-general-cli,
+ tinyproxy,
  dnf,
  qubes-core-agent-dom0-updates,
  ${misc:Depends}
@@ -1186,6 +1206,14 @@ Description: Whonix-Gateway systems, not Qubes VMs, LXQt GUI packages
 Package: whonix-gateway-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-cli,
+ whonix-baremetal-cli,
+ whonix-nonqubes-cli,
+ whonix-general-cli,
+ dist-baremetal-cli,
+ dist-nonqubes-cli,
+ dist-general-cli
 Description: Whonix-Gateway systems, physical hardware, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1271,6 +1299,14 @@ Description: Whonix-Gateway systems, physical hardware, LXQt GUI packages
 Package: whonix-gateway-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: whonix-gateway-nonqubes-cli,
+ whonix-gateway-general-cli,
+ whonix-vm-cli,
+ whonix-nonqubes-cli,
+ whonix-general-cli,
+ dist-vm-cli,
+ dist-nonqubes-cli,
+ dist-general-cli
 Description: Whonix-Gateway systems, VMs, command-line packages
  For Whonix-Gateway systems.
  .
@@ -1434,7 +1470,12 @@ Description: Whonix-Workstation systems, all hardware, LXQt GUI packages
 Package: whonix-workstation-qubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: qubes-gpg-split,
+Depends: whonix-workstation-general-cli,
+ whonix-qubes-cli,
+ whonix-general-cli,
+ dist-qubes-cli,
+ dist-general-cli,
+ qubes-gpg-split,
  qubes-img-converter,
  qubes-pdf-converter,
  pipewire-qubes,
@@ -1569,6 +1610,14 @@ Description: Whonix-Workstation systems, not Qubes VMs, LXQt GUI packages
 Package: whonix-workstation-baremetal-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-cli,
+ whonix-baremetal-cli,
+ whonix-nonqubes-cli,
+ whonix-general-cli,
+ dist-baremetal-cli,
+ dist-nonqubes-cli,
+ dist-general-cli
 Description: Whonix-Workstation systems, physical hardware, command-line packages
  For Whonix-Workstation systems.
  .
@@ -1654,6 +1703,14 @@ Description: Whonix-Workstation systems, physical hardware, LXQt GUI packages
 Package: whonix-workstation-vm-cli
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: whonix-workstation-nonqubes-cli,
+ whonix-workstation-general-cli,
+ whonix-vm-cli,
+ whonix-nonqubes-cli,
+ whonix-general-cli,
+ dist-vm-cli,
+ dist-nonqubes-cli,
+ dist-general-cli
 Description: Whonix-Workstation systems, VMs, command-line packages
  For Whonix-Workstation systems.
  .
