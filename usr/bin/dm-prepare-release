@@ -547,11 +547,13 @@ Please donate! [C]
 }
 
 sign_cmd_gpg() {
-   ## GPG signatures do not authenticate filenames by default, therefore add
+   local base_name
+   base_name="$(basename -- "$1")"
+   ## OpenPGP signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   ${gpg_bin} --detach-sign --armor --yes --set-notation "file@name"="$(basename "$1")" "$1"
+   ${gpg_bin} --detach-sign --armor --yes --set-notation "file@name"="$base_name" "$1"
 }
 
 sign_cmd_signify() {

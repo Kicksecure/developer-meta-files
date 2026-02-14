@@ -17,13 +17,12 @@ Assign 4 CPUs and as close to 4GB RAM as possible to avoid the build process err
 Increase GPG timeout limit to avoid signing failure. Password rentry required after compression. Press 'c' to ignore and continue the signing process during the prepare release step:
 
 ```
-echo -e "pinentry-program /usr/bin/pinentry-gnome3\nno-grab\ndefault-cache-ttl 18000\nmax-cache-ttl 86400\nignore-cache-for-signing\npinentry-timeout 86400" | tee ~/.gnupg/gpg-agent.conf
+echo -e "pinentry-program /usr/bin/pinentry-gnome3\nno-grab\ndefault-cache-ttl 18000\nmax-cache-ttl 86400\nignore-cache-for-signing\npinentry-timeout 86400" | tee -- ~/.gnupg/gpg-agent.conf
 ```
 
 # gpg pinentry #
 
-
-To get pinentry working during build preparation:
+To get `pinentry` working during build preparation:
 
 ```
 pinentry-gnome3
