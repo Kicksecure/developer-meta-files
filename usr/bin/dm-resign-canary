@@ -52,7 +52,7 @@ sign_and_verify_openpgp() {
    ## "$@" used to be either '--detach-sign' or '--clearsign'.
    #$gpg_bin "$@" --armor --yes --set-notation "file@name"="$base_name" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 
-   sq sign --signature-notation "file@name" "$base_name" --signer "$DEBSIGN_KEYID" --signature-file="$detached_signature" "$full_path_to_canary_txt"
+   sq sign --signature-notation "file@name" "$base_name" --signer "$DEBSIGN_KEYID" --signature-file="$detached_signature" -- "$full_path_to_canary_txt"
    test -f "$detached_signature"
    #$gpg_bin --verify-options show-notations --verify "$@"
    sq verify --signer "$DEBSIGN_KEYID" --signature-file="$detached_signature" "$full_path_to_canary_txt"
@@ -62,7 +62,6 @@ sign_and_verify_openpgp() {
    #$gpg_bin --verify-options show-notations --verify "$@"
    ## Use '>/dev/null' to avoid output of full file content.
    sq verify --signer "$DEBSIGN_KEYID" --cleartext "$clearsigned_file" >/dev/null
-
 }
 
 sign_cmd_signify() {
