@@ -1565,8 +1565,7 @@ Description: Whonix-Workstation systems, Qubes VMs, LXQt GUI packages
 Package: whonix-workstation-nonqubes-cli
 Architecture: all
 Pre-Depends: legacy-dist
-Depends: kloak,
- ${misc:Depends}
+Depends: ${misc:Depends}
 Breaks: non-qubes-whonix-workstation-cli
 Replaces: non-qubes-whonix-workstation-cli
 Description: Whonix-Workstation systems, not Qubes VMs, command-line packages
@@ -1600,6 +1599,7 @@ Package: whonix-workstation-nonqubes-gui-lxqt
 Architecture: all
 Pre-Depends: legacy-dist
 Depends: pavucontrol-qt,
+ kloak,
  ${misc:Depends}
 Breaks: non-qubes-whonix-workstation-lxqt,
  non-qubes-whonix-workstation-xfce
