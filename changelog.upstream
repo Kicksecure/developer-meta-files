@@ -1,3 +1,15 @@
+commit e306e54a7f934b4566e7ac32010cbbd38c5daa0c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 16 05:54:57 2026 -0500
+
+    fix: gpg-from-sq vs uwt
+
+commit a74e42632c7f8be1f874defd3501bc0089dfee2e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 16 10:28:07 2026 +0000
+
+    bumped changelog version
+
 commit 6dfd008f876f0511d5fc43b6a255099ef64d62a8
 Merge: 3025dbc 58d3574
 Author: Patrick Schleizer <adrelanos@whonix.org>
