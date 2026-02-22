@@ -88,6 +88,7 @@ Depends: apparmor-profile-dist,
  tor,
  vm-config-dist,
  tor-ctrl,
+ mokutil,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system,
  kicksecure-dependencies-cli,
