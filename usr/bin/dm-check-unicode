@@ -131,6 +131,7 @@ whitelist_list=(
    './live-build/manpages/po/ja/.*'
    './packages/kicksecure/kicksecure-base-files/debian/copyright'
    './packages/kicksecure/helper-scripts/usr/lib/python3/dist-packages/stdisplay/tests/stdisplay.py'
+   './windows/Whonix-Starter/COPYING.txt'
 )
 whitelist_pattern="($(IFS=$'\n'; echo -n "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
 
