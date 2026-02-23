@@ -22,13 +22,15 @@ else
 fi
 
 ## required by: make-helper-one.bsh
-cd "$derivative_maker_source_code_dir"
+cd -- "$derivative_maker_source_code_dir"
 
 command -v mw-fetch >/dev/null
 command -v mw-edit >/dev/null
 command -v stecho >/dev/null
 command -v stsponge >/dev/null
 command -v overwrite >/dev/null
+command -v append-once >/dev/null
+command -v str_replace >/dev/null
 
 declare -A url_cache
 declare -A wiki_cache
@@ -144,7 +146,7 @@ replace_wiki_string () {
    [ -z "${wiki_content}" ] && return 1
 
    tmpfile="$(mktemp)"
-   append-once "${tmpfile}" "${wiki_content}"
+   append-once "${tmpfile}" "${wiki_content}" >/dev/null
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
    wiki_content="$(cat -- "${tmpfile}")"
    wiki_cache["${cache_id}"]="${wiki_content}"
@@ -178,7 +180,7 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)"
 
    get_wiki_page_cached "${wiki_page}"
-   append-once "${tmpfile}" "${wiki_content}"
+   append-once "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
    ## TODO
