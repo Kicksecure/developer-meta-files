@@ -63,14 +63,15 @@ dm_tor_update_repository() {
           --buildplace "$cow_folder" \
           --save-after-login \
           -- \
-          /usr/bin/apt-get update
+          /usr/bin/apt-get "${APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
-  log notice 'Extracting Tor version numbers from apt list files.'
+  log notice 'Extracting Tor version numbers from apt list files...'
   local_tor_version_list=()
   remote_tor_version_list=()
 
-  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
+  #local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
+  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/trixie-developers/main/binary-amd64/Packages"
   test -r "$local_repository_packages_file"
 
   deb822_extract \
@@ -90,28 +91,30 @@ dm_tor_update_repository() {
 
   if (( ${#local_tor_version_list[@]} = 0 )) \
     || [ -z "${local_tor_version_list[0]}" ]; then
-    log warn 'No local Tor version detected, a new version of Tor will be downloaded.'
+    log error 'No local Tor version detected.'
     local_tor_version=''
-  else
-    local_tor_version="${local_tor_version_list[0]}"
-    log notice "Local Tor version: '${local_tor_version}'"
+    exit 1
   fi
+
+  local_tor_version="${local_tor_version_list[0]}"
+  log notice "Local Tor version: '${local_tor_version}'"
 
   if (( ${#remote_tor_version_list[0]} != 1 )) \
     || [ -z "${remote_tor_version_list[0]}" ]; then
     log error 'Remote Tor version could not be detected!'
     exit 1
-  else
-    remote_tor_version="${remote_tor_version_list[0]}"
-    log notice "Remote Tor version: '${remote_tor_version}'"
   fi
+
+  remote_tor_version="${remote_tor_version_list[0]}"
+  log notice "Remote Tor version: '${remote_tor_version}'"
 
   check_is_not_empty_and_only_one_line local_tor_version
   check_is_not_empty_and_only_one_line remote_tor_version
 
   if dpkg --compare-versions "${local_tor_version}" lt "${remote_tor_version}"; then
-    log notice 'Remote Tor version is newer than local Tor version, downloading remote version.'
-    log_run notice "${derivative_maker_source_code_dir}/build-steps.d/2100_create-debian-packages" --flavor internal --function download_tpo_packages
+    log notice 'Remote Tor version is newer than local Tor version, downloading remote version...'
+    ## TODO
+    #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/2100_create-debian-packages" --flavor internal --function download_tpo_packages
   elif dpkg --compare-versions "${local_tor_version}" gt "${remote_tor_version}"; then
     log error 'Remote Tor version is OLDER than local Tor version! Possible rollback attack?'
   else
