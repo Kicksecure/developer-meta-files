@@ -70,7 +70,8 @@ dm_tor_update_repository() {
 
   #local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
   local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/trixie-developers/main/binary-amd64/Packages"
-  test -r "$local_repository_packages_file"
+  test -r "${local_repository_packages_file}"
+  unicode-show "${local_repository_packages_file}"
 
   deb822_extract \
     "${local_repository_packages_file}" \
@@ -92,6 +93,7 @@ dm_tor_update_repository() {
 
   cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages"
   test -r "${cowbuilder_repository_packages_file}"
+  unicode-show "${cowbuilder_repository_packages_file}"
 
   deb822_extract \
     "${cowbuilder_repository_packages_file}" \
