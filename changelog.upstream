@@ -1,3 +1,35 @@
+commit 0d3a192b27ca101f261509f8344f5859bcfaf4d3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 05:08:19 2026 -0500
+
+    end-of-options
+
+commit 61aa5ce7cdfed5c8556463637e7a1712efd35e1d
+Merge: 8851f7f 10cf2ec
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 05:04:41 2026 -0500
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 10cf2ec519e1a4f5bc3abce699fa55c9954bc1b2
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Feb 24 00:10:02 2026 -0500
+
+    Update dm-tor-update-repository to use helper-scripts/deb822-extract.bsh
+
+commit a7a0f6616fcb4539dac5b517347598e89f10ee51
+Merge: c436327 8851f7f
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Mon Feb 23 19:42:27 2026 -0500
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit 8851f7f30b185a1d4dd1209b42678938ba9114ea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Feb 23 13:31:33 2026 +0000
+
+    bumped changelog version
+
 commit f7d68570f38741ffa68ea78159d9377793cce94a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Feb 23 06:37:18 2026 -0500
@@ -9,6 +41,27 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Feb 23 06:34:23 2026 -0500
 
     .
+
+commit c43632747f3cba6d2e30e0425b03aca569b81a51
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Feb 22 23:15:43 2026 -0500
+
+    Rewrite dm-tor-update-repository in Bash, using apt in a chroot for verification
+
+commit 51c54f24a806d068c118867b6aea69285e136b91
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Feb 22 21:22:08 2026 -0500
+
+    Add Whonix-Starter's COPYING.txt to the list of Unicode exceptions
+    
+    NSIS requires the license agreement file to use Windows-style line endings,
+    which triggers the unicode detector.
+
+commit b50ce7fd36641e436f20ca2f63003113ab68e650
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Feb 22 18:33:03 2026 -0500
+
+    Add dependency on mokutil, a dummy package will provide it on architectures where it does not exist
 
 commit e37a424d5720503f317a407b44e30d519e65d4bc
 Author: Patrick Schleizer <adrelanos@whonix.org>
