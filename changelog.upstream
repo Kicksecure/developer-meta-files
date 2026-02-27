@@ -1,3 +1,69 @@
+commit 1fc446b2108b364f6cb5b858e1e3c4bea46d35ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 09:02:24 2026 -0500
+
+    .
+
+commit 96c8a55bff90cf039866d828ad625be98ef03737
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:46:44 2026 -0500
+
+    .
+
+commit 0dd8a972e1fe73992ded8e8a0d1c6fcce20df14f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:20:59 2026 -0500
+
+    .
+
+commit 2b1d5c828f649c6dc5677680a50bb14b5818f82f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:20:00 2026 -0500
+
+    .
+
+commit 46d3e0e713d8342f3d13df2fe8a35ce056d8c760
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:15:35 2026 -0500
+
+    .
+
+commit 271d390f2491b9b0015835dc496fe06cb8e851d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:14:50 2026 -0500
+
+    dm-get-tor-from-tpo-repo
+
+commit 5673685be4a1ce2f402c0418fe9442526b6bcbca
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 08:14:44 2026 -0500
+
+    .
+
+commit 9447ee0befa96cb66d46c2986510df23c1a68320
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 07:46:44 2026 -0500
+
+    .
+
+commit aec41b1d9fea0f742dc23aec69b49df397edd6f9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 06:47:02 2026 -0500
+
+    .
+
+commit 68eb584a07873b10b851bff75fddeae7394412f8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 06:27:31 2026 -0500
+
+    minor
+
+commit e5db7766c07c203e2901dbb8c60824874b483f5d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Feb 27 10:48:53 2026 +0000
+
+    bumped changelog version
+
 commit 0d3a192b27ca101f261509f8344f5859bcfaf4d3
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Feb 27 05:08:19 2026 -0500
