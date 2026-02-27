@@ -45,10 +45,10 @@ dm_tor_update_repository() {
   set_cowbuilder_folders
 
   ## Copy the Tor repository sources and key into the chroot. Fix permissions on both files.
-  log_run notice $SUDO_TO_ROOT cp "${dist_build_sources_list_torproject}" "${base_folder}/etc/apt/sources.list.d/torproject.sources"
-  log_run notice $SUDO_TO_ROOT chmod 644 "${base_folder}/etc/apt/sources.list.d/torproject.sources"
-  log_run notice $SUDO_TO_ROOT cp "${derivative_maker_source_code_dir}/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d/torprojectarchive.asc" "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
-  log_run notice $SUDO_TO_ROOT chmod 644 "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
+  log_run notice $SUDO_TO_ROOT cp -- "${dist_build_sources_list_torproject}" "${base_folder}/etc/apt/sources.list.d/torproject.sources"
+  log_run notice $SUDO_TO_ROOT chmod -- 644 "${base_folder}/etc/apt/sources.list.d/torproject.sources"
+  log_run notice $SUDO_TO_ROOT cp -- "${derivative_maker_source_code_dir}/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d/torprojectarchive.asc" "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
+  log_run notice $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
 
   ## Update the apt sources within the chroot.
   log_run notice \
