@@ -68,16 +68,19 @@ dm_tor_update_repository() {
   log notice 'Extracting Tor version numbers from apt list files.'
   local_tor_version_list=()
   remote_tor_version_list=()
+
   deb822_extract \
     "${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages" \
     local_tor_version_list \
     Version \
     'Package|^tor$'
+
   deb822_extract \
     "${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages" \
     remote_tor_version_list \
     Version \
     'Package|^tor$'
+
   if (( ${#local_tor_version_list[@]} = 0 )) \
     || [ -z "${local_tor_version_list[0]}" ]; then
     log warn 'No local Tor version detected, a new version of Tor will be downloaded.'
@@ -86,6 +89,7 @@ dm_tor_update_repository() {
     local_tor_version="${local_tor_version_list[0]}"
     log notice "Local Tor version: '${local_tor_version}'"
   fi
+
   if (( ${#remote_tor_version_list[0]} != 1 )) \
     || [ -z "${remote_tor_version_list[0]}" ]; then
     log error 'Remote Tor version could not be detected!'
