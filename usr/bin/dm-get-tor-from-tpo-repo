@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -x
+
+set -e
+
+make_cross_build_platform_list="i386 amd64 arm64" ~/derivative-maker/build-steps.d/*_cowbuilder-setup --allow-untagged true --allow-uncommitted true --flavor internal --target root
+
+make_cross_build_platform_list="i386 amd64 arm64" ~/derivative-maker/build-steps.d/*_create-debian-packages --allow-untagged true --allow-uncommitted true --flavor internal --target root --function download_tpo_packages
+
+commit_message="get newer Tor package from TPO"
+
+cd ~/derivative-binary/aptrepo_remote
+
+git add -A
+git status
+
+true "press ctrl + c to abort"
+read question
+
+git commit -a -m "$commit_message"
+
+export build_upload_noninteractive=true
+dm-upload-repository
