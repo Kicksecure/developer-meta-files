@@ -71,6 +71,7 @@ dm_tor_update_repository() {
   #local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
   local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/trixie-developers/main/binary-amd64/Packages"
   test -r "${local_repository_packages_file}"
+  ## To guard against non-malicious formatting issues such as tabs and CRLF.
   unicode-show "${local_repository_packages_file}"
 
   deb822_extract \
