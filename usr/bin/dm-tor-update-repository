@@ -27,6 +27,7 @@ source "$derivative_maker_source_code_dir/help-steps/pre"
 source "$derivative_maker_source_code_dir/help-steps/colors"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
+source "/usr/libexec/helper-scripts/strings.bsh"
 source "/usr/libexec/helper-scripts/log_run_die.sh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
 
@@ -35,10 +36,10 @@ dm_tor_update_repository() {
     remote_tor_version_list
 
   ## Make sure the proxy is set up properly.
-  log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor internal
+  #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor internal
 
   ## Create a fresh chroot to work in.
-  log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor internal
+  #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor internal
 
   log notice 'Setting cowbuilder file variables.'
   dist_build_multiarch_package_item="$dist_build_target_arch"
@@ -69,14 +70,20 @@ dm_tor_update_repository() {
   local_tor_version_list=()
   remote_tor_version_list=()
 
+  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
+  test -r "$local_repository_packages_file"
+
   deb822_extract \
-    "${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages" \
+    "${local_repository_packages_file}" \
     local_tor_version_list \
     Version \
     'Package|^tor$'
 
+  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages"
+  test -r "${cowbuilder_repository_packages_file}"
+
   deb822_extract \
-    "${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages" \
+    "${cowbuilder_repository_packages_file}" \
     remote_tor_version_list \
     Version \
     'Package|^tor$'
@@ -98,6 +105,9 @@ dm_tor_update_repository() {
     remote_tor_version="${remote_tor_version_list[0]}"
     log notice "Remote Tor version: '${remote_tor_version}'"
   fi
+
+  check_is_not_empty_and_only_one_line local_tor_version
+  check_is_not_empty_and_only_one_line remote_tor_version
 
   if dpkg --compare-versions "${local_tor_version}" lt "${remote_tor_version}"; then
     log notice 'Remote Tor version is newer than local Tor version, downloading remote version.'
