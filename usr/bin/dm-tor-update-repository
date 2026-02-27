@@ -28,7 +28,6 @@ source "$derivative_maker_source_code_dir/help-steps/colors"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
 source "/usr/libexec/helper-scripts/strings.bsh"
-source "/usr/libexec/helper-scripts/log_run_die.sh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
 
 dm_tor_update_repository() {
@@ -36,37 +35,36 @@ dm_tor_update_repository() {
     remote_tor_version_list
 
   ## Make sure the proxy is set up properly.
-  #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor internal
+  #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor internal
 
   ## Create a fresh chroot to work in.
-  #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor internal
+  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor internal
 
-  log notice 'Setting cowbuilder file variables.'
+  true 'INFO: Setting cowbuilder file variables.'
   dist_build_multiarch_package_item="$dist_build_target_arch"
   set_cowbuilder_folders
 
   ## Copy the Tor repository sources and key into the chroot. Fix permissions on both files.
-  log_run notice $SUDO_TO_ROOT cp -- "${dist_build_sources_list_torproject}" "${base_folder}/etc/apt/sources.list.d/torproject.sources"
-  log_run notice $SUDO_TO_ROOT chmod -- 644 "${base_folder}/etc/apt/sources.list.d/torproject.sources"
-  log_run notice $SUDO_TO_ROOT cp -- "${derivative_maker_source_code_dir}/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d/torprojectarchive.asc" "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
-  log_run notice $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
+  $SUDO_TO_ROOT cp -- "${dist_build_sources_list_torproject}" "${base_folder}/etc/apt/sources.list.d/torproject.sources"
+  $SUDO_TO_ROOT chmod -- 644 "${base_folder}/etc/apt/sources.list.d/torproject.sources"
+  $SUDO_TO_ROOT cp -- "${derivative_maker_source_code_dir}/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d/torprojectarchive.asc" "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
+  $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
 
   ## Update the apt sources within the chroot.
-  log_run notice \
-    $SUDO_TO_ROOT \
-      $COWBUILDER_PREFIX \
-        cowbuilder \
-          --architecture "$dist_build_multiarch_package_item" \
-          --configfile "$dist_build_pbuilder_config_file" \
-          --execute \
-          --basepath "$base_folder" \
-          --buildplace "$cow_folder" \
-          --save-after-login \
+  $SUDO_TO_ROOT \
+    $COWBUILDER_PREFIX \
+      cowbuilder \
+        --architecture "$dist_build_multiarch_package_item" \
+        --configfile "$dist_build_pbuilder_config_file" \
+        --execute \
+        --basepath "$base_folder" \
+        --buildplace "$cow_folder" \
+        --save-after-login \
           -- \
           /usr/bin/apt-get "${APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
-  log notice 'Extracting Tor version numbers from apt list files...'
+  true 'INFO: Extracting local Tor version number from apt list files...'
   local_tor_version_list=()
   remote_tor_version_list=()
 
@@ -80,6 +78,18 @@ dm_tor_update_repository() {
     Version \
     'Package|^tor$'
 
+  if (( ${#local_tor_version_list[@]} = 0 )) \
+    || [ -z "${local_tor_version_list[0]}" ]; then
+    true 'ERROR: No local Tor version detected.'
+    local_tor_version=''
+    exit 1
+  fi
+
+  local_tor_version="${local_tor_version_list[0]}"
+  true "INFO: Local Tor version: '${local_tor_version}'"
+
+  true 'INFO: Extracting remote Tor version number from apt list files...'
+
   cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages"
   test -r "${cowbuilder_repository_packages_file}"
 
@@ -89,41 +99,33 @@ dm_tor_update_repository() {
     Version \
     'Package|^tor$'
 
-  if (( ${#local_tor_version_list[@]} = 0 )) \
-    || [ -z "${local_tor_version_list[0]}" ]; then
-    log error 'No local Tor version detected.'
-    local_tor_version=''
-    exit 1
-  fi
-
-  local_tor_version="${local_tor_version_list[0]}"
-  log notice "Local Tor version: '${local_tor_version}'"
-
-  if (( ${#remote_tor_version_list[0]} != 1 )) \
+  if (( ${#remote_tor_version_list[0]} = 0 )) \
     || [ -z "${remote_tor_version_list[0]}" ]; then
-    log error 'Remote Tor version could not be detected!'
+    true 'ERROR: Remote Tor version could not be detected!'
     exit 1
   fi
 
   remote_tor_version="${remote_tor_version_list[0]}"
-  log notice "Remote Tor version: '${remote_tor_version}'"
+  true "INFO: Remote Tor version: '${remote_tor_version}'"
 
   check_is_not_empty_and_only_one_line local_tor_version
   check_is_not_empty_and_only_one_line remote_tor_version
 
+  true "INFO:  Local Tor version: '${local_tor_version}'"
+  true "INFO: Remote Tor version: '${remote_tor_version}'"
+
   if dpkg --compare-versions "${local_tor_version}" lt "${remote_tor_version}"; then
-    log notice 'Remote Tor version is newer than local Tor version, downloading remote version...'
-    ## TODO
-    #log_run notice "${derivative_maker_source_code_dir}/build-steps.d/2100_create-debian-packages" --flavor internal --function download_tpo_packages
+    true 'INFO: Remote Tor version is newer than local Tor version, downloading remote version...'
+    dm-get-tor-from-tpo-repo
   elif dpkg --compare-versions "${local_tor_version}" gt "${remote_tor_version}"; then
-    log error 'Remote Tor version is OLDER than local Tor version! Possible rollback attack?'
+    true 'ERROR: Remote Tor version is OLDER than local Tor version! Possible rollback attack?'
   else
-    log notice 'Remote Tor version matches local Tor version, not updating, OK.'
+    true 'INFO: Remote Tor version matches local Tor version, not updating, OK.'
   fi
 }
 
-log notice 'Start.'
+true 'INFO: Start.'
 
 dm_tor_update_repository
 
-log notice 'End.'
+true 'INFO: End.'
