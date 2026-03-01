@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
 set -x
 
 set -e
@@ -11,7 +14,7 @@ make_cross_build_platform_list="amd64 arm64" ~/derivative-maker/build-steps.d/*_
 
 commit_message="get newer Tor package from TPO"
 
-cd ~/derivative-binary/aptrepo_remote
+cd -- ~/derivative-binary/aptrepo_remote
 
 git add -A
 git status
