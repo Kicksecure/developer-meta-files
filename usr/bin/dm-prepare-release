@@ -556,7 +556,6 @@ sign_cmd_openpgp() {
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   #${gpg_bin} --detach-sign --armor --yes --set-notation "file@name"="$base_name" --output "$2" "$1"
    sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --signature-file="$2" -- "$1"
    test -f "$2"
 }
@@ -578,7 +577,6 @@ sign_cmd_signify() {
 verify_cmd_openpgp() {
    test -f "$1"
    test -f "$2"
-   #${gpg_bin} --verify-options show-notations --verify "$2" "$1"
    sq verify --signer-email "$DEBEMAIL" --signature-file="$2" -- "$1"
 }
 

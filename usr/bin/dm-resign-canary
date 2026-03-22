@@ -45,21 +45,18 @@ sign_and_verify_openpgp() {
    safe-rm -f -- "$detached_signature"
    safe-rm -f -- "$clearsigned_file"
 
+   ## '--signature-notation "file@name"':
    ## OpenPGP signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
    ## at OpenPGP notations have a chance to detect if file names have been
    ## tampered with.
-   ## "$@" used to be either '--detach-sign' or '--clearsign'.
-   #$gpg_bin "$@" --armor --yes --set-notation "file@name"="$base_name" --output "$full_path_to_gpg_output_file" "$full_path_to_canary_txt"
 
    sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --signature-file="$detached_signature" -- "$full_path_to_canary_txt"
    test -f "$detached_signature"
-   #$gpg_bin --verify-options show-notations --verify "$@"
    sq verify --signer-email "$DEBEMAIL" --signature-file="$detached_signature" "$full_path_to_canary_txt"
 
    sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --cleartext "$full_path_to_canary_txt" | tee -- "$clearsigned_file" >/dev/null
    test -f "$clearsigned_file"
-   #$gpg_bin --verify-options show-notations --verify "$@"
    ## Use '>/dev/null' to avoid output of full file content.
    sq verify --signer-email "$DEBEMAIL" --cleartext "$clearsigned_file" >/dev/null
 }
