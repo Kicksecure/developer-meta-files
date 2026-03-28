@@ -1,3 +1,27 @@
+commit ed15d466ec3b37690ee88be5bebd7998824b17d4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Mar 28 05:32:30 2026 -0400
+
+    .
+
+commit d69e0542124ffc65360c3739ff13a17ede1234ad
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Mar 28 05:28:25 2026 -0400
+
+    .
+
+commit 051559d1886a968e35cb77adafd1b694ef4d15a4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Mar 28 05:15:57 2026 -0400
+
+    port to sequoia-pgp
+
+commit b447c0d5995cc745012f5b13f6c8367d2889c6c9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Mar 22 12:22:49 2026 +0000
+
+    bumped changelog version
+
 commit 58d1f89c394153ef1867951bdf65d7885717be71
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Mar 22 07:30:03 2026 -0400
