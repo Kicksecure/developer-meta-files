@@ -1939,6 +1939,9 @@ pkg_verify_signed_commit() {
 pkg_verify_signed_commit_and_tag() {
    repo_skip 'derivative-maker' || return 0
 
+   ## TODO: broken for qubes-template-kicksecure, qubes-template-whonix, windows folder,
+   ##       because these by design to not have a debian/control file.
+
    genmkfile git-verify
    true
 }
