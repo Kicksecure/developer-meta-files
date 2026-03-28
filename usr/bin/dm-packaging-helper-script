@@ -10,7 +10,7 @@ set -o errtrace
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -22,10 +22,11 @@ else
 fi
 
 ## required by: make-helper-one.bsh
-cd "$derivative_maker_source_code_dir"
+cd -- "$derivative_maker_source_code_dir"
 
 source "${derivative_maker_source_code_dir}/help-steps/colors"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
 
 ## BEGIN Initialization functions {
 
@@ -38,13 +39,16 @@ check_prerequisites() {
    fi
 
    # Any arbitrary package under derivative-maker/packages/kicksecure will
-   # work here, live-config-dist was chosen arbitrarily.
-   if ! test -d "${derivative_maker_source_code_dir}/packages/kicksecure/live-config-dist"; then
+   # work here, helper-scripts was chosen arbitrarily.
+   if ! test -d "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts"; then
       printf "%s\n" "FATAL ERROR: git submodules under derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' not populated."
       exit 1
    fi
 
    test -x "${MYDIR}/dm-check-unicode"
+
+   has safe-rm
+   has sq-git
 
    if ! "${MYDIR}/dm-check-unicode"; then
       printf "%s\n" "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
@@ -749,7 +753,7 @@ pkg_readme_creator_do() {
    description_found='n'
    headline_written='n'
 
-   safe-rm --force "${readme_file}"
+   safe-rm --force -- "${readme_file}"
 
    extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
 
@@ -1912,8 +1916,13 @@ pkg_git_sign_tags() {
 
 ## Verifies that the head commit of all repos is signed.
 pkg_verify_signed_commit() {
-   git verify-commit HEAD
-
+   local cmd
+   ## XXX: hardcoded
+   [ -n "$sq_git_trust_root" ] || sq_git_trust_root="HEAD"
+   ## XXX: hardcoded
+   [ -n "$sq_git_policy_file" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/openpgp-policy.toml"
+   #git verify-commit HEAD
+   sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
    true
 }
 
