@@ -1923,8 +1923,16 @@ pkg_verify_signed_commit() {
    [ -n "$sq_git_policy_file" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/openpgp-policy.toml"
    #git verify-commit HEAD
    sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
-   true
 }
+
+# pkg_resign_with_sq() {
+#    if pkg_verify_signed_commit; then
+#       return 0
+#    fi
+#    printf '%s\n' "" > README.md
+#    git add README.md
+#    git commit -a -m "signed commit"
+# }
 
 ## Verifies that the head commit and tag of all repos except derivative-maker
 ## is signed. Uses genmkfile.
