@@ -725,9 +725,6 @@ pkg_readme_creator_do() {
 
    repo_skip 'derivative-maker' || return 0
 
-   ## TODO
-   repo_skip 'lxqt-wayland-session' || return 0
-
    control_file='debian/control'
    if ! [ -f "${control_file}" ]; then
       true "No file"
