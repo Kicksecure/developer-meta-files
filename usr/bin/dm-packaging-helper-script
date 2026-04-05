@@ -1215,6 +1215,9 @@ pkg_git_diff_and_merge_branch() {
    git --no-pager diff -C "${origin_branch}"
    git --no-pager kdiff -C "${origin_branch}"
 
+   ## 'git verify-commit' passes through debug output by 'sq-git-wrapper'.
+   git verify-commit "${origin_branch}"
+   ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
    git merge "${origin_branch}"
 
    printf '%s\n' "--------------------------------------------------"
