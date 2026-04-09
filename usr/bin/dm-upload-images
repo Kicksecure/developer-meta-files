@@ -85,7 +85,9 @@ upload_files() {
       ## Test if DNS is functional.
       ## Sometimes 'rsync' fails to resolve DNS but running 'nslookup' beforehand fixes it.
       ## Overrule with '||true' as the failure would be handled below by 'rsync'.
-      nslookup "$dist_server_with_upload_location_list_list" || true
+      for dist_server_with_upload_location_list_item in $dist_server_with_upload_location_list_list; do
+         nslookup "$dist_server_with_upload_location_list_item" || true
+      done
 
       rsync_exit_code="0"
       $rsync_cmd \
