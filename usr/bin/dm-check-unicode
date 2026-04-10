@@ -242,4 +242,20 @@ ${grep_missing_newline_result_filtered[@]}"
    exit 1
 fi
 
+if grep \
+      --line-number \
+      --recursive \
+      --binary-files=without-match \
+      --exclude=dm-check-unicode \
+      --exclude-dir=.git \
+      --exclude-dir=grml-debootstrap \
+      -- \
+      '\(vi:\|[Vv]im:\| ex:\|\( \|$\)-\*-\)'; then
+  true "\
+$0: ERROR: Vim or Emacs modelines found!"
+  exit 1
+else
+  true "INFO: No Vim or Emacs modelines found, everything is OK."
+fi
+
 true "$0: END."
