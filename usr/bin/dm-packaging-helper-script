@@ -1089,6 +1089,9 @@ pkg_links_open() {
 pkg_git_remotes_add() {
    git remote rm origin || true
 
+   git remote add     assisted-by-ai         "git@github.com:assisted-by-ai/${batch_current_package_reponame}.git" || true
+   git remote set-url assisted-by-ai         "git@github.com:assisted-by-ai/${batch_current_package_reponame}.git" || true
+
    git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
    git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
