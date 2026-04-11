@@ -1,3 +1,28 @@
+commit 1fe273bba320e77435a003142e989ec747050ed1
+Merge: 3c6091a e02f824
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 11 03:37:28 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 3c6091a06fb88fd221377d19f8166d0bca124e53
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 11 03:33:42 2026 -0400
+
+    .
+
+commit e02f824fa28d6a7a527d6fdf1a8e327cb2f3db12
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Apr 10 18:50:24 2026 -0400
+
+    dm-check-unicode: Check for Vim and Emacs modelines
+
+commit 104bd2c8b3e778a7c8f76fd92c83e22a549c2fc3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 10 09:20:07 2026 +0000
+
+    bumped changelog version
+
 commit 5060e3e72e360e329a96473fea0e6153af746d7d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Apr 9 14:28:09 2026 -0400
