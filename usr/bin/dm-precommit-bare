@@ -1,0 +1,45 @@
+#!/bin/bash
+
+## https://packages.debian.org/trixie/all/pre-commit-hooks/filelist
+
+set -x
+set -e
+
+echo TODO
+exit 1
+
+/usr/bin/check-added-large-files
+/usr/bin/check-ast
+/usr/bin/check-builtin-literals
+## Deprecated.
+## /usr/bin/check-byte-order-marker
+/usr/bin/check-case-conflict
+/usr/bin/check-docstring-first
+/usr/bin/check-executables-have-shebangs
+/usr/bin/check-json
+/usr/bin/check-merge-conflict
+/usr/bin/check-shebang-scripts-are-executable
+/usr/bin/check-symlinks
+/usr/bin/check-toml
+/usr/bin/check-vcs-permalinks
+/usr/bin/check-xml
+/usr/bin/check-yaml
+/usr/bin/debug-statement-hook
+/usr/bin/destroyed-symlinks
+/usr/bin/detect-aws-credentials
+/usr/bin/detect-private-key
+/usr/bin/double-quote-string-fixer
+/usr/bin/end-of-file-fixer
+/usr/bin/file-contents-sorter
+/usr/bin/fix-byte-order-marker
+/usr/bin/fix-encoding-pragma
+/usr/bin/forbid-new-submodules
+/usr/bin/mixed-line-ending
+/usr/bin/name-tests-test
+/usr/bin/no-commit-to-branch
+## "Special."
+## /usr/bin/pre-commit-hooks-removed
+/usr/bin/pretty-format-json
+/usr/bin/requirements-txt-fixer
+/usr/bin/sort-simple-yaml
+/usr/bin/trailing-whitespace-fixer
