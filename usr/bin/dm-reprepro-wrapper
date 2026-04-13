@@ -33,7 +33,7 @@ reprepro_wrap() {
    reprepro_exit_code="0"
    reprepro_output="$(reprepro \
       $dist_build_reprepro_signing_options \
-      $dist_build_reprepro_folder_options \
+      "${dist_build_reprepro_folder_options[@]}" \
       "$@" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
 
