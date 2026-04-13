@@ -1214,6 +1214,7 @@ pkg_git_diff_and_merge_branch() {
    fi
 
    printf '%s\n' "${batch_current_package_reponame}"
+   check-ref-commits-for-unicode "${origin_branch}"
    git --no-pager diff -C --stat "${origin_branch}"
    git --no-pager diff -C "${origin_branch}"
    git --no-pager kdiff -C "${origin_branch}"

@@ -242,6 +242,9 @@ ${grep_missing_newline_result_filtered[@]}"
    exit 1
 fi
 
+## Code duplication. Copied from helper-scripts/usr/bin/modeline-show and adapted.
+modeline_regex='\(\(vi\|[Vv]im\([<=>]\?[0-9]\+\)\?\|[[:space:]]ex\):\|\([[:space:]]\|^\)-\*-\|Local'
+modeline_regex+=' Variables:\)'
 if grep \
       --line-number \
       --recursive \
@@ -250,7 +253,7 @@ if grep \
       --exclude-dir=.git \
       --exclude-dir=grml-debootstrap \
       -- \
-      '\(vi:\|[Vv]im:\| ex:\|\( \|$\)-\*-\)'; then
+      "${modeline_regex}"; then
   true "\
 $0: ERROR: Vim or Emacs modelines found!"
   exit 1
