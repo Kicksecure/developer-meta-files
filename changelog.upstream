@@ -1,3 +1,52 @@
+commit ce13778278f8fe49572c9e1e8872ff98b287735b
+Merge: b139585 8347cf8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 13 06:49:24 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit b139585565ca12777936e976c6b25fd87d6ff3b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 13 06:00:29 2026 -0400
+
+    remove unused variable
+
+commit c782fbbc1a0a93e067173cff44ee0e6942bab5dd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 13 05:59:20 2026 -0400
+
+    fix
+
+commit 376ea3b3b3f184e2fa03a2abad335683d8016095
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 13 05:42:25 2026 -0400
+
+    unicode
+
+commit 8347cf8b2ecb7058f1e58a3795c2344f16c0f8ea
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Apr 12 12:59:31 2026 -0400
+
+    Add unicode check to branch merge function in dm-packaging-helper-script
+
+commit 6b42a573200088086c44f4516c5792a20d46b0f0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 12 12:44:04 2026 -0400
+
+    todo
+
+commit fb7f90deb800869d42c87c809defc76850d30b51
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Apr 12 12:30:24 2026 -0400
+
+    Update modeline regex in dm-check-unicode
+
+commit 1529c19d35dade769c144ef6ff1bfe5c2f2b4cd0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 11 08:31:34 2026 +0000
+
+    bumped changelog version
+
 commit 1fe273bba320e77435a003142e989ec747050ed1
 Merge: 3c6091a e02f824
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -276,7 +325,7 @@ Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Sun Feb 22 21:22:08 2026 -0500
 
     Add Whonix-Starter's COPYING.txt to the list of Unicode exceptions
-    
+
     NSIS requires the license agreement file to use Windows-style line endings,
     which triggers the unicode detector.
 
@@ -901,9 +950,9 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Nov 1 04:22:48 2025 -0400
 
     install `nmap` by default (contains `nping`) (TCP based ping utility)
-    
+
     useful for debugging network issues
-    
+
     https://forums.whonix.org/t/ping-operation-permitted/11056
 
 commit 72ca0a9fd74c2bf915e97492efdf3ba775c6be05
@@ -1111,7 +1160,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Oct 19 04:36:24 2025 -0400
 
     install firmware-nonfreedom by default on Qubes
-    
+
     useful for sys-net
 
 commit 6c472e4a79877641057ffff0acb6b14076c69406
@@ -1280,7 +1329,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Oct 4 14:14:54 2025 -0400
 
     more consistent naming
-    
+
     renamed: usr/bin/wiki-vbox-version-update -> usr/bin/dm-virtualbox-update-local-and-wiki-links
 
 commit 580d03323b2f820942bb662e21dc58538ab2cc4a
@@ -2090,7 +2139,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Aug 7 06:04:28 2025 -0400
 
     fix: disable `--eula show` sanity test due to VirtualBox bug
-    
+
     > VBoxManage: error: Cannot import until the license agreement listed above is accepted.
 
 commit 5393d17355d854b5391ccff436f6eb2e9028825c
@@ -2422,7 +2471,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 7 09:07:13 2025 -0400
 
     always built Templates for Qubes stable and development version
-    
+
     implements https://github.com/QubesOS/qubes-issues/issues/9948
 
 commit 5a7b24873c597f37611d20c4ccf08cd5d39f3ca1
@@ -2916,9 +2965,9 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Apr 1 03:06:26 2025 -0400
 
     no longer add second informative `--eulafile` to Whonix-Workstation
-    
+
     because broken on some systems probably due to a VirtualBox bug
-    
+
     https://www.reddit.com/r/Whonix/comments/1jnavvb/cannot_install_whonix_virtualbox_asks_me_to_agree/
 
 commit 3e574147c5736311a03f3bffd63b138e70f0f636
@@ -3130,7 +3179,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Dec 29 07:58:05 2024 -0500
 
     No longer supporting Heikki Lindholm sourceforge Tor Browser ARM64 version.
-    
+
     https://forums.whonix.org/t/arm64-tor-browser/11806/21
 
 commit 3cf746803f4c860f72f41acc8ddb6d2e31f7f1c0
@@ -3258,7 +3307,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Dec 3 10:24:06 2024 -0500
 
     Safe disk space.
-    
+
     Delete raw and ova images in ${dist_binary_build_folder} after xz archive has been created.
 
 commit 3dba15da15a03e993a02c033f0267509a7895cfa
@@ -3272,7 +3321,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Dec 3 10:11:58 2024 -0500
 
     Safe disk space.
-    
+
     Delete temporary VirtualBox VMs in temporary VM user build folder to save disk space during the build process.
 
 commit 4bb90ffcbbe2b7c42bccde38a64134f470eb8008
@@ -3405,7 +3454,7 @@ Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Mon Nov 11 23:08:31 2024 -0600
 
     Add Tor Browser Bundle version detection function
-    
+
     Note that this adds a dependency on jq since autodetecting the latest
     version of Tor Browser for ARM64 requires parsing JSON from
     SourceForge.
@@ -4054,7 +4103,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 25 12:24:05 2024 -0400
 
     remove .gitignored files
-    
+
     to avoid including them inside a source tarball
 
 commit 9feb88d60faa49d90126509445e2cc947ed5ec5f
@@ -4116,7 +4165,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 20 12:51:51 2024 -0400
 
     remove version number from libvirt xml files
-    
+
     for code simplification
 
 commit 2d44e51c765cc141a1bae1886a6e6cf204ee974e
@@ -4928,7 +4977,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Nov 11 13:41:30 2023 -0500
 
     change license to AGPL-3+
-    
+
     https://forums.whonix.org/t/license-change-to-agplv3/17455
 
 commit 2755f67a120dd4667a65d24114cc4bb24ae116d4
@@ -5164,7 +5213,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Oct 19 12:45:30 2023 -0400
 
     exclude grml-debootstrap/debian/changelog from unicode check
-    
+
     https://github.com/grml/grml-debootstrap/issues/219
 
 commit be2c401409935ca3bae6ac4a6a5a6321f99f9cbd
@@ -6505,7 +6554,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Oct 3 08:08:20 2022 -0400
 
     exclude files from unicode check
-    
+
     https://forums.whonix.org/t/detecting-malicious-unicode-in-source-code-and-pull-requests/13754/17
 
 commit 4d962dc80342a3be691399b081065f5a42c79edd
@@ -6699,7 +6748,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Jul 24 07:26:10 2022 -0400
 
     try higher compression of VirtualBox `.ova` images
-    
+
     https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
 
 commit 1677ee15c6960549d680373a9a1ed08b04110725
@@ -6755,7 +6804,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jul 13 04:40:00 2022 -0400
 
     add scripts to extract all external links from wiki
-    
+
     `dm-wiki-to-weblinks` / `dm-file-to-weblinks` / `dm-wiki-link-clean`
 
 commit e9bf843e5fe9ce1188c48f7ee8155390c9d7ecb5
@@ -7159,7 +7208,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jun 21 07:55:32 2022 -0400
 
     remove no longer used round robin mirror_tester
-    
+
     since no longer using round robin mirroring
 
 commit 2e22fdb04d8c8ceb7f6afb32f6604a2f4c5fb7a2
@@ -8001,9 +8050,9 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Dec 4 16:03:10 2021 -0500
 
     use `curl` with `--cert-status`
-    
+
     Thanks for @yodawins for the suggestion!
-    
+
     https://forums.whonix.org/t/scurl-secure-curl-wrapper/7125/8
 
 commit f36b3550f849f6cef3fd372276973c82c98107ce
@@ -8295,9 +8344,9 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 16 17:17:53 2021 -0400
 
     modify warrant canary text as per:
-    
+
     https://www.whonix.org/w/index.php?title=Dev/Warrant_Canary_Draft&oldid=65156
-    
+
     https://forums.whonix.org/t/whonix-warrant-canary/3208/29
 
 commit 5309d32b871b3743e18bbf6d08324777e6028b14
@@ -8461,7 +8510,7 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Mar 11 14:26:18 2021 -0500
 
     stop using apt-key since deprecated
-    
+
     https://forums.whonix.org/t/apt-2-2-changes/11240/1
 
 commit b2ae42a7a82cd225c1d20b3ff5aa4eaf450a8d4b
@@ -9316,7 +9365,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Aug 1 10:42:30 2019 +0000
 
     fix instructions for adding Whonix repository
-    
+
     no longer rely on gpg key servers since unreliable
 
 commit 7024013f899270e919108053ead6e37f09f38fd8
@@ -9338,7 +9387,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Aug 1 10:28:37 2019 +0000
 
     Merge pull request #2 from 0brand/master
-    
+
     Fix numbering
 
 commit fbfe8a529e5d09653639402023eb76576af11581
@@ -9394,7 +9443,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Mon Jul 29 11:52:28 2019 +0000
 
     sign releases using signify-openbsd
-    
+
     https://forums.whonix.org/t/signify-openbsd/7842
 
 commit 7da84d4e6fbf1603fa047dc732ea179c63a1ccaa
@@ -9528,7 +9577,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Fri Apr 12 09:42:53 2019 -0400
 
     add --description to VirtualBox images
-    
+
     https://phabricator.whonix.org/T825
 
 commit a6c153b2557328a1b7569e5ac330e96995c42e94
@@ -9770,7 +9819,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Fri Mar 8 09:03:52 2019 +0000
 
     add enhancements by @torjunkie
-    
+
     https://forums.whonix.org/t/whonix-warrant-canary/3208/12
 
 commit 4aeb617cf3bd309bb69ab6a4f16aacf2dc506ddc
@@ -9838,18 +9887,18 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Fri Mar 1 14:32:43 2019 +0000
 
     add improved legal protections clauses
-    
+
     The license for software created by Whonix is the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version with additional terms applicable per GNU GPL version 3 section 7.
-    
+
     The additional terms are based on the Doom 3 license which is Debian refers to as `GPL-3+-with-id-software-additional-terms`, which is Debian DFSG [1] (The Debian Free Software Guidelines) approved and which is therefore suitable for Debian `main`. Whonix made applied minimal changes to it:
-    
+
     * Rewrite `The Doom 3 BFG Edition GPL Source Code` to the more common `this program` which is used throughout the GPL.
     * Added a "trump clause" [2], in other words, any conflicts or disputes between the additional terms and the GPLv3 shall be resolved in favor of the GPLv3 by adding `Notwithstanding any other provision of this License` (as mentioned in GPL FAQ [3]) at the beginning of the additional terms.
-    
+
     [1] https://www.debian.org/social_contract#guidelines
     [2] https://www.fsf.org/news/canonical-updated-licensing-terms
     [3] https://www.gnu.org/licenses/gpl-faq.html#v3Notwithstanding
-    
+
     For more considerations, see also:
     https://www.whonix.org/wiki/Dev/Licensing
 
@@ -10154,7 +10203,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Nov 30 21:36:11 2017 +0100
 
     Merge pull request #1 from Algernon-01/master
-    
+
     Patches for Whonix live
 
 commit d90a9b58c8f1e581f65a0a9b24f36a847d4f4771
@@ -10300,7 +10349,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Tue Feb 21 22:19:46 2017 +0000
 
     use systemctl --no-pager to prevent blocking due to systemctl interactivity
-    
+
     https://phabricator.whonix.org/T637
 
 commit ebf91c915b584736738ccaa844f76b3386e529cb
@@ -10320,7 +10369,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Wed Feb 15 20:46:27 2017 +0000
 
     Debian stretch / kde plasma5 fix: KDEDIRS -> XDG_CONFIG_DIRS
-    
+
     https://phabricator.whonix.org/T633
 
 commit 4914e1fe7bcd729727459a295d91df87128a497d
@@ -10436,9 +10485,9 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Sun Jan 29 16:35:57 2017 +0000
 
     use tar --owner=0 --group=0 for deterministic results
-    
+
     Thanks to anonymous1 for the suggestion!
-    
+
     https://forums.whonix.org/t/testing-whonix-installer-for-windows
 
 commit 7fcd96f59bb624e861c86ff380954d8593c289e4
@@ -10452,7 +10501,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Sun Jan 29 15:36:31 2017 +0000
 
     add debug-steps/qubes-repo-temp
-    
+
     a script to quickly install from apt-get update from local repository
 
 commit ec10ff6b9d4563c11be3267eecab3f2116cb9c30
@@ -10490,7 +10539,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Wed Jan 18 11:13:19 2017 +0000
 
     add kvm internal / external network file support
-    
+
     https://forums.whonix.org/t/whonix-14-build-script-changes-alternative
 
 commit 54a2451b82956556e391f50b644aa919ff3fdd5b
@@ -10661,7 +10710,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Tue Aug 30 21:15:24 2016 +0000
 
     sudo --non-interactive
-    
+
     https://phabricator.whonix.org/T549
 
 commit 6f7e543b23cff9e72de70076d2349f28cfb50458
@@ -10771,7 +10820,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Fri Apr 15 00:38:59 2016 +0000
 
     work on install-from-local-repository
-    
+
     https://phabricator.whonix.org/T461
 
 commit e74c277fd8cb56f120b44f7136cf986f148781d5
@@ -10785,7 +10834,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Apr 14 23:36:30 2016 +0000
 
     added install-from-local-repository script
-    
+
     https://phabricator.whonix.org/T461
 
 commit 9838ff22d6033dc79e2ca5486ed6a14623d187fa
@@ -10799,7 +10848,7 @@ Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Apr 7 23:33:18 2016 +0000
 
     removed dependency on packages with chroot scripts
-    
+
     https://phabricator.whonix.org/T461
 
 commit fcbb6fdfd9f0cf9e335ab8ce1acec67d0e4e2ead
