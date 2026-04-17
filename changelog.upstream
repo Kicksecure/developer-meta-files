@@ -1,3 +1,22 @@
+commit e22d0bf89b01200d60d9de0f81d48feacbd7067f
+Merge: f61df66 b932f59
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Apr 17 02:58:45 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit f61df66ba6e29ddaa3438a73249a6423a8859f55
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Apr 16 12:24:22 2026 +0000
+
+    bumped changelog version
+
+commit b932f590fe238eb19dc1e7a038b1c8ebca83780e
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Apr 15 21:43:00 2026 -0400
+
+    Stop including qps on LXQt systems by default
+
 commit ce13778278f8fe49572c9e1e8872ff98b287735b
 Merge: b139585 8347cf8
 Author: Patrick Schleizer <adrelanos@whonix.org>
