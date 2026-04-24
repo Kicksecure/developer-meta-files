@@ -6,23 +6,28 @@
 #set -x
 set -e
 
+benchmarktimestart=0
+benchmarktimeend=0
+
 ## Thanks to perreal for the convertsecs function.
 ## http://stackoverflow.com/a/12199798
-convertsecs() {
-   local h m s
-   ((h="${1}/3600"))
-   ((m="(${1}%3600)/60"))
-   ((s="${1}%60"))
-   printf "%02d:%02d:%02d\n" "$h" "$m" "$s"
-}
+## NOTE: If uncommenting for some reason, use is_whole_number from strings.bsh
+## to verify the safety of ${1}
+#convertsecs() {
+#   local h m s
+#   ((h="${1}/3600"))
+#   ((m="(${1}%3600)/60"))
+#   ((s="${1}%60"))
+#   printf "%02d:%02d:%02d\n" "$h" "$m" "$s"
+#}
 
 benchmark_time_start() {
-   benchmark_time_start="$(date +%s)"
+   benchmarktimestart="$(date +%s)"
 }
 
 benchmark_time_end() {
    benchmarktimeend="$(date +%s)"
-   benchmark_took_seconds="$(( $benchmarktimeend - $benchmark_time_start ))"
+   benchmark_took_seconds="$(( $benchmarktimeend - $benchmarktimestart ))"
 }
 
 variables() {

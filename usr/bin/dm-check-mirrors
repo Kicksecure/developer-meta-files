@@ -3,6 +3,8 @@
 #set -x
 set -e
 
+source /usr/libexec/helper-scripts/strings.bsh
+
 curl_built_in_args="\
       --location \
       --show-error \
@@ -74,6 +76,9 @@ for mirror_item in $mirror_list ; do
 
    ## Curl return bytes per second as per curl default.
    bytes_per_second="$stdout"
+   if ! is_whole_number "$bytes_per_second"; then
+     bytes_per_second=0
+   fi
    kb_per_second="$(( $bytes_per_second / 1024 ))"
 
    mb_per_second="$(( $bytes_per_second / 1024 / 1024 ))"

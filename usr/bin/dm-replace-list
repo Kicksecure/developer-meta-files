@@ -28,7 +28,7 @@ counter=0
 export counter
 
 while IFS= read -r -d $'\0' file_name; do
-   counter=$(( total + 1 ))
+   counter=$(( counter + 1 ))
 
    basename_file_name="${file_name##*/}"
 
