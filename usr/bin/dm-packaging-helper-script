@@ -1999,7 +1999,7 @@ pkg_upstream_and_debian_changelog_bump() {
 
    ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
    ## individual packages.
-   printf "%s\n" "version_numbers_by_upstream: '${version_numbers_by_upstream}'"
+   printf "%s\n" "version_numbers_by_upstream: '${version_numbers_by_upstream:-}'"
 
    ## TODO:
    ## Not the cleanest way. Other variables might be unwanted.
