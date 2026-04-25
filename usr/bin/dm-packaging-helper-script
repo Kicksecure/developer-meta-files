@@ -575,7 +575,7 @@ internal_descr_writer() {
             exit 1
          fi
 
-         if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]}" = 'y' ]; then
+         if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]:-}" = 'y' ]; then
             printf "%s\n" "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
             printf "%s\n" '' | tee -a -- "${description_file}" >/dev/null
             printf "%s\n" "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" | tee -a -- "${description_file}" >/dev/null
@@ -998,7 +998,7 @@ pkg_descr_merger() {
 
             merged_file="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
 
-            if ! [ "${merge_file_reset_list["${merged_file}"]}" = 'y' ] ; then
+            if ! [ "${merge_file_reset_list["${merged_file}"]:-}" = 'y' ] ; then
                safe-rm -f -- "${merged_file}"
                merge_file_reset_list["${merged_file}"]='y'
             fi
@@ -2404,7 +2404,7 @@ run_batch() {
 main() {
    local target_cmd arg_list
 
-   target_cmd="$1"
+   target_cmd="${1:-}"
    shift || true
    arg_list=( "$@" )
 
@@ -2417,7 +2417,7 @@ main() {
 
    case "${target_cmd}" in
       'commit_filter')
-         [ -z "${arg_list[0]}" ] && {
+         [ -z "${arg_list[0]:-}" ] && {
             printf "%s\n" "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
             exit 1
          }

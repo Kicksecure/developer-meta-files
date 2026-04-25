@@ -8,7 +8,11 @@
 ## sudo dm-install-from-local-repository --target root --flavor whonix-gateway --build
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
@@ -38,7 +42,7 @@ main() {
    ## Reading local repository containing Whonix's packages.
    chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
-   if [ "$pkg" = "" ]; then
+   if [ "${pkg:-}" = "" ]; then
       if [ "$dist_build_flavor" = "whonix-gateway-kde" ]; then
          if [ "$dist_build_qubes" = "true" ]; then
             pkg="qubes-whonix-gateway-kde"

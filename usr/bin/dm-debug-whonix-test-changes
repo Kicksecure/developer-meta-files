@@ -4,12 +4,16 @@
 ## See the file COPYING for copying conditions.
 
 set -x
+set -o errexit
+set -o nounset
 set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 build_all_error_handler() {
    : echo "
-${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+${red:-}${bold:-}BASH_COMMAND${reset:-}: $BASH_COMMAND
+${red:-}${bold:-}ERROR $BASH_SOURCE: | caller: $(caller)${reset:-}
 "
    exit 1
 }

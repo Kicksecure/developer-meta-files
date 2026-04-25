@@ -1,8 +1,11 @@
 #!/bin/bash
 
 #set -x
-set -e
+set -o errexit
+set -o nounset
 set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 check() {
    if [ ! "$1" = "$(basename $(pwd))" ]; then

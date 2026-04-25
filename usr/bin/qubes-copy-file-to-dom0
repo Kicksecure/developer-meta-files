@@ -7,9 +7,10 @@
 ## qubes-copy-file-to-dom0 vmname source-file target-file
 
 set -x
-set -e
-set -o errtrace
-set -o pipefail
+set -o errexit
 set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 qvm-run --pass-io "$1" "cat $2" > "$3"
