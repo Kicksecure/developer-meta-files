@@ -4,10 +4,11 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -e
-set -o errtrace
-set -o pipefail
+set -o errexit
 set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 qubes-dom0-vm-backup-do
 qubes-dom0-vm-backup-verification

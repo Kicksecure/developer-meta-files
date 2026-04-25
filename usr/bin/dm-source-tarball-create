@@ -7,10 +7,15 @@
 ## manual use for now only
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
-[ -n "$XZ_OPT" ] || XZ_OPT="--threads=8"
+[ -n "${XZ_OPT:-}" ] || XZ_OPT="--threads=8"
 export XZ_OPT
 
 tar \

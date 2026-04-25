@@ -3,7 +3,11 @@
 ## https://packages.debian.org/trixie/all/pre-commit-hooks/filelist
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 echo TODO
 exit 1

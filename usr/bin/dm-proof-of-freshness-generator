@@ -2,7 +2,11 @@
 
 ## https://github.com/QubesOS/qubes-secpack/blob/master/utils/proof_of_freshness.py
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 export PS4="\n$ "
 set -x

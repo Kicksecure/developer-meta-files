@@ -4,9 +4,15 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 git_tag_nearest="$(git describe --always --abbrev=0)"
+
+pid_list=""
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 

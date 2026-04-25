@@ -4,10 +4,11 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -e
-set -o errtrace
-set -o pipefail
+set -o errexit
 set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 qubes-raw-backup-adrelanos-do
 qubes-raw-backup-adrelanos-verification

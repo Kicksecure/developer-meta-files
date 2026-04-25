@@ -1,12 +1,14 @@
 #!/bin/bash
 
 set -x
-set -e
+set -o errexit
+set -o nounset
 set -o pipefail
 set -o errtrace
+shopt -s inherit_errexit
 
-if ! test -d "$1" && ! test -f "$1" ; then
-   true "ERROR: not a folder or file: $1"
+if ! test -d "${1:-}" && ! test -f "${1:-}" ; then
+   true "ERROR: not a folder or file: ${1:-}"
    exit 1
 fi
 
@@ -23,7 +25,7 @@ opts="\
    --exclude SC2001 \
    "
 
-for file_name in $(find "$1" -type f -not -iwholename '*.git*' -not -iwholename '*changelog.upstream*'); do
+for file_name in $(find "${1:-}" -type f -not -iwholename '*.git*' -not -iwholename '*changelog.upstream*'); do
    true "file_name: $file_name"
    if ! test -f "$file_name" ; then
       continue

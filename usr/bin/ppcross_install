@@ -6,7 +6,11 @@
 ## NOTE: No longer in use.
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 FPC_VERSION=3.2.2
 FPC_COMMIT_FOR_VERSION=0d122c49534b480be9284c21bd60b53d99904346 # 3.2.2
@@ -100,7 +104,7 @@ add_searchpath() {
   fi
 }
 
-case "$1" in
+case "${1:-}" in
   install_dependencies) install_dependencies;;
   install_ppcross) install_ppcross;;
   add_searchpath) add_searchpath;;

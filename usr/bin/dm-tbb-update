@@ -4,9 +4,11 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -e
+set -o errexit
+set -o nounset
 set -o pipefail
 set -o errtrace
+shopt -s inherit_errexit
 
 true "INFO: Currently running script: $BASH_SOURCE $@"
 
@@ -14,6 +16,8 @@ source /usr/libexec/helper-scripts/git.sh
 
 ## XXX: hardcoded path
 derivative_maker_source_code_dir="$HOME/derivative-maker"
+
+source "$derivative_maker_source_code_dir/help-steps/pre"
 
 version_check() {
    if [ "${1,,}" = "" ]; then

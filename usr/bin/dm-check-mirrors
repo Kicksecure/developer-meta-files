@@ -1,7 +1,11 @@
 #!/bin/bash
 
 #set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 source /usr/libexec/helper-scripts/strings.bsh
 
@@ -72,7 +76,7 @@ for mirror_item in $mirror_list ; do
    #stderr=$(stcat /home/checkmirrors/stderr.txt)
 
    stecho "stdout: '$stdout'"
-   stecho "stderr: '$stderr'"
+   stecho "stderr: '${stderr:-}'"
 
    ## Curl return bytes per second as per curl default.
    bytes_per_second="$stdout"

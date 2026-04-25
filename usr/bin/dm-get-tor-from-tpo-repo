@@ -5,7 +5,11 @@
 
 set -x
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 ## amd64 chroot already existing for version check
 make_cross_build_platform_list="arm64" ~/derivative-maker/build-steps.d/*_cowbuilder-setup --allow-untagged true --allow-uncommitted true --flavor internal --target root

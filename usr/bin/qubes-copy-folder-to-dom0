@@ -7,10 +7,11 @@
 ## qubes-copy-folder-to-dom0 vmname source-folder target-folder
 
 set -x
-set -e
-set -o errtrace
-set -o pipefail
+set -o errexit
 set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 true "$0: START"
 

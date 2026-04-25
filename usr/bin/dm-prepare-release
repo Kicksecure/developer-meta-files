@@ -4,7 +4,11 @@
 ## See the file COPYING for copying conditions.
 
 set -x
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
 
 true "INFO: Currently running script: ${BASH_SOURCE} $@"
 
@@ -412,7 +416,7 @@ Please donate! [C]
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
    TAR_OPTIONS="\
-      ${TAR_OPTIONS}
+      ${TAR_OPTIONS:-}
       --owner=0 --group=0 --numeric-owner \
       --mode=go=rX,u+rw,a-s \
       --sort=name \
@@ -421,7 +425,7 @@ Please donate! [C]
       --xz \
       "
    export TAR_OPTIONS
-   XZ_OPT="${XZ_OPT} -9"
+   XZ_OPT="${XZ_OPT:-} -9"
    export XZ_OPT
 
    true "INFO: vm_names_to_be_exported: $vm_names_to_be_exported"
@@ -551,6 +555,7 @@ sign_cmd_openpgp() {
    local base_name
    base_name="$(basename -- "$1")"
    test -f "$1"
+   test -n "${DEBEMAIL:-}"
    safe-rm -f -- "$2"
    ## OpenPGP signatures do not authenticate filenames by default, therefore add
    ## the name of the file as a OpenPGP notation so at least users that look
@@ -577,6 +582,7 @@ sign_cmd_signify() {
 verify_cmd_openpgp() {
    test -f "$1"
    test -f "$2"
+   test -n "${DEBEMAIL:-}"
    sq verify --signer-email "$DEBEMAIL" --signature-file="$2" -- "$1"
 }
 
@@ -661,8 +667,6 @@ signatures_create() {
    ## Debugging.
    pwd
 
-   set -o nounset
-
    local i
    for i in "${!file_list[@]}"; do
       true "Variable Name: ${var_names[i]}"
@@ -693,9 +697,6 @@ signatures_create() {
       sign_and_verify "${file_item}.torrent"
       sign_and_verify "${file_item}.sha512sums"
    done
-
-   ## TODO: Remove when whole script is ready for nounset.
-   set +o nounset
 }
 
 legal_files_copy() {
