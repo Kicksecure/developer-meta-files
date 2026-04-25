@@ -14,7 +14,6 @@ cd "$MYDIR"
 ## XXX: hardcoded path
 source /usr/libexec/helper-scripts/strings.bsh
 source "$HOME/derivative-maker/help-steps/pre"
-source "$HOME/derivative-maker/help-steps/colors"
 source "$HOME/derivative-maker/help-steps/variables"
 
 show_files() {

@@ -26,7 +26,7 @@ fi
 ## required by: make-helper-one.bsh
 cd -- "$derivative_maker_source_code_dir"
 
-source "${derivative_maker_source_code_dir}/help-steps/colors"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/get_colors.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
 

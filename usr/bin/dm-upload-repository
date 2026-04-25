@@ -15,7 +15,6 @@ cd "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
-source "$HOME/derivative-maker/help-steps/colors"
 source "$HOME/derivative-maker/help-steps/variables"
 
 root_check_no() {

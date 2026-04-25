@@ -13,7 +13,6 @@ cd "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
-source "$HOME/derivative-maker/help-steps/colors"
 source "$HOME/derivative-maker/help-steps/variables"
 
 exception_handler_unmount-vdi-force() {

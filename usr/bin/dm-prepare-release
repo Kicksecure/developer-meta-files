@@ -20,7 +20,6 @@ else
 fi
 
 source "$derivative_maker_source_code_dir/help-steps/pre"
-source "$derivative_maker_source_code_dir/help-steps/colors"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
 cd "${dist_binary_build_folder}"

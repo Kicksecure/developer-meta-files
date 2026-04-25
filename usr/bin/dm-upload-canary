@@ -15,7 +15,6 @@ cd "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
-source "$HOME/derivative-maker/help-steps/colors"
 source "$HOME/derivative-maker/help-steps/variables"
 
 if [ "$(id -u)" = "0" ]; then
