@@ -1922,9 +1922,9 @@ pkg_git_sign_tags() {
 pkg_verify_signed_commit() {
    local cmd
    ## XXX: hardcoded
-   [ -n "$sq_git_trust_root" ] || sq_git_trust_root="HEAD"
+   [ -n "${sq_git_trust_root:-}" ] || sq_git_trust_root="HEAD"
    ## XXX: hardcoded
-   [ -n "$sq_git_policy_file" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/openpgp-policy.toml"
+   [ -n "${sq_git_policy_file:-}" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/openpgp-policy.toml"
    #git verify-commit HEAD
    sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
 }
