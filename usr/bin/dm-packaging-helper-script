@@ -2021,7 +2021,7 @@ pkg_upstream_and_debian_changelog_bump() {
       genmkfile deb-uachl-bumpup-major
    fi
 
-   genmkfile make_deb-uachl-commit-changelog
+   genmkfile deb-uachl-commit-changelog
 
    true
 }
