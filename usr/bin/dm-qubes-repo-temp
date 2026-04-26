@@ -18,7 +18,7 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 true "ERROR: Not implemented!"
 exit 1
 
-dist_build_internal_run="true"
+dist_build_source_run="true"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 cd -- "$MYDIR"

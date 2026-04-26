@@ -15,7 +15,7 @@ shopt -s inherit_errexit
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-dist_build_internal_run="true"
+dist_build_source_run="true"
 dist_build_one_parsed="true"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
