@@ -2036,7 +2036,7 @@ pkg_upstream_and_debian_changelog_bump() {
    ## In that case reprepro ('genmkfile reprepro-add') would then detect the same
    ## source tarball version but with different content (checksum) and therefore
    ## refuse adding it.
-   if [ "${version_numbers_by_upstream}" = "true" ]; then
+   if [ "${version_numbers_by_upstream:-}" = "true" ]; then
       ## XXX: manual
       genmkfile deb-uachl-bumpup-manual
    else
