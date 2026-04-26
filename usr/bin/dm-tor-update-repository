@@ -105,8 +105,8 @@ dm_tor_update_repository() {
     Version \
     'Package|^tor$'
 
-  if (( ${#remote_tor_version_list[@]} == 0 )) \
-    || [ -z "${remote_tor_version_list[0]}" ]; then
+  if [ "${#remote_tor_version_list[@]}" -eq 0 ] || \
+    [ -z "${remote_tor_version_list[0]-}" ]; then
     true 'ERROR: Remote Tor version could not be detected!'
     exit 1
   fi

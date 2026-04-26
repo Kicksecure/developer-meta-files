@@ -25,6 +25,9 @@ true "$0: START"
 
 pwd
 
+command -v -- osslsigncode
+command -v -- sha256sum
+
 counter=0
 for file_name in ./VirtualBox-*.exe ; do
   ## Default glob behaviour: with no matches the pattern is left

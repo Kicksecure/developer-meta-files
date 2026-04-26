@@ -21,18 +21,10 @@ cd -- "$MYDIR"
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/variables"
 
-## TODO: review - `exithandler` is referenced here but not defined
-## locally; it is expected to come from the sourced
-## help-steps/pre. Confirm it still exists there (older derivative-
-## maker versions may not provide it). If absent, the EXIT trap
-## silently no-ops at script exit (bash prints "command not found"
-## but the script exits regardless).
-trap "exithandler" EXIT
-
 true "${cyan}INFO: rsync test...${reset}"
 
-rsync-ssl --dry-run --recursive --times --quiet rsync://kicksecure.com/kicksecure
-rsync-ssl --dry-run --recursive --times --quiet rsync://whonix.org/whonix
+rsync-ssl --dry-run --recursive --times --quiet "rsync://kicksecure.com/kicksecure"
+rsync-ssl --dry-run --recursive --times --quiet "rsync://whonix.org/whonix"
 ## Cannot use subdomain.
 #rsync --dry-run --recursive --times --quiet rsync://rsync.whonix.org/whonix
 

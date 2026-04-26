@@ -93,18 +93,9 @@ upload_files() {
 
       ## Test if DNS is functional.
       ## Sometimes 'rsync' fails to resolve DNS but running 'nslookup' beforehand fixes it.
-      ## Overrule with '||true' as the failure would be handled below by 'rsync'.
-      ## TODO: the iteration variable is confusingly named
-      ##   $dist_server_with_upload_location_list_item but iterates
-      ##   $dist_server_with_upload_location_list. Consider renaming
-      ##   the iter var to $dist_server_with_upload_location_item -
-      ##   that name is already used by the outer loop in main(),
-      ##   though, so this would also need a rename in
-      ##   derivative-maker's help-steps/variables (or wherever the
-      ##   $dist_server_with_upload_location_list itself is set) to
-      ##   avoid the same-name collision.
-      for dist_server_with_upload_location_list_item in $dist_server_with_upload_location_list; do
-         nslookup "$dist_server_with_upload_location_list_item" || true
+      ## Overrule with '|| true' as the failure would be handled below by 'rsync'.
+      for dist_server_with_upload_location_item in $dist_server_with_upload_location_list; do
+         nslookup "$dist_server_with_upload_location_item" || true
       done
 
       rsync_exit_code="0"

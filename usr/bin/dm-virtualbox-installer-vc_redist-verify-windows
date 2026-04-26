@@ -25,6 +25,9 @@ true "$0: START"
 
 pwd
 
+command -v -- osslsigncode
+command -v -- sha256sum
+
 file_name="vc_redist.x64.exe"
 
 test -r "$file_name"
