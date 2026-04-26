@@ -15,7 +15,7 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 cd -- "$MYDIR"
 
-dist_build_internal_run="true"
+dist_build_source_run="true"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
