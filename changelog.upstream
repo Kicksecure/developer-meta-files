@@ -1,3 +1,270 @@
+commit 1ddd09e68e2569df76e04a590962b38d5ce48bf0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 05:52:02 2026 -0400
+
+    .
+
+commit ac7ebc26eafa519fa629cc09ac7f54e438367e19
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 05:49:50 2026 -0400
+
+    .
+
+commit 30d9a065ed8f899498febfdde6b56fe95f4cf47c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 05:28:16 2026 -0400
+
+    deprecate no longer used travis script
+
+commit d32d251f5d766e427e9b5b14b37ab092d93152c4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 05:27:51 2026 -0400
+
+    deprecate no longer used paypal related generators
+
+commit 029a1881eadbb1fbec481e1130d983d90c4cc671
+Merge: 5b145e6 9efa3ee
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 05:27:27 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/shellcheck-clean-and-pr1-feedback'
+
+commit 9efa3ee727f0498a3f8edcb6e609448523a18366
+Author: Claude <noreply@anthropic.com>
+Date:   Sun Apr 26 08:37:56 2026 +0000
+
+    shellcheck-clean repo, address PR #1 feedback, harden git, fix bugs
+
+    PR #1 review feedback (ERR trap nounset safety):
+    - dm-git-commit-checkout-latest, dm-git-tag-checkout-latest: source
+      help-steps/pre BEFORE installing the build_all_error_handler ERR
+      trap, so an early failure no longer fires the trap with unset
+      ${red}/${bold}/${reset}.
+    - dm-paypal-wiki-templates-create: defaults the color expansions
+      inside build_all_error_handler since this script never sources
+      color-variable definitions.
+
+    shellcheck cleanup:
+    - Add .shellcheckrc with the project's existing exclusion list plus
+      SC2154 (vars from sourced help-steps/* files) and SC1091 (sources
+      outside the repo).
+    - Replace bare \$BASH_SOURCE with \${BASH_SOURCE[0]} and \"\$@\" with
+      \$* in info/error strings repo-wide (SC2128/SC2145).
+    - misc/commit-list: \$(basename \$(pwd)) -> \$(basename \"\$PWD\").
+    - dm-check-mirrors: drop dead self-assignment of mirror_item.
+    - dm-check-unicode: array expansion in printf string uses [*];
+      switch missing-newline filter loop from for-over-string (split on
+      whitespace) to while-read.
+    - dm-get-tor-from-tpo-repo: per-line SC2037,SC2211 disable for the
+      bash VAR=val command-prefix form; add -r to read.
+    - dm-packaging-helper-script: convert pkg_git_branch_fetch_all to
+      use an array; guard target_cmd=\"\${1:-}\" and arg_list[0]:- in
+      main(); replace echo with printf; defensive declare -A name=();
+      remove text_lower_case dead local; document internal_git_diff
+      exit-128 path; pkg_compat_delete idempotent (|| true); bare
+      return -> return 0 in three call sites.
+    - dm-paypal-wiki-templates-create, dm-upload-canary,
+      dm-upload-repository: read -r.
+    - dm-prepare-release: \${FUNCNAME[0]} explicit index; \${arr[*]} in
+      string contexts; per-line SC2089/SC2090 disable for TAR_OPTIONS
+      (tar parses the embedded quotes itself); guard 0-files-matched
+      case in the VirtualBox-*.exe glob counter; verify_cmd_signinfy
+      threshold matches sign_cmd_signify (1000 MB, was 100 MB); drop
+      dead binary_image_text_vbox_temp setup.
+    - dm-qemu-amd64-bios, dm-qemu-amd64-efi, dm-qemu-arm64-efi: pass
+      the drive file as \$1 instead of broken file=\$@ concatenation.
+    - dm-replace-list: drop useless \$(echo \"...\"); switch the inner
+      read loop's input feed from printf '%s\\n' to printf '%s' so the
+      trailing-newline + appended-newline combination does not yield
+      an empty trailing line that trips the empty-line guard.
+    - dm-resign-canary: forward \"\$@\" to sanity_tests; guard \${3:-}
+      in sign_cmd_signify / verify_cmd_signinfy; add -- before file
+      argument on two sq verify calls.
+    - dm-shellcheck-wrapper: convert opts to an array; while-read +
+      -print0 (handles spaces); shebang check uses head -n 1; -r on
+      read; drop a duplicate --exclude.
+    - dm-tor-update-repository: fix two (( arr = 0 )) assignments that
+      were meant to be == comparisons.
+    - dm-virtualbox-installer-exe-verify-windows: same 0-files
+      guard as dm-prepare-release.
+    - dm-virtualbox-test-vm: vm_is_running_test now matches the full
+      quoted name + uuid prefix via grep -F (handles spaces in VM
+      names); wait_vm_shutdown timer starts before the loop instead of
+      inside; vmname_with_quotes single-quote -> double-quote escape
+      bug; vboxmanage_sudo_wrapper uses \$password instead of literal
+      changeme.
+    - dm-virtualbox-update-local-and-wiki-links: initialise
+      regex_result=\"\" so the no-match path doesn't trip nounset.
+    - dm-upload-images: \"_list_list\" typo -> \"_list\"; guard
+      sleep_seconds; switch the per-retry sleep to a linear backoff
+      computed from attempts_counter so the value cannot leak across
+      upload_files invocations.
+    - dm-upload-repository: initialise rsync_dry_run_maybe in main().
+    - dm-bump-derivative-maker-version: drop the extra make_ prefix
+      on genmkfile deb-uachl-commit-changelog.
+
+    End-of-options markers (--):
+    - Repo-wide for cp, mv, rm, mkdir, touch, tee, cat, chmod, git
+      add / git rm / git checkout file form, dirname, basename,
+      pushd, cd, command -v, xargs-bash, and the embedded shell in
+      qvm-run / tar.
+    - dm-get-tor-from-tpo-repo: drop the unnecessary `env` prefix; the
+      bash VAR=val command-prefix form is fine.
+
+    Git name-collision hardening:
+    - git checkout BRANCH -> git switch BRANCH (only switches branches,
+      cannot resolve to a same-named tag or pathspec).
+    - git checkout FETCH_HEAD -> git switch --detach FETCH_HEAD.
+    - All variable-derived refs use refs/heads/, refs/remotes/<remote>/
+      or refs/tags/<tag> form so a tag named the same as a branch
+      cannot be substituted in.
+    - Push uses explicit src:dst refspec
+      (refs/heads/X:refs/heads/X / refs/tags/X:refs/tags/X).
+
+    Strict shell options:
+    - Apply set -o errexit / nounset / pipefail / errtrace and shopt
+      -s inherit_errexit consistently to all shell scripts.
+
+    Reusable parallel-wait helper:
+    - New usr/libexec/developer-meta-files/parallel.bsh exposes
+      dm_parallel_wait NAME, which takes the name of an associative
+      array { pid => label } via bash nameref, loops over wait -n -p
+      VAR (bash >= 5.1), and reports each failed background job by
+      label. Defensively resets done_pid before each wait because
+      wait -n -p UNSETS the var when no child is left to reap.
+    - dm-push uses it; failed pushes are reported by label
+      (\"branch master -> github-kicksecure\") rather than \"at least
+      one push failed\".
+    - dm-packaging-helper-script's wait_for_git_processes hook uses it
+      too; pkg_git_fetch_remotes / pkg_git_branch_fetch_all /
+      pkg_git_push_tags / pkg_git_push_remotes record { pid => label }
+      into the global git_pid_label associative array. The previous
+      string-accumulator / wait \$git_pid_list_str pattern only ever
+      surfaced the LAST pid's exit status; failures elsewhere were
+      silently dropped. The serialization wait inside pkg_git_push_
+      remotes is gone too, so pushes for one repo run in parallel.
+
+    Other:
+    - Replace echo with printf '%s\\n' (or printf '%s' / printf '\\n')
+      so flag-stripping and escape-interpretation differences across
+      bash versions / shells cannot mangle output.
+    - dm-upgrade-from-local-repository: drop the
+      /run/package_manager_lock touch / rm pair (no longer required).
+    - qubes-mount-dev-xvdi: test -w /mnt/disk (the directory) instead
+      of /mnt/disk/testfile (which would have required a sentinel
+      file to pre-exist).
+    - dm-tbb-update / dm-virtualbox-update-local-and-wiki-links:
+      print the path of the leftover mktemp temp files on exit
+      rather than deleting them (developer review aid).
+    - dm-interactive-chroot-raw: fix typo'd error_handler_interactive-
+      raw -> error_handler_interactive-chroot-raw inside the inner
+      trap.
+    - dm-mount-vdi: switch the .vdi find from a string capture (which
+      silently produced a newline-separated path when more than one
+      match existed) to an array with explicit zero/multiple-match
+      checks.
+    - dm-apt-get-wrapper-test: capture apt-get exit code via
+      || apt_get_exit_code=\$?; the previous \$? read was racy under
+      set -e.
+    - dm-reprepro-wrapper: use error \"...\" for the not-found branch
+      (was true \"ERROR: ...\"; exit 1, silent unless -x); drop the
+      spurious \", ok.\" from the checksum-mismatch error message.
+    - dm-packaging-helper-script::pkg_git_packages_git_log_writer:
+      use \${derivative_maker_source_code_dir} (not hardcoded
+      /home/user/derivative-maker/) when stripping PWD prefix.
+    - dm-unmount-vdi / dm-unmount-vdi-force: rm -r -- form.
+    - dm-packaging-helper-script::generate_announcement: header_text
+      is now declared local; fix misleading 6-space indentation.
+    - TODO comments: dm-rsync-test exithandler dependency; dm-upload-
+      images list-vs-list_list iter naming; dm-virtualbox-test-vm
+      benchmark_time_start naming alignment with derivative-maker;
+      dm-install-from-local-repository -kde flavor coverage and
+      package-name suffix consistency; interactive read prompts in
+      dm-timesanitycheck-update / dm-tbb-update / dm-get-tor-from-tpo-
+      repo.
+
+commit 5b145e6e10d59a995ff0e5afb10bb4360fb6ba02
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 08:43:33 2026 -0400
+
+    fix
+
+commit 869bf84a96dbf099a8acb33d168943fd2622628c
+Merge: f5a823e 58c2a7d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 08:31:54 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/check-shell-compatibility-6eLSb'
+
+commit 58c2a7d1d864bbac398ced033ce180ad6bbc17b1
+Author: Claude <noreply@anthropic.com>
+Date:   Sat Apr 25 12:26:11 2026 +0000
+
+    scripts: enforce strict shell options repo-wide
+
+    Apply the canonical strict-mode block to every shell script in the
+    repo (the pre-existing dangerous-scripts/dev_clearnet is effectively
+    disabled with `exit 0` at the top and is intentionally untouched):
+
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        set -o errtrace
+        shopt -s inherit_errexit
+
+    Most scripts already had at least `set -e`; this normalizes them.
+
+    Targeted nounset compatibility fixes applied where the new options
+    would have surfaced an unbound variable at runtime:
+
+    - dm-prepare-release: guard TAR_OPTIONS, XZ_OPT, DEBEMAIL; drop the
+      obsolete inner set -o nounset / set +o nounset workaround inside
+      signatures_create.
+    - dm-packaging-helper-script: guard the associative-array probes in
+      internal_descr_writer and pkg_descr_merger; guard target_cmd=\$1
+      and arg_list[0] in main() so the no-arg path actually reaches its
+      empty-arg check.
+    - dm-resign-canary: guard DEBEMAIL in sanity_tests().
+    - dm-upload-images: guard sleep_seconds.
+    - ppcross_install: guard \$1 for the no-arg invocation path.
+
+    Source help-steps/pre where color vars and error() were referenced
+    without being defined:
+
+    - dm-tbb-update: needed for color vars.
+    - dm-git-commit-checkout-latest, dm-git-tag-checkout-latest: needed
+      for color vars and error().
+
+commit f5a823e0bc0f3e8ebd2fb716a6bd38761408400d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 07:54:19 2026 -0400
+
+    no longer source colors as this is nowadays handled by pre
+
+commit f73d25eb2f64caeec3ecd51ad9901186c855547a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 07:39:18 2026 -0400
+
+    no longer source colors as this is nowadays handled by pre
+
+commit bd5d075c693d163eb2b6a13796940f487009bf59
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 07:10:26 2026 -0400
+
+    .
+
+commit 60d0ed406d3681ef1f2bc8dd1761cfb84c2f9069
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 07:08:49 2026 -0400
+
+    fix
+
+commit 9a455e91158dfac87571f5ddcd94649444c8cc9e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Apr 25 10:28:02 2026 +0000
+
+    bumped changelog version
+
 commit 5ff881f24ad2c5e3196902f51984a03428d018ba
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Apr 25 06:26:20 2026 -0400
