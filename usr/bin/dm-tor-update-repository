@@ -38,10 +38,10 @@ dm_tor_update_repository() {
     remote_tor_version_list
 
   ## Make sure the proxy is set up properly.
-  #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor internal
+  #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor source
 
   ## Create a fresh chroot to work in.
-  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor internal
+  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source
 
   true 'INFO: Setting cowbuilder file variables.'
   dist_build_multiarch_package_item="$dist_build_target_arch"

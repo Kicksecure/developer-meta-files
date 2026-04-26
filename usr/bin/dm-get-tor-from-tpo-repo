@@ -18,10 +18,10 @@ shopt -s inherit_errexit
 ##   command-prefix form.
 ## SC2211: glob as command name, see comment above.
 # shellcheck disable=SC2037,SC2211
-make_cross_build_platform_list="arm64" ~/derivative-maker/build-steps.d/*_cowbuilder-setup --allow-untagged true --allow-uncommitted true --flavor internal --target root
+make_cross_build_platform_list="arm64" ~/derivative-maker/build-steps.d/*_cowbuilder-setup --allow-untagged true --allow-uncommitted true --flavor source --target root
 
 # shellcheck disable=SC2037,SC2211
-make_cross_build_platform_list="amd64 arm64" ~/derivative-maker/build-steps.d/*_create-debian-packages --allow-untagged true --allow-uncommitted true --flavor internal --target root --function download_tpo_packages
+make_cross_build_platform_list="amd64 arm64" ~/derivative-maker/build-steps.d/*_create-debian-packages --allow-untagged true --allow-uncommitted true --flavor source --target root --function download_tpo_packages
 
 commit_message="get newer Tor package from TPO"
 
