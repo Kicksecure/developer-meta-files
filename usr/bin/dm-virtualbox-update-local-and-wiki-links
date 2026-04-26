@@ -9,9 +9,9 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -25,13 +25,13 @@ fi
 ## required by: make-helper-one.bsh
 cd -- "$derivative_maker_source_code_dir"
 
-command -v mw-fetch >/dev/null
-command -v mw-edit >/dev/null
-command -v stecho >/dev/null
-command -v stsponge >/dev/null
-command -v overwrite >/dev/null
-command -v append-once >/dev/null
-command -v str_replace >/dev/null
+command -v -- mw-fetch >/dev/null
+command -v -- mw-edit >/dev/null
+command -v -- stecho >/dev/null
+command -v -- stsponge >/dev/null
+command -v -- overwrite >/dev/null
+command -v -- append-once >/dev/null
+command -v -- str_replace >/dev/null
 
 declare -A url_cache
 declare -A wiki_cache
@@ -62,7 +62,9 @@ get_wiki_page_cached () {
    if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
       mw-fetch "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
       wiki_cache["${cache_id}"]="$(cat -- "${tmpfile}")"
-      safe-rm -- "${tmpfile}"
+      ## Leftover temp file is by design - kept on disk so a
+      ## developer can inspect it after a failure.
+      printf '%s\n' "INFO: get_wiki_page_cached tmp file kept for review: ${tmpfile}"
    fi
 
    wiki_content="${wiki_cache["${cache_id}"]}"
@@ -83,6 +85,7 @@ extract_url () {
    [ -z "${content}" ] && return 1
    [ -z "${regex}" ] && return 1
 
+   regex_result=""
    while read -r line; do
       if [[ "${line}" =~ ${regex} ]]; then
          regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
@@ -152,7 +155,9 @@ replace_wiki_string () {
    wiki_content="$(cat -- "${tmpfile}")"
    wiki_cache["${cache_id}"]="${wiki_content}"
 
-   safe-rm -- "${tmpfile}"
+   ## Leftover temp file is by design - kept on disk so a developer
+   ## can inspect it after a failure.
+   printf '%s\n' "INFO: replace_wiki_string tmp file kept for review: ${tmpfile}"
 }
 
 # TODO: Templates for future work
@@ -188,7 +193,9 @@ save_cached_page_to_wiki () {
    ## XXX: hardcoded
    #mw-edit 'https://www.whonix.org/w' "${tmpfile}" "${wiki_page}"
 
-   safe-rm -- "${tmpfile}"
+   ## Leftover temp file is by design - kept on disk so a developer
+   ## can inspect it after a failure.
+   printf '%s\n' "INFO: save_cached_page_to_wiki tmp file kept for review: ${tmpfile}"
 }
 
 declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_intel64_regex vbox_macos_arm64_regex

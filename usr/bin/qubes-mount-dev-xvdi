@@ -10,12 +10,16 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-sudo mkdir --parents /mnt/disk
+sudo mkdir --parents -- /mnt/disk
 
-sudo chown --recursive user:user /mnt/disk
+sudo chown --recursive user:user -- /mnt/disk
 
 sudo cryptsetup luksOpen /dev/xvdi disk
 
 sudo mount /dev/mapper/disk /mnt/disk
 
-test -w /mnt/disk/testfile
+## `test -w FILE` requires FILE to exist; testing a sentinel file
+## (testfile) inside the mount also assumes someone created it
+## first. Check the mount point itself instead - if /mnt/disk is
+## writable, the encrypted volume is mounted and accepting writes.
+test -w /mnt/disk

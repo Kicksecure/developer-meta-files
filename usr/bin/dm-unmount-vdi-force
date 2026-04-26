@@ -10,19 +10,19 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/variables"
 
 exception_handler_unmount-vdi-force() {
-   : echo "
+   : printf '%s\n' "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+${red}${bold}ERROR ${BASH_SOURCE[0]}: | caller: $(caller)${reset}
 "
    exit 1
 }
@@ -42,7 +42,7 @@ unmount_vdi_force() {
    sync || true
 
    local command_v_exit_code="0"
-   command -v guestunmount >/dev/null || { command_v_exit_code="$?" ; true; };
+   command -v -- guestunmount >/dev/null || { command_v_exit_code="$?" ; true; };
 
    if [ "$command_v_exit_code" = "0" ]; then
       true "${bold}${cyan}INFO: guestunmount available, using it, ok... ${reset}"
@@ -56,13 +56,13 @@ unmount_vdi_force() {
 
    ## Delete temporary folder.
    ## It did not contain anything. It was only a mount point.
-   rm -r "$CHROOT_FOLDER" || true
+   rm -r -- "$CHROOT_FOLDER" || true
    sync || true
 }
 
 main() {
    if [ "$BARE_METAL" = "1" ]; then
-      true "${green}INFO: Skipping script, because BARE_METAL=1: $BASH_SOURCE${reset}"
+      true "${green}INFO: Skipping script, because BARE_METAL=1: ${BASH_SOURCE[0]}${reset}"
       exit 0
    else
       unmount_vdi_force

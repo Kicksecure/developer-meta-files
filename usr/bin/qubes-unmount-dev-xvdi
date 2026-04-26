@@ -15,4 +15,4 @@ sudo umount /mnt/disk
 sudo cryptsetup luksClose disk
 
 true "INFO: rmdir does not delete the folders in case not empty."
-rmdir /mnt/disk
+rmdir -- /mnt/disk

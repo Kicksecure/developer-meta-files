@@ -10,13 +10,13 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd "$MYDIR"
-cd ..
-cd help-steps
+cd -- "$MYDIR"
+cd -- ..
+cd -- help-steps
 
 source pre
 source variables
@@ -24,16 +24,16 @@ source variables
 backup-raw-after-package-install() {
    ## If derivative-maker is run with --fast2 switch.
    if [ "$dist_build_fast2" = "1" ]; then
-      echo "${bold}${cyan}INFO: run with --fast2 switch, skipping $BASH_SOURCE. ${reset}"
+      printf '%s\n' "${bold}${cyan}INFO: run with --fast2 switch, skipping ${BASH_SOURCE[0]}. ${reset}"
       exit 0
    fi
 
-   cp "$binary_image_raw_file" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
+   cp -- "$binary_image_raw_file" "${dist_binary_build_folder}/$VMNAME-$dist_build_version-backup-after-package-install.raw"
 }
 
 main() {
    if [ "$dist_build_install_to_root" = "true" ]; then
-      true "${green}INFO: Skipping $BASH_SOURCE, because dist_build_install_to_root is set to true.${reset}"
+      true "${green}INFO: Skipping ${BASH_SOURCE[0]}, because dist_build_install_to_root is set to true.${reset}"
    else
       if [ "$dist_build_type_long" = "gateway" ]; then
          backup-raw-after-package-install

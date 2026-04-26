@@ -10,19 +10,19 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/variables"
 
 error_handler_mount-vdi() {
-   : echo "
+   : printf '%s\n' "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+${red}${bold}ERROR ${BASH_SOURCE[0]}: | caller: $(caller)${reset}
 "
    exit 1
 }
@@ -36,16 +36,29 @@ mount_vdi() {
    VBoxManage controlvm "$VMNAME" poweroff || true
    $SUDO_TO_ROOT sync
 
-   ## Find name of .vdi file. New:
+   ## Find name of .vdi file. Use an array so multiple matches are
+   ## detected explicitly; the previous single-string capture would
+   ## have produced a path with embedded newlines and quietly fed
+   ## that to guestmount.
    local vdi_file
-   vdi_file="$(find "$HOMEVAR/VirtualBox VMs/$VMNAME/"*".vdi")"
+   local -a vdi_file_list
+   vdi_file_list=( "$HOMEVAR/VirtualBox VMs/$VMNAME/"*".vdi" )
+   if [ ! -e "${vdi_file_list[0]}" ]; then
+      printf '%s\n' "${red}${bold}ERROR: No .vdi file found in '$HOMEVAR/VirtualBox VMs/$VMNAME/'.${reset}" >&2
+      exit 1
+   fi
+   if [ "${#vdi_file_list[@]}" -ne 1 ]; then
+      printf '%s\n' "${red}${bold}ERROR: Multiple .vdi files found in '$HOMEVAR/VirtualBox VMs/$VMNAME/'.${reset}" >&2
+      exit 1
+   fi
+   vdi_file="${vdi_file_list[0]}"
    ## example result: "$HOMEVAR"/VirtualBox VMs/whonix-Gateway/whonix-Gateway-disk1.vdi
    ## For debugging it's useful to clone a VM, where only the operating system has been installed,
    ## before running the script or before copying into it.
    ## When restoring the VMClone to VM, the VDI may have another name.
 
    ## Folder has to exist to mount the image.
-   mkdir --parents "$CHROOT_FOLDER"
+   mkdir --parents -- "$CHROOT_FOLDER"
    $SUDO_TO_ROOT sync
 
    $SUDO_TO_ROOT guestmount -o allow_other -a "$vdi_file" -m /dev/sda1 "$CHROOT_FOLDER"
@@ -55,7 +68,7 @@ mount_vdi() {
 main() {
    root_check
    if [ "$BARE_METAL" = "1" ]; then
-      true "${green}INFO: Skipping script, because BARE_METAL=1: $BASH_SOURCE${reset}"
+      true "${green}INFO: Skipping script, because BARE_METAL=1: ${BASH_SOURCE[0]}${reset}"
       exit 0
    else
       mount_vdi

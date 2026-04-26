@@ -3,6 +3,10 @@
 ## Copyright (C) 2023 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## Code path below the early `exit 1` is intentionally a draft; the
+## consumer is expected to edit and re-enable the variables.
+# shellcheck disable=SC2317
+
 set -x
 set -o errexit
 set -o nounset

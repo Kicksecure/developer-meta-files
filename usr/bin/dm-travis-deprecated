@@ -5,6 +5,10 @@
 
 ## Small script for Travis CI.
 
+## Globs are deliberately used as command names so the numeric prefix
+## of the build-steps.d/* scripts does not need to be tracked here.
+# shellcheck disable=SC2211
+
 set -x
 set -o errexit
 set -o nounset
@@ -12,7 +16,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE"
+true "INFO: Currently running script: ${BASH_SOURCE[0]}"
 
 error_handler_travis() {
    exit 1
@@ -20,28 +24,28 @@ error_handler_travis() {
 
 trap "error_handler_travis" ERR
 
-true "INFO $BASH_SOURCE: Script running as user: $(logname)"
+true "INFO ${BASH_SOURCE[0]}: Script running as user: $(logname)"
 
-mydir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-true "INFO $BASH_SOURCE: mydir: $mydir"
+mydir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+true "INFO ${BASH_SOURCE[0]}: mydir: $mydir"
 
 ## Example mydir:
 ## /home/travis/build/Whonix/developer-meta-files/usr/bin
 
-dist_developer_meta_files_folder="$(dirname "$mydir")"
-true "INFO $BASH_SOURCE: dist_developer_meta_files_folder: $dist_developer_meta_files_folder"
+dist_developer_meta_files_folder="$(dirname -- "$mydir")"
+true "INFO ${BASH_SOURCE[0]}: dist_developer_meta_files_folder: $dist_developer_meta_files_folder"
 
 ## Example dist_developer_meta_files_folder:
 ## /home/travis/build/Whonix/developer-meta-files
 
-whonix_source_folder="$(dirname "$(dirname "$dist_developer_meta_files_folder")")"
-true "INFO $BASH_SOURCE: whonix_source_folder: $whonix_source_folder"
+whonix_source_folder="$(dirname -- "$(dirname -- "$dist_developer_meta_files_folder")")"
+true "INFO ${BASH_SOURCE[0]}: whonix_source_folder: $whonix_source_folder"
 
 ## Example whonix_source_folder:
 ## /home/travis/build/Whonix/Whonix
 
 ## Get into Whonix folder.
-cd "$whonix_source_folder"
+cd -- "$whonix_source_folder"
 
 ## Debugging.
 ls -la
@@ -65,7 +69,7 @@ elif [ "${TRAVIS_BRANCH:-}" = "travis-workstation-pkg-only" ]; then
    ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation --allow-untagged true
 else
-   error "Unknown ${TRAVIS_BRANCH:-} branch, check $BASH_SOURCE."
+   error "Unknown ${TRAVIS_BRANCH:-} branch, check ${BASH_SOURCE[0]}."
 fi
 
 ## }}
@@ -78,8 +82,8 @@ fi
 git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
 temp="dummy_file"
-touch "$temp"
-git add "$temp"
+touch -- "$temp"
+git add -- "$temp"
 git commit -m "dummy commit"
 
 ## Create a new dummy tag
@@ -110,7 +114,7 @@ elif [ "${TRAVIS_BRANCH:-}" = "travis-workstation-pkg-only" ]; then
    ./build-steps.d/*_create-debian-packages --allow-untagged true
    sudo --non-interactive --preserve-env dm-upgrade-from-local-repository --target root --flavor whonix-workstation
 else
-   error "Unknown ${TRAVIS_BRANCH:-} branch, check $BASH_SOURCE."
+   error "Unknown ${TRAVIS_BRANCH:-} branch, check ${BASH_SOURCE[0]}."
 fi
 
 ## }}
@@ -123,23 +127,23 @@ ls -la ../
 ls -la /home/root/derivative-binary/
 ls -la /home/root/derivative-binary/*.report
 
-true "INFO $BASH_SOURCE: Showing report..."
-cat /home/root/derivative-binary/*.report
-true "INFO $BASH_SOURCE: Done, showed report."
+true "INFO ${BASH_SOURCE[0]}: Showing report..."
+cat -- /home/root/derivative-binary/*.report
+true "INFO ${BASH_SOURCE[0]}: Done, showed report."
 
-true "INFO $BASH_SOURCE: Executing Run Initializer Gui..."
+true "INFO ${BASH_SOURCE[0]}: Executing Run Initializer Gui..."
 ## Not installed when using "-minimal".
 /usr/lib/first_run_initializer_gui || true
-true "INFO $BASH_SOURCE: Executed First Run Initializer Gui."
+true "INFO ${BASH_SOURCE[0]}: Executed First Run Initializer Gui."
 
 systemctl --no-pager timesanitycheck start || true
 systemctl --no-pager bootclockrandomization start || true
 systemctl --no-pager msgcollector start || true
 systemctl --no-pager sdwdate start || true
 
-true "INFO $BASH_SOURCE: Executing systemcheck"
+true "INFO ${BASH_SOURCE[0]}: Executing systemcheck"
 sudo --non-interactive --preserve-env -u travis bash -x systemcheck || true
-true "INFO $BASH_SOURCE: Executed systemcheck."
+true "INFO ${BASH_SOURCE[0]}: Executed systemcheck."
 
 ## {{ Do not try to reboot Travis CI!
 
@@ -152,4 +156,4 @@ true "INFO $BASH_SOURCE: Executed systemcheck."
 ## }}
 
 ## End.
-true "INFO: End of: $BASH_SOURCE | ${dist_build_error_counter:-} error(s) detected."
+true "INFO: End of: ${BASH_SOURCE[0]} | ${dist_build_error_counter:-} error(s) detected."

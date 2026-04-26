@@ -13,12 +13,12 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dist_build_internal_run="true"
 dist_build_one_parsed="true"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -40,12 +40,11 @@ reprepro_wrap() {
       || { reprepro_exit_code="$?" ; true; };
 
    if printf '%s\n' "$reprepro_output" | grep --ignore-case "is already registered with different checksums!" >/dev/null 2>/dev/null; then
-      error "Not added. Because is already registered with different checksums, ok."
+      error "Not added. Because is already registered with different checksums."
    fi
 
    if printf '%s\n' "$reprepro_output" | grep --ignore-case "Will not copy as not found" >/dev/null 2>/dev/null; then
-      true "ERROR: Will not copy as not found!"
-      exit 1
+      error "Will not copy as not found!"
    fi
 
    true "INFO: Ok."

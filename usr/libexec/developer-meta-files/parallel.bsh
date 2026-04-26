@@ -1,0 +1,63 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+# shellcheck shell=bash
+
+## Reusable helpers for waiting on background jobs while still
+## capturing each job's exit status. Source from a bash script.
+##
+## Background:
+##   `wait pid1 pid2 ...` returns the exit status of the *last* PID
+##   only - earlier failures are silently dropped. The helpers below
+##   work around that using bash 5.1's `wait -n -p VAR`, which
+##   returns when any one child finishes and writes its PID into
+##   VAR. `wait -n` for a child that has already exited returns its
+##   saved exit status immediately, so total wall-clock cost is
+##   bounded by the slowest job regardless of completion order.
+##
+## Requirements: bash >= 5.1 (for `wait -n -p`); `local -n` (bash
+## >= 4.3) for the array-by-reference parameter.
+
+## dm_parallel_wait NAME
+##
+## Wait for every PID in the associative array NAME and return 0
+## if all jobs succeeded. On failure populate the global array
+## `dm_parallel_failures` with the labels of the failed jobs and
+## return 1.
+##
+## NAME is the *name* of an associative array { pid => label },
+## taken by reference via bash nameref.
+##
+## Usage:
+##   declare -A jobs=()
+##   sleep 1 & jobs[$!]="job-A"
+##   sleep 2 & jobs[$!]="job-B"
+##   if ! dm_parallel_wait jobs ; then
+##      printf 'failed: %s\n' "${dm_parallel_failures[@]}" >&2
+##      exit 1
+##   fi
+dm_parallel_wait() {
+   local -n _dm_parallel_jobs="$1"
+   dm_parallel_failures=()
+   local remaining="${#_dm_parallel_jobs[@]}"
+   local done_pid
+   while [ "$remaining" -gt 0 ] ; do
+      ## `wait -n -p done_pid` UNSETS done_pid (not just clears it)
+      ## when there is no child to reap, e.g. if a child was reaped
+      ## externally between iterations, or if the caller's job map
+      ## counted more entries than there are real children. Reset
+      ## done_pid to empty before each wait, and use ${done_pid:-}
+      ## defensively in case wait unsets it again.
+      done_pid=""
+      if ! wait -n -p done_pid ; then
+         if [ -n "${done_pid:-}" ] \
+            && [ -n "${_dm_parallel_jobs[${done_pid}]:-}" ] ; then
+            dm_parallel_failures+=( "${_dm_parallel_jobs[${done_pid}]}" )
+         else
+            dm_parallel_failures+=( "pid ${done_pid:-unknown}" )
+         fi
+      fi
+      remaining=$(( remaining - 1 ))
+   done
+   [ "${#dm_parallel_failures[@]}" -eq 0 ]
+}

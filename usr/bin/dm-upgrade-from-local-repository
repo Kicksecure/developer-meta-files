@@ -10,10 +10,10 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
@@ -21,9 +21,6 @@ source "$HOME/derivative-maker/help-steps/variables"
 
 main() {
    trap "exception_handler_unchroot_unmount" ERR INT TERM
-
-   ## Lockfile for systemcheck.
-   touch "/run/package_manager_lock"
 
    sync
 
@@ -92,7 +89,7 @@ main() {
 #    elif [ "$dist_build_flavor" = "whonix-gateway-cli" ]; then
 #       chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install
 #    else
-#       local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
+#       local MSG="${bold}${red}${BASH_SOURCE[0]} ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
 #       error "$MSG"
 #    fi
 
@@ -108,9 +105,6 @@ main() {
 
    chroot_run sync
    sync
-
-   ## Remove lockfile for systemcheck.
-   rm --force "/run/package_manager_lock"
 
    "$dist_source_help_steps_folder/unchroot-raw" "$@"
    #"$dist_source_help_steps_folder/unprevent-daemons-from-starting"

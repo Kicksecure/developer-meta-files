@@ -10,19 +10,19 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dist_build_internal_run="true"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 mydir_backup="$MYDIR"
-cd "$MYDIR"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/variables"
 
-cd "$mydir_backup"
+cd -- "$mydir_backup"
 
 for derivative_name_item in $derivative_name_list ; do
    derivative_repository_name="$derivative_name_item"

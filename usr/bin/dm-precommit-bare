@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ## https://packages.debian.org/trixie/all/pre-commit-hooks/filelist
+## Code path below the early `exit 1` is intentionally a draft.
+# shellcheck disable=SC2317
 
 set -x
 set -o errexit
@@ -9,7 +11,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-echo TODO
+printf '%s\n' TODO
 exit 1
 
 /usr/bin/check-added-large-files

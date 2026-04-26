@@ -23,7 +23,7 @@ target_folder="$3"
 ## > tar: testfolder: time stamp 2025-03-28 06:56:11 is 2 s in the future
 
 if test -d "$target_folder" ; then
-  echo "$0: Folder: '$target_folder' already exists!" >&2
+  printf '%s\n' "$0: Folder: '$target_folder' already exists!" >&2
   ## Otherwise 'tar' would lead to inconsistent outcomes.
   ## File deleted in VM: Does not delete in dom0.
   ## File modified in VM: Updates file in dom0.
@@ -33,10 +33,10 @@ fi
 ## Folder creation is required to avoid tar error:
 ## > tar: /home/user/bin: Cannot open: No such file or directory
 ## > tar: Error is not recoverable: exiting now
-mkdir "$target_folder"
+mkdir -- "$target_folder"
 
 ## Use 'cd', 'basename', 'dirname' to avoid the target folder to contain sub folders such as '/home/user/source-folder'.
 
-qvm-run --no-gui --pass-io -- "$vmname" "set -x && cd $(dirname $source_folder) && tar -cf - -C $(dirname $source_folder) $(basename $source_folder)" | tar -x --touch --strip-components=1 -C "$target_folder"
+qvm-run --no-gui --pass-io -- "$vmname" "set -x && cd -- $(dirname -- "$source_folder") && tar -cf - -C $(dirname -- "$source_folder") -- $(basename -- "$source_folder")" | tar -x --touch --strip-components=1 -C "$target_folder"
 
 true "$0: END"

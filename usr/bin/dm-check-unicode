@@ -12,7 +12,7 @@ shopt -s inherit_errexit
 
 true "$0: START."
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -30,7 +30,7 @@ test -d "$derivative_maker_source_code_dir"
 test -x "$grep_find_unicode_wrapper"
 
 ## Need to 'cd' for relative paths.
-cd "$derivative_maker_source_code_dir"
+cd -- "$derivative_maker_source_code_dir"
 
 declare -A symlink_whitelist
 
@@ -133,7 +133,7 @@ whitelist_list=(
    './packages/kicksecure/helper-scripts/usr/lib/python3/dist-packages/stdisplay/tests/stdisplay.py'
    './windows/Whonix-Starter/COPYING.txt'
 )
-whitelist_pattern="($(IFS=$'\n'; echo -n "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
+whitelist_pattern="($(IFS=$'\n'; printf '%s' "${whitelist_list[*]}" | sed -z 's/\n/|/g'))";
 
 filtered_output=$(printf "%s\n" "$grep_find_unicode_wrapper_output" | grep --invert-match --extended-regexp -- "$whitelist_pattern" || true)
 
@@ -207,7 +207,13 @@ $grep_missing_newline_result_raw"
 
 grep_missing_newline_result_filtered=()
 
-for file_name in $grep_missing_newline_result_raw ; do
+## grep --files-with-matches prints one filename per line; iterate
+## line by line via while-read so paths containing spaces are not
+## split into multiple fake "files" (the prior `for ... in $var`
+## form word-split on every whitespace character).
+while IFS= read -r file_name ; do
+   [ -z "$file_name" ] && continue
+
    ## git style symlinks actually not allowed.
 #    if [ "$file_name" = "packages/kicksecure/helper-scripts/usr/bin/append-once" ]; then
 #       size="$(stat -c '%s' -- "$file_name")"
@@ -232,13 +238,13 @@ for file_name in $grep_missing_newline_result_raw ; do
    fi
 
    grep_missing_newline_result_filtered+=("$file_name")
-done
+done <<< "$grep_missing_newline_result_raw"
 
 if [ "${#grep_missing_newline_result_filtered[@]}" -eq "0" ]; then
    true "INFO: No missing newlines at the end of file issues found, everything is OK."
 else
    printf "%s\n" "$0: ERROR: Missing newlines at the end of file found! grep_missing_newline_result_filtered:
-${grep_missing_newline_result_filtered[@]}"
+${grep_missing_newline_result_filtered[*]}"
    exit 1
 fi
 

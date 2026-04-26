@@ -27,10 +27,12 @@ if [ "$(id -u)" != "0" ]; then
   exit 1
 fi
 
-command -v safe-rm >/dev/null
+command -v -- safe-rm >/dev/null
 
 temp_folder="$(mktemp --directory)"
 
+## Invoked indirectly via the trap below.
+# shellcheck disable=SC2317
 exit_handler() {
   if [ "$temp_folder" = "" ]; then
     return 0
@@ -53,6 +55,8 @@ install_ppcross() {
   #install_ppcross_using_debian_source_package
 }
 
+## Alternate path; toggled via the comment on the call site above.
+# shellcheck disable=SC2317
 install_ppcross_using_debian_source_package() {
   mkdir --parents -- "$temp_folder"
 
@@ -77,17 +81,17 @@ install_ppcross_using_git_from_upstream() {
     true "$0: ERROR: Cannot find fpc source dir!"
     exit 1
   else
-    cd /usr/share/fpcsrc
+    cd -- /usr/share/fpcsrc
 
     fpc_version_path="/usr/lib/fpc/$FPC_VERSION"
     safe-rm --recursive --force -- "$fpc_version_path"
-    mkdir --parents "$fpc_version_path"
-    cd "$fpc_version_path"
+    mkdir --parents -- "$fpc_version_path"
+    cd -- "$fpc_version_path"
 
     git init
     git remote add origin https://gitlab.com/freepascal.org/fpc/source.git
     git fetch --depth 1 origin "$FPC_COMMIT_FOR_VERSION"
-    git checkout FETCH_HEAD
+    git switch --detach FETCH_HEAD
 
     make clean all OS_TARGET="$OS_TARGET" CPU_TARGET="$CPU_TARGET"
     make crossinstall OS_TARGET=$OS_TARGET CPU_TARGET="$CPU_TARGET" INSTALL_PREFIX=/usr
