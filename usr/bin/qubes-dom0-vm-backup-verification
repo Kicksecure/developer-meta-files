@@ -11,7 +11,7 @@ set -o errtrace
 shopt -s inherit_errexit
 
 backup_folder_name="$(qvm-run --pass-io dom0-backup ls /mnt/disk)"
-backup_folder_name="$(echo "$backup_folder_name" | tail -1)"
+backup_folder_name="$(printf '%s\n' "$backup_folder_name" | tail -1)"
 
 ## example backup_folder_name:
 ## qubes-backup-2023-06-24T103549

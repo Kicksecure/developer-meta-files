@@ -10,7 +10,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "$0: INFO: Currently running script: $BASH_SOURCE $@"
+true "$0: INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dm-upload-images --flavor dist-installer-cli
 

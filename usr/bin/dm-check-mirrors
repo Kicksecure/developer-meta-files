@@ -50,9 +50,6 @@ version=$(stcat /home/checkmirrors/version.txt)
 #stecho "version: '$version'"
 
 for mirror_item in $mirror_list ; do
-   ## for prettier xtrace only
-   mirror_item="$mirror_item"
-
    link="${mirror_item}/${version}/Whonix-LXQt-${version}.ova"
    stecho "link: $link"
 

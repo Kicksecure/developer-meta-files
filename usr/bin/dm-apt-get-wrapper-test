@@ -9,18 +9,19 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dist_build_internal_run="true"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 source ../../../help-steps/pre
 source ../../../help-steps/variables
 
 aptgetgpgvcreatetmp
-apt-get $apt_get_gpgv_opts update
-true "INFO: apt-get exit code: $?"
+apt_get_exit_code=0
+apt-get $apt_get_gpgv_opts update || apt_get_exit_code=$?
+true "INFO: apt-get exit code: $apt_get_exit_code"
 aptgetgpgvparsetmp
 aptgetgpgvdeletetmp

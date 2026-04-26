@@ -3,6 +3,11 @@
 ## Copyright (C) 2023 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## qubes-raw-backup-adrelanos-shared bails out with exit 1 by default
+## until the consumer edits it, so shellcheck flags the body as
+## unreachable.
+# shellcheck disable=SC2317
+
 set -x
 set -o errexit
 set -o nounset
@@ -12,8 +17,8 @@ shopt -s inherit_errexit
 
 source /usr/bin/qubes-raw-backup-adrelanos-shared
 
-command -v cmp >/dev/null
-command -v blockdev >/dev/null
+command -v -- cmp >/dev/null
+command -v -- blockdev >/dev/null
 
 ## Get the size of the original disk in bytes.
 original_size=$(blockdev --getsize64 "$original_disk")

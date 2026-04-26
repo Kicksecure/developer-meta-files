@@ -8,12 +8,12 @@ set -o errtrace
 shopt -s inherit_errexit
 
 check() {
-   if [ ! "$1" = "$(basename $(pwd))" ]; then
+   if [ ! "$1" = "$(basename -- "$PWD")" ]; then
       ## git makes no new lines.
-      echo ""
-      echo "ERROR!" >&2
-      echo "$1 is not $(basename $(pwd))" >&2
-      echo "ERROR!" >&2
+      printf '\n'
+      printf '%s\n' "ERROR!" >&2
+      printf '%s\n' "$1 is not $(basename -- "$PWD")" >&2
+      printf '%s\n' "ERROR!" >&2
       exit 1
    fi
 }
@@ -23,36 +23,36 @@ iterate() {
       if [ ! -d "$pkg" ]; then
          continue
       fi
-      cd "$pkg"
+      cd -- "$pkg"
       doit
-      cd ..
+      cd -- ..
    done
 }
 
 doit() {
-   package="$(basename $(pwd))"
+   package="$(basename -- "$PWD")"
    #git log --pretty=oneline --abbrev-commit --author=adrelanos --since="01.08.2015" --until="31.08.2015" | sed "s,^,https://github.com/adrelanos/$package/commit/,"
    output="$(git --no-pager log --author=adrelanos --since="01.09.2016" --until="31.09.2016" --pretty="format:https://github.com/adrelanos/$package/commit/%h %s %b")"
    if [ ! "$output" = "" ]; then
-      echo "$output"
-      echo ""
+      printf '%s\n' "$output"
+      printf '\n'
    fi
 }
 
 ## Whonix/Whonix
-cd ..
-cd ..
+cd -- ..
+cd -- ..
 check "Whonix"
 doit
 #sleep 5
 
 ## Whonix/packages
-cd "packages"
+cd -- "packages"
 iterate "packages"
 #sleep 5
 
 ## Qubes
-cd ~/"Qubes"
+cd -- ~/"Qubes"
 iterate "Qubes"
 
 #echo ""

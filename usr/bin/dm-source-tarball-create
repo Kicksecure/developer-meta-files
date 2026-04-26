@@ -13,7 +13,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 [ -n "${XZ_OPT:-}" ] || XZ_OPT="--threads=8"
 export XZ_OPT

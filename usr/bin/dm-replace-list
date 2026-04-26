@@ -11,17 +11,17 @@ set -o errtrace
 shopt -s inherit_errexit
 
 ## XXX: hardcoded path
-cd "$HOME/derivative-maker"
+cd -- "$HOME/derivative-maker"
 
 ## NOTE: does not support spaces
-replace_list=$(echo "\
+replace_list="\
 exception_handler_shell exception_handler_shell
 exception_handler_retry exception_handler_retry
 exception_handler_process_shared exception_handler_process_shared
 exception_handler_maybe_exit exception_handler_maybe_exit
 exception_handler_general exception_handler_general
 exception_handler_unmount exception_handler_unmount
-")
+"
 
 # total=0
 # while IFS= read -r -d '' file_name ; do
@@ -69,10 +69,13 @@ while IFS= read -r -d $'\0' file_name; do
 #          echo mv "$file_name" "$new_file_name"
 #       fi
 
-   done < <( echo "$replace_list" )
+   ## $replace_list already ends with a newline; use printf '%s' (no
+   ## extra newline) so the read loop does not see a trailing empty
+   ## line and trip the `error "ERROR! line is empty!"` guard below.
+   done < <( printf '%s' "$replace_list" )
 
    true "INFO: main loop end"
 
 done < <( find . -type f -not -iwholename '*.git*' -print0 )
 
-echo "$0: END."
+printf '%s\n' "$0: END."

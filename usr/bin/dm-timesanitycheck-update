@@ -10,7 +10,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 source /usr/libexec/helper-scripts/git.sh
 
@@ -18,7 +18,7 @@ source /usr/libexec/helper-scripts/git.sh
 derivative_maker_source_code_dir="$HOME/derivative-maker"
 
 ## XXX: hardcoded path
-cd "$HOME/derivative-maker/packages/kicksecure/timesanitycheck"
+cd -- "$HOME/derivative-maker/packages/kicksecure/timesanitycheck"
 
 ./usr/share/timesanitycheck/date-minimum-file-create
 
@@ -28,10 +28,14 @@ fi
 
 git diff HEAD
 
+## Interactive gate: this script is meant to be run by hand. The
+## read blocks until the operator presses enter, giving them a
+## chance to inspect the diff before the commit. Non-interactive
+## runs (CI etc.) will hang here.
 true "press enter to continue"
 read -r temp
 
-git add 'usr/share/timesanitycheck/minimum_unixtime'
+git add -- 'usr/share/timesanitycheck/minimum_unixtime'
 git commit -m 'update minimum_unixtime'
 
 true "$0: INFO: OK"

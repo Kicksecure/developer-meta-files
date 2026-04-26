@@ -3,6 +3,9 @@
 ## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## Code path below the early `exit 1` is intentionally a draft.
+# shellcheck disable=SC2317
+
 set -x
 set -o errexit
 set -o nounset
@@ -10,15 +13,15 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 true "ERROR: Not implemented!"
 exit 1
 
 dist_build_internal_run="true"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
@@ -43,32 +46,32 @@ fi
 source_vm="$(qubesdb-read /name)"
 
 ## Get rid of the huge '.git' folder.
-rm -r -f "$binary_build_folder_dist/aptrepo_temp_copy/"
-mkdir -p "$binary_build_folder_dist/aptrepo_temp_copy"
-cp -r "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
-cp -r "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
+rm -r -f -- "$binary_build_folder_dist/aptrepo_temp_copy/"
+mkdir -p -- "$binary_build_folder_dist/aptrepo_temp_copy"
+cp -r -- "$binary_build_folder_dist/aptrepo_remote/dists" "$binary_build_folder_dist/aptrepo_temp_copy/dists"
+cp -r -- "$binary_build_folder_dist/aptrepo_remote/pool" "$binary_build_folder_dist/aptrepo_temp_copy/pool"
 
-echo "Types: deb
+printf '%s\n' "Types: deb
 URIs: file:/var/cache/aptrepo_temp_copy
 Suites: $dist_build_apt_codename
 Components: main
 Enabled: yes
 Trusted: yes" > "$binary_build_folder_dist/derivative_repo_temp.sources"
-cat "$binary_build_folder_dist/derivative_repo_temp.sources"
+cat -- "$binary_build_folder_dist/derivative_repo_temp.sources"
 
-qvm-run "$target_vm" "rm -r -f /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
-qvm-run "$target_vm" "rm -f /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources"
-qvm-run "$target_vm" "sudo rm -f /etc/apt/sources.list.d/derivative_repo_temp.sources"
+qvm-run "$target_vm" "rm -r -f -- /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy"
+qvm-run "$target_vm" "rm -f -- /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources"
+qvm-run "$target_vm" "sudo rm -f -- /etc/apt/sources.list.d/derivative_repo_temp.sources"
 
 qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/derivative_repo_temp.sources"
 qvm-copy-to-vm "$target_vm" "$binary_build_folder_dist/aptrepo_temp_copy/"
 
-qvm-run "$target_vm" "sudo mv /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources /etc/apt/sources.list.d/derivative_repo_temp.sources"
+qvm-run "$target_vm" "sudo mv -- /home/user/QubesIncoming/$source_vm/derivative_repo_temp.sources /etc/apt/sources.list.d/derivative_repo_temp.sources"
 
-qvm-run "$target_vm" "sudo rm -r -f /var/cache/aptrepo_temp_copy"
+qvm-run "$target_vm" "sudo rm -r -f -- /var/cache/aptrepo_temp_copy"
 qvm-run "$target_vm" "sudo cp -r /home/user/QubesIncoming/$source_vm/aptrepo_temp_copy /var/cache/aptrepo_temp_copy"
 qvm-run "$target_vm" "sudo chown -R _apt /var/cache/aptrepo_temp_copy"
 
 qvm-run "$target_vm" "sudo apt-get update"
 
-true "INFO: End of: $BASH_SOURCE | $dist_build_error_counter error(s) detected."
+true "INFO: End of: ${BASH_SOURCE[0]} | $dist_build_error_counter error(s) detected."

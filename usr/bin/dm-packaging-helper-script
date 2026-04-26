@@ -10,7 +10,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -29,6 +29,13 @@ cd -- "$derivative_maker_source_code_dir"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/get_colors.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
+
+## Reusable wait-for-pids helper. Prefer the in-tree copy when run
+## from the source folder so dev iteration does not need a reinstall.
+parallel_helper="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/usr/libexec/developer-meta-files/parallel.bsh"
+test -r "$parallel_helper" || parallel_helper="/usr/libexec/developer-meta-files/parallel.bsh"
+# shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
+source "$parallel_helper"
 
 ## BEGIN Initialization functions {
 
@@ -135,7 +142,7 @@ show_debug_variable_info() {
 commit_filter() {
    set +x
 
-   local commit_msg_short text_any_case text_lower_case
+   local commit_msg_short text_any_case
 
    commit_msg_short="$1"
    [ -z "${commit_msg_short}" ] && {
@@ -464,7 +471,10 @@ reset_batch_meta_globals() {
    batch_meta_repo_web_link=''
    batch_meta_workstation_only='n'
    unset batch_meta_file_header_done_list
-   declare -A -g batch_meta_file_header_done_list
+   ## `=()` keeps the array marked "set" for set -o nounset; bare
+   ## `declare -A -g name` would leave it unset and any `${name[@]}`
+   ## access (count, iterate) would error.
+   declare -A -g batch_meta_file_header_done_list=()
 }
 
 ## XXX: Duplicated.
@@ -560,9 +570,9 @@ internal_descr_writer() {
                exit 1
             fi
 
-            touch "${description_file}"
+            touch -- "${description_file}"
 
-            printf "%s\n" "== ${batch_current_package_reponame} ==" | tee -a "${description_file}"
+            printf "%s\n" "== ${batch_current_package_reponame} ==" | tee -a -- "${description_file}"
             printf "%s\n" '' | tee -a -- "${description_file}" >/dev/null
             printf "%s\n" "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
             printf "%s\n" "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
@@ -668,6 +678,13 @@ internal_git_diff() {
    git_exit_code='0'
    git_diff_output="$(git diff --stat "${git_branch_one}" "${git_branch_two}")" || { git_exit_code="$?"; true; };
 
+   ## Exit 128 = fatal git error (typically a missing/unknown ref).
+   ## We pause here for human inspection rather than aborting; once
+   ## the operator acknowledges with `read -r _` we deliberately fall
+   ## through and return 0 ("differences found"), so the caller will
+   ## attempt the push - which will then fail visibly with the same
+   ## git error - rather than silently skipping a repo whose diff
+   ## could not be computed.
    if [ "${git_exit_code}" = '128' ]; then
       true "ERROR: Something is wrong. See above. Press enter to continue."
       read -r _
@@ -705,7 +722,7 @@ pkg_readme_creator_commit() {
       readme_file='README.md'
    fi
 
-   git add "${readme_file}" || true
+   git add -- "${readme_file}" || true
 
    if nothing_to_commit; then
       return 0
@@ -730,7 +747,7 @@ pkg_readme_creator_do() {
    control_file='debian/control'
    if ! [ -f "${control_file}" ]; then
       true "No file"
-      return
+      return 0
    fi
 
    generic_readme_template_file="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/README_generic_template_file.md"
@@ -1159,35 +1176,32 @@ pkg_git_branch_trixie() {
 
 ## Checks out the 'master' branch of all repos.
 pkg_git_branch_checkout_master() {
-   git checkout master
+   git switch master
    true
 }
 
 ## Checks out the 'bullseye' branch of all repos.
 pkg_git_branch_checkout_bullseye() {
-   git checkout bullseye
+   git switch bullseye
    true
 }
 
 ## Checks out the 'trixie' branch of all repos.
 pkg_git_branch_checkout_trixie() {
-   git checkout trixie
+   git switch trixie
    true
 }
 
 pkg_git_branch_fetch_all() {
-   local origin_name package_remote_item git_pid
+   local origin_name_list package_remote_item
 
-   #origin_name="github-${batch_current_project_name,,}"
-   origin_name="ArrayBolt3"
+   #origin_name_list=( "github-${batch_current_project_name,,}" )
+   origin_name_list=( "ArrayBolt3" )
 
-   for package_remote_item in "${origin_name}"; do
-      git fetch "${package_remote_item}" &
-      git_pid="$!"
-      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+   for package_remote_item in "${origin_name_list[@]}"; do
+      git fetch -- "${package_remote_item}" &
+      git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
-
-   #wait $git_pid_list_str
 
    true
 }
@@ -1198,33 +1212,37 @@ pkg_git_diff_and_merge_branch() {
    #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="ArrayBolt3/arraybolt3/trixie"
 
+   ## Use the fully qualified remote-tracking ref to avoid name
+   ## collision with same-named tags.
+   local origin_ref="refs/remotes/${origin_branch}"
+
    ## Check if branch exists.
-   if ! git --no-pager diff --stat "${origin_branch}" &>/dev/null ; then
+   if ! git --no-pager diff --stat "${origin_ref}" &>/dev/null ; then
       ## No such branch.
       return 0
    fi
    ## Branch exists.
 
-   if [ "$(git --no-pager diff -C --stat ..."${origin_branch}")" = "" ]; then
+   if [ "$(git --no-pager diff -C --stat ..."${origin_ref}")" = "" ]; then
       ## No diff. Branch already merged.
       return 0
    fi
 
-   if [ "$(git --no-pager diff -C --stat "${origin_branch}")" = "" ]; then
+   if [ "$(git --no-pager diff -C --stat "${origin_ref}")" = "" ]; then
       ## No diff. Branch already merged.
       return 0
    fi
 
    printf '%s\n' "${batch_current_package_reponame}"
-   check-ref-commits-for-unicode "${origin_branch}"
-   git --no-pager diff -C --stat "${origin_branch}"
-   git --no-pager diff -C "${origin_branch}"
-   git --no-pager kdiff -C "${origin_branch}"
+   check-ref-commits-for-unicode "${origin_ref}"
+   git --no-pager diff -C --stat "${origin_ref}"
+   git --no-pager diff -C "${origin_ref}"
+   git --no-pager kdiff -C "${origin_ref}"
 
    ## 'git verify-commit' passes through debug output by 'sq-git-wrapper'.
-   git verify-commit "${origin_branch}"
+   git verify-commit "${origin_ref}"
    ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
-   git merge "${origin_branch}"
+   git merge "${origin_ref}"
 
    printf '%s\n' "--------------------------------------------------"
    true
@@ -1270,8 +1288,8 @@ pkg_copy_contributing_file() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'kloak' || return 0
 
-   cp "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
-   git add "${batch_current_package_path}/CONTRIBUTING.md"
+   cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
+   git add -- "${batch_current_package_path}/CONTRIBUTING.md"
    git commit -m "update"
 
    true
@@ -1279,7 +1297,10 @@ pkg_copy_contributing_file() {
 
 ## Gets rid of all 'debian/compat' files in all repos.
 pkg_compat_delete() {
-   git rm "debian/compat"
+   ## `|| true` so re-runs in repos where the file was already
+   ## removed do not abort the whole batch with a fatal `pathspec
+   ## did not match any files`.
+   git rm -- "debian/compat" || true
 
    true
 }
@@ -1406,7 +1427,7 @@ pkg_packaging_files_diff() {
 #        return 1
 #     fi
    else
-      cp "${batch_current_package_path}/debian/copyright" "${batch_current_package_path}/COPYING"
+      cp -- "${batch_current_package_path}/debian/copyright" "${batch_current_package_path}/COPYING"
 
       ## COPYING should always match debian/copyright.
       diff "${batch_current_package_path}/debian/copyright" "${batch_current_package_path}/COPYING"
@@ -1446,19 +1467,18 @@ pkg_packaging_files_diff() {
 
 ## Fetches remote changes from all Git remotes for all repos.
 pkg_git_fetch_remotes() {
-   local package_remote_item git_pid
+   local package_remote_item
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git fetch "${package_remote_item}" &
-      git_pid="$!"
-      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+      git fetch -- "${package_remote_item}" &
+      git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
    true
 }
 
 ## Pushes local changes to all Git remotes for all repos.
 pkg_git_push_remotes() {
-   local branch_name_list package_remote_item branch_name_item git_pid
+   local branch_name_list package_remote_item branch_name_item
 
    if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
       branch_name_list=( "master" "bookworm" "trixie" )
@@ -1470,15 +1490,9 @@ pkg_git_push_remotes() {
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
       for branch_name_item in "${branch_name_list[@]}"; do
-         if internal_git_diff "${branch_name_item}" "${package_remote_item}/${branch_name_item}"; then
-            git push "${package_remote_item}" "${branch_name_item}" &
-            git_pid="$!"
-            git_pid_list_str="${git_pid_list_str} ${git_pid}"
-            ## TODO: Disable.
-            ## Debugging.
-            ## Word splitting is used here intentionally.
-            # shellcheck disable=SC2086
-            wait $git_pid_list_str
+         if internal_git_diff "refs/heads/${branch_name_item}" "refs/remotes/${package_remote_item}/${branch_name_item}"; then
+            git push -- "${package_remote_item}" "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" &
+            git_pid_label[$!]="push branch ${branch_name_item} -> ${package_remote_item} (${batch_current_package_reponame})"
          fi
       done
    done
@@ -1489,16 +1503,15 @@ pkg_git_push_remotes() {
 ## Pushes the most recent tag for all Git repos to all Git remotes of each
 ## repo.
 pkg_git_push_tags() {
-   local git_tag_latest package_remote_item git_pid
+   local git_tag_latest package_remote_item
 
    git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
 
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git push "${package_remote_item}" "${git_tag_latest}" &
-      git_pid="$!"
-      git_pid_list_str="${git_pid_list_str} ${git_pid}"
+      git push -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
+      git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
    done
 
    true
@@ -1506,7 +1519,7 @@ pkg_git_push_tags() {
 
 ## Checks out the changelog.upstream file of all repos.
 git_reset_changelog_upstream() {
-   git checkout changelog.upstream
+   git checkout -- changelog.upstream
 }
 
 ## Commits changes to the readme files of all repos.
@@ -1514,11 +1527,11 @@ pkg_git_commit_readme() {
    local msg
 
    if [ -f 'README_generic.md' ]; then
-      git add 'README_generic.md'
+      git add -- 'README_generic.md'
    elif [ -f 'README.md' ]; then
-      git add 'README.md'
+      git add -- 'README.md'
    elif [ -f 'README.mediawiki' ]; then
-      git add 'README.mediawiki'
+      git add -- 'README.mediawiki'
    fi
 
    #git diff --cached
@@ -1531,9 +1544,9 @@ pkg_git_commit_readme() {
 pkg_git_commit_changelog() {
    local msg
 
-   git add 'debian/changelog'
+   git add -- 'debian/changelog'
    if [ -f 'changelog.upstream' ]; then
-      git add 'changelog.upstream'
+      git add -- 'changelog.upstream'
    fi
    msg='bumped changelog version'
    git commit -m "${msg}" || true
@@ -1545,9 +1558,9 @@ pkg_git_commit_changelog() {
 pkg_git_commit_copyright() {
    local msg
 
-   git add 'debian/copyright'
+   git add -- 'debian/copyright'
    if [ -f 'COPYING' ]; then
-      git add 'COPYING'
+      git add -- 'COPYING'
    fi
    msg='copyright'
    git commit -m "${msg}" || true
@@ -1558,7 +1571,7 @@ pkg_git_commit_copyright() {
 pkg_git_commit_debian_control() {
    local msg
 
-   git add 'debian/control'
+   git add -- 'debian/control'
    msg='bumped Standards-Version'
    git commit -m "${msg}" || true
    git status
@@ -1566,8 +1579,10 @@ pkg_git_commit_debian_control() {
 }
 
 ## Commits all changes to all repos with a tunable-set message.
+## Code path below `exit 1` is intentionally a draft.
+# shellcheck disable=SC2317
 pkg_git_commit_all() {
-   echo TODO
+   printf '%s\n' TODO
    exit 1
    git add -A
    git commit -m "${git_commit_all_msg}" || true
@@ -1586,8 +1601,8 @@ pkg_git_manpages() {
    genmkfile manpages
 
    msg='re-generate man pages (generated using "genmkfile manpages")'
-   git add 'man'/* || true
-   git add 'auto-generated-man-pages'/* || true
+   git add -- 'man'/* || true
+   git add -- 'auto-generated-man-pages'/* || true
    git commit -m "${msg}" || true
    git status
    true
@@ -1606,7 +1621,7 @@ pkg_git_debinstfile() {
 
    msg='add debian install file (generated using "genmkfile debinstfile")'
    printf "%s\n" "PWD: '$PWD'"
-   git add "debian/${batch_current_package_reponame}.install" || true
+   git add -- "debian/${batch_current_package_reponame}.install" || true
    git commit -m "${msg}" || true
    git status
    true
@@ -1623,7 +1638,7 @@ pkg_git_commit_packaging() {
       ## TODO: should we just get rid of this `true` call?
       true "press enter to continue_not"
       #read -r temp
-      return
+      return 0
    fi
 
    #git add 'Makefile'
@@ -1631,7 +1646,7 @@ pkg_git_commit_packaging() {
    #git add 'debian/changelog'
    #git add 'changelog.upstream'
    #git add 'debian'/*'.install'
-   git add 'debian/control'
+   git add -- 'debian/control'
    #git add -A
    msg='trixie'
    git commit -m "${msg}"
@@ -1676,7 +1691,7 @@ pkg_git_diff_and_commit() {
    if nothing_to_commit; then
       true "press enter to continue_not"
       #read -r temp
-      return
+      return 0
    fi
 
    git add -A
@@ -1692,7 +1707,7 @@ pkg_git_diff_and_commit() {
    if nothing_to_commit; then
       true "press enter to continue_not"
       #read -r temp
-      return
+      return 0
    fi
 
    true
@@ -1721,7 +1736,7 @@ pkg_bash_sanity_test() {
       return 0
    fi
 
-   grep "${grep_opts[@]}" '#!/bin/bash$' | xargs -n 1 bash -n
+   grep "${grep_opts[@]}" '#!/bin/bash$' | xargs -n 1 bash -n --
 
    true
 }
@@ -1808,16 +1823,21 @@ pkg_git_packages_git_log_writer() {
 
    repo_skip 'virtualbox' || return 0
 
-   temp_folder_path="${PWD#"/home/user/derivative-maker/"}"
+   ## Strip the source-code directory prefix from $PWD so we get a
+   ## repo-relative path; using ${derivative_maker_source_code_dir}
+   ## rather than a hardcoded /home/user/... so this also works when
+   ## $HOME is not /home/user.
+   temp_folder_path="${PWD#"${derivative_maker_source_code_dir}/"}"
 
    if [ "${batch_current_package_reponame}" != 'derivative-maker' ]; then
-      pushd .. >/dev/null
-      if package_version_old="$(git rev-parse "${derivative_version_old_main}:${temp_folder_path}")" ; then
+      pushd -- .. >/dev/null
+      ## Use refs/tags/ to avoid name collision with same-named branches.
+      if package_version_old="$(git rev-parse "refs/tags/${derivative_version_old_main}:${temp_folder_path}")" ; then
          new_package='n'
       else
          new_package='y'
       fi
-      package_version_new="$(git rev-parse "${derivative_version_new_main}:${temp_folder_path}")"
+      package_version_new="$(git rev-parse "refs/tags/${derivative_version_new_main}:${temp_folder_path}")"
       popd >/dev/null
    else
       new_package='n'
@@ -2145,8 +2165,8 @@ pkg_only_reprepro_add() {
 pkg_add_lintian_watch_gpg_override() {
    repo_skip_non_package || return 0
 
-   mkdir --parents './debian/source'
-   if [ -f './debian/source/lintian-overrides' ] && ! grep 'debian-watch-does-not-check-openpgp-signature' './debian/source/lintian-overrides' ; then
+   mkdir --parents -- './debian/source'
+   if [ -f './debian/source/lintian-overrides' ] && ! grep -e 'debian-watch-does-not-check-openpgp-signature' -- './debian/source/lintian-overrides' ; then
       printf "%s\n" "\
 ## https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124
 debian-watch-does-not-check-openpgp-signature" >> "./debian/source/lintian-overrides"
@@ -2160,7 +2180,7 @@ pkg_git_commit_lintian_watch_gpg_override() {
 
    repo_skip_non_package || return 0
 
-   git add './debian/source/lintian-overrides' || true
+   git add -- './debian/source/lintian-overrides' || true
    msg="\
 added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning
 https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124"
@@ -2180,7 +2200,7 @@ version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/${batch_current_package_reponame}-\$1\.tar\.gz/ \\
   https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/tags .*/v?(\d\S+)\.tar\.gz" > "${batch_current_package_path}/debian/watch"
 
-   git add "${batch_current_package_path}/debian/watch" || true
+   git add -- "${batch_current_package_path}/debian/watch" || true
    msg="\
 fix debian/watch lintian warning debian-watch-contains-dh_make-template"
    git commit -m "${msg}" || true
@@ -2192,16 +2212,17 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
 ## BEGIN Post-run hooks {
 
 wait_for_git_processes() {
-   if [ "${git_pid_list_str}" != '' ]; then
-      ## Word splitting is used here intentionally.
-      # shellcheck disable=SC2086
-      wait $git_pid_list_str
+   if ! dm_parallel_wait git_pid_label ; then
+      printf '%s\n' "${red}${bold}ERROR ${BASH_SOURCE[0]}: failed git background jobs:${reset}" >&2
+      printf '   - %s\n' "${dm_parallel_failures[@]}" >&2
+      exit 1
    fi
 }
 
 generate_announcement() {
    local changelog_file derivative_name project_name project_website temp \
-      derivative_version_new_main_short release_type_long end_text
+      derivative_version_new_main_short release_type_long end_text \
+      header_text
 
    ## TODO: Should this dynamically change depending on the project? Also,
    ## should it be inserted into the announcement automatically?
@@ -2230,7 +2251,7 @@ generate_announcement() {
 Download the Testers-Only version of ${project_name}:
 
 https://www.${project_website}/wiki/VirtualBox_Testers_Only_Version"
-      end_text="(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)"
+         end_text="(This testers wanted announcement might in future be [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement if no major issues are found during the testing period.)"
       elif [ "${derivative_release_type}" = 'point' ]; then
          release_type_long="Point Release"
          header_text="# Download
@@ -2238,7 +2259,7 @@ https://www.${project_website}/wiki/VirtualBox_Testers_Only_Version"
 https://www.${project_website}/wiki/Download
 
 ([What is a point release?](https://www.kicksecure.com/wiki/Point_Release))"
-      end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
+         end_text="(This forum post was previously a call for testers. No release critical bugs where found during the testing period. This forum post was therefore [transformed](https://forums.whonix.org/t/transform-whonix-testers-wanted-forum-news-post-into-whonix-release-forum-news-post-ok/11405) into a stable release announcement. See edit history.)"
       else
          error "invalid derivative_release_type!"
       fi
@@ -2288,7 +2309,7 @@ ${changelog_file}
 
 ${end_text}
 " | \
-      tee "${announcements_drafts_dir}/${project_name}.txt" >/dev/null
+      tee -- "${announcements_drafts_dir}/${project_name}.txt" >/dev/null
    done
 }
 
@@ -2317,7 +2338,7 @@ run_batch_command() {
 
    set_batch_current_package_remote_list
 
-   pushd "${batch_current_package_path}" >/dev/null
+   pushd -- "${batch_current_package_path}" >/dev/null
    "${batch_command}" "$@"
    popd >/dev/null
 }
@@ -2341,7 +2362,7 @@ run_batch() {
              continue
           fi
           batch_current_package_changelog="${announcements_drafts_dir}/${batch_current_project_name,,}_giant_git_log.txt"
-          batch_current_package_reponame="$(basename "${batch_current_package_path}")"
+          batch_current_package_reponame="$(basename -- "${batch_current_package_path}")"
           run_batch_command "$@"
       done
    done
@@ -2449,7 +2470,7 @@ packaging_files_diff_template_package_relative_path='kicksecure/anon-apt-sources
 
 ## Global static variables, do not adjust
 announcements_drafts_dir="${derivative_binary_dir}/announcements-drafts"
-derivative_maker_dir_name="$(basename "${derivative_maker_source_code_dir}")"
+derivative_maker_dir_name="$(basename -- "${derivative_maker_source_code_dir}")"
 make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages-result"
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
 
@@ -2476,10 +2497,10 @@ batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
 batch_meta_force_version_bump='n'
 
-declare -A -g batch_meta_file_header_done_list
+declare -A -g batch_meta_file_header_done_list=()
 batch_run_counter=0
-git_pid_list_str=''
-declare -A -g merge_file_reset_list
+declare -A -g git_pid_label=()
+declare -A -g merge_file_reset_list=()
 post_run_hook_list=( 'wait_for_git_processes' )
 
 ## Initialization and launch

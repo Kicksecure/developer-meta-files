@@ -10,7 +10,7 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 source /usr/libexec/helper-scripts/git.sh
 
@@ -48,8 +48,14 @@ pkg_tor_browser_version_update() {
    tbb_alpha_json_url='https://aus1.torproject.org/torbrowser/update_3/alpha/download-linux-x86_64.json'
    RecommendedTBBVersions="$(mktemp)"
    export RecommendedTBBVersions
+   ## Leftover temp files are by design - left on disk so a developer
+   ## can inspect them after a failure. Print the path on every exit
+   ## path (including the early `exit 0` for "nothing to commit") so
+   ## the operator can find it.
+   # shellcheck disable=SC2317
+   trap 'printf "%s\n" "INFO: RecommendedTBBVersions tmp file kept for review: ${RecommendedTBBVersions}"' EXIT
 
-   pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+   pushd -- "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    if ! nothing_to_commit; then
       printf "%s\n" "${red}${bold}FATAL ERROR: Uncommitted changes!${reset}"
       exit 1
@@ -82,7 +88,7 @@ pkg_tor_browser_version_update() {
    safe-rm -f -- "${tbb_hardcoded_version_alpha_file}"
    printf "%s\n" "tbb_hardcoded_version=\"${current_tbb_alpha_version}\"" | sponge -a -- "${tbb_hardcoded_version_alpha_file}"
 
-   pushd "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
+   pushd -- "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
 
    if nothing_to_commit; then
      exit 0
@@ -90,17 +96,21 @@ pkg_tor_browser_version_update() {
 
    git diff HEAD
 
+   ## Interactive gate: this script is meant to be run by hand. The
+   ## read blocks until the operator presses enter, giving them a
+   ## chance to inspect the diff before the commit. Non-interactive
+   ## runs (CI etc.) will hang here.
    true "press enter to continue"
    read -r temp
 
-   git add 'usr/share/tb-updater/tbb_hardcoded_version'
-   git add 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
+   git add -- 'usr/share/tb-updater/tbb_hardcoded_version'
+   git add -- 'usr/share/tb-updater/tbb_hardcoded_version_alpha'
    git commit -m 'tbb_hardcoded_version update'
 
    popd
 
-   # Clean up temp file
-   safe-rm -- "${RecommendedTBBVersions}"
+   ## Temp file is intentionally left on disk; the EXIT trap above
+   ## prints its path so a developer can find and review it.
    true
 }
 

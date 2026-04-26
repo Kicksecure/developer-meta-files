@@ -12,36 +12,37 @@ if ! test -d "${1:-}" && ! test -f "${1:-}" ; then
    exit 1
 fi
 
-opts="\
-   --exclude SC2086 \
-   --exclude SC2086 \
-   --exclude SC2016 \
-   --exclude SC2034 \
-   --exclude SC2129 \
-   --exclude SC2004 \
-   --exclude SC2088 \
-   --exclude SC2015 \
-   --exclude SC2068 \
-   --exclude SC2001 \
-   "
+opts=(
+   --exclude SC2086
+   --exclude SC2016
+   --exclude SC2034
+   --exclude SC2129
+   --exclude SC2004
+   --exclude SC2088
+   --exclude SC2015
+   --exclude SC2068
+   --exclude SC2001
+)
 
-for file_name in $(find "${1:-}" -type f -not -iwholename '*.git*' -not -iwholename '*changelog.upstream*'); do
+while IFS= read -r -d '' file_name; do
    true "file_name: $file_name"
    if ! test -f "$file_name" ; then
       continue
    fi
-   if ! grep '#!/bin/bash' "$file_name" ; then
+   ## Match the shebang only on the first line; a script that just
+   ## mentions `#!/bin/bash` in a comment shouldn't qualify.
+   if ! head -n 1 -- "$file_name" | grep -q -- '^#!/bin/bash' ; then
       continue
    fi
-   if shellcheck $opts "$file_name" ; then
+   if shellcheck "${opts[@]}" "$file_name" ; then
       continue
    fi
    file_name_short="${file_name##*/}"
    true "press y to open kate. enter to continue"
-   read temp
+   read -r temp
    if test "$temp" = "y" ; then
       kate "$file_name" >/dev/null 2>&1
    fi
-done
+done < <(find "${1:-}" -type f -not -iwholename '*.git*' -not -iwholename '*changelog.upstream*' -print0)
 
 true "INFO: End."

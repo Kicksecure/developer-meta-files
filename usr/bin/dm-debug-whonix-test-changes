@@ -3,6 +3,10 @@
 ## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## Globs are deliberately used as command names so the numeric prefix
+## of the build-steps.d/* scripts does not need to be tracked here.
+# shellcheck disable=SC2211
+
 set -x
 set -o errexit
 set -o nounset
@@ -11,9 +15,9 @@ set -o errtrace
 shopt -s inherit_errexit
 
 build_all_error_handler() {
-   : echo "
+   : printf '%s\n' "
 ${red:-}${bold:-}BASH_COMMAND${reset:-}: $BASH_COMMAND
-${red:-}${bold:-}ERROR $BASH_SOURCE: | caller: $(caller)${reset:-}
+${red:-}${bold:-}ERROR ${BASH_SOURCE[0]}: | caller: $(caller)${reset:-}
 "
    exit 1
 }
@@ -23,7 +27,7 @@ trap "build_all_error_handler" ERR
 ## XXX: hardcoded path
 [[ -v derivative_maker_main_source_code ]] || derivative_maker_main_source_code="$HOME/derivative-maker"
 
-pushd "$derivative_maker_main_source_code"
+pushd -- "$derivative_maker_main_source_code"
 
 ./derivative-maker --flavor whonix-gateway-lxqt "$@"
 ./build-steps.d/*_convert-raw-to-vdi --flavor whonix-gateway-lxqt "$@"

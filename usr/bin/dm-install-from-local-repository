@@ -14,10 +14,10 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
@@ -43,6 +43,16 @@ main() {
    chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "${pkg:-}" = "" ]; then
+      ## TODO: only the `*-kde` flavors are recognised here, so any
+      ## other UI variant (cli, lxqt, ...) hits the catch-all error
+      ## even though it is in fact a gateway/workstation. Either
+      ## extend the branches to map every supported flavor or accept
+      ## the pkg name from the caller and document that.
+      ##
+      ## TODO: the package names below are inconsistent - two of
+      ## the four branches end in `-kde` and the other two do not
+      ## (`non-qubes-whonix-gateway`, `qubes-whonix-workstation`).
+      ## Likely accidental; verify against the actual package list.
       if [ "$dist_build_flavor" = "whonix-gateway-kde" ]; then
          if [ "$dist_build_qubes" = "true" ]; then
             pkg="qubes-whonix-gateway-kde"
@@ -56,7 +66,7 @@ main() {
             pkg="non-qubes-whonix-workstation-kde"
          fi
       else
-         local MSG="${bold}${red}$BASH_SOURCE ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
+         local MSG="${bold}${red}${BASH_SOURCE[0]} ERROR: VMNAME is neither Whonix-Gateway nor Whonix-Workstation. Please report this bug! ${reset}"
          error "$MSG"
       fi
    fi

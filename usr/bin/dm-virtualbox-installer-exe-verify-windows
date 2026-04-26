@@ -27,11 +27,18 @@ pwd
 
 counter=0
 for file_name in ./VirtualBox-*.exe ; do
+  ## Default glob behaviour: with no matches the pattern is left
+  ## literal, so guard against that explicitly.
+  test -e "$file_name" || continue
   counter=$((counter + 1))
 done
 
+if [ "$counter" -eq "0" ]; then
+  true "$0: ERROR: No file matching VirtualBox-*.exe!"
+  exit 1
+fi
 if [ "$counter" -gt "1" ]; then
-  true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
+  true "$0: ERROR: Multiple files matching VirtualBox-*.exe!"
   exit 1
 fi
 

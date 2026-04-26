@@ -10,10 +10,10 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source /usr/libexec/helper-scripts/strings.bsh
@@ -32,7 +32,7 @@ show_files() {
       upload_file_list+=("${file_name_item}")
       upload_file_list+=("${file_name_item}.asc")
 
-      if echo "${file_name_item}.sig" | grep dist-installer ; then
+      if printf '%s\n' "${file_name_item}.sig" | grep dist-installer ; then
          upload_file_list+=("${file_name_item}.sig")
       else
          if test -f "${file_name_item}.sig" ; then
@@ -74,13 +74,16 @@ upload_files() {
 
    attempts_counter="0"
    attempts_max="100"
-   if ! is_whole_number "${sleep_seconds:-}"; then
-     sleep_seconds="1"
-   fi
 
    while true; do
       attempts_counter="$(( attempts_counter + 1 ))"
-      sleep_seconds="$(( sleep_seconds * 2 ))"
+      ## Linear backoff: each retry waits 5 s longer than the
+      ## previous one (5 s, 10 s, 15 s, ..., capping at 5 s * 100 =
+      ## 500 s ~= 8 min on the final retry, ~7 h cumulative over
+      ## attempts_max=100). Computed from attempts_counter rather
+      ## than mutating sleep_seconds, so the value cannot leak
+      ## (and grow forever) across calls to upload_files.
+      sleep_seconds="$(( attempts_counter * 5 ))"
 
       if [ "$rsync_dry_run_maybe" = "--dry-run" ]; then
          true "${cyan}INFO: --dry-run only...${reset}"
@@ -91,7 +94,16 @@ upload_files() {
       ## Test if DNS is functional.
       ## Sometimes 'rsync' fails to resolve DNS but running 'nslookup' beforehand fixes it.
       ## Overrule with '||true' as the failure would be handled below by 'rsync'.
-      for dist_server_with_upload_location_list_item in $dist_server_with_upload_location_list_list; do
+      ## TODO: the iteration variable is confusingly named
+      ##   $dist_server_with_upload_location_list_item but iterates
+      ##   $dist_server_with_upload_location_list. Consider renaming
+      ##   the iter var to $dist_server_with_upload_location_item -
+      ##   that name is already used by the outer loop in main(),
+      ##   though, so this would also need a rename in
+      ##   derivative-maker's help-steps/variables (or wherever the
+      ##   $dist_server_with_upload_location_list itself is set) to
+      ##   avoid the same-name collision.
+      for dist_server_with_upload_location_list_item in $dist_server_with_upload_location_list; do
          nslookup "$dist_server_with_upload_location_list_item" || true
       done
 

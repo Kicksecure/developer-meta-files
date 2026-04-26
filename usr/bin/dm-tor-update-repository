@@ -10,13 +10,13 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dist_build_internal_run="true"
 dist_build_one_parsed="true"
 dist_build_target_arch='amd64'
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -83,7 +83,7 @@ dm_tor_update_repository() {
     Version \
     'Package|^tor$'
 
-  if (( ${#local_tor_version_list[@]} = 0 )) \
+  if (( ${#local_tor_version_list[@]} == 0 )) \
     || [ -z "${local_tor_version_list[0]}" ]; then
     true 'ERROR: No local Tor version detected.'
     local_tor_version=''
@@ -105,7 +105,7 @@ dm_tor_update_repository() {
     Version \
     'Package|^tor$'
 
-  if (( ${#remote_tor_version_list[0]} = 0 )) \
+  if (( ${#remote_tor_version_list[@]} == 0 )) \
     || [ -z "${remote_tor_version_list[0]}" ]; then
     true 'ERROR: Remote Tor version could not be detected!'
     exit 1

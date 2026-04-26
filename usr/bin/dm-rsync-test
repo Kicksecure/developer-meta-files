@@ -10,17 +10,23 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 dist_build_internal_run="true"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 source "$HOME/derivative-maker/help-steps/pre"
 source "$HOME/derivative-maker/help-steps/variables"
 
+## TODO: review - `exithandler` is referenced here but not defined
+## locally; it is expected to come from the sourced
+## help-steps/pre. Confirm it still exists there (older derivative-
+## maker versions may not provide it). If absent, the EXIT trap
+## silently no-ops at script exit (bash prints "command not found"
+## but the script exits regardless).
 trap "exithandler" EXIT
 
 true "${cyan}INFO: rsync test...${reset}"

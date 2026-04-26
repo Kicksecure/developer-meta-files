@@ -9,4 +9,4 @@ shopt -s inherit_errexit
 
 qemu-system-x86_64 \
     -m 1024 \
-    -drive format=raw,file="$@"
+    -drive "format=raw,file=$1"

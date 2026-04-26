@@ -10,28 +10,28 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
+
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd -- "$MYDIR"
+
+## XXX: hardcoded path
+derivative_maker_source_code_dir="$HOME/derivative-maker"
+cd -- "$derivative_maker_source_code_dir"
+
+source "$derivative_maker_source_code_dir/help-steps/pre"
 
 build_all_error_handler() {
-   : echo "
+   : printf '%s\n' "
 ${red}${bold}BASH_COMMAND${reset}: $BASH_COMMAND
-${red}${bold}ERROR $BASH_SOURCE: | caller: $(caller)${reset}
+${red}${bold}ERROR ${BASH_SOURCE[0]}: | caller: $(caller)${reset}
 "
    exit 1
 }
 
 trap "build_all_error_handler" ERR
 set +e
-
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-cd "$MYDIR"
-
-## XXX: hardcoded path
-derivative_maker_source_code_dir="$HOME/derivative-maker"
-cd "$derivative_maker_source_code_dir"
-
-source "$derivative_maker_source_code_dir/help-steps/pre"
 
 ## Debugging.
 pwd

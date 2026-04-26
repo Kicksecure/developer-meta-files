@@ -10,10 +10,10 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: $BASH_SOURCE $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$MYDIR"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+cd -- "$MYDIR"
 
 dist_build_internal_run="true"
 
@@ -27,11 +27,11 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 sanity_tests() {
-   command -v signify-openbsd >/dev/null
+   command -v -- signify-openbsd >/dev/null
    test -f "$signify_public_key"
    test -f "$signify_private_key"
 
-   command -v rsstail
+   command -v -- rsstail
 
    test -n "${DEBEMAIL:-}"
 
@@ -57,12 +57,12 @@ sign_and_verify_openpgp() {
 
    sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --signature-file="$detached_signature" -- "$full_path_to_canary_txt"
    test -f "$detached_signature"
-   sq verify --signer-email "$DEBEMAIL" --signature-file="$detached_signature" "$full_path_to_canary_txt"
+   sq verify --signer-email "$DEBEMAIL" --signature-file="$detached_signature" -- "$full_path_to_canary_txt"
 
    sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --cleartext "$full_path_to_canary_txt" | tee -- "$clearsigned_file" >/dev/null
    test -f "$clearsigned_file"
    ## Use '>/dev/null' to avoid output of full file content.
-   sq verify --signer-email "$DEBEMAIL" --cleartext "$clearsigned_file" >/dev/null
+   sq verify --signer-email "$DEBEMAIL" --cleartext -- "$clearsigned_file" >/dev/null
 }
 
 sign_cmd_signify() {
@@ -73,16 +73,16 @@ sign_cmd_signify() {
    ## signify-openbsd -n -G -p keyname.pub -s keyname.sec -c "Firstname Lastname e-mail@address.org signify"
 
    ## https://forums.whonix.org/t/signify-openbsd/7842
-   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}${2}" ${3}
+   signify-openbsd -S -s "$signify_private_key" -m "$1" -x "${1}${2}" ${3:-}
    ## Sanity test.
    test -f "${1}${2}"
 }
 
 verify_cmd_signinfy() {
-   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}${2}" ${3}
+   signify-openbsd -V -p "$signify_public_key" -m "$1" -x "${1}${2}" ${3:-}
 }
 
-sanity_tests
+sanity_tests "$@"
 
 if test -d "$binary_build_folder_dist/canary" ; then
    safe-rm --recursive -- "$binary_build_folder_dist/canary"

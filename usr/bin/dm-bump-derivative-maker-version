@@ -14,14 +14,14 @@ set -o errtrace
 shopt -s inherit_errexit
 
 ## XXX: hardcoded path
-cd "$HOME/derivative-maker"
+cd -- "$HOME/derivative-maker"
 
 genmkfile deb-uachl-bumpup-major
 
 make_git_tag_sign_appendix="-developers-only"
 export make_git_tag_sign_appendix
 
-genmkfile make_deb-uachl-commit-changelog
+genmkfile deb-uachl-commit-changelog
 
 genmkfile git-commit-verify
 genmkfile git-tag-sign
@@ -29,4 +29,4 @@ genmkfile git-verify
 
 #dm-push
 
-echo "$0: END."
+printf '%s\n' "$0: END."

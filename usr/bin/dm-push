@@ -10,38 +10,64 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-git_tag_nearest="$(git describe --always --abbrev=0)"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+parallel_helper="$MYDIR/../libexec/developer-meta-files/parallel.bsh"
+test -r "$parallel_helper" || parallel_helper="/usr/libexec/developer-meta-files/parallel.bsh"
+# shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
+source "$parallel_helper"
 
-pid_list=""
+## Drop `--always` so describe fails (instead of silently returning a
+## SHA) when there is no tag; the tag-push branch then runs only when
+## a real tag exists.
+git_tag_nearest=""
+git_tag_nearest="$(git describe --abbrev=0 2>/dev/null)" || git_tag_nearest=""
+
+## Map each backgrounded push's PID to a human-readable label so a
+## failure can be reported as e.g. "main -> github-kicksecure" rather
+## than "at least one push failed".
+## Note: `declare -A push_label` alone leaves the array "unset" for
+## nounset purposes; the explicit `=()` marks it set so `${#arr[@]}`
+## works on the empty case (no eligible remotes / branches).
+declare -A push_label=()
+
+queue_branch_push() {
+   local branch="$1"
+   local remote="$2"
+   if ! git rev-parse --verify "refs/heads/$branch" &>/dev/null ; then
+      return 0
+   fi
+   git verify-commit "refs/heads/$branch"
+   git push -- "$remote" "refs/heads/$branch:refs/heads/$branch" &
+   push_label[$!]="branch $branch -> $remote"
+}
+
+queue_tag_push() {
+   local tag="$1"
+   local remote="$2"
+   git verify-tag "refs/tags/$tag"
+   git push -- "$remote" "refs/tags/$tag:refs/tags/$tag" &
+   push_label[$!]="tag $tag -> $remote"
+}
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 
 for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; do
-   if git remote get-url "$repo" &>/dev/null ; then
-      if git rev-parse --verify main &>/dev/null ; then
-         git verify-commit main
-         git push "$repo" main &
-         pid_list+=" $!"
-      fi
-      if git rev-parse --verify master &>/dev/null ; then
-         git verify-commit master
-         git push "$repo" master &
-         pid_list+=" $!"
-      fi
-      ## TODO: Debian 14 / forky
-      if git rev-parse --verify trixie &>/dev/null ; then
-         git verify-commit trixie
-         git push "$repo" trixie &
-         pid_list+=" $!"
-      fi
-      if [ ! "$git_tag_nearest" = "" ]; then
-         git verify-tag "$git_tag_nearest"
-         git push "$repo" "$git_tag_nearest" &
-         pid_list+=" $!"
-      fi
+   if ! git remote get-url -- "$repo" &>/dev/null ; then
+      continue
+   fi
+   queue_branch_push main "$repo"
+   queue_branch_push master "$repo"
+   ## TODO: Debian 14 / forky
+   queue_branch_push trixie "$repo"
+   if [ -n "$git_tag_nearest" ]; then
+      queue_tag_push "$git_tag_nearest" "$repo"
    fi
 done
 
-wait -- $pid_list
+if ! dm_parallel_wait push_label ; then
+   printf '%s\n' "$0: ERROR: failed pushes:" >&2
+   printf '   - %s\n' "${dm_parallel_failures[@]}" >&2
+   exit 1
+fi
 
 true "$0: OK"

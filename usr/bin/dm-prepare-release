@@ -10,9 +10,9 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
-true "INFO: Currently running script: ${BASH_SOURCE} $@"
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
@@ -26,13 +26,13 @@ fi
 source "$derivative_maker_source_code_dir/help-steps/pre"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
-cd "${dist_binary_build_folder}"
+cd -- "${dist_binary_build_folder}"
 
 sanity_tests() {
-   command -v mktorrent >/dev/null
-   command -v transmission-show >/dev/null
-   command -v sq >/dev/null
-   command -v signify-openbsd >/dev/null
+   command -v -- mktorrent >/dev/null
+   command -v -- transmission-show >/dev/null
+   command -v -- sq >/dev/null
+   command -v -- signify-openbsd >/dev/null
    test -f "${signify_public_key}"
    test -f "${signify_private_key}"
    test -f "${binary_image_installer_dist_source}"
@@ -45,13 +45,13 @@ installer_dist() {
       return 0
    fi
 
-   command -v git >/dev/null
-   command -v str_replace >/dev/null
+   command -v -- git >/dev/null
+   command -v -- str_replace >/dev/null
 
    cp -- "${binary_image_installer_dist_source}" "${binary_image_installer_dist_file}"
 
-   installer_dist_source_folder="$(dirname "${binary_image_installer_dist_source}")"
-   pushd "${installer_dist_source_folder}"
+   installer_dist_source_folder="$(dirname -- "${binary_image_installer_dist_source}")"
+   pushd -- "${installer_dist_source_folder}"
    git_tag_current="$(git describe --always --abbrev=1000000000)"
    ## example git_tag_current:
    ## 11.7-1
@@ -67,7 +67,7 @@ installer_dist() {
 
 windows_installer() {
    if [ ! "${dist_build_windows_installer}" = "true" ]; then
-      true "$0: INFO: Skip ${FUNCNAME}, because dist_build_windows_installer is not set to true."
+      true "$0: INFO: Skip ${FUNCNAME[0]}, because dist_build_windows_installer is not set to true."
       return 0
    fi
 
@@ -76,16 +76,23 @@ windows_installer() {
    fi
 
    test -d "$binary_build_folder_dist/virtualbox-windows-installer-binary"
-   pushd "$binary_build_folder_dist/virtualbox-windows-installer-binary" >/dev/null
+   pushd -- "$binary_build_folder_dist/virtualbox-windows-installer-binary" >/dev/null
 
    local counter
    counter=0
    for file_name in ./VirtualBox-*.exe ; do
+      ## Default glob behaviour: with no matches the pattern is left
+      ## literal, so guard against that explicitly.
+      test -e "${file_name}" || continue
       counter=$((counter + 1))
    done
 
+   if [ "${counter}" -eq "0" ]; then
+      true "$0: ERROR: No file matching VirtualBox-*.exe!"
+      exit 1
+   fi
    if [ "${counter}" -gt "1" ]; then
-      true "$0: ERROR: Multiple file matching VirtualBox-*.exe!"
+      true "$0: ERROR: Multiple files matching VirtualBox-*.exe!"
       exit 1
    fi
 
@@ -112,12 +119,12 @@ windows_installer() {
    export TARGET_SYSTEM FILE_LICENSE FILE_VCREDIST_INST_EXE FILE_WHONIX_OVA FILE_WHONIX_STARTER_MSI FILE_VBOX_INST_EXE FILE_INSTALLER_BINARY_FINAL
 
    VERSION="${dist_build_version}"
-   VERSION_FULL=$(basename "${binary_image_ova_file}")
+   VERSION_FULL=$(basename -- "${binary_image_ova_file}")
    MANUFACTURE="ENCRYPTED SUPPORT LLC"
    DESCRIPTION="Whonix-Starter"
    export VERSION VERSION_FULL MANUFACTURE DESCRIPTION
 
-   pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
+   pushd -- "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
    ## Make sure everything is rebuilt and no previously auto generated files are accidentally reused.
    git clean --force -d -X
    ## Creates WhonixStarterInstaller.msi
@@ -128,7 +135,7 @@ windows_installer() {
 
    safe-rm --force -- "${binary_image_windows_installer_file}"
 
-   pushd "${source_code_folder_dist}/windows/Whonix-Installer" >/dev/null
+   pushd -- "${source_code_folder_dist}/windows/Whonix-Installer" >/dev/null
    git clean --force -d -X
    ## Requires already existing WhonixStarterInstaller.msi
    ## Creates ${binary_image_windows_installer_file}
@@ -136,7 +143,7 @@ windows_installer() {
    git clean --force -d -X
    popd >/dev/null
 
-   pushd "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
+   pushd -- "${source_code_folder_dist}/windows/Whonix-Starter" >/dev/null
    ## Delete WhonixStarterInstaller.msi and other auto generated files.
    git clean --force -d -X
    popd >/dev/null
@@ -170,15 +177,15 @@ libvirt_compress() {
    legal_files_copy
 
    if [ "${dist_build_qcow2}" = "true" ]; then
-      safe-rm --force -- "$(basename "${libvirt_target_qcow2_xz_archive_file}")"
+      safe-rm --force -- "$(basename -- "${libvirt_target_qcow2_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
    fi
    if [ "${dist_build_raw}" = "true" ]; then
-      safe-rm --force -- "$(basename "${libvirt_target_raw_xz_archive_file}")"
+      safe-rm --force -- "$(basename -- "${libvirt_target_raw_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
    if [ "${dist_build_source_archive}" = "true" ]; then
-      safe-rm --force -- "$(basename "${source_archive_xz_file}")"
+      safe-rm --force -- "$(basename -- "${source_archive_xz_file}")"
       true "INFO: Checking if all files to be added to source_archive_xz_file ${source_archive_xz_file} exist..."
    fi
 
@@ -302,7 +309,7 @@ libvirt_compress() {
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
 
-   true "file_list_compress_full_path: ${file_list_compress_full_path[@]}"
+   true "file_list_compress_full_path: ${file_list_compress_full_path[*]}"
 
    local test_operator
    if [ "${dist_build_source_archive}" = "true" ]; then
@@ -320,7 +327,7 @@ libvirt_compress() {
    local base_name_file_item_full_path
    for file_name_item_full_path in "${file_list_compress_full_path[@]}" ; do
       test "${test_operator}" "${file_name_item_full_path}"
-      base_name_file_item_full_path="$(basename "${file_name_item_full_path}")"
+      base_name_file_item_full_path="$(basename -- "${file_name_item_full_path}")"
       filelist_base_name+=("$base_name_file_item_full_path")
    done
 
@@ -339,7 +346,7 @@ libvirt_compress() {
       --mtime='2015-10-21 00:00Z' \
       --xz \
       --directory="${dist_binary_build_folder}" \
-      --file "$(basename "${xz_archive}")" \
+      --file "$(basename -- "${xz_archive}")" \
       "${filelist_base_name[@]}"
 
    strip-nondeterminism "${xz_archive}"
@@ -403,17 +410,23 @@ Please donate! [C]
    $SUDO_TO_ROOT safe-rm --force -- "${binary_image_ova_file}"
    $SUDO_TO_ROOT safe-rm --force -- "${HOMEVAR_VBOX_TEMP}/temp.ova"
 
-   local eulafile_vbox_temp binary_image_text_vbox_temp
+   local eulafile_vbox_temp
    eulafile_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
-   binary_image_text_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-binary-image-text.txt"
 
    $SUDO_TO_ROOT cp -- "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
    $SUDO_TO_ROOT chown -- "dm-vbox-temp:dm-vbox-temp" "${eulafile_vbox_temp}"
 
-   $SUDO_TO_ROOT cp -- "${binary_image_text}" "${binary_image_text_vbox_temp}"
-   $SUDO_TO_ROOT chown -- "dm-vbox-temp:dm-vbox-temp" "${binary_image_text_vbox_temp}"
+   ## binary_image_text_vbox_temp setup deliberately removed: the
+   ## matching `--eulafile "${binary_image_text_vbox_temp}"` after
+   ## `--vsys '1'` is commented out below as a VirtualBox license-
+   ## screen workaround, so writing this file (which was never read)
+   ## was dead work. If the second-eulafile branch is ever
+   ## re-enabled, the cp + chown pair needs to come back too.
 
    ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
+   ## tar parses TAR_OPTIONS itself, so the embedded single quotes around
+   ## the --mtime value are intentional.
+   # shellcheck disable=SC2089
    TAR_OPTIONS="\
       ${TAR_OPTIONS:-}
       --owner=0 --group=0 --numeric-owner \
@@ -423,6 +436,7 @@ Please donate! [C]
       --mtime='2015-10-21 00:00Z' \
       --xz \
       "
+   # shellcheck disable=SC2090
    export TAR_OPTIONS
    XZ_OPT="${XZ_OPT:-} -9"
    export XZ_OPT
@@ -586,7 +600,10 @@ verify_cmd_openpgp() {
 }
 
 verify_cmd_signinfy() {
-   if [ "$file_size_mb" -ge "100" ]; then
+   ## Match the threshold in sign_cmd_signify; otherwise files in the
+   ## 100..999 MB band would be signed but never re-verified, and any
+   ## bug in signing would go undetected.
+   if [ "$file_size_mb" -ge "1000" ]; then
       return 0
    fi
    signify-openbsd -V -p "${signify_public_key}" -m "$1" -x "$2"
@@ -677,7 +694,7 @@ signatures_create() {
       url_part_item="${upload_url_part[i]}"
 
       local base_name
-      base_name=$(basename "${file_item}")
+      base_name=$(basename -- "${file_item}")
 
       safe-rm --force -- "${file_item}.torrent"
       mktorrent \
@@ -689,8 +706,8 @@ signatures_create() {
       transmission-show "${file_item}.torrent"
 
       ## Using `basename` so we end up with relative paths in hash sums file.
-      sha512sum "${base_name}" | tee "${file_item}.sha512sums" >/dev/null
-      sha512sum --check "${file_item}.sha512sums"
+      sha512sum -- "${base_name}" | tee -- "${file_item}.sha512sums" >/dev/null
+      sha512sum --check -- "${file_item}.sha512sums"
 
       sign_and_verify "${file_item}"
       sign_and_verify "${file_item}.torrent"
@@ -712,7 +729,7 @@ legal_files_copy() {
 main() {
    if [ "${dist_build_utm}" = "true" ]; then
       true "dist_build_utm: true"
-      true "INFO: Skipping $FUNCNAME, because not implemented for UTM."
+      true "INFO: Skipping ${FUNCNAME[0]}, because not implemented for UTM."
       exit 0
    fi
 
