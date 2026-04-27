@@ -1,3 +1,62 @@
+commit 6b5c6d9dfe95a847eeae286c5b1614afd8dba53c
+Merge: 639c0dd 6509a15
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Apr 27 05:43:38 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/add-end-of-options-support-uB6We'
+
+commit 6509a15d9778ca231f8e396f02b8df823ebfb40f
+Author: Claude <noreply@anthropic.com>
+Date:   Sun Apr 26 16:06:01 2026 +0000
+
+    update --flavor internal call sites to --flavor source
+
+    Pairs with the derivative-maker side of the rename. Updates the two
+    in-repo callers (dm-get-tor-from-tpo-repo as a real invocation,
+    dm-tor-update-repository in commented-out example lines) so they
+    continue to work after parse-cmd drops the 'internal' flavor name.
+
+    https://claude.ai/code/session_01BAQS9pE9zQYieV6Uys9Reo
+
+commit 639c0ddaabe59c1990a7ad86bd1993cdf33deff5
+Merge: e205fd9 add4588
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 12:00:01 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/add-end-of-options-support-uB6We'
+
+commit add4588586b62f0ea100d4957771e3668a92c136
+Author: Claude <noreply@anthropic.com>
+Date:   Sun Apr 26 11:42:03 2026 +0000
+
+    rename dist_build_internal_run to dist_build_source_run
+
+    Pure rename across the dm-* helper scripts to align with the
+    derivative-maker '--flavor source' rename. No behavior change.
+
+    https://claude.ai/code/session_01BAQS9pE9zQYieV6Uys9Reo
+
+commit b9dda707cc635435877c0989f433da6ed8e55868
+Author: Claude <noreply@anthropic.com>
+Date:   Sun Apr 26 11:30:34 2026 +0000
+
+    dm-reprepro-wrapper: drop pre-call debug logs that broke under set -u
+
+    main() referenced make_reprepro_codename_item before
+    set_dist_build_reprepro_folder_options had a chance to default it,
+    producing "unbound variable" under set -o nounset. The variable is
+    defaulted (via [[ -v var ]] || var=...) inside the function call on
+    the next line, so the pre-call "before:" log lines were both
+    redundant and broken; the matching "after:" lines are removed for
+    symmetry.
+    https://claude.ai/code/session_01BAQS9pE9zQYieV6Uys9Reo
+
+commit e205fd9b17ac8da00982b107b49bca94ad312739
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Apr 26 09:52:38 2026 +0000
+
+    bumped changelog version
+
 commit 1ddd09e68e2569df76e04a590962b38d5ce48bf0
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Apr 26 05:52:02 2026 -0400
