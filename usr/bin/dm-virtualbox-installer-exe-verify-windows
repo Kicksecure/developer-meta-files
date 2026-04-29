@@ -21,18 +21,23 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
+source /usr/libexec/helper-scripts/has.sh
+
 true "$0: START"
 
 pwd
 
-command -v -- osslsigncode
-command -v -- sha256sum
+has osslsigncode
+has sha256sum
 
 counter=0
+selected_file_name=""
 for file_name in ./VirtualBox-*.exe ; do
   ## Default glob behaviour: with no matches the pattern is left
-  ## literal, so guard against that explicitly.
-  test -e "$file_name" || continue
+  ## literal, so guard against that explicitly. Also guard against
+  ## accidentally matched directory names.
+  test -f "$file_name" || continue
+  selected_file_name="${file_name}"
   counter=$((counter + 1))
 done
 
@@ -45,9 +50,9 @@ if [ "$counter" -gt "1" ]; then
   exit 1
 fi
 
-test -r "$file_name"
+test -r "${selected_file_name}"
 
-osslsigncode verify -in "$file_name"
+osslsigncode verify -in "${selected_file_name}"
 
 sha256sum --ignore-missing --strict --check SHA256SUMS
 

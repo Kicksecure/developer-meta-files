@@ -34,7 +34,7 @@ source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/u
 ## from the source folder so dev iteration does not need a reinstall.
 parallel_helper="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/usr/libexec/developer-meta-files/parallel.bsh"
 test -r "$parallel_helper" || parallel_helper="/usr/libexec/developer-meta-files/parallel.bsh"
-# shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
+# shellcheck source=../libexec/developer-meta-files/parallel.bsh
 source "$parallel_helper"
 
 ## BEGIN Initialization functions {
@@ -685,6 +685,9 @@ internal_git_diff() {
    ## attempt the push - which will then fail visibly with the same
    ## git error - rather than silently skipping a repo whose diff
    ## could not be computed.
+   ##
+   ## TODO: Is this safe? Do we risk pushing a repo that is in an
+   ## inconsistent state?
    if [ "${git_exit_code}" = '128' ]; then
       true "ERROR: Something is wrong. See above. Press enter to continue."
       read -r _

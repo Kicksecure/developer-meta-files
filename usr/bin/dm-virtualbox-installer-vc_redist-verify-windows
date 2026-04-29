@@ -21,12 +21,14 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 
+source /usr/libexec/helper-scripts/has.sh
+
 true "$0: START"
 
 pwd
 
-command -v -- osslsigncode
-command -v -- sha256sum
+has osslsigncode
+has sha256sum
 
 file_name="vc_redist.x64.exe"
 

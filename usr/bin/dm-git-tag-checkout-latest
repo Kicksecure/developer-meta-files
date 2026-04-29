@@ -14,7 +14,7 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd -- "$MYDIR"
+#cd -- "$MYDIR"
 
 ## XXX: hardcoded path
 derivative_maker_source_code_dir="$HOME/derivative-maker"
