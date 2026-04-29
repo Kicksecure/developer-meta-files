@@ -29,7 +29,7 @@ while IFS= read -r -d '' file_name; do
    if ! test -f "$file_name" ; then
       continue
    fi
-   ## Match the shebang only on the first line; a script that just
+   ## Match the shebang only on the first line; a file that just
    ## mentions `#!/bin/bash` in a comment shouldn't qualify.
    if ! head -n 1 -- "$file_name" | grep -q -- '^#!/bin/bash' ; then
       continue
