@@ -1,3 +1,1043 @@
+commit 5d759420f19f4f3702cff5dfcad46ed8a177e3ff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 15:50:33 2026 -0400
+
+    agents
+
+commit 0f069037ac044d539c3b235c7dadc07035d3d803
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 15:49:27 2026 -0400
+
+    agents
+
+commit 87d5ca1f53ba0ac5e9d7728afafbdb02f414db1c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 15:43:24 2026 -0400
+
+    agents
+
+commit e8f0df0b9f7142b113908a0ee3e4266eb6229e99
+Merge: 9d6c909 ef46b6f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 15:35:00 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/style-guide-restructure'
+
+commit 9d6c90937d2e28048e330d7e2cbd92b59a7e85a8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 15:07:44 2026 -0400
+
+    .
+
+commit ef46b6f65db1c76785f23e12ab02d5b33d6d7628
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 19:03:23 2026 +0000
+
+    agents/: restructure bash style guide as flat-numbered R-NNN rules
+
+    Rewrites agents/bash-style-guide.md as a flat numbered list of
+    ~50 rules (R-001 through R-140), with each rule in the form:
+
+       **R-NNN: <one-line statement>**
+
+       Why: <one-paragraph rationale>
+
+       <optional code example>
+
+    Skim the bold lines to audit a diff; read the Why for context.
+    Lets reviewers cite R-NNN in commits / PR replies and (eventually)
+    makes "did this commit cite the rule it relaxes" a CI gate.
+
+    Splits project-specific rules out into agents/github-org-tools.md
+    under G-NNN. The bash guide now strictly covers portable bash;
+    github-org-* / dm-* tool-family conventions
+    (ghorg_validate_name / ghorg_safe_print boundary, mode-flag
+    contract, policy_warn_seen pattern, mock-API test conventions)
+    live in github-org-tools.md. Cross-references between the two
+    are explicit (R-140 abstract -> G-001 through G-004 concrete).
+
+    Adds agents/pre-push-checklist.md, capturing the user's existing
+    checklist plus items that bit me during PR #7:
+
+       - shellcheck --external-sources for cross-file SC2317 catches
+       - arr=() init under nounset before any access
+       - 'rc=0; out=$(cmd) || rc=$?' instead of toggling errexit
+       - case-pattern interpolations need "${x}" quoting
+       - tests capture combined output via 2>&1 (printf->log moved
+         everything to stderr)
+       - drop '^prefix' anchored greps; use --fixed-strings substrings
+       - reinstall ALL changed binaries before running the suite,
+         not just the file you touched
+       - run the FULL test suite, not just the test for one file
+       - re-trace data flow end-to-end after any scope/signature
+         refactor
+
+    Each checklist item cites the underlying R-NNN / G-NNN rule.
+
+    Doc rewrite only - no code changes.
+
+commit f6af77be342d6aa1ef9e46553e9b9be75e75e78f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 14:52:40 2026 -0400
+
+    .
+
+commit 141cae73efdafa557e7ca6d1c82acd121637c150
+Merge: c52669f 2c16512
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 13:10:09 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit c52669f2e746f8979a207bb51f058e39c4db4b8e
+Merge: 2e5b1f3 a4f5914
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 13:02:13 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit 2c165123d68e4c864379720c270a211e9450b2bc
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 16:35:03 2026 +0000
+
+    dm-github-personal-policy: init positional=() before policy_tool_init
+
+    Codex P2: policy_tool_init reads '\${#positional[@]}' under
+    'set -o nounset', so a caller without positional=() initialized
+    crashes with 'positional: unbound variable' instead of the
+    intended 'die 64' usage path.
+
+    The previous code (before a4f5914) declared positional=() right
+    before policy_parse_mode_args; the policy_tool_init refactor
+    dropped it because the rest of the state-init block already
+    covered mode/dry_run/verbose/mode_set. Add it back alongside
+    those, matching dm-github-policy.
+
+    Reproduced and confirmed: 'dm-github-personal-policy --apply'
+    (missing <username>) now exits 64 with the help block + the
+    'expected exactly 1 positional argument(s)' message instead of
+    unbound-variable.
+
+    Codex P2 review point on PR #7.
+
+commit a4f5914643b115a09a4f7ddcdb6272fb02e03b20
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 16:29:04 2026 +0000
+
+    github-policy-lib: add policy_tool_init wrapper
+
+    Both apply tools repeated the same six-line postlude after parsing
+    flags: positional-count check, mode-set check, ghorg_require_deps
+    call, and policy_warn_seen=0. Move that into a single
+    policy_tool_init helper in github-policy-lib.bsh, taking the
+    expected positional count as its first arg.
+
+    Caller boilerplate after this:
+
+       policy_tool_init 0 "$@"   ## dm-github-policy   (no positional)
+       policy_tool_init 1 "$@"   ## dm-github-personal-policy (<user>)
+
+    The wrapper calls policy_parse_mode_args, post-checks via the
+    caller-defined show_help / die, runs the dependency pre-flight,
+    and zeroes the warn flag. Doc block in the lib lists the full set
+    of helpers callers can use.
+
+    ci/tests/test_shellcheck_clean.sh switched to '--external-sources'
+    (short form '-x'). Without it, shellcheck does not follow the
+    '# shellcheck source=' directive into github-policy-lib.bsh, so
+    SC2317 fires on show_help in the apply tools (which is now only
+    called indirectly from inside the lib). With --external-sources
+    the cross-file usage is tracked correctly.
+
+commit 2e5b1f391bb410abfdd39e6bc58d12ac77139f5b
+Merge: 63a2606 bb37101
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 12:26:33 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit bb37101b004b059861eab6d37cae579dd9cc42a1
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 16:13:25 2026 +0000
+
+    github-policy-lib: accept extra ok status; pages 404 is not a warn
+
+    Codex P2 caught: 'DELETE /repos/{owner}/{repo}/pages' returns 404
+    when the repo has no Pages site, which is GitHub's documented
+    "nothing to delete" response. policy_api_call previously treated
+    every non-2xx as a warn, so a routine apply run against a backup-
+    mirror account would set policy_warn_seen for every repo without
+    Pages and exit non-zero even when everything else succeeded.
+
+    policy_api_call grows an optional 5th arg: one extra HTTP status
+    code to accept as success. The case statement quotes the expansion
+    ("${extra_ok}") so bash treats it as a literal pattern rather than
+    a glob (SC2254). Single-value only - case-pattern expansion does
+    not interpret '|' inside the substituted string as alternation, so
+    pipe-separated forms would silently fail to match.
+
+    dm-github-personal-policy step 5 (Pages DELETE) passes '404' as
+    the extra-ok status. The existing comment is updated to explain
+    why the lib treats 404 as success instead of warn.
+
+    Codex P2 review point on PR #7.
+
+commit 09ec964f77594e3a6239c337a08236e4b66997a0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 16:08:59 2026 +0000
+
+    github-policy-lib + dm-github-{,personal-}policy: drop tempfile, use policy_warn_seen var
+
+    Simpler than the POLICY_WARN_FILE / mktemp / EXIT-trap / cleanup-
+    function machinery. The lib's policy_api_call and ruleset-upsert
+    helper now mutate ${policy_warn_seen} directly via bash dynamic
+    scoping; the tool initializes it to 0 at top level and tests it
+    '-eq 1' at exit. No per-call '|| policy_warn_seen=1' boilerplate
+    needed - the lib does the assignment.
+
+    dm-github-policy's per-repo loop drops the '&' / 'wait -n' pattern
+    in favor of a plain sequential loop. With one org of ~12 repos and
+    one PATCH per repo, the parallelism saved a couple of seconds at
+    most; sequentializing lets the policy_warn_seen mutations from the
+    lib propagate back to the tool's scope without a shared file. The
+    unused POLICY_JOBS=4 const goes with it.
+
+    dm-github-personal-policy was already sequential; same pattern,
+    just initialize policy_warn_seen=0 at top and test at exit.
+
+    _policy_mark_warn helper in the lib is gone (was only there to
+    abstract the file-append). Doc block updated.
+
+commit 63a26065b2595e2a6754b3c010c8cfb9c1cf1d78
+Merge: f3a69ba c0207cd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 12:07:47 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit bc7e9f16ed6992dadb15d7d866994f3533412d6a
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 16:03:36 2026 +0000
+
+    ci/tests: capture rc via '|| rc=$?' instead of toggling errexit
+
+    Cleaner than 'set +o errexit; cmd; rc=$?; set -o errexit' for the
+    exit-code capture. With errexit on, a bare 'out=$(failing-cmd)'
+    aborts the script; the '|| rc=$?' suffix tells errexit "this
+    failure is handled" while still letting the previous-line
+    short-circuit-with-pipefail behavior of the surrounding script
+    stay intact. rc=0 default before the assignment keeps nounset
+    happy if the command succeeds.
+
+    No behavior change. Same three test files touched as before
+    (test_dm_dryrun.sh, test_dm_personal_dryrun.sh,
+    test_dm_personal_refuses_org.sh).
+
+commit c0207cd19674acd85b5ede0f36150ccfad2d5ba4
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 15:22:34 2026 +0000
+
+    dm-github-{,personal-}policy: replace counter+summary with one warn flag
+
+    Per-status counters (ok / warn / dry / skip) and the end-of-run
+    summary block in dm-github-policy added noise without signal: the
+    operator already sees each event's log line at the moment it
+    happens, and a CI / cron caller only needs to know "did anything
+    go wrong, yes or no" via the exit code. Drop both.
+
+    What replaces the api_record / counter tempfile / grep --count
+    machinery:
+
+    - POLICY_WARN_FILE env var. Caller (dm-github-policy main,
+      dm-github-personal-policy top-level) creates a tempfile, exports
+      the path, and registers an EXIT trap to clean it up. The lib's
+      policy_api_call and _policy_upsert_ruleset call _policy_mark_warn
+      on every warn path, which appends a single byte to the file.
+      Single-byte appends are atomic across concurrent backgrounded
+      writers (PIPE_BUF >= 4096 on Linux), so the per-repo & loop
+      needs no extra mutex.
+    - After the main loop, the tool tests '[ -s "${POLICY_WARN_FILE}" ]'
+      and exits 1 if the file is non-empty, 0 otherwise.
+
+    Tests:
+
+    - Drop the brittle '\]: ok: |\[WARN\]:' regex check in
+      test_dm_dryrun.sh and test_dm_personal_dryrun.sh. Replace with
+      an exit-code check (rc != 0 -> warn slipped through). The lib
+      short-circuits dry-run before any ghorg_api call, so no warn
+      path can fire structurally; the rc check is a defensive belt
+      rather than a load-bearing assertion.
+    - Drop the '=== summary ===' substring assertion from
+      test_dm_dryrun.sh: there is no summary block to assert on
+      anymore.
+
+commit 4b69d2ce7e08f92175b086797e440692716b0003
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 14:57:36 2026 +0000
+
+    ci/test_clone_dryrun: redirect stderr too
+
+    The printf -> log conversion (14bf373) sends every user-facing line
+    to stderr (log_run_die.sh's stecho). test_clone_dryrun captured
+    out="\$(github-org-clone --dry-run ...)" without 2>&1 and so
+    collected only stdout, which is now empty. The two DRY-RUN: clone
+    lines and the '2 repos to process' header are all in stderr; every
+    substring grep against \${out} consequently failed.
+
+    Earlier local 10/10 passes were a false positive: my reinstall
+    only refreshed the two dm-github-* tools, leaving the old
+    printf-based github-org-clone on PATH. Reinstalling the lot
+    reproduces the CI failure locally and confirms the fix.
+
+commit 94ec851bdb3168a46b5351f93def4b5c3780448d
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 14:51:03 2026 +0000
+
+    ci/tests: tighten dry-run ok:/warn anti-pattern
+
+    The previous attempt (edf9ed4) used ' ok: ' as the discriminator
+    for "a real API call's success line slipped through dry-run." That
+    matched the summary-count line dm-github-policy --dry-run prints
+    at the end:
+
+       <script> [NOTICE]:   ok:      0
+
+    which contains the substring ' ok: ' (single space, ok, colon,
+    space) inside the wider '  ok:      0'. test_dm_dryrun consequently
+    reported a false positive on every dry-run.
+
+    Tighten the anti-pattern to '\]: ok: ' - the level-tag-to-content
+    junction the API-call-success line has but the indented summary
+    line does not. policy_api_call's 'log notice "ok: <label>
+    [<status>]"' produces '<script> [NOTICE]: ok: ...' (one space
+    between ']:' and 'ok:'); the summary 'log notice "  ok:
+    ${n}"' produces '<script> [NOTICE]:   ok: ...' (three spaces),
+    which the new pattern does not match.
+
+    Verified by running the full ci/test-github-org-tools.sh locally
+    under CI=true: 10/10 pass.
+
+commit edf9ed4debdb8288c090309c740adb1025c48f3e
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 14:47:23 2026 +0000
+
+    ci: update dryrun tests for log-prefixed output
+
+    The recent printf -> log conversion (14bf373) shifts all user-
+    facing output to log_run_die.sh's format:
+
+       <script> [NOTICE]: <content>
+
+    so tests that anchored on column 0 of the structured prefix now
+    fail to match. Three updates:
+
+    - test_clone_dryrun.sh: '^2 repos to process' -> fixed-string
+      '2 repos to process under' (no anchor needed; substring inside
+      the log notice line).
+
+    - test_dm_dryrun.sh + test_dm_personal_dryrun.sh: the negative
+      '^ok:|^warn:' check switches to ' ok: |\[WARN\]:'. The earlier
+      pattern would silently pass after the conversion (no line ever
+      starts with literal 'ok:' or 'warn:' anymore, so the dry-run-no-
+      real-call invariant was no longer being enforced). The new
+      pattern looks for the substring ' ok: ' that policy_api_call's
+      success branch produces and the '[WARN]:' level tag that its
+      non-2xx branch produces - either inside the log line means a
+      real PUT/PATCH/DELETE ran.
+
+commit 14bf373674a83a7eedc7fc44a21d5241bc1d23a3
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 14:43:38 2026 +0000
+
+    github-{org,policy}-* + lib: convert all stdout/stderr to log
+
+    The bash style guide previously carved out a 'structured prefix
+    output stays as printf' exception for lines like 'DRY-RUN: ...',
+    'ok: ...', 'warn: ...', '=== summary ==='. Drop that exception:
+    every line written to the user goes through log notice / log warn
+    / log error so the operator gets the script-name + level tag in
+    front of the message. Tests grep for substrings inside the line,
+    so the structured words ('DRY-RUN:', 'ok:', etc.) stay grep-able
+    even though they no longer anchor at column 0.
+
+    Files converted:
+      - usr/libexec/developer-meta-files/github-policy-lib.bsh
+        (policy_api_call + _policy_upsert_ruleset)
+      - usr/bin/dm-github-policy            (apply + audit + summary)
+      - usr/bin/dm-github-personal-policy   (audit_one)
+      - usr/bin/github-org-clone            (clone_or_update_one + main)
+      - usr/bin/github-org-fork             (fork + collision + configure
+                                             + main)
+      - usr/bin/github-org-push             (push_one + main)
+      - usr/bin/dm-github-fork-sync         (drop a leftover blank
+                                             'log notice ""')
+
+    ghorg_require_deps now hardcodes the full base set
+    (curl jq sanitize-string git) instead of taking the extra deps
+    positionally. The policy tools never exec git themselves but the
+    whole family is meant to run in a git-using operator environment;
+    demanding git unconditionally is simpler than threading per-tool
+    extras and saved the per-callsite SC2119 disables.
+
+    Style guide updated: 'Output to user goes through log' replaces
+    the prior printf-vs-log distinction. Reserves printf for file
+    writes, subshells feeding other tools, and printf -v. Notes that
+    blank-line separators are noise once every line carries a
+    [NOTICE]: prefix.
+
+commit f3a69ba4694b0789ce81e4f1a95ba4a76d7fd5b2
+Merge: 3ff04b8 24dcec3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 10:31:54 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit efc59f9c9841faf1e98555581ee39dd2ed5dc9c1
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 13:51:31 2026 +0000
+
+    dm-github-personal-policy: refuse Organization accounts (P1 codex)
+
+    ghorg_validate_name only checks the string format - both 'alice'
+    and 'whonix' pass that step. Without an explicit account-type
+    check, an operator who typed an org name by mistake would have the
+    personal-mirror lockdown (Actions disabled, default-branch ruleset,
+    tag ruleset, settings PATCH) applied to every public repo in that
+    org. That is a high-blast-radius footgun on an apply run.
+
+    Resolve the account type via ghorg_account_type (GET /users/{name})
+    and bail out with exit 64 unless GitHub reports type=User. The
+    refusal message names the offending type and points the operator
+    at dm-github-policy as the org-side tool.
+
+    ci/tests/test_dm_personal_refuses_org.sh: regression test that runs
+    the tool against the existing org fixture (org-ai-assisted ->
+    type=Organization) and asserts:
+      - non-zero exit
+      - refusal message names the type
+      - no DRY-RUN: line slipped through (refusal happens before the
+        per-repo loop starts)
+
+    Codex P1 review point on PR #7.
+
+commit 24dcec3a06cb782c27fc06fa5c3afa0a28812a66
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 13:45:05 2026 +0000
+
+    dm-github-personal-policy: disable Actions; include forks; parser dedup
+
+    - Step 3 now PUTs '{enabled: false}' and skips the selected-actions
+      allow-list. The personal account is a backup/mirror; CI runs in
+      upstream orgs, so no workflow needs to fire here. Steps 1 and 2
+      (fork-PR approval, workflow GITHUB_TOKEN read-only) stay as
+      defense-in-depth in case Actions is later re-enabled in the UI.
+    - Forks are now in scope (ghorg_list_repos inc_forks=1). Forks own
+      their own .github/workflows + ruleset settings, so the malicious-
+      fork-PR vector exists on them too. Help text updated.
+    - The --apply / --dry-run / --audit / -v / -h parser is lifted into
+      github-policy-lib.bsh as policy_parse_mode_args. Both policy
+      tools call it with one line of glue plus a per-tool positional-
+      count check.
+
+    ghorg_require_deps now accepts extra commands via "$@". The three
+    github-org-* tools that exec git directly pass 'git' so a missing-
+    git environment fails fast at startup instead of mid-loop. Style
+    guide section "Pre-flight at the top, not scattered" added.
+
+    Style guide additions:
+    - Function definitions: blank line after the closing brace before
+      the next top-level statement.
+    - printf vs log: structured output (DRY-RUN:, ok:, warn:, ===) stays
+      as printf so prefixes match exactly. Ad-hoc informational
+      messages ("no source repos matched.", "no new forks needed.") use
+      log notice / info so the reader sees the script-name + level tag.
+
+    Audit pass on the touched scripts: github-org-{fork,push,clone},
+    dm-github-policy, dm-github-personal-policy converted their
+    informational stderr printfs to log notice. Restored a missing
+    blank line after combine_alt() in github-org-fork.
+
+    CI: test_dm_personal_dryrun.sh updated to expect actions=false +
+    forks in scope, with a forbidden-fragment check that catches a
+    regression back to actions=true / selected-actions allow-list.
+
+commit 3ff04b80bbc59be73d96e67912f62670cf3ba789
+Merge: 5b3406c d603b86
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 09:39:55 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit 5b3406c5f97c9ccd0063222cb6f980539db75fb3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 09:16:13 2026 -0400
+
+    .
+
+commit d603b860688bc736f640c234bf0cc5984167f737
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 12:54:06 2026 +0000
+
+    ci: cover dm-github-personal-policy + github-policy-lib
+
+    - test_shellcheck_clean.sh: add the new tool and the shared lib to
+      the explicit file list so shellcheck regressions there fail CI.
+    - test_dm_personal_dryrun.sh: regression test for the personal-tool
+      dry-run output, paralleling test_dm_dryrun.sh. Pins each per-repo
+      policy_api_call label and the upsert-ruleset format from the
+      shared lib (the same line shape that broke the org test in the
+      prior commit).
+    - fixtures GET_users_personal-test-user{,_repos}: dedicated
+      account-type + repos fixtures so the dry-run test does not collide
+      with test_fork_dryrun.sh's reliance on assisted-by-ai/<repo>
+      lookups returning 599. The repos fixture mixes one public
+      non-archived non-fork repo with one archived and one fork to
+      exercise the filter.
+
+commit 0d61e427f1675f4adbdc6afea13c22d7b6704a19
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 12:44:13 2026 +0000
+
+    github-policy-lib: drop quotes around ruleset name in dry-run line
+
+    Mock-API test ci/tests/test_dm_dryrun.sh does a fixed-string grep
+    against "DRY-RUN: ${scope}: upsert ruleset ${name}" (no quotes) -
+    matching the format the in-tool upsert_org_ruleset printed before
+    extraction. The lib's wrapper added single quotes around ${name},
+    breaking the substring match. Restore the original format.
+
+commit bdff7e7282ece9bf904e85582a3ee1f16463aee0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 12:41:08 2026 +0000
+
+    dm-github-{,personal-}policy: extract shared lib
+
+    Lift api_call, find-or-create ruleset upsert, and the standard JSON
+    body builders (branch ruleset, tag ruleset, fork-PR approval,
+    workflow perms, allowed-actions allow-list) out of the two policy
+    tools into github-policy-lib.bsh. dm-github-policy keeps its
+    api_record per-run tally via the lib's POLICY_RECORD_FN hook;
+    dm-github-personal-policy keeps its quiet-on-success via
+    POLICY_QUIET_OK. No UX or behavior changes.
+
+    Branch and tag ruleset bodies have an org/repo scope flag (org
+    adds the repository_name condition; repo omits it). Allowed-actions
+    PUT body still differs between scopes (org uses
+    enabled_repositories=string, repo uses enabled=bool), so that one
+    is built inline.
+
+    CI workflow path filter updated to include the new lib and
+    dm-github-personal-policy / dm-github-fork-sync, so changes to
+    either trigger the mock-API tests.
+
+commit b0b165f1d95c85697d0499a970f3184e1fc66ca0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 06:56:06 2026 +0000
+
+    dm-github-personal-policy: add rulesets, secret-scan, settings cleanup
+
+    Extend the per-repo lockdown to match the full attack surface raised
+    in review:
+
+    New per-repo settings:
+
+    - Wiki / Projects / Discussions disabled. Single PATCH alongside the
+      security_and_analysis change (one API call instead of three). Cuts
+      wiki-vandalism-via-PR, projects-spam, discussions-spam abuse
+      vectors. has_issues left untouched - issues are useful even on a
+      backup mirror.
+
+    - Secret scanning + push-protection enabled via security_and_analysis
+      block in the same PATCH. Free for public repos. Push-protection
+      blocks accidental commits of secrets at push time, before they hit
+      the public mirror.
+
+    - Pages site deletion via DELETE /repos/{owner}/{repo}/pages.
+      Idempotent in spirit (404 on no-site is benign warn). Cuts
+      accidental-publication surface. Note: this is a one-shot cleanup,
+      not a permanent gate - any future Pages workflow run will recreate
+      the site.
+
+    - Branch ruleset (per-repo) on the default branch: block force-push,
+      block deletion, require signed commits. bypass_actors=[]. Mirror
+      of dm-github-policy's org-level branch ruleset, scoped to one repo
+      via /repos/{owner}/{repo}/rulesets.
+
+    - Tag ruleset (per-repo) on all tags: block deletion, block
+      re-pointing, require signed tags. Same bypass_actors=[].
+
+    New helper:
+
+    - upsert_repo_ruleset() - idempotent find-by-name then PUT-update or
+      POST-create. Mirror of dm-github-policy's upsert_org_ruleset.
+      Validates the API-derived id via [0-9]+ + GHORG_MAX_ID_LEN cap
+      before interpolating into the PUT path (audit-checklist rule:
+      identifier sink).
+
+    Deliberately commented out (with rationale inline):
+
+    - Vulnerability alerts (PUT /vulnerability-alerts).
+    - Dependabot security updates (PUT /automated-security-fixes).
+
+    Reason: the personal account is a backup/mirror of org-side work
+    (Kicksecure, Whonix). Orgs may delete repos for brevity; the
+    personal account preserves history. Enabling Dependabot here would
+    duplicate notifications already raised on the canonical org-side
+    repo. The code paths are present but commented; uncomment when a
+    repo becomes canonical on the personal account.
+
+    show_help updated to list every new setting.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 815e087e4ad131ae6ecf4280b90de406ae2834d2
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 00:34:27 2026 +0000
+
+    github-org-* / dm-github-*: reject conflicting modes; document --apply
+
+    Codex review of 6a7e121 raised four issues:
+
+    1. P1 (dm-github-policy mode validator): the post-parse check only
+       confirmed that *some* mode flag was set, so 'dm-github-policy
+       --audit --apply' or '--dry-run --audit' was accepted with
+       last-flag-wins, silently flipping audit to apply (or vice versa).
+       Contradicts the "exactly one" contract printed in --help and
+       error text.
+
+       Fix: each mode arm guards on '${mode_set} -eq 0' before setting
+       it; second mode flag dies 64 with 'conflicting mode flags;
+       specify exactly one of ...'. Applied to all six tools.
+
+       Verified locally:
+         --apply              -> OK
+         --dry-run            -> OK
+         (empty)              -> die 64 'missing mode'
+         --apply --dry-run    -> die 64 'conflicting mode flags'
+         --dry-run --apply    -> die 64 'conflicting mode flags'
+         --apply --apply      -> die 64 'conflicting mode flags'
+
+    2-4. P2 (github-org-{clone,fork,push} help text): the parser change
+         in 6a7e121 added --apply but show_help still listed only
+         --dry-run, so any operator following --help for a normal
+         (non-dry-run) invocation hit a mode error.
+
+         Fix:
+           - Usage line: 'Usage (one mode flag is required - no implicit
+             default):' with both --apply and --dry-run forms shown
+             explicitly.
+           - Options block: --apply documented next to --dry-run.
+
+    dm-github-policy and dm-github-personal-policy already had their help
+    updated in 6a7e121; dm-github-fork-sync's help was updated too. The
+    gap was on the three github-org-* tools.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 6a7e121d8a721bc3648eddebcf8fa845bb1cb769
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 00:26:23 2026 +0000
+
+    github-org-* / dm-github-*: require explicit mode flag, no implicit default
+
+    Per the project's "no implicit default for mutating tools" rule:
+    running any of these scripts without a mode flag previously fell
+    through to APPLY semantics, mutating org/repo state under "what the
+    operator forgot to type" - the kind of footgun that can't ship.
+
+    Affected tools (all on this PR's surface):
+
+      dm-github-policy           --apply | --dry-run | --audit
+      dm-github-personal-policy  --apply | --dry-run | --audit
+      dm-github-fork-sync        --apply | --dry-run
+      github-org-fork            --apply | --dry-run
+      github-org-clone           --apply | --dry-run
+      github-org-push            --apply | --dry-run
+
+    Each tool now:
+      - tracks mode_set=0 and only sets it inside an explicit flag arm
+      - errors with 'specify exactly one of --apply / ...' + show_help
+        if mode_set != 1 after the parser
+
+    dm-github-fork-sync also pre-checks mode and refuses up-front so the
+    error names the wrapper rather than the spawned github-org-fork.
+
+    Help text updated to make the requirement visible at the top of
+    each Usage block:
+
+      Usage (one mode flag is required - no implicit default):
+
+    This is a breaking change for any existing automation that called
+    these tools without flags. By design - the previous implicit-apply
+    behaviour was the bug.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 97e9c88f8bb5130e3f5b88e5fc9667d88c26f83c
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 00:21:16 2026 +0000
+
+    dm-github-personal-policy: add explicit --apply flag
+
+    Symmetry with --audit / --dry-run / -v / -h. Setting it explicitly
+    is a no-op (apply is already the default) but lets scripted callers
+    state intent rather than rely on the missing-flag default.
+
+    Documented in the --help usage block alongside the implicit-default
+    form.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 20b6181a02eb3ce21c8af65c539f93e10c2fa805
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 00:18:43 2026 +0000
+
+    dm-github-personal-policy: parse flags after the username
+
+    Codex P1 review of 60c263c: the parser broke at the first positional
+    arg, so 'dm-github-personal-policy <user> --dry-run' silently ran in
+    APPLY mode (--dry-run treated as ignored extra) and mutated repo
+    settings. The exact form documented in the --help block was the
+    broken path.
+
+    Fix: collect positional args while continuing to parse flags after
+    them. Reject != 1 positional and unknown flags up front.
+
+    Verified locally via stub run of the parser body:
+
+      alice                        -> target=alice dry_run=0 mode=apply
+      alice --dry-run              -> target=alice dry_run=1 mode=apply
+      --dry-run alice              -> target=alice dry_run=1 mode=apply
+      alice --audit                -> target=alice dry_run=0 mode=audit
+      alice -v --dry-run           -> target=alice dry_run=1 verbose=1
+      --dry-run alice --audit      -> target=alice dry_run=1 mode=audit
+      (empty)                      -> die 64 (missing username)
+      alice bob                    -> die 64 (too many positionals)
+      --unknown alice              -> die 64 (unknown flag)
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 60c263ce2e9ff0dae350e462d79d349a28c1d7df
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 4 00:14:03 2026 +0000
+
+    usr/bin/dm-github-personal-policy: per-repo lockdown for personal accounts
+
+    Mirrors the per-repo subset of dm-github-policy (which targets orgs)
+    for individual user accounts. Designed to harden a personal account
+    against malicious fork PRs that would otherwise burn Actions minutes
+    on workflows triggered by external contributors.
+
+    Settings applied per repo:
+      - Fork-PR contributor approval = all_external_contributors
+      - Default workflow GITHUB_TOKEN permissions = read
+      - Allowed Actions = selected (github-owned + verified creators)
+
+    Repos in scope: public, non-archived, non-fork repos owned by the
+    user given on the CLI. Iterated via ghorg_list_repos which already
+    paginates per_page=100 with GHORG_MAX_PAGES=100 cap (10000 repo
+    ceiling, far above any personal-account need).
+
+    Modes:
+      - <username>            : apply
+      - <username> --dry-run  : print planned PUT/PATCH calls
+      - <username> --audit    : read-only inspection of current state
+
+    Repo-level body schema for /repos/{owner}/{repo}/actions/permissions
+    differs from the org endpoint (uses 'enabled' bool instead of
+    'enabled_repositories' string); rest of the bodies match
+    dm-github-policy directly.
+
+    Idempotent and apply-only (PATCH/PUT are upsert; never disables a
+    setting that was already on). Best-effort error handling: a failure
+    on one repo logs a warn and the loop continues, so 1 archived repo
+    returning 403 doesn't kill the whole run for ~335 other repos.
+
+    Test target: assisted-by-ai. Production target: adrelanos.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit d82afbaa6dbcf64af2197dc98f4a37530f3d0730
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 23:14:44 2026 +0000
+
+    github-org-fork: combine_alt skips empty patterns
+
+    Codex P2 review of 1add4eb: passing --exclude "" (e.g. from a wrapper
+    forwarding an optional regex via --exclude "${EXCLUDE_RE:-}") would
+    have produced exclude_re="()". ghorg_filter_names then runs
+    'grep -v -E "()"', and the empty alternative matches every line, so
+    every repo gets dropped. The script silently no-ops with
+    "no source repos matched."
+
+    Pre-this-PR behaviour was that an empty --exclude left exclude_re=''
+    and ghorg_filter_names treated it as no filter. The accumulator
+    introduced the regression.
+
+    Fix: combine_alt skips empty list entries. If every entry is empty,
+    the result is the empty string - matching the pre-PR no-filter
+    semantics. Preserves the original codepath for wrappers that
+    optionally pass --exclude "".
+
+    Verified locally with synthetic combine_alt invocations:
+      no entries           -> ""
+      ("foo")              -> "(foo)"
+      ("foo" "bar")        -> "(foo)|(bar)"
+      ("" "foo")           -> "(foo)"
+      ("foo" "")           -> "(foo)"
+      ("")                 -> ""
+      ("" "")              -> ""
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 1add4eb2f20e804fc8d9b54034bb87f5d9c88bb8
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 22:53:52 2026 +0000
+
+    github-org-fork: drop unsupported '--' from git check-ref-format
+
+    Codex P1 review of 04322e4: 'git check-ref-format --branch -- <X>'
+    returns usage error 129 on git 2.43+ because the --branch form does
+    not accept '--' as an end-of-options separator. The previous fix
+    ALWAYS failed validation, so --sync-branches silently rejected every
+    repo and never actually synced.
+
+    Verified locally on git 2.43.0: '--' is not supported by any form
+    of check-ref-format (basic, --branch, --normalize). Drop '--' and
+    validate as a full refname:
+
+      git check-ref-format "refs/heads/${default_branch}"
+
+    The 'refs/heads/' prefix ensures the resulting argv element never
+    starts with '-', so the missing '--' end-of-options does not create
+    a shell-level arg-injection path from a hostile API response.
+
+    Manually tested against:
+      main           - OK
+      master         - OK
+      release/2026   - OK   (hierarchical, what codex flagged in round 1)
+      v2.0+stable    - OK   ('+' was rejected by the homegrown allowlist
+                             that codex flagged in round 2)
+      -dash          - OK   (git allows leading '-' in ref components;
+                             arg-injection blocked by 'refs/heads/' prefix)
+      a..b           - FAIL (git rejects '..' per its rules)
+      ''             - FAIL (trailing '/' rejected)
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 04322e4085ee4b67600934c5402a32660104dffd
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 22:50:08 2026 +0000
+
+    github-org-fork: git check-ref-format for branch validation; accumulate --include/--exclude
+
+    Codex review of 03aeaa4 raised two issues:
+
+    1. P2: branch-name allowlist '^[A-Za-z0-9._/-]+$' was still too strict.
+       Git allows additional valid characters (e.g. '+'), so any repo whose
+       default branch contains them was silently skipped with a warn.
+
+       Fix: replace the homegrown allowlist with 'git check-ref-format
+       --branch -- "${default_branch}"', which enforces git's actual
+       ref-name rules (no leading '-', no '..', no doubled '/', no
+       control chars, no '.lock' suffix, etc). git is now a runtime
+       dep of --sync-branches; checked at the top of the sync loop in
+       main() so a missing binary fails loudly rather than silently
+       rejecting every repo.
+
+    2. P3: dm-github-fork-sync wraps github-org-fork with a per-source
+       --exclude (Whonix .github + canary collisions). github-org-fork's
+       parser stored only the LAST --exclude, so a user-supplied
+       --exclude on dm-github-fork-sync would overwrite the per-source
+       collision exclusion and reintroduce the .github / canary HTTP 422
+       path the change was trying to avoid.
+
+       Fix: github-org-fork accumulates multiple --include and --exclude
+       values into arrays during parsing, then OR-combines them into a
+       single grep -E regex via a small combine_alt helper. Each
+       individual pattern is wrapped in (...) so alternation between
+       user-supplied and wrapper-supplied filters is unambiguous even
+       if one of them contains a bare '|'.
+
+       Symmetrically fixed for --include even though no current caller
+       relies on it; the surprising last-flag-wins behaviour was
+       inconsistent for both.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 03aeaa4d363933fc9f6e08fc65638a04037c669b
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 22:38:09 2026 +0000
+
+    github-org-fork: sanitize merged_commits before logging sync result
+
+    Codex P2 review on PR #7: in sync_one's verbose-mode log notice line,
+    merge_type was sanitized via ghorg_safe_print but merged_commits was
+    interpolated raw. Both flow into the same display sink (a log call
+    that ends up at the operator's terminal); both are API-derived bytes
+    that a hostile or replayed GHORG_API endpoint can poison. Sanitize
+    merged_commits via the same path.
+
+    Note: 'commits=...' value is now also wrapped in single quotes so a
+    non-numeric value (which the API shouldn't return, but might under
+    hostile conditions) is visually delimited the same way merge_type is.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit d26b86a7e1edd6d54162063ac9dc680f8e805439
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 21:43:32 2026 +0000
+
+    github-org-fork: sync_one accepts hierarchical default branches
+
+    Codex P2 review on PR #7: ghorg_validate_name with kind='repo' uses
+    the repo-name allowlist (^[A-Za-z0-9._-]+$, max 100 chars), which
+    disallows '/'. Branches like 'release/2026' or 'feature/foo' are
+    valid git refs, so any mirror repo whose default branch is
+    hierarchical was being silently skipped with a 'default branch
+    invalid' warn instead of synced.
+
+    Replace ghorg_validate_name with an inline allowlist tuned for git
+    ref names: A-Za-z0-9._/- with a 256-char cap, plus the same
+    arg-injection ('-'-prefix) and '..' rejections ghorg_validate_name
+    applies. The branch name still flows safely into the request body
+    (jq escapes) and into display (sanitized via ghorg_safe_print).
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 556a13cf5250ab943d4935321346f2edda3e12f5
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 3 21:01:10 2026 +0000
+
+    github-org-fork / dm-github-fork-sync / dm-github-token-test: --sync-branches, log, dedup
+
+    Three changes layered on top of the merged dm-github-fork-sync rename
+    + partial fix series:
+
+    github-org-fork:
+
+    - New --sync-branches flag. After fork-create + configure, fast-forward
+      each target repo's default branch from upstream via
+      POST /repos/{owner}/{repo}/merge-upstream. Without this, the mirror
+      only ever has fork-time tips - upstream commits never propagate.
+
+      Default branch is API-derived from /repos/{owner}/{repo}.default_branch
+      (most are 'master', some 'main'); validated via ghorg_validate_name
+      before placing in the request body or in display via printf.
+
+      Response handling:
+        200 - synced (.merge_type=fast-forward|merge|none); 'log notice'
+              shows merge_type and merged_commits in --verbose.
+        409 - upstream and fork have diverged in a way merge-upstream
+              cannot fast-forward (someone pushed to mirror directly);
+              'log warn', loop continues.
+        422 - default branch missing on either side; 'log warn'.
+        other HTTP - 'log warn', loop continues.
+      Best-effort: failure on one repo never aborts the run.
+
+    - All warn paths in sync_one go through 'log warn' (not 'printf
+      "%s\n" "warn: ..." >&2'). Status output goes through 'log notice'.
+      Aligns with the lib's existing log function usage.
+
+    dm-github-fork-sync:
+
+    - --sync-branches in POLICY_FLAGS. Re-running the wrapper periodically
+      (cron, or before each release-build) keeps mirror branches current
+      with upstream.
+
+    - SOURCE_EXCLUDE_RE map for per-source exclusions. Whonix and Kicksecure
+      both have '.github' (org-meta) and 'canary' (warrant canary). Forking
+      both lands the second-arriving source on a name already taken by the
+      first - GitHub returns HTTP 422. Process Kicksecure first (wins those
+      names), then exclude '^(\.github|canary)$' on Whonix so the run
+      completes without those two predictable collisions.
+
+    - Section header printf calls switched to log notice for consistency
+      with the rest of the script's output.
+
+    dm-github-token-test:
+
+    - Replace the inline /user logic with ghorg_authenticated_user from
+      the lib. The helper already does GET /user + status check + .login
+      extraction + ghorg_validate_name on the result. Reusing it
+      eliminates ~10 lines of duplicate code and one less place to drift
+      from the lib's auth contract.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit bc27bdeaafc28d0e65d424654d869b50e6127cd7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 18:05:58 2026 -0400
+
+    refactoring
+
+commit 9b1c4d0fba9acaecdec938393fbf9fa9096d701b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 17:28:52 2026 -0400
+
+    fix
+
+commit 5fbb2be7edda4244b8f4615db86ec931dbba94c0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 16:40:56 2026 -0400
+
+    rename
+
+commit 23cc88e56a297cbebdb64bc4ffc4bffe020e90a1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 16:40:36 2026 -0400
+
+    rename
+
+commit 3b04276864e2d36b477d6e12b4e30853f97707e0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 16:34:31 2026 -0400
+
+    fix
+
+commit 38fdf95e9c6ff56b5b1969857b8ac31bd352360c
+Merge: 0be80fe 165cf36
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 16:27:15 2026 -0400
+
+    Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
+
+commit 0be80fe98a2933fcff2ff955b1632e360d456275
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 15:52:42 2026 -0400
+
+    chmod +x
+
+commit 165cf36de7bd8de91d4cfcae1e28c6de4abb3790
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 2 19:38:28 2026 +0000
+
+    dm-github-token-test: style guide adherence
+
+    Three style violations from the initial commit fixed:
+
+    - Use ghorg_api instead of duplicating curl boilerplate (reuse-helpers
+      rule). Headers, timeouts, retry, sanitization, X-GitHub-Api-Version
+      pinning are all centralized in the lib; calling curl directly here
+      drifts from the rest of the surface.
+    - Hoist the inline 'date -u -d ...' command substitution out of
+      printf into a named reset_iso variable.
+    - Validate API-derived numeric fields (remaining, limit, reset_epoch)
+      via is_whole_number from strings.bsh before using them; sanitize
+      the login through ghorg_safe_print before display. Aligns with
+      agents/security.md "API-derived strings are untrusted" rule even
+      for this small smoke-test tool.
+
+    Side benefit: half the LOC of the original.
+
+    https://claude.ai/code/session_01U5dqsVj1msLQMiCemkuddP
+
+commit 1c09d3f68579427736b741737730530523f667c2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 2 19:00:49 2026 +0000
+
+    bumped changelog version
+
 commit 09bef9384a3fd238b43be7472b3cbc360c57dd4b
 Merge: b86ec53 78a6f6c
 Author: Patrick Schleizer <adrelanos@whonix.org>
