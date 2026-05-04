@@ -4,7 +4,6 @@ Skim before every push.
 
 * Scope: any change to bash script, or `agents/`.
 * Bash style: [agents/bash-style-guide.md](bash-style-guide.md).
-* Project-specific rules: [agents/github-org-tools.md](github-org-tools.md).
 
 The list is grouped by phase. Skip items that don't apply to your
 diff; don't skip a phase. Each item cites the relevant rule.
