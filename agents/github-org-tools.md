@@ -45,7 +45,7 @@ bold lines to audit a diff; read the Why for context.
     [ ] Run the FULL ci/test-github-org-tools.sh suite, not just
         the file matching the changed surface. Cross-file
         contracts break otherwise.
-        
+
 ## Threat boundary: GitHub REST API responses
 
 Every byte returned by `api.github.com` (or whatever `${GHORG_API}`
