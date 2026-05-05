@@ -50,7 +50,7 @@ jobs:
     ## Skip on forks so a fork's workflow can never use the upstream
     ## secret (GitHub also blocks this by default for forked PRs, but
     ## the explicit guard documents intent).
-    if: ${{ github.repository == 'assisted-by-ai/developer-meta-files' }}
+    if: ${{ github.repository == 'Kicksecure/developer-meta-files' }}
 
     steps:
       - name: Install apt pre-reqs
