@@ -16,6 +16,8 @@ test -r "$parallel_helper" || parallel_helper="/usr/libexec/developer-meta-files
 # shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
 source "$parallel_helper"
 
+readonly DM_GITHUB_MIRROR='org-ai-assisted'
+
 ## Drop `--always` so describe fails (instead of silently returning a
 ## SHA) when there is no tag; the tag-push branch then runs only when
 ## a real tag exists.
@@ -51,7 +53,7 @@ queue_tag_push() {
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 
-for repo in github-derivative-maker github-kicksecure github-whonix adrelanos ; do
+for repo in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
    if ! git remote get-url -- "$repo" &>/dev/null ; then
       continue
    fi

@@ -659,13 +659,13 @@ get_package_documentation_info_list() {
 ## TODO: Use this function as the single source of truth for most of these
 ## remote names, rather than duplicating info.
 set_batch_current_package_remote_list() {
-   #batch_current_package_remote_list=( "github-${batch_current_project_name,,}" "${DM_GITHUB_MIRROR}" )
-   batch_current_package_remote_list=( "github-${batch_current_project_name,,}" )
+   batch_current_package_remote_list=( "github-${batch_current_project_name,,}" "${DM_GITHUB_MIRROR}" )
 
    ## derivative-maker has a couple extra remotes
-   if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
-      batch_current_package_remote_list+=( 'github-kicksecure' 'github-whonix' )
-   fi
+   ## derivative-maker GitHub organisation is to be deprecated for simplicity.
+   #if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
+      #batch_current_package_remote_list+=( 'github-kicksecure' 'github-whonix' )
+   #fi
 }
 
 ## Diffs two Git branches against each other, reporting whether they have
