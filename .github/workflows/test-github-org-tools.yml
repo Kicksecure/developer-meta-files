@@ -76,6 +76,8 @@ jobs:
 
       - name: Checkout developer-meta-files
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Install genmkfile
         run: ./ci/install-genmkfile.sh
@@ -84,7 +86,7 @@ jobs:
         run: ./ci/install-helper-scripts.sh
 
       - name: Install developer-meta-files
-        run: GENMKFILE_DEBUG=1 genmkfile install
+        run: genmkfile install
 
       - name: Smoke test sanitize-string
         run: sanitize-string -- nolimit "smoke test"
