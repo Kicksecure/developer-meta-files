@@ -238,7 +238,6 @@ ghorg_validate_name "${target_owner}" user
 ## creating forks in the wrong account while logs claim otherwise.
 fork_one() {
   local repo target_type body auth_user result status
-  local safe_target safe_auth
 
   repo="$1"
 
@@ -252,9 +251,7 @@ fork_one() {
   else
     auth_user="$(ghorg_authenticated_user)" || return 1
     if [ "${auth_user}" != "${target_owner}" ]; then
-      safe_target="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${target_owner}")"
-      safe_auth="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${auth_user}")"
-      log error "target user '${safe_target}' does not match auth user '${safe_auth}'; refusing to fork"
+      log error "target user '${target_owner}' does not match auth user '${auth_user}'; refusing to fork"
       return 1
     fi
     body="$(jq -n -- '{default_branch_only: false}')"
@@ -283,7 +280,7 @@ fork_one() {
 ## but don't fail - the operator sees the collision and decides what
 ## to do (rename, archive, or accept).
 check_collision() {
-  local repo parent expected safe_repo safe_parent safe_expected
+  local repo parent expected
 
   repo="$1"
 
@@ -291,10 +288,7 @@ check_collision() {
   expected="${source_owner}/${repo}"
 
   if [ -n "${parent}" ] && [ "${parent}" != "${expected}" ]; then
-    safe_repo="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${repo}")"
-    safe_parent="$(ghorg_safe_print "${GHORG_MAX_DISPLAY_LEN}" "${parent}")"
-    safe_expected="$(ghorg_safe_print "${GHORG_MAX_DISPLAY_LEN}" "${expected}")"
-    log warn "collision: '${target_owner}/${safe_repo}' exists as fork of '${safe_parent}', expected '${safe_expected}'"
+    log warn "collision: '${target_owner}/${repo}' exists as fork of '${parent}', expected '${expected}'"
   fi
 }
 
@@ -371,8 +365,8 @@ configure_one() {
 ## Default branch is looked up via /repos/{owner}/{repo}.default_branch.
 ## Most are 'master', some are 'main' or other names; do not hard-code.
 sync_one() {
-  local repo result status info default_branch body safe_repo safe_branch
-  local merge_type merged_commits safe_merge_type safe_merged_commits
+  local repo result status info default_branch body
+  local merge_type merged_commits
 
   repo="$1"
 
@@ -394,9 +388,8 @@ sync_one() {
     return 0
   fi
   ## Default branch is API-derived; passes into the request body
-  ## (jq escapes safely) and into display via log/printf (sanitized
-  ## via ghorg_safe_print before output). The remaining validation
-  ## here is defense-in-depth.
+  ## (jq escapes safely) and into display via log() (which sanitizes
+  ## internally). The remaining validation here is defense-in-depth.
   ##
   ## Use git's own ref-name validator instead of an inline allowlist.
   ## Branch names can legitimately contain characters beyond a simple
@@ -412,7 +405,7 @@ sync_one() {
   ## doesn't create a shell-level arg-injection path from a hostile
   ## API response.
   if ! git check-ref-format "refs/heads/${default_branch}" >/dev/null 2>&1; then
-    log warn "sync-branches: '${target_owner}/${repo}' default branch invalid: '$(ghorg_safe_print 64 "${default_branch}")'"
+    log warn "sync-branches: '${target_owner}/${repo}' default branch invalid: '${default_branch}'"
     return 0
   fi
 
@@ -420,29 +413,21 @@ sync_one() {
   result="$(ghorg_api POST \
     "/repos/${target_owner}/${repo}/merge-upstream" "${body}")" || return 1
   status="$(ghorg_status_of "${result}")"
-  safe_repo="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${repo}")"
-  safe_branch="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${default_branch}")"
   case "${status}" in
     200)
       merge_type="$(ghorg_body_of "${result}" | jq -r -- '.merge_type')"
       merged_commits="$(ghorg_body_of "${result}" | jq -r -- '.merged_commits // 0')"
-      ## Both flow into a 'log notice' display sink; sanitize per the
-      ## "API-derived strings into printf" rule. merged_commits should
-      ## be numeric, but a hostile/replayed GHORG_API endpoint can
-      ## return arbitrary bytes and we still want safe display.
-      safe_merge_type="$(ghorg_safe_print 32 "${merge_type}")"
-      safe_merged_commits="$(ghorg_safe_print 16 "${merged_commits}")"
       [ "${verbose}" = '1' ] && log notice \
-        "synced: ${target_owner}/${safe_repo}/${safe_branch} merge_type='${safe_merge_type}' commits='${safe_merged_commits}'"
+        "synced: ${target_owner}/${repo}/${default_branch} merge_type='${merge_type}' commits='${merged_commits}'"
       ;;
     409)
-      log warn "sync-branches: '${target_owner}/${safe_repo}/${safe_branch}' diverged from upstream (HTTP 409)"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409)"
       ;;
     422)
-      log warn "sync-branches: '${target_owner}/${safe_repo}/${safe_branch}' branch missing on upstream (HTTP 422)"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' branch missing on upstream (HTTP 422)"
       ;;
     *)
-      log warn "sync-branches: '${target_owner}/${safe_repo}/${safe_branch}': HTTP '${status}'"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}'"
       ;;
   esac
 }
