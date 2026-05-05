@@ -58,8 +58,7 @@
 ##   source /usr/libexec/developer-meta-files/github-policy-lib.bsh
 ##
 ## github-org-lib.bsh must be sourced before this file (provides
-## ghorg_api / ghorg_status_of / ghorg_body_of / ghorg_safe_print /
-## GHORG_MAX_ID_LEN).
+## ghorg_api / ghorg_status_of / ghorg_body_of / GHORG_MAX_ID_LEN).
 
 ## ============================================================================
 ## API call wrapper
@@ -86,7 +85,7 @@
 ##
 ## Returns: 0 on success (or dry-run), 1 on failure (after warn).
 policy_api_call() {
-   local label method path body extra_ok result status response_body safe_body
+   local label method path body extra_ok result status response_body
 
    label="$1"
    method="$2"
@@ -114,8 +113,7 @@ policy_api_call() {
          ;;
       *)
          response_body="$(ghorg_body_of "${result}")"
-         safe_body="$(ghorg_safe_print 512 "${response_body}")"
-         log warn "'${label}' ['${status}']: ${safe_body}"
+         log warn "'${label}' ['${status}']: ${response_body:0:512}"
          policy_warn_seen=1
          return 1
          ;;
@@ -139,7 +137,7 @@ policy_api_call() {
 ##   $4 - JSON body
 _policy_upsert_ruleset() {
    local list_endpoint scope_label name body
-   local result status existing_id safe_id
+   local result status existing_id
 
    list_endpoint="$1"
    scope_label="$2"
@@ -175,8 +173,7 @@ _policy_upsert_ruleset() {
       ## Numeric + length cap: API-derived id flows into a URL path.
       if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] \
          || [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
-         safe_id="$(ghorg_safe_print 32 "${existing_id}")"
-         log warn "'${scope_label}': ruleset id '${safe_id}' not a valid numeric id"
+         log warn "'${scope_label}': ruleset id '${existing_id}' not a valid numeric id"
          policy_warn_seen=1
          return 1
       fi
@@ -365,7 +362,6 @@ policy_actions_selected_allowlist_body() {
 ##
 ## Args: the script's "$@" verbatim.
 policy_parse_mode_args() {
-   local arg_safe
 
    while [ "$#" -gt 0 ]; do
       case "$1" in
@@ -407,8 +403,7 @@ policy_parse_mode_args() {
             done
             ;;
          -*)
-            arg_safe="$(ghorg_safe_print 64 "$1")"
-            die 64 "unknown option: '${arg_safe}'"
+            die 64 "unknown option: '$1'"
             ;;
          *)
             positional+=( "$1" )
