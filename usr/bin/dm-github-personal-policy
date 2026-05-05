@@ -105,8 +105,7 @@ ghorg_validate_name "${target_user}" user
 target_account_type="$(ghorg_account_type "${target_user}")" \
    || die 1 "could not determine account type for '${target_user}'"
 if [ "${target_account_type}" != 'User' ]; then
-   safe_type="$(ghorg_safe_print 32 "${target_account_type}")"
-   die 64 "refusing to run against '${target_user}' (account type '${safe_type}', expected 'User'); use dm-github-policy for organizations"
+   die 64 "refusing to run against '${target_user}' (account type '${target_account_type}', expected 'User'); use dm-github-policy for organizations"
 fi
 
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
@@ -218,14 +217,12 @@ apply_repo_policy() {
 }
 
 audit_one() {
-   local repo result status body safe_repo
+   local repo result status body
    local fork_approval workflow_perms allowed_actions
-   local safe_fork_approval safe_workflow_perms safe_allowed_actions
 
    repo="$1"
-   safe_repo="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${repo}")"
 
-   log notice "${target_user}/${safe_repo}:"
+   log notice "${target_user}/${repo}:"
 
    result="$(ghorg_api GET \
       "/repos/${target_user}/${repo}/actions/permissions/fork-pr-contributor-approval")" \
@@ -234,8 +231,7 @@ audit_one() {
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
       fork_approval="$(printf '%s' "${body}" | jq --raw-output -- '.approval_policy // "?"')"
-      safe_fork_approval="$(ghorg_safe_print 64 "${fork_approval}")"
-      log notice "  fork-PR approval: ${safe_fork_approval}"
+      log notice "  fork-PR approval: ${fork_approval}"
    else
       log notice "  fork-PR approval: HTTP '${status}'"
    fi
@@ -246,8 +242,7 @@ audit_one() {
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
       workflow_perms="$(printf '%s' "${body}" | jq --raw-output -- '"default=" + (.default_workflow_permissions // "?") + ", can_approve_PRs=" + ((.can_approve_pull_request_reviews // false) | tostring)')"
-      safe_workflow_perms="$(ghorg_safe_print 128 "${workflow_perms}")"
-      log notice "  workflow GITHUB_TOKEN: ${safe_workflow_perms}"
+      log notice "  workflow GITHUB_TOKEN: ${workflow_perms}"
    else
       log notice "  workflow GITHUB_TOKEN: HTTP '${status}'"
    fi
@@ -258,8 +253,7 @@ audit_one() {
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
       allowed_actions="$(printf '%s' "${body}" | jq --raw-output -- '"enabled=" + ((.enabled // false) | tostring) + ", allowed_actions=" + (.allowed_actions // "?")')"
-      safe_allowed_actions="$(ghorg_safe_print 128 "${allowed_actions}")"
-      log notice "  actions: ${safe_allowed_actions}"
+      log notice "  actions: ${allowed_actions}"
    else
       log notice "  actions: HTTP '${status}'"
    fi
