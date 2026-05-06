@@ -1,21 +1,22 @@
 # AGENTS.md (AI-Assisted)
 
-* Index of guidance for AI tools (Claude Code, Codex).
+* Index of guidance for AI tools (Claude Code, Codex, etc.).
 * Read only the file relevant to your task.
 * `AGENTS.md` itself stays short on purpose.
+
+# AI instructions for ALL repositories
 
 | Topic | Where |
 | --- | --- |
 | Bash style (variables, printf, locals, traps, ...) | [`agents/bash-style-guide.md`](agents/bash-style-guide.md) |
 | pre-push checklist | [`agents/pre-push-checklist.md`](agents/pre-push-checklist.md) |
 | General threat model + trust boundaries | [`agents/security.md`](agents/security.md) |
-| github-org-* / dm-github-* specifics | [`agents/github-org-tools.md`](agents/github-org-tools.md) |
 
-This repo hosts the canonical bash style guide for the following organizations.
-
-* Kicksecure
-* Whonix
-* org-ai-assisted
-
-Other repos (derivative-maker, helper-scripts) cross-link here
+Other repos (derivative-maker, helper-scripts, etc.) cross-link here
 rather than duplicating.
+
+# AI instructions for developer-meta-files repository only
+
+| Topic | Where |
+| --- | --- |
+| github-org-* / dm-github-* specifics | [`agents/github-org-tools.md`](agents/github-org-tools.md) |
