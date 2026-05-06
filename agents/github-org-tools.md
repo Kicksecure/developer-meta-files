@@ -20,8 +20,8 @@ bold lines to audit a diff; read the Why for context.
     [ ] API-derived string into URL/file/git/curl arg ->
         ghorg_validate_name (G-001) or numeric regex + length
         cap (G-002)
-    [ ] API-derived string into printf/log -> ghorg_safe_print
-        (G-003)
+    [ ] API-derived string into bare printf (not log) ->
+        sanitize manually if untrusted (G-003)
     [ ] No new <( ... ) process substitution feeding a read loop
         without a documented reason (audit checklist in G-doc)
     [ ] No new '&' background worker mutating shared state
@@ -51,7 +51,7 @@ bold lines to audit a diff; read the Why for context.
 Every byte returned by `api.github.com` (or whatever `${GHORG_API}`
 points at) is treated as untrusted. R-140 in the bash guide states
 the principle abstractly; G-001 through G-004 below implement it
-for this surface using `ghorg_validate_name` and `ghorg_safe_print`.
+for this surface using `ghorg_validate_name`.
 
 
 ## API-derived strings
@@ -71,11 +71,12 @@ derived IDs flowing into URL paths use `^[0-9]+$` with the
 `GHORG_MAX_ID_LEN=20` byte cap. Length cap matters: `^[0-9]+$`
 alone accepts arbitrary length.
 
-**G-003: Sanitize API-derived strings before display sinks.**
-Every value flowing into a `log` (or `printf`) for an operator-
-visible message goes through `ghorg_safe_print` (which calls
-`sanitize-string` from helper-scripts). Strips ANSI escapes,
-control characters, HTML markup; truncates oversized payloads.
+**G-003: `log()` is safe without pre-sanitization.** `log()` in
+`log_run_die.sh` pipes every message through `sanitize-string`
+internally, stripping ANSI escapes, control characters, and HTML.
+No pre-call wrapper is needed at `log` call sites. For bare
+`printf` to a display sink, sanitize manually if the string is
+untrusted.
 
 **G-004: Don't sanitize the raw API body before parsing.** The
 parser (jq) is the schema validator. Sanitize after extraction,
@@ -185,8 +186,9 @@ short; longer rules go above.)
 - New API-extracted string flowing into a URL/file/git/curl arg?
   Needs `ghorg_validate_name` (G-001) or numeric regex + length
   cap (G-002) before that sink.
-- New API-extracted string flowing into a `log` for the operator?
-  Needs `ghorg_safe_print` (G-003).
+- New API-extracted string flowing into a `log`? No pre-
+  sanitization needed; `log()` handles it internally (G-003).
+  For bare `printf` to a display sink, sanitize if untrusted.
 - New `<( ... )` process substitution feeding a `read` loop?
   Errors inside the substitution are invisible to `errexit`;
   prefer pre-capture into a `$( ... )` string, or document why

@@ -1,4 +1,3 @@
----
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
@@ -56,6 +55,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mock-tests:
     name: mock-API tests
@@ -75,7 +78,9 @@ jobs:
             python3 shellcheck safe-rm
 
       - name: Checkout developer-meta-files
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install genmkfile
         run: ./ci/install-genmkfile.sh
@@ -84,7 +89,7 @@ jobs:
         run: ./ci/install-helper-scripts.sh
 
       - name: Install developer-meta-files
-        run: GENMKFILE_DEBUG=1 genmkfile install
+        run: genmkfile install
 
       - name: Smoke test sanitize-string
         run: sanitize-string -- nolimit "smoke test"

@@ -184,7 +184,7 @@ policy_tool_init 0 "$@"
 apply_code_security_config() {
    local org config_body list_result list_status existing_id
    local create_result create_status attach_body default_body
-   local list_body list_safe_body create_body create_safe_body safe_id
+   local list_body create_body
 
    org="$1"
 
@@ -214,8 +214,7 @@ apply_code_security_config() {
    list_status="$(ghorg_status_of "${list_result}")"
    if [ "${list_status}" != '200' ]; then
       list_body="$(ghorg_body_of "${list_result}")"
-      list_safe_body="$(ghorg_safe_print 512 "${list_body}")"
-      log warn "${org}: list code-security configurations [${list_status}]: ${list_safe_body}"
+      log warn "${org}: list code-security configurations [${list_status}]: ${list_body:0:512}"
       policy_warn_seen=1
       return 1
    fi
@@ -228,8 +227,7 @@ apply_code_security_config() {
       ## Numeric + length cap; see GHORG_MAX_ID_LEN comment in lib.
       if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] || \
          [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
-         safe_id="$(ghorg_safe_print 32 "${existing_id}")"
-         log warn "'${org}': code-security config id '${safe_id}' not a valid numeric id"
+         log warn "'${org}': code-security config id '${existing_id}' not a valid numeric id"
          policy_warn_seen=1
          return 1
       fi
@@ -249,8 +247,7 @@ apply_code_security_config() {
             ;;
          *)
             create_body="$(ghorg_body_of "${create_result}")"
-            create_safe_body="$(ghorg_safe_print 512 "${create_body}")"
-            log warn "${org}: create code-security configuration [${create_status}]: ${create_safe_body}"
+            log warn "${org}: create code-security configuration [${create_status}]: ${create_body:0:512}"
             policy_warn_seen=1
             return 1
             ;;
@@ -398,9 +395,8 @@ audit_get() {
    body="$(ghorg_body_of "${result}")"
    extracted="$(printf '%s' "${body}" \
       | jq -r -- "${jq_filter}" 2>/dev/null \
-      | tr -- '\n' ' ' \
-      | sanitize-string 200)"
-   log notice "  ${label}: ${extracted}"
+      | tr -- '\n' ' ')"
+   log notice "  ${label}: ${extracted:0:200}"
 }
 
 ## Read-only inspection of an org's current security/policy state.
@@ -411,10 +407,9 @@ audit_get() {
 audit_org_state() {
    local org result status body count names
    local actions_result actions_status actions_body
-   local allowed_actions enabled_repos safe_allowed_actions safe_enabled_repos
-   local ruleset_body ruleset_name ids id safe_id member safe_member
+   local allowed_actions enabled_repos
+   local ruleset_body ruleset_name ids id member
    local pending approved installs install_line total no_secret
-   local safe_pending safe_approved safe_total safe_no_secret safe_install_line
    local repos repo missing_count have_count
 
    org="$1"
@@ -437,15 +432,12 @@ audit_org_state() {
    actions_status="$(ghorg_status_of "${actions_result}")"
    if [ "${actions_status}" = '200' ]; then
       actions_body="$(ghorg_body_of "${actions_result}")"
-      ## Both extracted from untrusted body: sanitize before display.
       ## allowed_actions also gates a downstream conditional below;
       ## the comparison there is exact-string against literals so a
       ## hostile-byte value just falls into the N/A branch.
       allowed_actions="$(printf '%s' "${actions_body}" | jq --raw-output -- '.allowed_actions // "?"')"
       enabled_repos="$(printf '%s' "${actions_body}" | jq --raw-output -- '.enabled_repositories // "?"')"
-      safe_allowed_actions="$(ghorg_safe_print 64 "${allowed_actions}")"
-      safe_enabled_repos="$(ghorg_safe_print 64 "${enabled_repos}")"
-      log notice "  actions allowed_actions: enabled_repos=${safe_enabled_repos}, allowed_actions=${safe_allowed_actions}"
+      log notice "  actions allowed_actions: enabled_repos=${enabled_repos}, allowed_actions=${allowed_actions}"
    else
       log notice "  actions allowed_actions: HTTP ${actions_status}"
    fi
@@ -455,7 +447,7 @@ audit_org_state() {
          "/orgs/${org}/actions/permissions/selected-actions" \
          '"github_owned=" + ((.github_owned_allowed // false) | tostring) + ", verified=" + ((.verified_allowed // false) | tostring) + ", patterns=" + ((.patterns_allowed // []) | length | tostring)'
    else
-      log notice "  selected-actions allow-list: (N/A while allowed_actions=${safe_allowed_actions:-?})"
+      log notice "  selected-actions allow-list: (N/A while allowed_actions=${allowed_actions:-?})"
    fi
 
    audit_get '2FA required for org members' \
@@ -481,8 +473,7 @@ audit_org_state() {
          names="$(printf '%s' "${body}" | jq -r -- '.[].login')"
          while IFS= read -r member; do
             [ -z "${member}" ] && continue
-            safe_member="$(ghorg_safe_print 64 "${member}")"
-            log notice "    - ${safe_member}"
+            log notice "    - ${member}"
          done <<< "${names}"
       fi
    else
@@ -504,8 +495,7 @@ audit_org_state() {
          else
             while IFS= read -r id; do
                [ -z "${id}" ] && continue
-               safe_id="$(ghorg_safe_print 32 "${id}")"
-               log notice "    - id=${safe_id}"
+               log notice "    - id=${id}"
             done <<< "${ids}"
          fi
       done
@@ -526,8 +516,7 @@ audit_org_state() {
          ## Count via the JSON length on this page; use a HEAD-style
          ## follow-up if exact totals matter (skipped for simplicity).
          pending="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
-         safe_pending="$(ghorg_safe_print 32 "${pending}")"
-         log notice "    pending requests on first page: ${safe_pending}"
+         log notice "    pending requests on first page: ${pending}"
          ;;
       404|403)
          log notice "    requests endpoint: HTTP ${status} (approval flow may be off / token lacks scope)"
@@ -541,8 +530,7 @@ audit_org_state() {
    case "${status}" in
       200)
          approved="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
-         safe_approved="$(ghorg_safe_print 32 "${approved}")"
-         log notice "    approved tokens on first page: ${safe_approved}"
+         log notice "    approved tokens on first page: ${approved}"
          ;;
       *)
          log notice "    approved tokens endpoint: HTTP ${status} (token may lack admin:org)"
@@ -563,8 +551,7 @@ audit_org_state() {
       else
          while IFS= read -r install_line; do
             [ -z "${install_line}" ] && continue
-            safe_install_line="$(ghorg_safe_print 200 "${install_line}")"
-            log notice "${safe_install_line}"
+            log notice "${install_line}"
          done <<< "${installs}"
       fi
    else
@@ -585,12 +572,10 @@ audit_org_state() {
       no_secret="$(ghorg_body_of "${result}" \
          | jq -- '[.[] | select(.config.secret == null or .config.secret == "")] | length' \
          2>/dev/null || printf '%s' '?')"
-      safe_total="$(ghorg_safe_print 32 "${total}")"
-      safe_no_secret="$(ghorg_safe_print 32 "${no_secret}")"
       if [ "${total}" = '0' ]; then
          log notice '    (none configured)'
       else
-         log notice "    total=${safe_total}, lacking secret=${safe_no_secret}"
+         log notice "    total=${total}, lacking secret=${no_secret}"
       fi
    else
       log notice "    HTTP ${status} (token may lack admin:org_hook scope)"

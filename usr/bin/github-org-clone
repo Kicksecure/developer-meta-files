@@ -186,7 +186,6 @@ repo_url() {
 ## standalone so it can be safely backgrounded for parallelism.
 clone_or_update_one() {
   local repo repo_dir url existing_url current_branch
-  local safe_existing_url safe_branch
   local -a clone_args
 
   repo="$1"
@@ -203,8 +202,7 @@ clone_or_update_one() {
     ## fetch from the wrong upstream.
     existing_url="$(git -C "${repo_dir}" remote get-url origin 2>/dev/null || true)"
     if [ -n "${existing_url}" ] && [ "${existing_url}" != "${url}" ]; then
-      safe_existing_url="$(ghorg_safe_print "${GHORG_MAX_DISPLAY_LEN}" "${existing_url}")"
-      log warn "'${repo_dir}': origin is '${safe_existing_url}', expected '${url}'; skipping (name collision?)"
+      log warn "'${repo_dir}': origin is '${existing_url}', expected '${url}'; skipping (name collision?)"
       return 0
     fi
 
@@ -222,8 +220,7 @@ clone_or_update_one() {
       ## @{u} is an unambiguous symbolic ref for the upstream of the
       ## current branch - immune to tag/branch name collisions.
       if ! git -C "${repo_dir}" merge --ff-only "@{u}" 2>/dev/null; then
-        safe_branch="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${current_branch}")"
-        log warn "'${repo_dir}': '${safe_branch}' not fast-forwardable, skipping merge"
+        log warn "'${repo_dir}': '${current_branch}' not fast-forwardable, skipping merge"
       fi
     fi
   elif [ -e "${repo_dir}" ]; then

@@ -15,9 +15,9 @@
 ##   1) Identifier sinks (URL paths, file paths, git args): validate
 ##      via ghorg_validate_name (strict ASCII allowlist) or a numeric
 ##      regex with length cap. See GHORG_MAX_ID_LEN.
-##   2) Display sinks (terminal): sanitize via ghorg_safe_print
-##      (sanitize-string from helper-scripts: strips ANSI, control
-##      chars, HTML; truncates).
+##   2) Display sinks (terminal): log() pipes every message through
+##      sanitize-string internally, stripping ANSI, control chars,
+##      and HTML. No pre-sanitization is needed at call sites.
 ## Resource caps below bound the local damage a hostile or misbehaving
 ## server can cause through pagination, redirect chains, oversized
 ## bodies, or oversized "numeric" ids.
@@ -151,27 +151,12 @@ ghorg_token() {
 ## family is meant to run in a git-using operator environment, and
 ## demanding git unconditionally is simpler than threading per-tool
 ## extras through callers.
-##
-## sanitize-string comes from helper-scripts and is what makes the
-## display-sink boundary safe.
 ghorg_require_deps() {
   local cmd
 
-  for cmd in curl jq sanitize-string git; do
+  for cmd in curl jq git; do
     has "${cmd}" || { log error "required command not found: '${cmd}'"; return 1; }
   done
-}
-
-## Display-sink helper: passes an untrusted string through
-## sanitize-string. Args: $1 = max length (integer or "nolimit"),
-## $2 = string.
-ghorg_safe_print() {
-  local max s
-
-  max="${1:-${GHORG_MAX_DISPLAY_LEN}}"
-  s="${2:-}"
-
-  sanitize-string -- "${max}" "${s}"
 }
 
 ## Strict allowlist validation for any identifier supplied by the
@@ -190,7 +175,7 @@ ghorg_safe_print() {
 ## Args: $1 = name, $2 = kind ("repo" or "user")
 ## Return: 0 = valid, non-zero = invalid (error logged)
 ghorg_validate_name() {
-  local name kind max_len safe_name
+  local name kind max_len
 
   name="$1"
   kind="${2:-repo}"
@@ -211,26 +196,25 @@ ghorg_validate_name() {
     log error "reject: empty '${kind}' name"
     return 1
   fi
-  safe_name="$(ghorg_safe_print "${max_len}" "${name}")"
   if [ "${#name}" -gt "${max_len}" ]; then
-    log error "reject: '${kind}' name exceeds '${max_len}' chars: '${safe_name}'"
+    log error "reject: '${kind}' name exceeds '${max_len}' chars: '${name}'"
     return 1
   fi
   if ! [[ "${name}" =~ ^[A-Za-z0-9._-]+$ ]]; then
-    log error "reject: '${kind}' name has disallowed chars: '${safe_name}'"
+    log error "reject: '${kind}' name has disallowed chars: '${name}'"
     return 1
   fi
   case "${name}" in
     '.'|'..'|'.git')
-      log error "reject: reserved '${kind}' name: '${safe_name}'"
+      log error "reject: reserved '${kind}' name: '${name}'"
       return 1
       ;;
     '-'*)
-      log error "reject: '${kind}' name starts with dash: '${safe_name}'"
+      log error "reject: '${kind}' name starts with dash: '${name}'"
       return 1
       ;;
     *'..'*)
-      log error "reject: '${kind}' name contains \"..\": '${safe_name}'"
+      log error "reject: '${kind}' name contains \"..\": '${name}'"
       return 1
       ;;
   esac
@@ -499,7 +483,7 @@ ghorg_body_of() {
 ## repeated lookups don't burn API quota. Echoes "User" or
 ## "Organization" on success; non-zero exit on lookup failure.
 ghorg_account_type() {
-  local owner result status body type safe_owner safe_type
+  local owner result status body type
 
   owner="$1"
 
@@ -514,9 +498,8 @@ ghorg_account_type() {
   result="$(ghorg_api GET "/users/${owner}")" || return 1
   status="$(ghorg_status_of "${result}")"
   body="$(ghorg_body_of "${result}")"
-  safe_owner="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${owner}")"
   if [ "${status}" != '200' ]; then
-    log error "account type lookup for '${safe_owner}': HTTP '${status}'"
+    log error "account type lookup for '${owner}': HTTP '${status}'"
     return 1
   fi
   type="$(printf '%s' "${body}" | jq -r -- '.type')"
@@ -526,8 +509,7 @@ ghorg_account_type() {
   case "${type}" in
     User|Organization) ;;
     *)
-      safe_type="$(ghorg_safe_print 32 "${type}")"
-      log error "unexpected account type for '${safe_owner}': '${safe_type}'"
+      log error "unexpected account type for '${owner}': '${type}'"
       return 1
       ;;
   esac
@@ -551,14 +533,13 @@ ghorg_account_type() {
 ghorg_list_repos() {
   local owner inc_private inc_archived inc_forks
   local account_type api_base auth_user jq_filter
-  local page result body status count name safe_owner names_text
+  local page result body status count name names_text
   local -a jq_clauses
 
   owner="$1"
   inc_private="$2"
   inc_archived="$3"
   inc_forks="$4"
-  safe_owner="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${owner}")"
   account_type="$(ghorg_account_type "${owner}")" || return 1
 
   case "${account_type}" in
@@ -609,15 +590,14 @@ ghorg_list_repos() {
       ## Hostile / misbehaving API returning 100 results forever would
       ## otherwise keep this loop alive indefinitely. Stop and warn so
       ## the operator can investigate rather than silently truncating.
-      printf '%s\n' \
-        "warn: ghorg_list_repos: hit pagination cap GHORG_MAX_PAGES='${GHORG_MAX_PAGES}' for '${safe_owner}'; possible runaway pager" >&2
+      log warn "ghorg_list_repos: hit pagination cap GHORG_MAX_PAGES='${GHORG_MAX_PAGES}' for '${owner}'; possible runaway pager"
       break
     fi
     result="$(ghorg_api GET "${api_base}&page=${page}")" || return 1
     status="$(ghorg_status_of "${result}")"
     body="$(ghorg_body_of "${result}")"
     if [ "${status}" != '200' ]; then
-      log error "list repos for '${safe_owner}': HTTP '${status}'"
+      log error "list repos for '${owner}': HTTP '${status}'"
       return 1
     fi
     count="$(printf '%s' "${body}" | jq -- 'length')"
@@ -674,7 +654,7 @@ ghorg_filter_names() {
 ##   1 - repo definitively does not exist (HTTP 404)
 ##   2 - lookup failed for any other reason (HTTP non-200/404, network)
 ghorg_repo_lookup() {
-  local owner repo result status safe_owner safe_repo
+  local owner repo result status
 
   owner="$1"
   repo="$2"
@@ -693,9 +673,7 @@ ghorg_repo_lookup() {
       return 1
       ;;
     *)
-      safe_owner="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${owner}")"
-      safe_repo="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${repo}")"
-      log error "repo lookup '${safe_owner}/${safe_repo}': HTTP '${status}'"
+      log error "repo lookup '${owner}/${repo}': HTTP '${status}'"
       return 2
       ;;
   esac
@@ -710,10 +688,9 @@ ghorg_repo_lookup() {
 ##
 ## Args: $1 = owner, $2 = repo
 ## Stdout: parent full_name, or empty string if not-a-fork or lookup
-##         indecisive (errors are logged via ghorg_safe_print).
+##         indecisive (errors are logged).
 ghorg_repo_parent() {
   local owner repo result status body parent p_owner p_repo
-  local safe_owner safe_repo
 
   owner="$1"
   repo="$2"
@@ -725,9 +702,7 @@ ghorg_repo_parent() {
   status="$(ghorg_status_of "${result}")"
 
   if [ "${status}" != '200' ]; then
-    safe_owner="$(ghorg_safe_print "${GHORG_MAX_USER_LOGIN_LEN}" "${owner}")"
-    safe_repo="$(ghorg_safe_print "${GHORG_MAX_REPO_NAME_LEN}" "${repo}")"
-    log warn "parent lookup for '${safe_owner}/${safe_repo}': HTTP '${status}'"
+    log warn "parent lookup for '${owner}/${repo}': HTTP '${status}'"
     return 1
   fi
   body="$(ghorg_body_of "${result}")"

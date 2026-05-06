@@ -36,6 +36,19 @@ name: github-org tools (live)
 on:
   workflow_dispatch:
 
+## Upstream-only gate. github.repository == env.CANONICAL_REPO
+## prevents forks (and the org-ai-assisted mirror) from running this
+## workflow's upstream-only paths - the upstream-only secret(s)
+## referenced below (vault password / Coverity token / GHORG_AUDIT_TOKEN)
+## are only set on the canonical repo. A fork would either see those
+## secrets as empty and fail mid-flight, or - worse - run the heavy
+## ops with its own arbitrary-named secret. Keeping the canonical
+## owner/repo at the top of the file as a constant rather than buried
+## in an `if:` expression makes the gate's identity reviewable and
+## avoids drift if it has to change across multiple `if:` checks.
+env:
+  CANONICAL_REPO: Kicksecure/developer-meta-files
+
 ## Read-only on the checked-out source.
 permissions:
   contents: read
@@ -50,7 +63,7 @@ jobs:
     ## Skip on forks so a fork's workflow can never use the upstream
     ## secret (GitHub also blocks this by default for forked PRs, but
     ## the explicit guard documents intent).
-    if: ${{ github.repository == 'assisted-by-ai/developer-meta-files' }}
+    if: ${{ github.repository == env.CANONICAL_REPO }}
 
     steps:
       - name: Install apt pre-reqs
@@ -65,7 +78,9 @@ jobs:
             python3 safe-rm
 
       - name: Checkout developer-meta-files
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          persist-credentials: false
 
       - name: Install genmkfile
         run: ./ci/install-genmkfile.sh
@@ -74,7 +89,7 @@ jobs:
         run: ./ci/install-helper-scripts.sh
 
       - name: Install developer-meta-files
-        run: GENMKFILE_DEBUG=1 genmkfile install
+        run: genmkfile install
 
       - name: Verify token secret is set
         env:

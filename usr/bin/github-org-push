@@ -184,7 +184,7 @@ remote_url() {
 }
 
 push_one() {
-  local repo_dir repo url branch resolved_head safe_repo_dir
+  local repo_dir repo url branch resolved_head
 
   repo_dir="$1"
   repo="$(basename -- "${repo_dir}")"
@@ -193,8 +193,7 @@ push_one() {
   ## API parameter. Same allowlist rules as for API-supplied names so
   ## a hostile filesystem can't smuggle bad names either.
   if ! ghorg_validate_name "${repo}" repo; then
-    safe_repo_dir="$(ghorg_safe_print "${GHORG_MAX_DISPLAY_LEN}" "${repo_dir}")"
-    log warn "skipping '${safe_repo_dir}' (invalid name)"
+    log warn "skipping '${repo_dir}' (invalid name)"
     return 0
   fi
 
