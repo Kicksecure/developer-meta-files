@@ -5,7 +5,7 @@
 
 ## AI-Assisted
 
-## Shared helpers for the policy-applying tools (dm-github-policy,
+## Shared helpers for the policy-applying tools (dm-github-org-policy,
 ## dm-github-personal-policy). The lower layer (github-org-lib.bsh)
 ## handles the API client (auth, retry, sanitization, validation).
 ## This file sits on top of that and adds:
@@ -336,7 +336,7 @@ policy_actions_selected_allowlist_body() {
 ## ============================================================================
 
 ## Shared --apply / --dry-run / --audit / -v|--verbose / -h|--help
-## parser used by dm-github-policy and dm-github-personal-policy.
+## parser used by dm-github-org-policy and dm-github-personal-policy.
 ## Strict mutual-exclusion guard on the mode flags - typing two of
 ## them is a fatal usage error.
 ##

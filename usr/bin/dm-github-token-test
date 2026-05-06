@@ -6,7 +6,7 @@
 ## AI-Assisted
 
 ## Smoke-test the configured GitHub token before running
-## dm-github-fork-sync / dm-github-policy. Prints the authenticated user
+## dm-github-fork-sync / dm-github-org-policy. Prints the authenticated user
 ## login and the current REST API rate-limit budget, or fails with a
 ## clear error if the token is missing / invalid / over quota.
 ##
@@ -39,7 +39,7 @@ login="$(ghorg_authenticated_user)" || die 1 'token rejected by /user'
 
 ## /rate_limit budget. Distinct purpose from /user: /user proves the
 ## token is valid, /rate_limit shows how much budget we have for the
-## upcoming dm-github-fork-sync / dm-github-policy work.
+## upcoming dm-github-fork-sync / dm-github-org-policy work.
 rl_result="$(ghorg_api GET '/rate_limit')" || die 1 '/rate_limit failed'
 
 rl_status="$(ghorg_status_of "${rl_result}")"

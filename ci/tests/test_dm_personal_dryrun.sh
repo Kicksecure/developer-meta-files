@@ -8,7 +8,7 @@
 ## Mock-API test: dm-github-personal-policy --dry-run produces
 ## DRY-RUN: lines for each planned per-repo API call without
 ## emitting a real ok:/warn: from a successful PUT/PATCH/DELETE.
-## Companion to test_dm_dryrun.sh (which covers dm-github-policy /
+## Companion to test_dm_dryrun.sh (which covers dm-github-org-policy /
 ## the org tool); together they pin the dry-run output of the two
 ## tools that share github-policy-lib.bsh.
 ##

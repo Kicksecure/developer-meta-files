@@ -5,7 +5,7 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-policy --audit produces a report with the
+## Mock-API test: dm-github-org-policy --audit produces a report with the
 ## per-org settings sections, members lacking 2FA, rulesets, PAT
 ## activity, installed Apps - all read-only, no PATCH/PUT/POST.
 
@@ -28,7 +28,7 @@ FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 export GHORG_MOCK=1
 export GHORG_MOCK_DIR="${FIXTURE_DIR}"
 
-out="$(dm-github-policy --audit 2>&1)"
+out="$(dm-github-org-policy --audit 2>&1)"
 
 fail=0
 required=(

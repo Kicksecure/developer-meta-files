@@ -146,7 +146,7 @@ ghorg_token() {
 }
 
 ## Verifies the runtime deps every github-org-* / dm-github-* tool
-## needs. git is included even though dm-github-policy and
+## needs. git is included even though dm-github-org-policy and
 ## dm-github-personal-policy never exec git themselves - the entire
 ## family is meant to run in a git-using operator environment, and
 ## demanding git unconditionally is simpler than threading per-tool

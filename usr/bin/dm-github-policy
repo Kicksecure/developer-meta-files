@@ -7,7 +7,7 @@
 
 ## Apply project-wide GitHub security/policy settings to the source
 ## organizations (Kicksecure, Whonix). Idempotent and apply-only.
-## Run `dm-github-policy --help` for the full settings list and
+## Run `dm-github-org-policy --help` for the full settings list and
 ## reasoning.
 
 set -o errexit
@@ -33,9 +33,9 @@ has github-org-fork \
 ## dry-run / apply against the mirror does not silently fail mid-loop.
 # readonly ORGS=( 'Kicksecure' 'Whonix' 'org-ai-assisted' )
 readonly ORGS=( 'org-ai-assisted' )
-readonly RULESET_NAME_BRANCH='dm-github-policy default-branch protection'
-readonly RULESET_NAME_TAG='dm-github-policy tag protection'
-readonly CODE_SEC_CONFIG_NAME='dm-github-policy code security'
+readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
+readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
+readonly CODE_SEC_CONFIG_NAME='dm-github-org-policy code security'
 
 ## Modes are mutually exclusive; one must be passed explicitly. No
 ## implicit default - running this tool without a mode flag would
@@ -57,12 +57,12 @@ preferred over per-repo where possible: enabling a security feature
 every repo, both for atomicity and for new-repo coverage.
 
 Usage (one mode flag is required - no implicit default):
-  dm-github-policy --apply     ## apply policy to Kicksecure + Whonix
-  dm-github-policy --dry-run   ## report planned changes only
-  dm-github-policy --audit     ## read-only inspection of current state
+  dm-github-org-policy --apply     ## apply policy to Kicksecure + Whonix
+  dm-github-org-policy --dry-run   ## report planned changes only
+  dm-github-org-policy --audit     ## read-only inspection of current state
                                ## (current settings, members lacking
                                ## 2FA, existing rulesets); no writes
-  dm-github-policy --help
+  dm-github-org-policy --help
 
 Settings applied at the org level:
   - Fork-PR contributor approval = all_external_contributors
@@ -190,7 +190,7 @@ apply_code_security_config() {
 
    config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- '{
       name: $name,
-      description: "Project-wide code security applied via dm-github-policy.",
+      description: "Project-wide code security applied via dm-github-org-policy.",
       enforcement: "enforced",
       secret_scanning: "enabled",
       secret_scanning_push_protection: "enabled",

@@ -7,7 +7,7 @@
 
 ## Apply per-repo lockdown policy to every public repo owned by a
 ## given GitHub user account. Mirrors the per-repo subset of
-## dm-github-policy (which targets orgs) for individual user
+## dm-github-org-policy (which targets orgs) for individual user
 ## accounts. Idempotent and apply-only - never disables a setting
 ## that was already on.
 
@@ -105,7 +105,7 @@ ghorg_validate_name "${target_user}" user
 target_account_type="$(ghorg_account_type "${target_user}")" \
    || die 1 "could not determine account type for '${target_user}'"
 if [ "${target_account_type}" != 'User' ]; then
-   die 64 "refusing to run against '${target_user}' (account type '${target_account_type}', expected 'User'); use dm-github-policy for organizations"
+   die 64 "refusing to run against '${target_user}' (account type '${target_account_type}', expected 'User'); use dm-github-org-policy for organizations"
 fi
 
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'

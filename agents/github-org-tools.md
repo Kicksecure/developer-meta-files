@@ -122,7 +122,7 @@ footgun that mutates production by default if the implicit
 fallback is `apply`. A required flag closes that gap.
 
 **G-031: Use the shared parser+postlude wrapper.** Both
-dm-github-policy and dm-github-personal-policy call
+dm-github-org-policy and dm-github-personal-policy call
 `policy_tool_init <expected-positional-count> "$@"`, which wraps:
 
 - `policy_parse_mode_args` (the flag parser)

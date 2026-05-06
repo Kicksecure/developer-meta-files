@@ -41,7 +41,7 @@ files=(
    "${REPO_ROOT}/usr/bin/github-org-clone"
    "${REPO_ROOT}/usr/bin/github-org-fork"
    "${REPO_ROOT}/usr/bin/github-org-push"
-   "${REPO_ROOT}/usr/bin/dm-github-policy"
+   "${REPO_ROOT}/usr/bin/dm-github-org-policy"
    "${REPO_ROOT}/usr/bin/dm-github-personal-policy"
    "${REPO_ROOT}/usr/bin/dm-github-fork-sync"
    "${REPO_ROOT}/usr/libexec/developer-meta-files/github-org-lib.bsh"
