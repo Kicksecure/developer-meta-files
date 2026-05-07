@@ -2442,7 +2442,7 @@ run_batch() {
    run_batch_command "$@"
 
    # Special-case for derivative-maker
-   batch_current_project_name='derivative-maker'
+   batch_current_project_name='Kicksecure'
    batch_current_package_reponame='derivative-maker'
    batch_current_project_website='kicksecure.com'
    batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
