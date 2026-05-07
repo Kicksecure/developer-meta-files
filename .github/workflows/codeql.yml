@@ -27,23 +27,29 @@
 ##
 ## ## Inputs
 ##
-## - language        (required)  CodeQL language id: python, c-cpp,
-##                               java-kotlin, javascript-typescript,
-##                               go, ruby, swift, csharp, actions, ...
-## - build-mode      (optional)  none | autobuild | manual.
-##                               Default: 'none' (analysis only - works
-##                               for interpreted languages and for
-##                               compiled languages where CodeQL can
-##                               extract from the source tree without
-##                               a compile pass).
-## - build-command   (optional)  Bash invoked when build-mode == manual.
-##                               Default: empty (caller must supply if
-##                               build-mode is manual).
-## - queries         (optional)  CodeQL query suite. Default
-##                               'security-and-quality' for broader
-##                               coverage; pass 'security-extended' or
-##                               leave to switch to security-only.
-## - timeout-minutes (optional)  Job timeout. Default 30.
+## - language         (required)  CodeQL language id: python, c-cpp,
+##                                java-kotlin, javascript-typescript,
+##                                go, ruby, swift, csharp, actions, ...
+## - prepare-command  (optional)  Bash run AFTER checkout but BEFORE
+##                                CodeQL init. Use for source-tree
+##                                manipulation that the init step
+##                                must see (file renames/symlinks for
+##                                the python/javascript extractors,
+##                                codegen, vendoring). Default: empty.
+## - build-mode       (optional)  none | autobuild | manual.
+##                                Default: 'none' (analysis only -
+##                                works for interpreted languages and
+##                                for compiled languages where CodeQL
+##                                can extract from the source tree
+##                                without a compile pass).
+## - build-command    (optional)  Bash invoked when build-mode ==
+##                                manual. Default: empty (caller must
+##                                supply if build-mode is manual).
+## - queries          (optional)  CodeQL query suite. Default
+##                                'security-and-quality' for broader
+##                                coverage; pass 'security-extended'
+##                                or leave to switch to security-only.
+## - timeout-minutes  (optional)  Job timeout. Default 30.
 ##
 ## ## Caller example (single language)
 ##
@@ -97,6 +103,10 @@ on:
       language:
         required: true
         type: string
+      prepare-command:
+        required: false
+        type: string
+        default: ""
       build-mode:
         required: false
         type: string
@@ -147,6 +157,13 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
+
+      ## Pre-init hook - source-tree prep that the extractor must see.
+      ## Skipped (no-op) unless caller supplies a prepare-command.
+      - name: Prepare source tree
+        if: inputs.prepare-command != ''
+        run: ${{ inputs.prepare-command }}
+        shell: bash
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
