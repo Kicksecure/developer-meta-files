@@ -82,10 +82,19 @@
 ##        a warn - e.g. the GitHub Pages DELETE endpoint returns 404
 ##        when the repo has no Pages site, which is the normal
 ##        idempotent-cleanup case.
+##   $6 - body capture variable name (optional). When non-empty, the
+##        response body is written into that caller-scope variable
+##        via 'printf -v' on a 2xx (or extra_ok) success path. Used
+##        when the caller needs to read a field (e.g. .id) out of a
+##        POST response without re-implementing the
+##        ghorg_api+status+warn dance. The variable is also cleared
+##        ('') on warn / dry-run paths so callers can rely on "empty
+##        means no body to parse".
 ##
 ## Returns: 0 on success (or dry-run), 1 on failure (after warn).
 policy_api_call() {
-   local label method path body extra_ok result status response_body
+   local label method path body extra_ok body_var_name
+   local result status response_body
 
    label="$1"
    method="$2"
@@ -95,24 +104,37 @@ policy_api_call() {
    ## interpolated case pattern below ('200|201|202|204|${extra_ok}')
    ## stays well-formed when no extras were passed.
    extra_ok="${5:-__none__}"
+   body_var_name="${6:-}"
+   ## Empty means "skip body capture" (handled by the [ -n ... ]
+   ## guards on every printf -v site below). Non-empty must be a
+   ## legal bash identifier, since it flows into 'printf -v
+   ## "${body_var_name}"'.
+   [ -z "${body_var_name}" ] || check_variable_name "${body_var_name}" || return 1
 
    if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: ${label} -> ${method} ${path}"
+      [ -n "${body_var_name}" ] && printf -v "${body_var_name}" '%s' ''
       return 0
    fi
    result="$(ghorg_api "${method}" "${path}" "${body}")" || {
+      [ -n "${body_var_name}" ] && printf -v "${body_var_name}" '%s' ''
       policy_warn_seen=1
       return 1
    }
    status="$(ghorg_status_of "${result}")"
    case "${status}" in
       200|201|202|204|"${extra_ok}")
+         if [ -n "${body_var_name}" ]; then
+            response_body="$(ghorg_body_of "${result}")"
+            printf -v "${body_var_name}" '%s' "${response_body}"
+         fi
          [ "${POLICY_QUIET_OK:-0}" = '1' ] \
             || log notice "ok: ${label} [${status}]"
          return 0
          ;;
       *)
          response_body="$(ghorg_body_of "${result}")"
+         [ -n "${body_var_name}" ] && printf -v "${body_var_name}" '%s' ''
          log warn "'${label}' ['${status}']: ${response_body:0:512}"
          policy_warn_seen=1
          return 1
@@ -137,7 +159,7 @@ policy_api_call() {
 ##   $4 - JSON body
 _policy_upsert_ruleset() {
    local list_endpoint scope_label name body
-   local result status existing_id
+   local list_body existing_id
 
    list_endpoint="$1"
    scope_label="$2"
@@ -154,17 +176,11 @@ _policy_upsert_ruleset() {
       return 0
    fi
 
-   result="$(ghorg_api GET "${list_endpoint}?per_page=100")" || {
-      policy_warn_seen=1
-      return 1
-   }
-   status="$(ghorg_status_of "${result}")"
-   if [ "${status}" != '200' ]; then
-      log warn "'${scope_label}': list rulesets returned '${status}'"
-      policy_warn_seen=1
-      return 1
-   fi
-   existing_id="$(ghorg_body_of "${result}" \
+   policy_api_call "${scope_label}: list rulesets" \
+      GET "${list_endpoint}?per_page=100" '' '' list_body \
+      || return 1
+
+   existing_id="$(printf '%s' "${list_body}" \
       | jq -r --arg name "${name}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
