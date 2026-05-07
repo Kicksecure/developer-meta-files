@@ -1244,7 +1244,8 @@ pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
    #origin_branch="github-${batch_current_project_name,,}/master"
-   origin_branch="ArrayBolt3/arraybolt3/trixie"
+   origin_branch="${DM_GITHUB_MIRROR}/master"
+   #origin_branch="ArrayBolt3/arraybolt3/trixie"
 
    ## Use the fully qualified remote-tracking ref to avoid name
    ## collision with same-named tags.
