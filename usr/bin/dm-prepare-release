@@ -285,12 +285,12 @@ libvirt_compress() {
       file_list_compress_full_path+=("${libvirt_target_network_file_external}")
       file_list_compress_full_path+=("${libvirt_target_network_file_internal}")
 
-      true "dist_build_raw for raw image: $dist_build_raw"
+      true "dist_build_raw for raw image: ${dist_build_raw:-}"
       if [ "${dist_build_raw:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_raw_file_for_unified}")
          file_list_compress_full_path+=("${binary_image_raw_file}")
       fi
-      true "dist_build_qcow2 for qcow image: $dist_build_qcow2"
+      true "dist_build_qcow2 for qcow image: ${dist_build_qcow2:-}"
       if [ "${dist_build_qcow2:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_qcow2_file_for_unified}")
          file_list_compress_full_path+=("${binary_image_qcow2_file}")
@@ -299,15 +299,15 @@ libvirt_compress() {
 
    ## XXX: --target raw and --target qcow2 can currently not be combined but that seems unlikely.
    ## XXX: --target source can currently not be combined.
-   true "dist_build_source_archive: $dist_build_source_archive"
+   true "dist_build_source_archive: ${dist_build_source_archive:-}"
    if [ "${dist_build_source_archive:-}" = "true" ]; then
       xz_archive="${source_archive_xz_file}"
    fi
-   true "dist_build_raw: $dist_build_raw"
+   true "dist_build_raw: ${dist_build_raw:-}"
    if [ "${dist_build_raw:-}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
-   true "dist_build_qcow2: $dist_build_qcow2"
+   true "dist_build_qcow2: ${dist_build_qcow2:-}"
    if [ "${dist_build_qcow2:-}" = "true" ]; then
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
