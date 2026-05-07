@@ -41,7 +41,7 @@ sanity_tests() {
 }
 
 installer_dist() {
-   if [ ! "${dist_build_installer_dist}" = "true" ]; then
+   if [ ! "${dist_build_installer_dist:-}" = "true" ]; then
       return 0
    fi
 
@@ -66,7 +66,7 @@ installer_dist() {
 }
 
 windows_installer() {
-   if [ ! "${dist_build_windows_installer}" = "true" ]; then
+   if [ ! "${dist_build_windows_installer:-}" = "true" ]; then
       true "$0: INFO: Skip ${FUNCNAME[0]}, because dist_build_windows_installer is not set to true."
       return 0
    fi
@@ -157,15 +157,15 @@ windows_installer() {
 libvirt_compress() {
    local continue_maybe
    continue_maybe=no
-   if [ "${dist_build_raw}" = "true" ]; then
+   if [ "${dist_build_raw:-}" = "true" ]; then
       true "dist_build_raw: true"
       continue_maybe=yes
    fi
-   if [ "${dist_build_qcow2}" = "true" ]; then
+   if [ "${dist_build_qcow2:-}" = "true" ]; then
       true "dist_build_qcow: true"
       continue_maybe=yes
    fi
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       true "dist_build_source_archive: true"
       continue_maybe=yes
    fi
@@ -179,15 +179,15 @@ libvirt_compress() {
 
    legal_files_copy
 
-   if [ "${dist_build_qcow2}" = "true" ]; then
+   if [ "${dist_build_qcow2:-}" = "true" ]; then
       safe-rm --force -- "$(basename -- "${libvirt_target_qcow2_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_qcow2_xz_archive_file ${libvirt_target_qcow2_xz_archive_file} exist..."
    fi
-   if [ "${dist_build_raw}" = "true" ]; then
+   if [ "${dist_build_raw:-}" = "true" ]; then
       safe-rm --force -- "$(basename -- "${libvirt_target_raw_xz_archive_file}")"
       true "INFO: Checking if all files to be added to libvirt_target_raw_xz_archive_file ${libvirt_target_raw_xz_archive_file} exist..."
    fi
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       safe-rm --force -- "$(basename -- "${source_archive_xz_file}")"
       true "INFO: Checking if all files to be added to source_archive_xz_file ${source_archive_xz_file} exist..."
    fi
@@ -200,21 +200,21 @@ libvirt_compress() {
       test -f "${dist_binary_build_folder}/WHONIX_BINARY_LICENSE_AGREEMENT"
       test -f "${dist_binary_build_folder}/WHONIX_DISCLAIMER"
    fi
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       true "dist_build_source_archive..."
    fi
 
    true "vm_multiple: $vm_multiple"
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       true "dist_build_source_archive..."
    elif [ "${vm_multiple}" = "false" ]; then
       true "vm_multiple: no"
       true "SHORT_VMNAME: $SHORT_VMNAME"
       test -f "${dist_binary_build_folder}/${SHORT_VMNAME}.xml"
-      if [ "${dist_build_raw}" = "true" ]; then
+      if [ "${dist_build_raw:-}" = "true" ]; then
          test -f "${binary_image_raw_file}"
       fi
-      if [ "${dist_build_qcow2}" = "true" ]; then
+      if [ "${dist_build_qcow2:-}" = "true" ]; then
          test -f "${binary_image_qcow2_file}"
       fi
    else
@@ -227,12 +227,12 @@ libvirt_compress() {
       true "libvirt_target_network_file_internal: $libvirt_target_network_file_internal"
       test -f "${libvirt_target_network_file_internal}"
 
-      if [ "${dist_build_raw}" = "true" ]; then
+      if [ "${dist_build_raw:-}" = "true" ]; then
          test -f "${binary_image_raw_file_for_unified}"
          test -f "${binary_image_raw_file}"
          true "INFO: Ok, all files to be added to ${libvirt_target_raw_xz_archive_file} exist."
       fi
-      if [ "${dist_build_qcow2}" = "true" ]; then
+      if [ "${dist_build_qcow2:-}" = "true" ]; then
          test -f "${binary_image_qcow2_file_for_unified}"
          test -f "${binary_image_qcow2_file}"
          true "INFO: Ok, all files to be added to ${libvirt_target_qcow2_xz_archive_file} exist."
@@ -255,7 +255,7 @@ libvirt_compress() {
    local -a file_list_compress_full_path
    file_list_compress_full_path=()
 
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       file_list_compress_full_path+=("${source_code_folder_dist}")
    elif [ "${dist_build_type_short}" = "kicksecure" ]; then
       file_list_compress_full_path+=("${dist_binary_build_folder}/KICKSECURE_BINARY_LICENSE_AGREEMENT")
@@ -266,16 +266,16 @@ libvirt_compress() {
    fi
 
    true "vm_multiple: $vm_multiple"
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       true "dist_build_source_archive..."
    elif [ "${vm_multiple}" = "false" ]; then
       true "vm_multiple: false"
       file_list_compress_full_path+=("${dist_binary_build_folder}/${SHORT_VMNAME}.xml")
 
-      if [ "${dist_build_raw}" = "true" ]; then
+      if [ "${dist_build_raw:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_raw_file}")
       fi
-      if [ "${dist_build_qcow2}" = "true" ]; then
+      if [ "${dist_build_qcow2:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_qcow2_file}")
       fi
    else
@@ -286,12 +286,12 @@ libvirt_compress() {
       file_list_compress_full_path+=("${libvirt_target_network_file_internal}")
 
       true "dist_build_raw for raw image: $dist_build_raw"
-      if [ "${dist_build_raw}" = "true" ]; then
+      if [ "${dist_build_raw:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_raw_file_for_unified}")
          file_list_compress_full_path+=("${binary_image_raw_file}")
       fi
       true "dist_build_qcow2 for qcow image: $dist_build_qcow2"
-      if [ "${dist_build_qcow2}" = "true" ]; then
+      if [ "${dist_build_qcow2:-}" = "true" ]; then
          file_list_compress_full_path+=("${binary_image_qcow2_file_for_unified}")
          file_list_compress_full_path+=("${binary_image_qcow2_file}")
       fi
@@ -300,22 +300,22 @@ libvirt_compress() {
    ## XXX: --target raw and --target qcow2 can currently not be combined but that seems unlikely.
    ## XXX: --target source can currently not be combined.
    true "dist_build_source_archive: $dist_build_source_archive"
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       xz_archive="${source_archive_xz_file}"
    fi
    true "dist_build_raw: $dist_build_raw"
-   if [ "${dist_build_raw}" = "true" ]; then
+   if [ "${dist_build_raw:-}" = "true" ]; then
       xz_archive="${libvirt_target_raw_xz_archive_file}"
    fi
    true "dist_build_qcow2: $dist_build_qcow2"
-   if [ "${dist_build_qcow2}" = "true" ]; then
+   if [ "${dist_build_qcow2:-}" = "true" ]; then
       xz_archive="${libvirt_target_qcow2_xz_archive_file}"
    fi
 
    true "file_list_compress_full_path: ${file_list_compress_full_path[*]}"
 
    local test_operator
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       test_operator="-d"
       $SUDO_TO_ROOT safe-rm --force --recursive -- "${dist_binary_build_folder}/derivative-maker"
       cp --archive --no-dereference --preserve=all -- "${source_code_folder_dist}" "${dist_binary_build_folder}"
@@ -361,7 +361,7 @@ libvirt_compress() {
       error "xz_archive ${xz_archive} not readable!"
    fi
 
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       ## Not deleting source code.
       return 0
    fi
@@ -374,7 +374,7 @@ libvirt_compress() {
 }
 
 virtualbox_export() {
-   if [ ! "${dist_build_virtualbox}" = "true" ]; then
+   if [ ! "${dist_build_virtualbox:-}" = "true" ]; then
       return 0
    fi
 
@@ -629,37 +629,37 @@ signatures_create() {
    file_list=()
    upload_url_part=()
 
-   if [ "${dist_build_virtualbox}" = "true" ]; then
+   if [ "${dist_build_virtualbox:-}" = "true" ]; then
       var_names+=("binary_image_ova_file")
       file_list+=("${binary_image_ova_file}")
       upload_url_part+=("ova")
    fi
-   if [ "${dist_build_raw}" = "true" ]; then
+   if [ "${dist_build_raw:-}" = "true" ]; then
       var_names+=("libvirt_target_raw_xz_archive_file")
       file_list+=("${libvirt_target_raw_xz_archive_file}")
       upload_url_part+=("raw")
    fi
-   if [ "${dist_build_qcow2}" = "true" ]; then
+   if [ "${dist_build_qcow2:-}" = "true" ]; then
       var_names+=("libvirt_target_qcow2_xz_archive_file")
       file_list+=("${libvirt_target_qcow2_xz_archive_file}")
       upload_url_part+=("libvirt")
    fi
-   if [ "${dist_build_iso}" = "true" ]; then
+   if [ "${dist_build_iso:-}" = "true" ]; then
       var_names+=("binary_image_iso_file")
       file_list+=("${binary_image_iso_file}")
       upload_url_part+=("iso")
    fi
-   if [ "${dist_build_installer_dist}" = "true" ]; then
+   if [ "${dist_build_installer_dist:-}" = "true" ]; then
       var_names+=("binary_image_installer_dist_file")
       file_list+=("${binary_image_installer_dist_file}")
       upload_url_part+=("dist-installer-cli")
    fi
-   if [ "${dist_build_windows_installer}" = "true" ]; then
+   if [ "${dist_build_windows_installer:-}" = "true" ]; then
       var_names+=("binary_image_windows_installer_file")
       file_list+=("${binary_image_windows_installer_file}")
       upload_url_part+=("windows")
    fi
-   if [ "${dist_build_source_archive}" = "true" ]; then
+   if [ "${dist_build_source_archive:-}" = "true" ]; then
       var_names+=("source_archive_xz_file")
       file_list+=("${source_archive_xz_file}")
       upload_url_part+=("source")
@@ -730,7 +730,7 @@ legal_files_copy() {
 }
 
 main() {
-   if [ "${dist_build_utm}" = "true" ]; then
+   if [ "${dist_build_utm:-}" = "true" ]; then
       true "dist_build_utm: true"
       true "INFO: Skipping ${FUNCNAME[0]}, because not implemented for UTM."
       exit 0
