@@ -15,10 +15,19 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
+## R-082: source every helper-scripts file used directly. The lib
+## happens to source these too (transitively) but a future refactor
+## that drops a transitive source must not break this consumer.
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+## Sourced for its LOG_MAX_LEN default (the helper-scripts log()
+## reads it to truncate every log line through sanitize-string). The
+## lib also pulls in helper-scripts files above; per R-082 those
+## are sourced directly in addition.
+# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 ## Mirror destination: the GitHub org that holds forks of every
 ## source-org repo. Production target.

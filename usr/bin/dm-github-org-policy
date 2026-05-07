@@ -182,9 +182,8 @@ policy_tool_init 0 "$@"
 ## .github/workflows/codeql.yml) and private vulnerability reporting
 ## (project disclosure channel is OpenPGP email; see header notes).
 apply_code_security_config() {
-   local org config_body list_result list_status existing_id
-   local create_result create_status attach_body default_body
-   local list_body create_body
+   local org config_body existing_id list_body create_body
+   local attach_body default_body
 
    org="$1"
 
@@ -208,17 +207,14 @@ apply_code_security_config() {
       return 0
    fi
 
-   ## Find existing configuration by name.
-   list_result="$(ghorg_api GET "/orgs/${org}/code-security/configurations?per_page=100")" \
-      || { policy_warn_seen=1; return 1; }
-   list_status="$(ghorg_status_of "${list_result}")"
-   if [ "${list_status}" != '200' ]; then
-      list_body="$(ghorg_body_of "${list_result}")"
-      log warn "${org}: list code-security configurations [${list_status}]: ${list_body:0:512}"
-      policy_warn_seen=1
-      return 1
-   fi
-   existing_id="$(ghorg_body_of "${list_result}" \
+   ## Find existing configuration by name. policy_api_call's body-
+   ## capture (6th arg) populates list_body on success so we can read
+   ## .id without re-implementing the status+warn dance.
+   policy_api_call "${org}: list code-security configurations" \
+      GET "/orgs/${org}/code-security/configurations?per_page=100" '' '' list_body \
+      || return 1
+
+   existing_id="$(printf '%s' "${list_body}" \
       | jq -r --arg name "${CODE_SEC_CONFIG_NAME}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
@@ -237,21 +233,21 @@ apply_code_security_config() {
    else
       ## POST returns the new config object including its id; we need
       ## the id for the attach + default calls.
-      create_result="$(ghorg_api POST "/orgs/${org}/code-security/configurations" "${config_body}")" \
-         || { policy_warn_seen=1; return 1; }
-      create_status="$(ghorg_status_of "${create_result}")"
-      case "${create_status}" in
-         200|201)
-            existing_id="$(ghorg_body_of "${create_result}" | jq -r -- '.id')"
-            log notice "ok: ${org}: created code-security configuration id=${existing_id} [${create_status}]"
-            ;;
-         *)
-            create_body="$(ghorg_body_of "${create_result}")"
-            log warn "${org}: create code-security configuration [${create_status}]: ${create_body:0:512}"
-            policy_warn_seen=1
-            return 1
-            ;;
-      esac
+      policy_api_call "${org}: create code-security configuration" \
+         POST "/orgs/${org}/code-security/configurations" "${config_body}" '' create_body \
+         || return 1
+      existing_id="$(printf '%s' "${create_body}" | jq -r -- '.id')"
+      if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] || \
+         [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
+         log warn "'${org}': new code-security config id '${existing_id}' not a valid numeric id"
+         policy_warn_seen=1
+         return 1
+      fi
+      ## The generic 'ok:' line emitted by policy_api_call above does
+      ## not include the id (the label was set before the body was
+      ## captured). Operator-facing log gets one more line that names
+      ## the id so a follow-up audit / GitHub UI lookup is unambiguous.
+      log notice "ok: ${org}: created code-security configuration id=${existing_id}"
    fi
 
    ## Attach to all existing repos in the org. scope=all covers every

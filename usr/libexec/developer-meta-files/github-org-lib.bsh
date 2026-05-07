@@ -17,7 +17,9 @@
 ##      regex with length cap. See GHORG_MAX_ID_LEN.
 ##   2) Display sinks (terminal): log() pipes every message through
 ##      sanitize-string internally, stripping ANSI, control chars,
-##      and HTML. No pre-sanitization is needed at call sites.
+##      and HTML, AND truncating to LOG_MAX_LEN bytes (defaulted
+##      below to GHORG_MAX_DISPLAY_LEN). No pre-sanitization is
+##      needed at call sites.
 ## Resource caps below bound the local damage a hostile or misbehaving
 ## server can cause through pagination, redirect chains, oversized
 ## bodies, or oversized "numeric" ids.
@@ -48,6 +50,19 @@ GHORG_MAX_USER_LOGIN_LEN=39
 
 ## Truncation cap for any other API-derived string at display time.
 GHORG_MAX_DISPLAY_LEN=256
+
+## Cap on the byte length of any string passed through log() (which
+## pipes through 'sanitize-string -- "${LOG_MAX_LEN:-nolimit}"').
+## Without this, log() defaults to 'nolimit' and a hostile API body
+## up to --max-filesize (10 MB) flows through every log warn
+## unbounded - per-warn fork+exec of Python on a multi-MB string,
+## terminal scrollback exhaustion, log-file flooding that hides
+## earlier warns. Operator can override by exporting LOG_MAX_LEN
+## before invoking any github-org-* / dm-github-* tool. Per-call
+## bash slices like '${response_body:0:512}' in policy_api_call and
+## dm-github-org-policy remain as defense-in-depth and get
+## re-clamped to LOG_MAX_LEN by sanitize-string.
+[[ -v LOG_MAX_LEN ]] || LOG_MAX_LEN="${GHORG_MAX_DISPLAY_LEN}"
 
 ## Backoff doubles per attempt: 30s, 60s, 120s, 240s ... clamped at
 ## GHORG_MAX_BACKOFF_SECONDS.
