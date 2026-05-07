@@ -1,3 +1,176 @@
+commit 595dd3bc1890f1854c28248e9de5b2911945f398
+Merge: e92d370 9fbe616
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 15:14:25 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/restore-log-max-len-f04n4'
+
+commit e92d3704cc741c249276557076759b0678ba1d9f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 18:37:01 2026 +0000
+
+    bumped changelog version
+
+commit 9fbe616581295c85d351a8c96e56078036cf7eff
+Author: claude-code <claude-code@assisted-by-ai>
+Date:   Thu May 7 17:52:20 2026 +0000
+
+    github-org-* / dm-github-*: restore LOG_MAX_LEN cap; refactor body capture; expand mock-API tests
+
+    Background: commit 9e141a6 ("remove ghorg_safe_print from lib files;
+    log() sanitizes internally") removed the per-call-site
+    ghorg_safe_print wrapper that had been applying the
+    GHORG_MAX_DISPLAY_LEN=256 byte cap manually. The justification was
+    that helper-scripts log() pipes every message through
+    sanitize-string internally - which is true for ANSI / control / HTML,
+    but not for length: log() reads "${LOG_MAX_LEN:-nolimit}" and with
+    LOG_MAX_LEN unset the cap is "nolimit" (no truncation). Net regression:
+    a hostile or misbehaving GitHub API response, bounded only by curl
+    --max-filesize=10MB, could flow through every log warn unbounded.
+
+    Lib changes
+    -----------
+
+    usr/libexec/developer-meta-files/github-org-lib.bsh
+
+      Default LOG_MAX_LEN to GHORG_MAX_DISPLAY_LEN (256 bytes) at lib
+      source time using the same '[[ -v VAR ]] || VAR=...' idiom as the
+      other lib env-var defaults. Operator can override by exporting
+      LOG_MAX_LEN before invoking the tool. Per-call '${var:0:512}' bash
+      slices in apply_code_security_config and policy_api_call remain as
+      defense-in-depth and get re-clamped to LOG_MAX_LEN by
+      sanitize-string.
+
+    usr/libexec/developer-meta-files/github-policy-lib.bsh
+
+      policy_api_call gains an optional 6th arg, body_var_name. When set,
+      the response body is written into that caller-scope variable via
+      'printf -v' on a 2xx (or extra_ok) success path. Cleared to ''
+      on dry-run, warn, and ghorg_api error paths so callers can rely
+      on "empty means no body to parse". Empty body_var_name (the
+      default) skips body capture entirely.
+
+      Asserts: body_var_name (when non-empty) must pass
+      check_variable_name (R-140 defense-in-depth at the indirection
+      site).
+
+      _policy_upsert_ruleset switches from raw ghorg_api +
+      status-check + warn duplication to policy_api_call with body
+      capture for the GET-list step. The function body shrinks; the warn
+      format becomes uniform with the rest of the lib.
+
+    Tool changes
+    ------------
+
+    usr/bin/dm-github-org-policy
+
+      apply_code_security_config refactored to use policy_api_call's body
+      capture for the list and create paths. The function shrinks; the
+      inline 'log warn ... ${list_body:0:512}' / '${create_body:0:512}'
+      warn formatting is replaced by the lib's standard form. Operator-
+      visible 'created code-security configuration id=N' notice
+      preserved (the generic 'ok:' line is set at call time before .id
+      is parsed, so the id-bearing line is logged separately).
+
+      POST-id validation matches the PATCH-id path: regex + length cap
+      before the id flows into the attach + defaults URLs.
+
+    usr/bin/dm-github-fork-sync
+
+      Source github-org-lib.bsh in addition to log_run_die.sh + has.sh
+      (R-082: source every helper-scripts file used directly; do not
+      rely on transitive sourcing). The lib pulls in the LOG_MAX_LEN
+      default so the wrapper's own log lines get the same cap as the
+      spawned github-org-fork child.
+
+    usr/bin/github-org-fork
+
+      check_variable_name asserts at the two caller-named-variable
+      indirection sites: combine_alt's nameref ('local -n list_ref="$1"')
+      and fork_main_build_repo_set's printf -v
+      ('printf -v "${set_name}[${repo_name}]" ...'). Both current call
+      sites pass literal identifiers, so the asserts never fire in
+      practice; they tighten the contract so a future caller cannot
+      pass garbage and get a non-obvious error mid-call.
+
+    Tests
+    -----
+
+    Suite goes from 7 to 17 mock-API tests. New tests + fixtures fill
+    the coverage gap on the body-capture refactor and on every code
+    path the prior suite had only smoke-exercised via dry-run:
+
+      ci/tests/test_policy_api_call_body_capture.sh
+        Unit-style. Sources both libs, calls policy_api_call directly
+        with the 6th-arg body capture, asserts:
+          1. captured variable populated on 200 success
+          2. captured variable cleared on dry-run short-circuit
+          3. 5-arg form (no body capture) still works unchanged
+          4. policy_warn_seen stays 0 across only-2xx calls
+          5. captured cleared AND policy_warn_seen flipped on warn path
+          6. invalid body_var_name (check_variable_name reject) returns
+             non-zero without bumping policy_warn_seen
+
+      ci/tests/test_dm_apply.sh
+        Full-stack dm-github-org-policy --apply against fixtures.
+        Walks org settings, members policy, code-security config (list /
+        create / attach / default), branch + tag rulesets, per-repo
+        PATCH. Indirectly validates body-capture end-to-end via the
+        create -> attach handoff (broken capture would feed empty
+        existing_id into the attach URL, miss its fixture, trip rc != 0).
+
+      ci/tests/test_dm_personal_apply.sh
+        dm-github-personal-policy --apply --verbose. Only test that
+        exercises _policy_upsert_ruleset with scope=repo (the repo-level
+        ruleset upsert) AND the 5th-arg extra_ok parameter (Pages
+        DELETE -> 404 = "no Pages site" must NOT trip a warn). Two
+        fixture repos in scope, one with Pages 204 and one with Pages
+        404, hitting both branches of the extra_ok glob.
+
+      ci/tests/test_dm_github_token_test.sh
+        dm-github-token-test against /user (existing fixture) and
+        /rate_limit (new fixture). Pins the .login extraction +
+        rate-limit jq filter + the low-remaining warn threshold (4500 >
+        100, no warn).
+
+      ci/tests/test_dm_fork_sync_dryrun.sh
+        dm-github-fork-sync --dry-run end-to-end. Wrapper sources the
+        full lib chain and spawns github-org-fork once per SOURCE_ORGS
+        entry; this test pins both the wrapper-level log notice headers
+        AND the spawned tool's per-repo dry-run output. New per-source
+        fixtures for Kicksecure + Whonix.
+
+      ci/tests/test_fork_apply.sh
+        github-org-fork --apply against fixtures. Walks fork creation
+        (POST /repos/{src}/{repo}/forks for repos missing on target),
+        collision detection (parent.full_name lookup), configure_one
+        (PATCH + PUT settings), and sync_one (merge-upstream).
+
+    ci/fixtures/ gains 33 entries covering the write endpoints
+    (PUT/POST/PATCH/DELETE) the apply paths hit, plus per-source-org
+    fixtures for the fork-sync wrapper test and per-repo response
+    shapes for the github-org-fork apply test.
+
+    Remaining gaps not in this PR
+    -----------------------------
+
+    github-org-clone --apply and github-org-push --apply exec git as a
+    subprocess; mocking that requires shell-function overrides which
+    agents/security.md flags as fragile (defeated by 'command git' or
+    absolute-path invocations, and proves only that the mock fires, not
+    the production code path).
+
+    Style
+    -----
+
+    ASCII only (R-001) in code and commit message. Strict-mode quintet
+    on every new test (R-010). 'rc=0; out=$(cmd) || rc=$?' for
+    exit-code capture (R-011). 'log'/'die' from log_run_die.sh, not
+    ad-hoc printf/exit (R-040, R-110). Direct sourcing of every
+    helper-scripts file used (R-082). Long flags throughout (R-060).
+    '--' end-of-options where supported (R-062). check_variable_name
+    asserts at indirection sites (R-140 belt-and-suspenders).
+
 commit 31864908a7f5a63313f4142966334f44b35ead35
 Merge: 5c2e180 8d8ae2f
 Author: Patrick Schleizer <adrelanos@whonix.org>
