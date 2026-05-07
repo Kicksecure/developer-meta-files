@@ -35,18 +35,19 @@ name: github-org tools (live policy check)
 on:
   workflow_dispatch:
 
-## Upstream-only gate. github.repository == env.CANONICAL_REPO
-## prevents forks (and the org-ai-assisted mirror) from running this
-## workflow's upstream-only paths - the upstream-only secret(s)
-## referenced below (vault password / Coverity token / GHORG_AUDIT_TOKEN)
-## are only set on the canonical repo. A fork would either see those
-## secrets as empty and fail mid-flight, or - worse - run the heavy
-## ops with its own arbitrary-named secret. Keeping the canonical
-## owner/repo at the top of the file as a constant rather than buried
-## in an `if:` expression makes the gate's identity reviewable and
-## avoids drift if it has to change across multiple `if:` checks.
-env:
-  CANONICAL_REPO: Kicksecure/developer-meta-files
+## Upstream-only gate. The literal "Kicksecure/developer-meta-files"
+## in the job-level `if:` below prevents forks (and the
+## org-ai-assisted mirror) from running this workflow's upstream-only
+## paths - the upstream-only secret(s) referenced below (vault
+## password / Coverity token / GHORG_AUDIT_TOKEN) are only set on the
+## canonical repo. A fork would either see those secrets as empty and
+## fail mid-flight, or - worse - run the heavy ops with its own
+## arbitrary-named secret.
+##
+## The canonical owner/repo is inlined in the `if:` rather than
+## hoisted to a workflow-level `env:` constant because GitHub Actions
+## does not expose the `env` context in job-level `if:` expressions
+## (only `github`, `inputs`, `needs`, and `vars` are available there).
 
 ## Read-only on the checked-out source. Neither --audit nor --dry-run
 ## touches the repository content; both only call the GitHub REST API.
@@ -63,7 +64,7 @@ jobs:
     ## Skip on forks so a fork's workflow can never use the upstream
     ## secret (GitHub also blocks this by default for forked PRs, but
     ## the explicit guard documents intent).
-    if: ${{ github.repository == env.CANONICAL_REPO }}
+    if: ${{ github.repository == 'Kicksecure/developer-meta-files' }}
 
     steps:
       - name: Install apt pre-reqs
