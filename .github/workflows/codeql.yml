@@ -1,3 +1,9 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
 ## Reusable workflow: CodeQL static analysis.
 ##
 ## Runs CodeQL against the calling repository for a single (language,
