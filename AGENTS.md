@@ -10,6 +10,7 @@
 | --- | --- |
 | Bash style (variables, printf, locals, traps, ...) | [`agents/bash-style-guide.md`](agents/bash-style-guide.md) |
 | pre-push checklist | [`agents/pre-push-checklist.md`](agents/pre-push-checklist.md) |
+| GitHub Actions cross-repo conventions (reusable workflows, context constraints) | [`agents/github-actions.md`](agents/github-actions.md) |
 | General threat model + trust boundaries | [`agents/security.md`](agents/security.md) |
 
 Other repos (derivative-maker, helper-scripts, etc.) cross-link here
