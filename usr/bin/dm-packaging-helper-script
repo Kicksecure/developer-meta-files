@@ -1168,9 +1168,6 @@ pkg_git_remotes_add() {
 
       git remote add     github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
       git remote set-url github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
-
-      #git remote add     gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
-      #git remote set-url gitlab-derivative-maker "git@gitlab.com:derivative-maker/${batch_current_package_reponame}.git" || true
    else
       printf '%s\n' "ERROR: batch_current_project_name wrong! (1)"
    fi
