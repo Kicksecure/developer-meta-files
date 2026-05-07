@@ -35,6 +35,9 @@ cd -- "$derivative_maker_source_code_dir"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/get_colors.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/log_run_die.sh"
+
+log_level=info
 
 ## Reusable wait-for-pids helper. Prefer the in-tree copy when run
 ## from the source folder so dev iteration does not need a reinstall.
@@ -661,11 +664,10 @@ get_package_documentation_info_list() {
 set_batch_current_package_remote_list() {
    batch_current_package_remote_list=( "github-${batch_current_project_name,,}" "${DM_GITHUB_MIRROR}" )
 
-   ## derivative-maker has a couple extra remotes
-   ## derivative-maker GitHub organisation is to be deprecated for simplicity.
-   #if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
-      #batch_current_package_remote_list+=( 'github-kicksecure' 'github-whonix' )
-   #fi
+   ## derivative-maker is mirrored at Whonix.
+   if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
+      batch_current_package_remote_list+=( 'github-whonix' )
+   fi
 }
 
 ## Diffs two Git branches against each other, reporting whether they have
@@ -1519,7 +1521,7 @@ pkg_git_push_remotes() {
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
       for branch_name_item in "${branch_name_list[@]}"; do
          if internal_git_diff "refs/heads/${branch_name_item}" "refs/remotes/${package_remote_item}/${branch_name_item}"; then
-            git push -- "${package_remote_item}" "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" &
+            log_run info git push -- "${package_remote_item}" "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" &
             git_pid_label[$!]="push branch ${branch_name_item} -> ${package_remote_item} (${batch_current_package_reponame})"
          fi
       done
