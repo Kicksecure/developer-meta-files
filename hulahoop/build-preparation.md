@@ -5,7 +5,7 @@
 
 To get an overview of all switches:
 
-https://github.com/derivative-maker/derivative-maker/blob/master/help-steps/parse-cmd#L106
+https://github.com/Kicksecure/derivative-maker/blob/master/help-steps/parse-cmd#L106
 
 Assign 4 CPUs and as close to 4GB RAM as possible to avoid the build process erroring out with a cryptic error.
 

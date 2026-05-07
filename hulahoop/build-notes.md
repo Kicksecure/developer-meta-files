@@ -1,6 +1,6 @@
 # step based build system #
 
-You don't need to use "$HOME/derivative-maker/derivative-maker" at all. Each step can be done separately. https://www.whonix.org/wiki/Dev/Source_Code_Intro#Introduction would be unworkable without that feature.
+You don't need to use "$HOME/Kicksecure/derivative-maker" at all. Each step can be done separately. https://www.whonix.org/wiki/Dev/Source_Code_Intro#Introduction would be unworkable without that feature.
 These are the build-steps:
 
 ```
