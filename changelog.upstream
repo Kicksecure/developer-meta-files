@@ -1,3 +1,672 @@
+commit 31864908a7f5a63313f4142966334f44b35ead35
+Merge: 5c2e180 8d8ae2f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 13:46:44 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/fix-workflow-syntax-j1LlD'
+
+commit 8d8ae2f7076b4e84ce1b9310529ec7f663230a07
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 10:23:29 2026 +0000
+
+    fix(dm-prepare-release): also protect '$dist_build_*' info-string derefs
+
+    The previous pass converted all 'if [ "${dist_build_X}" = "true" ]'
+    guards but left five 'true "...$dist_build_X..."' info-string
+    derefs unprotected. Under nounset those are equally fatal:
+
+      /work/.../dm-prepare-release: line 306: dist_build_raw: unbound variable
+
+    Mechanical replacement: '$dist_build_(raw|qcow2|source_archive)"'
+    -> '${dist_build_$&:-}"' on lines 288, 293, 302, 306, 310.
+
+commit e300a634159b4df4c181b2620d70725a4e7898ef
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 09:34:01 2026 +0000
+
+    fix(dm-prepare-release): protect dist_build_* derefs under nounset
+
+    35 'if [ "${dist_build_X}" = "true" ]' guards across the file
+    dereferenced their var without the ':-' default-value form. With
+    'set -o nounset' (default), any --target / --flavor combination
+    that did not happen to set that specific var aborted dm-prepare-
+    release with '<var>: unbound variable'. Most callers only set ONE
+    of the dist_build_* target booleans (parse-cmd in derivative-maker
+    exports exactly one based on '--target X'), so most of these
+    checks tripped on an unrelated target every build.
+
+    Convert all 35 to the ':-' default-value form. No behaviour change
+    for any case where the var is set; unset cases now compare ""
+    against "true" (false), exactly the "skip-this-target" branch the
+    guard already intends. Bash style guide R-010 (nounset is
+    mandatory; consumers handle unset).
+
+    Vars touched (all in 'if' guards of the same shape):
+      dist_build_virtualbox        x2
+      dist_build_qcow2             x8
+      dist_build_raw               x8
+      dist_build_utm               x1
+      dist_build_iso               x1
+      dist_build_windows_installer x2
+      dist_build_installer_dist    x2
+      dist_build_source_archive    x10
+
+commit 045d164499595329db2b45d67fd0f8abbda5a5b1
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 6 21:05:27 2026 +0000
+
+    ci: inline canonical repo literal in job-level if (env context unavailable)
+
+    GitHub Actions does not expose the env context in job-level if
+    expressions (only github, inputs, needs, vars are available there);
+    referencing env.CANONICAL_REPO produced "Unrecognized named-value:
+    'env'" and prevented the workflows from loading. Inline the literal
+    'Kicksecure/developer-meta-files' in the if and drop the now-unused
+    workflow-level env block. Caught by actionlint.
+
+commit 5c2e180a2c39eb8089846cdbc434320a740910e1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 6 16:36:32 2026 -0400
+
+    agents
+
+commit b73949c4baf4d7aa848a1f235e197525a96c729f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 6 16:09:06 2026 -0400
+
+    rename
+
+commit d04dbab34490a76671f15eeeea5400b0df2eeb58
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 6 16:08:44 2026 -0400
+
+    rename
+
+commit bd6a547463ed017a8a401ffa8daa73b2cef9d780
+Merge: 8a38a3d 24b1c88
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 6 16:05:30 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/read-agents-meta-file-uKeT9'
+
+commit 8a38a3db2c391c14c5ea47e65ab0782824cca3d1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 6 15:26:29 2026 -0400
+
+    Squashed commit of the following:
+
+    commit 24b1c88503951edc7c0404d7092723f4b5da790c
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 09:15:01 2026 -0400
+
+        ci(live + policy-live): hoist canonical-repo gate to env.CANONICAL_REPO
+
+    commit 86633d142ca8054ce8ca893a9b8ca599092622b5
+    Author: claude-code <claude-code@assisted-by-ai>
+    Date:   Wed May 6 13:03:21 2026 +0000
+
+        fix(dm-push): also remove relative-path source of the deleted shim
+
+        Previous commit 53a2654 missed dm-push's pre-existing in-tree
+        fallback line:
+
+          parallel_helper="$MYDIR/../libexec/developer-meta-files/parallel.bsh"
+          test -r "$parallel_helper" || parallel_helper="/usr/libexec/helper-scripts/parallel.bsh"
+          # shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
+          source "$parallel_helper"
+
+        The relative path $MYDIR/../libexec/developer-meta-files/parallel.bsh
+        referred to the deleted shim and would now fail at startup.
+
+        Replace the four lines with a single absolute source of the
+        new home in helper-scripts:
+
+          # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
+          source /usr/libexec/helper-scripts/parallel.bsh
+
+        dm-push is invoked by maintainers from an installed system where
+        helper-scripts is a hard package dependency anyway; no in-tree
+        fallback is meaningful for it the way it was for
+        dm-packaging-helper-script (which runs from a derivative-maker
+        checkout that ships its own helper-scripts submodule).
+
+    commit 53a26548ca65b4bc5dd5942d0b51365e2d5704d4
+    Author: claude-code <claude-code@assisted-by-ai>
+    Date:   Wed May 6 13:02:43 2026 +0000
+
+        refactor: drop dm_parallel_wait shim; port callers to parallel_wait
+
+        Per maintainer policy: no backward-compat shims for internal-only
+        APIs. The dm_parallel_wait alias served no external code; both known
+        callers (dm-packaging-helper-script, dm-push) are in this same repo
+        and migrate cleanly.
+
+        Per-caller substitutions (sed):
+          packages/kicksecure/developer-meta-files/usr/libexec/developer-meta-files/parallel.bsh
+            -> packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/parallel.bsh
+          /usr/libexec/developer-meta-files/parallel.bsh
+            -> /usr/libexec/helper-scripts/parallel.bsh
+          # shellcheck source=../libexec/developer-meta-files/parallel.bsh
+            -> # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
+          dm_parallel_wait        -> parallel_wait
+          dm_parallel_failures    -> parallel_failures
+
+        Verified by repo-wide
+          grep -nrE 'dm_parallel_wait|dm_parallel_failures|/libexec/developer-meta-files/parallel'
+        returning zero matches.
+
+        Deleted:
+          usr/libexec/developer-meta-files/parallel.bsh
+            (the now-orphan shim)
+          TODO-dm-packaging-helper-script-parallel-bsh.md
+            (resolved)
+
+    commit aca625fbb075014f55c6c5a57917c1dd7412047c
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 08:52:03 2026 -0400
+
+        docs: drop exec-bit TODO; maintainer ran the local fix script
+
+        Maintainer ran the per-repo `git update-index --chmod=+x` + push fix
+        script across all 9 affected branches. Codex's exec-bit P1 threads
+        on tb-updater#1, usability-misc#1, helper-scripts#1, kloak#1 and
+        developer-meta-files#1 are now obsolete.
+
+    commit 63d8941e43380bbe1fd4fc20f5ca9f2b0e439e0d
+    Author: claude-code <claude-code@assisted-by-ai>
+    Date:   Wed May 6 12:25:25 2026 +0000
+
+        ci: restore executable bit on shebanged scripts (lost via MCP push)
+
+        The GitHub MCP push_files / create_or_update_file API resets every
+        tree entry to mode 100644, even when the prior entry was 100755.
+        This commit re-flips the bit via 'git update-index --chmod=+x' on
+        the affected files (no content change). Resolves Codex P1 reviews
+        about EACCES at exec time + the rc=126 'Permission denied' failures
+        in CI.
+
+    commit 1a0fcd47d1e8204a0319731a8f34a14bccbacf3d
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 08:20:25 2026 -0400
+
+        docs: TODO - keep parallel.bsh shim alive until BOTH callers migrate
+
+        Codex P1 on developer-meta-files#1 review of TODO-dm-packaging-helper-script-parallel-bsh.md:62
+        caught a real footgun in the original TODO: it said to `git rm` the
+        shim immediately after patching `dm-packaging-helper-script`, but
+        `dm-push` also sources the shim. Following the TODO as written
+        would break `dm-push` at startup (missing-file source error) before
+        it could push anything.
+
+        Updated to enumerate BOTH known callers, require migrating both
+        before the `git rm`, and provide a unified sed pass + verification
+        greps that cover the whole repo. Defensive 'must return zero matches'
+        gate before the shim deletion.
+
+    commit 9efa6b59c34b70eaf712efb0d74d0636fd920c9f
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 08:14:47 2026 -0400
+
+        ci: SHA-pin actions/checkout
+
+    commit b13dd6c105a1ae851e17d310870287f3c2fe4354
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 06:09:43 2026 -0400
+
+        docs: TODO note - restore executable bit on AI-pushed scripts
+
+        The GitHub MCP push tools default new tree entries to mode 100644
+        even when the prior entry was 100755. Multiple Codex P1 reviews
+        flagged the resulting Permission denied at exec time on operator
+        entrypoints. The maintainer will fix locally; this note documents
+        which repos and provides a one-shot bash fix script.
+
+    commit 1e139fbde695ae9e2708fa2cc2d4dfc267358307
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Wed May 6 05:48:19 2026 -0400
+
+        fix(parallel.bsh shim): repopulate dm_parallel_failures for legacy callers
+
+        Codex P1 on developer-meta-files#1: dm-push and
+        dm-packaging-helper-script still read the legacy
+        dm_parallel_failures array, but the shim only delegated to
+        parallel_wait without re-exporting parallel_failures under the old
+        name. Under set -o nounset, those callers tripped on first access
+        of dm_parallel_failures whenever a tracked job failed.
+
+        - Initialise dm_parallel_failures=() at source time so reads are
+          always safe under nounset.
+        - Re-fill dm_parallel_failures from parallel_failures inside
+          dm_parallel_wait so the legacy array contents stay accurate.
+        - Preserve parallel_wait's exit status via local rc.
+
+        This is the bandaid; the strategic plan (tracked in
+        TODO-dm-packaging-helper-script-parallel-bsh.md) is still to delete
+        the shim once all callers source helper-scripts/parallel.bsh
+        directly and use the new names.
+
+    commit 7eee8fc1f9b45dfff0b609c46e78a0177249b640
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 19:06:11 2026 -0400
+
+        ci: cancel-in-progress on workflow re-run
+
+        Add (or enable) concurrency: cancel-in-progress: true on workflow yml
+        files that lacked it. Re-pushed runs of the same workflow on the same
+        ref (re-tagged release, force-push, etc.) now cancel the in-flight
+        run instead of stacking.
+
+    commit a5a4a2b62bc31c628ae53a499aff2a31a947c2e0
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 18:39:49 2026 -0400
+
+        docs: TODO note for dm-packaging-helper-script parallel.bsh migration
+
+        The 5-line edit needed to drop the dm_parallel_wait shim consistently
+        times out on the GitHub MCP push channel because the host file is
+        ~91 KB. Document the diff and the post-merge cleanup so the change
+        can be applied manually.
+
+    commit bc8955ac6c512ad59dec0c7de0ba8a1fe9dac0e3
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 18:16:59 2026 -0400
+
+        ci: fix repo guards: assisted-by-ai -> Kicksecure
+
+        The 'assisted-by-ai/developer-meta-files' guards in live.yml and
+        policy-live.yml never match any real repo (the upstream is at
+        Kicksecure/developer-meta-files), so the manual-dispatch jobs
+        were effectively dead-on-arrival.
+
+    commit 206bc46426443de192732ad9d3f2626ea952f5d7
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 17:51:03 2026 -0400
+
+        ci: drop GENMKFILE_DEBUG=1, add persist-credentials: false
+
+        Strip GENMKFILE_DEBUG=1 from the genmkfile install step in all three
+        workflows. Add persist-credentials: false to every actions/checkout step.
+
+    commit dd0e441c22f33857e1631a5f06fe11d2059cce68
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 16:48:22 2026 -0400
+
+        github-org-tools.md: update G-003 to reflect log() internal sanitization
+
+        G-003 rule: replace "every log call needs ghorg_safe_print" with
+        "log() sanitizes internally via sanitize-string; no pre-call
+        wrapper needed; bare printf still needs care"
+        Spot-check checklist: update G-003 entry accordingly
+        Audit checklist: update G-003 entry accordingly
+
+    commit 01600bc2947ffa86c090c9a2a0f99b8a61ad75f0
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 16:47:05 2026 -0400
+
+        remove ghorg_safe_print from dm-github-policy and dm-github-personal-policy
+
+        policy: apply_code_security_config: use ${list_body:0:512},
+          ${create_body:0:512}, ${existing_id} directly
+        policy: audit_get: drop | sanitize-string 200 pipeline stage,
+          use ${extracted:0:200} in log notice
+        policy: audit_org_state: remove all 5 safe_* local groups and 10
+          ghorg_safe_print assignments; use originals throughout
+        personal-policy: remove safe_type from account-type guard; use
+          ${target_account_type} directly in die message
+        personal-policy: audit_one: remove safe_repo/safe_fork_approval/
+          safe_workflow_perms/safe_allowed_actions; use originals
+
+    commit 04f5bfa758b74ff7815d7f280444bd5d655d3f30
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 16:42:31 2026 -0400
+
+        remove ghorg_safe_print from github-org-fork
+
+        fork_one: remove safe_target/safe_auth locals+assignments, use
+          ${target_owner}/${auth_user} directly
+        check_collision: remove safe_repo/safe_parent/safe_expected
+          locals+assignments, use originals directly
+        sync_one: remove safe_repo/safe_branch/safe_merge_type/
+          safe_merged_commits locals+assignments; update stale comment;
+          replace $(ghorg_safe_print ...) with ${default_branch}
+
+    commit 3e166b9af667e9927fe1de289968120b7eb63cb6
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 16:40:44 2026 -0400
+
+        remove ghorg_safe_print from github-org-clone and github-org-push
+
+        clone: remove safe_existing_url + safe_branch locals/assignments,
+        use ${existing_url} and ${current_branch} directly in log warn calls
+        push: remove safe_repo_dir local/assignment, use ${repo_dir} directly
+
+    commit 9e141a60dcdb32432038ca87a7b690436f853813
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 16:38:59 2026 -0400
+
+        remove ghorg_safe_print from lib files; log() sanitizes internally
+
+        - github-org-lib.bsh: remove ghorg_safe_print function, remove
+          sanitize-string from ghorg_require_deps, update THREAT MODEL
+          comment, replace all safe_* pre-sanitization in validate_name,
+          account_type, list_repos, repo_lookup, repo_parent with direct
+          variable use
+        - github-policy-lib.bsh: remove safe_body/safe_id/arg_safe
+          locals and assignments; use ${response_body:0:512},
+          ${existing_id}, '$1' directly; drop ghorg_safe_print from
+          source-list comment
+
+    commit 54c33320276c6e549e4513f8874bb3a1981e0e5e
+    Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+    Date:   Tue May 5 15:42:19 2026 -0400
+
+        refactor: parallel.bsh becomes a shim sourcing helper-scripts/parallel.bsh
+
+        parallel_wait and parallel_failures have moved to
+        helper-scripts/usr/libexec/helper-scripts/parallel.bsh.
+
+        This file now sources from there and exposes dm_parallel_wait as a
+        backward-compatible alias. Callers that read dm_parallel_failures
+        should migrate to parallel_failures.
+
+        Add AI-Assisted marker (R-002).
+        Add # shellcheck source= directive (R-080).
+
+commit 24b1c88503951edc7c0404d7092723f4b5da790c
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 09:15:01 2026 -0400
+
+    ci(live + policy-live): hoist canonical-repo gate to env.CANONICAL_REPO
+
+commit 86633d142ca8054ce8ca893a9b8ca599092622b5
+Author: claude-code <claude-code@assisted-by-ai>
+Date:   Wed May 6 13:03:21 2026 +0000
+
+    fix(dm-push): also remove relative-path source of the deleted shim
+
+    Previous commit 53a2654 missed dm-push's pre-existing in-tree
+    fallback line:
+
+      parallel_helper="$MYDIR/../libexec/developer-meta-files/parallel.bsh"
+      test -r "$parallel_helper" || parallel_helper="/usr/libexec/helper-scripts/parallel.bsh"
+      # shellcheck source=usr/libexec/developer-meta-files/parallel.bsh
+      source "$parallel_helper"
+
+    The relative path $MYDIR/../libexec/developer-meta-files/parallel.bsh
+    referred to the deleted shim and would now fail at startup.
+
+    Replace the four lines with a single absolute source of the
+    new home in helper-scripts:
+
+      # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
+      source /usr/libexec/helper-scripts/parallel.bsh
+
+    dm-push is invoked by maintainers from an installed system where
+    helper-scripts is a hard package dependency anyway; no in-tree
+    fallback is meaningful for it the way it was for
+    dm-packaging-helper-script (which runs from a derivative-maker
+    checkout that ships its own helper-scripts submodule).
+
+commit 53a26548ca65b4bc5dd5942d0b51365e2d5704d4
+Author: claude-code <claude-code@assisted-by-ai>
+Date:   Wed May 6 13:02:43 2026 +0000
+
+    refactor: drop dm_parallel_wait shim; port callers to parallel_wait
+
+    Per maintainer policy: no backward-compat shims for internal-only
+    APIs. The dm_parallel_wait alias served no external code; both known
+    callers (dm-packaging-helper-script, dm-push) are in this same repo
+    and migrate cleanly.
+
+    Per-caller substitutions (sed):
+      packages/kicksecure/developer-meta-files/usr/libexec/developer-meta-files/parallel.bsh
+        -> packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/parallel.bsh
+      /usr/libexec/developer-meta-files/parallel.bsh
+        -> /usr/libexec/helper-scripts/parallel.bsh
+      # shellcheck source=../libexec/developer-meta-files/parallel.bsh
+        -> # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
+      dm_parallel_wait        -> parallel_wait
+      dm_parallel_failures    -> parallel_failures
+
+    Verified by repo-wide
+      grep -nrE 'dm_parallel_wait|dm_parallel_failures|/libexec/developer-meta-files/parallel'
+    returning zero matches.
+
+    Deleted:
+      usr/libexec/developer-meta-files/parallel.bsh
+        (the now-orphan shim)
+      TODO-dm-packaging-helper-script-parallel-bsh.md
+        (resolved)
+
+commit aca625fbb075014f55c6c5a57917c1dd7412047c
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 08:52:03 2026 -0400
+
+    docs: drop exec-bit TODO; maintainer ran the local fix script
+
+    Maintainer ran the per-repo `git update-index --chmod=+x` + push fix
+    script across all 9 affected branches. Codex's exec-bit P1 threads
+    on tb-updater#1, usability-misc#1, helper-scripts#1, kloak#1 and
+    developer-meta-files#1 are now obsolete.
+
+commit 63d8941e43380bbe1fd4fc20f5ca9f2b0e439e0d
+Author: claude-code <claude-code@assisted-by-ai>
+Date:   Wed May 6 12:25:25 2026 +0000
+
+    ci: restore executable bit on shebanged scripts (lost via MCP push)
+
+    The GitHub MCP push_files / create_or_update_file API resets every
+    tree entry to mode 100644, even when the prior entry was 100755.
+    This commit re-flips the bit via 'git update-index --chmod=+x' on
+    the affected files (no content change). Resolves Codex P1 reviews
+    about EACCES at exec time + the rc=126 'Permission denied' failures
+    in CI.
+
+commit 1a0fcd47d1e8204a0319731a8f34a14bccbacf3d
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 08:20:25 2026 -0400
+
+    docs: TODO - keep parallel.bsh shim alive until BOTH callers migrate
+
+    Codex P1 on developer-meta-files#1 review of TODO-dm-packaging-helper-script-parallel-bsh.md:62
+    caught a real footgun in the original TODO: it said to `git rm` the
+    shim immediately after patching `dm-packaging-helper-script`, but
+    `dm-push` also sources the shim. Following the TODO as written
+    would break `dm-push` at startup (missing-file source error) before
+    it could push anything.
+
+    Updated to enumerate BOTH known callers, require migrating both
+    before the `git rm`, and provide a unified sed pass + verification
+    greps that cover the whole repo. Defensive 'must return zero matches'
+    gate before the shim deletion.
+
+commit 9efa6b59c34b70eaf712efb0d74d0636fd920c9f
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 08:14:47 2026 -0400
+
+    ci: SHA-pin actions/checkout
+
+commit b13dd6c105a1ae851e17d310870287f3c2fe4354
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 06:09:43 2026 -0400
+
+    docs: TODO note - restore executable bit on AI-pushed scripts
+
+    The GitHub MCP push tools default new tree entries to mode 100644
+    even when the prior entry was 100755. Multiple Codex P1 reviews
+    flagged the resulting Permission denied at exec time on operator
+    entrypoints. The maintainer will fix locally; this note documents
+    which repos and provides a one-shot bash fix script.
+
+commit 1e139fbde695ae9e2708fa2cc2d4dfc267358307
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Wed May 6 05:48:19 2026 -0400
+
+    fix(parallel.bsh shim): repopulate dm_parallel_failures for legacy callers
+
+    Codex P1 on developer-meta-files#1: dm-push and
+    dm-packaging-helper-script still read the legacy
+    dm_parallel_failures array, but the shim only delegated to
+    parallel_wait without re-exporting parallel_failures under the old
+    name. Under set -o nounset, those callers tripped on first access
+    of dm_parallel_failures whenever a tracked job failed.
+
+    - Initialise dm_parallel_failures=() at source time so reads are
+      always safe under nounset.
+    - Re-fill dm_parallel_failures from parallel_failures inside
+      dm_parallel_wait so the legacy array contents stay accurate.
+    - Preserve parallel_wait's exit status via local rc.
+
+    This is the bandaid; the strategic plan (tracked in
+    TODO-dm-packaging-helper-script-parallel-bsh.md) is still to delete
+    the shim once all callers source helper-scripts/parallel.bsh
+    directly and use the new names.
+
+commit 7eee8fc1f9b45dfff0b609c46e78a0177249b640
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 19:06:11 2026 -0400
+
+    ci: cancel-in-progress on workflow re-run
+
+    Add (or enable) concurrency: cancel-in-progress: true on workflow yml
+    files that lacked it. Re-pushed runs of the same workflow on the same
+    ref (re-tagged release, force-push, etc.) now cancel the in-flight
+    run instead of stacking.
+
+commit a5a4a2b62bc31c628ae53a499aff2a31a947c2e0
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 18:39:49 2026 -0400
+
+    docs: TODO note for dm-packaging-helper-script parallel.bsh migration
+
+    The 5-line edit needed to drop the dm_parallel_wait shim consistently
+    times out on the GitHub MCP push channel because the host file is
+    ~91 KB. Document the diff and the post-merge cleanup so the change
+    can be applied manually.
+
+commit bc8955ac6c512ad59dec0c7de0ba8a1fe9dac0e3
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 18:16:59 2026 -0400
+
+    ci: fix repo guards: assisted-by-ai -> Kicksecure
+
+    The 'assisted-by-ai/developer-meta-files' guards in live.yml and
+    policy-live.yml never match any real repo (the upstream is at
+    Kicksecure/developer-meta-files), so the manual-dispatch jobs
+    were effectively dead-on-arrival.
+
+commit 206bc46426443de192732ad9d3f2626ea952f5d7
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 17:51:03 2026 -0400
+
+    ci: drop GENMKFILE_DEBUG=1, add persist-credentials: false
+
+    Strip GENMKFILE_DEBUG=1 from the genmkfile install step in all three
+    workflows. Add persist-credentials: false to every actions/checkout step.
+
+commit dd0e441c22f33857e1631a5f06fe11d2059cce68
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 16:48:22 2026 -0400
+
+    github-org-tools.md: update G-003 to reflect log() internal sanitization
+
+    G-003 rule: replace "every log call needs ghorg_safe_print" with
+    "log() sanitizes internally via sanitize-string; no pre-call
+    wrapper needed; bare printf still needs care"
+    Spot-check checklist: update G-003 entry accordingly
+    Audit checklist: update G-003 entry accordingly
+
+commit 01600bc2947ffa86c090c9a2a0f99b8a61ad75f0
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 16:47:05 2026 -0400
+
+    remove ghorg_safe_print from dm-github-policy and dm-github-personal-policy
+
+    policy: apply_code_security_config: use ${list_body:0:512},
+      ${create_body:0:512}, ${existing_id} directly
+    policy: audit_get: drop | sanitize-string 200 pipeline stage,
+      use ${extracted:0:200} in log notice
+    policy: audit_org_state: remove all 5 safe_* local groups and 10
+      ghorg_safe_print assignments; use originals throughout
+    personal-policy: remove safe_type from account-type guard; use
+      ${target_account_type} directly in die message
+    personal-policy: audit_one: remove safe_repo/safe_fork_approval/
+      safe_workflow_perms/safe_allowed_actions; use originals
+
+commit 04f5bfa758b74ff7815d7f280444bd5d655d3f30
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 16:42:31 2026 -0400
+
+    remove ghorg_safe_print from github-org-fork
+
+    fork_one: remove safe_target/safe_auth locals+assignments, use
+      ${target_owner}/${auth_user} directly
+    check_collision: remove safe_repo/safe_parent/safe_expected
+      locals+assignments, use originals directly
+    sync_one: remove safe_repo/safe_branch/safe_merge_type/
+      safe_merged_commits locals+assignments; update stale comment;
+      replace $(ghorg_safe_print ...) with ${default_branch}
+
+commit 3e166b9af667e9927fe1de289968120b7eb63cb6
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 16:40:44 2026 -0400
+
+    remove ghorg_safe_print from github-org-clone and github-org-push
+
+    clone: remove safe_existing_url + safe_branch locals/assignments,
+    use ${existing_url} and ${current_branch} directly in log warn calls
+    push: remove safe_repo_dir local/assignment, use ${repo_dir} directly
+
+commit 9e141a60dcdb32432038ca87a7b690436f853813
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 16:38:59 2026 -0400
+
+    remove ghorg_safe_print from lib files; log() sanitizes internally
+
+    - github-org-lib.bsh: remove ghorg_safe_print function, remove
+      sanitize-string from ghorg_require_deps, update THREAT MODEL
+      comment, replace all safe_* pre-sanitization in validate_name,
+      account_type, list_repos, repo_lookup, repo_parent with direct
+      variable use
+    - github-policy-lib.bsh: remove safe_body/safe_id/arg_safe
+      locals and assignments; use ${response_body:0:512},
+      ${existing_id}, '$1' directly; drop ghorg_safe_print from
+      source-list comment
+
+commit 54c33320276c6e549e4513f8874bb3a1981e0e5e
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Tue May 5 15:42:19 2026 -0400
+
+    refactor: parallel.bsh becomes a shim sourcing helper-scripts/parallel.bsh
+
+    parallel_wait and parallel_failures have moved to
+    helper-scripts/usr/libexec/helper-scripts/parallel.bsh.
+
+    This file now sources from there and exposes dm_parallel_wait as a
+    backward-compatible alias. Callers that read dm_parallel_failures
+    should migrate to parallel_failures.
+
+    Add AI-Assisted marker (R-002).
+    Add # shellcheck source= directive (R-080).
+
+commit c4e2e397b821c543f5ecfbec8d4e933c2c4d01d4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 5 15:20:37 2026 -0400
+
+    .
+
+commit 7d879420d8cfd910f8fac5a39d9b463fb2897e03
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 5 14:54:59 2026 -0400
+
+    .
+
+commit 7de893ff34c2d77dc300590aac6c8ded8c9b5451
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 4 19:50:58 2026 +0000
+
+    bumped changelog version
+
 commit 5d759420f19f4f3702cff5dfcad46ed8a177e3ff
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 15:50:33 2026 -0400
