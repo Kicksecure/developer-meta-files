@@ -1163,9 +1163,6 @@ pkg_git_remotes_add() {
       #git remote add     gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
       #git remote set-url gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
    elif [ "${batch_current_project_name,,}" = "derivative-maker" ]; then
-      git remote add     github-derivative-maker "git@github.com:derivative-maker/${batch_current_package_reponame}.git" || true
-      git remote set-url github-derivative-maker "git@github.com:derivative-maker/${batch_current_package_reponame}.git" || true
-
       git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
       git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
 
