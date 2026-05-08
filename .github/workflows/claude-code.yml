@@ -10,7 +10,7 @@
 ## exercises its own changes during the PR's CI run (dogfooding).
 ##
 ## Docs live in the reusable:
-## .github/workflows/claude-code-review.yml
+## .github/workflows/reusable-claude-code-review.yml
 
 name: Claude Code Review
 
@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   review:
-    uses: ./.github/workflows/claude-code-review.yml
+    uses: ./.github/workflows/reusable-claude-code-review.yml
     secrets: inherit
     permissions:
       contents: read

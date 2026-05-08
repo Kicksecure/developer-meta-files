@@ -26,10 +26,11 @@ dependency update mechanism.
 **Why it is intentional**: after the centralization in
 [github-actions.md](../agents/github-actions.md), action SHAs
 in consumer wrappers are `uses: org-ai-assisted/developer-meta-
-files/.github/workflows/X.yml@master` references. The actual
-SHA-pinned `actions/checkout`, `anthropics/claude-code-action`,
-etc. live in the reusable workflows in this repo. One
-`developer-meta-files/.github/dependabot.yml` updates them all;
+files/.github/workflows/reusable-<name>.yml@master` references.
+The actual SHA-pinned `actions/checkout`, `anthropics/claude-
+code-action`, etc. live in the reusable workflows in this repo.
+One `developer-meta-files/.github/dependabot.yml` updates them
+all;
 consumer repos pick up the bumped SHAs automatically through
 `@master` on their next workflow run. Adding per-consumer
 `dependabot.yml` files would just produce empty PR streams since
@@ -44,8 +45,8 @@ to it.
 
 **Affects**: every consumer wrapper (kloak, helper-scripts,
 security-misc, derivative-maker) for each `uses:
-org-ai-assisted/developer-meta-files/.github/workflows/X.yml
-@master` line.
+org-ai-assisted/developer-meta-files/.github/workflows/reusable-
+<name>.yml@master` line.
 
 **Why Scorecard reports it**: the `@master` ref is not a SHA pin.
 Scorecard treats this the same as a `uses:

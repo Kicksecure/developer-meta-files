@@ -1,115 +1,41 @@
-## Reusable workflow: OpenSSF Scorecard - weekly posture audit.
-##
-## Runs the Scorecard tool against the calling repository, uploads the
-## SARIF result as an artifact (14-day retention) and to GitHub
-## code-scanning under the caller's Security tab.
-##
-## ## Trust footprint
-##
-## OpenSSF (Linux Foundation). Same trust scope as
-## github/codeql-action, which we already use across the org.
-##
-## ## Caller responsibilities
-##
-## - Define the trigger (branch_protection_rule + schedule). Schedule
-##   cannot live in a reusable workflow per GitHub Actions; pick a
-##   cron slot that does not collide with other repos in the org
-##   (current allocation: derivative-maker '0 4 * * 0', helper-scripts
-##   '30 4 * * 0').
-## - Grant the job-level permissions block listed in the caller
-##   example below (security-events: write, contents: read,
-##   actions: read).
-## - Hardcode the owner in 'jobs.<id>.uses:'. GitHub Actions does NOT
-##   allow the github.* context there (only inputs/vars/needs/matrix);
-##   ${{ github.repository_owner }}/... fails workflow load with
-##   'Unrecognized named-value: github'. See
-##   agents/github-actions.md G-A-001.
-##
-## ## Push trigger trade-off
-##
-## The 'push: branches: [master]' trigger is optional per consumer.
-## In repos that fire other tag-triggered workflows on master push
-## (Dry-run, Lint, builder), Scorecard piling on creates noise. In
-## smaller repos the per-commit posture re-check is cheap. Each
-## consumer picks.
-##
-## ## Publishing to OpenSSF transparency log
-##
-## Default: 'publish_results: false' below keeps results local.
-## To opt in: caller adds 'id-token: write' to the permissions
-## block AND patches the reusable to set publish_results: true.
-## One-way commitment - see https://github.com/ossf/scorecard-action.
-##
-## ## Caller example
-##
-##   name: Scorecard
-##   on:
-##     branch_protection_rule:
-##     schedule:
-##       - cron: '0 4 * * 0'
-##   permissions:
-##     contents: read
-##   jobs:
-##     scorecard:
-##       uses: Kicksecure/developer-meta-files/.github/workflows/scorecard.yml@master
-##       permissions:
-##         security-events: write
-##         contents: read
-##         actions: read
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
 
-name: Scorecard (reusable)
+## AI-Assisted
+
+## Self-consumer wrapper. Calls the Scorecard reusable defined in
+## this same repo via local-path './...' rather than the cross-repo
+## '@master' form used by other consumers - so a PR modifying the
+## reusable exercises its own changes during the PR's CI run
+## (dogfooding) instead of running the master version.
+##
+## Docs (caller responsibilities, inputs, secrets) live in the
+## reusable: .github/workflows/reusable-scorecard.yml
+
+name: Scorecard
 
 on:
-  workflow_call:
+  branch_protection_rule:
+  schedule:
+    ## Cron slot owned by this repo. Org allocation:
+    ##   derivative-maker:     '0 4 * * 0'
+    ##   helper-scripts:       '30 4 * * 0'
+    ##   kloak:                '0 5 * * 0'
+    ##   security-misc:        '30 5 * * 0'
+    ##   developer-meta-files: '0 6 * * 0'
+    - cron: '0 6 * * 0'
+  push:
+    branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  analysis:
-    name: Scorecard analysis
-    runs-on: ubuntu-latest
-
-    ## Fork-PR guard: a no-op unless the caller routes pull_request
-    ## events into us, in which case it blocks PRs from forks (those
-    ## need maintainer review and a manual re-run from a trusted ref).
-    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
-
-    timeout-minutes: 10
-
+  scorecard:
+    uses: ./.github/workflows/reusable-scorecard.yml
     permissions:
       security-events: write
       contents: read
       actions: read
-      ## Intentionally NOT 'id-token: write'. That is only needed for
-      ## publish_results: true; keep us off the OSSF public transparency
-      ## log unless the project opts in (one-way commitment).
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Run analysis
-        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a  # v2.4.3
-        with:
-          results_file: results.sarif
-          results_format: sarif
-          publish_results: false
-
-      - name: Upload SARIF artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: scorecard-sarif
-          path: results.sarif
-          retention-days: 14
-
-      - name: Upload to GitHub code scanning
-        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
-        with:
-          sarif_file: results.sarif
