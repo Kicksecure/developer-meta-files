@@ -115,6 +115,28 @@ Scorecard cannot distinguish "third-party Marketplace action" from
 argument that motivates SHA pinning for third-party actions does
 not apply to a reusable in our own org.
 
+**Upstream tracking**:
+
+- [ossf/scorecard#4735](https://github.com/ossf/scorecard/issues/4735)
+  - Apache Maven's identical scenario (open, stale). Consumers
+  of `apache/maven-gh-actions-shared` flagged even though the
+  shared repo is itself pinned. The active issue to follow / +1.
+- [ossf/scorecard#2174](https://github.com/ossf/scorecard/issues/2174)
+  - history: Scorecard originally did NOT flag reusable
+  workflows; #2174 asked for them to be treated like Marketplace
+  actions. Closed completed Jun 2025 - that change is what
+  produced the current FP we live with.
+- [slsa-framework/slsa-github-generator#722](https://github.com/slsa-framework/slsa-github-generator/issues/722)
+  - the contention: SLSA generators argue reusables MUST be
+  pinned by TAG (not SHA) for generator-self-security reasons -
+  direct conflict with Scorecard's "SHA only" expectation.
+- [ossf/scorecard#2518](https://github.com/ossf/scorecard/issues/2518)
+  - tangential: dev-only-deps FP, same trust-boundary class.
+
+Source-inferred: `checks/raw/pinned_dependencies.go` contains no
+mention of "reusable"; Scorecard treats every `uses:` uniformly,
+no same-org exemption. (Verified via repo-wide code search.)
+
 ## MaintainedID = 0/10 on freshly-created repos
 
 **Affects**: any repo created within the last 90 days. As of
