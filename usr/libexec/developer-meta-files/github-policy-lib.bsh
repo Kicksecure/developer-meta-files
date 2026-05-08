@@ -428,6 +428,15 @@ policy_parse_mode_args() {
             show_help
             exit 0
             ;;
+         --policy-dump)
+            ## Print github-policy-data.bsh verbatim. Single source
+            ## of truth for what this tool will apply; no separate
+            ## formatter to drift out of sync. Resolved relative to
+            ## this lib's path (BASH_SOURCE[0]) so dev-tree runs
+            ## also work, not just /usr/libexec/... installs.
+            cat -- "$(dirname -- "${BASH_SOURCE[0]}")/github-policy-data.bsh"
+            exit 0
+            ;;
          --)
             shift
             while [ "$#" -gt 0 ]; do

@@ -45,47 +45,38 @@ GitHub user account. Designed for hardening a personal account
 against malicious fork PRs that could otherwise burn Actions minutes.
 
 Usage (one mode flag is required - no implicit default):
-  dm-github-personal-policy <username> --apply     ## apply
-  dm-github-personal-policy <username> --dry-run   ## report planned changes
-  dm-github-personal-policy <username> --audit     ## read-only inspection
+  dm-github-personal-policy <username> --apply         apply
+  dm-github-personal-policy <username> --dry-run       report planned changes
+  dm-github-personal-policy <username> --audit         read-only inspection
+  dm-github-personal-policy --policy-dump              print the active policy table
+                                                       (cats github-policy-data.bsh)
   dm-github-personal-policy --help
-
-Settings applied per repo:
-  - GitHub Actions DISABLED entirely (this account is a backup/
-    mirror; CI runs in the upstream orgs). Saves operator's free CI
-    minutes from any malicious-fork-PR or accidentally-triggered
-    workflow runs.
-  - Fork-PR contributor approval = all_external_contributors AND
-    default workflow GITHUB_TOKEN = read are still applied as
-    defense-in-depth: if Actions is later re-enabled in the UI,
-    those settings stay in force.
-  - Wiki / Projects / Discussions = disabled (cut abuse vectors)
-  - Secret scanning + push protection = enabled
-  - Pages site = deleted if present (one-shot, not a permanent gate)
-  - Branch ruleset on default branch: block force-push, block delete,
-    require signed commits (bypass_actors=[] - even the owner can't
-    override)
-  - Tag ruleset on all tags: block delete, block re-pointing, require
-    signed tags
-
-Deliberately NOT applied (commented out in source):
-  - Vulnerability alerts / Dependabot security updates: this account
-    is a backup/mirror of org-side repos; enabling here would
-    duplicate notifications. Uncomment if a repo becomes canonical
-    here.
-
-Repos in scope:
-  - Public, non-archived repos owned by <username>, INCLUDING forks.
-    Forks own their own .github/workflows + ruleset settings, so a
-    malicious-fork-PR vector exists on them too - they need the same
-    lockdown. Archived repos are read-only and return HTTP 403 on
-    PATCH/PUT regardless, so they are excluded. Private repos are
-    excluded because external (untrusted) contributors cannot open
-    PRs against them.
 
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Token needs 'repo' (classic) or 'Administration: write' (fine-grained).
+
+What gets applied:
+  Run 'dm-github-personal-policy --policy-dump' for the full table -
+  every policy body, endpoint, method, and label flows from
+  /usr/libexec/developer-meta-files/github-policy-data.bsh.
+  Brief outline:
+    - GitHub Actions DISABLED entirely (this account is a backup
+      mirror; CI runs in the upstream orgs).
+    - Fork-PR approval + workflow GITHUB_TOKEN read-only = defense
+      in depth if Actions is ever re-enabled in the UI.
+    - Wiki / Projects / Discussions OFF; secret-scanning + push-
+      protection ON; Pages site deleted if present.
+    - Default-branch ruleset (force-push / delete / unsigned blocked,
+      bypass_actors=[]). Tag ruleset (delete / re-point / unsigned
+      blocked).
+
+Repos in scope:
+  Public, non-archived repos owned by <username>, INCLUDING forks
+  (they own their own .github/workflows + ruleset settings, so the
+  malicious-fork-PR vector exists on them too). Archived excluded
+  (HTTP 403 on PATCH/PUT). Private excluded (external contributors
+  cannot open PRs against private repos).
 EOF
 }
 

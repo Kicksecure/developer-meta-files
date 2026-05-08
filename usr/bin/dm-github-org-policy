@@ -99,133 +99,52 @@ positional=()
 show_help() {
    cat <<'EOF'
 Apply project-wide GitHub security/policy settings to the source
-organizations (Kicksecure, Whonix). Idempotent and apply-only - never
-disables a setting that was already on. Org-wide settings are
-preferred over per-repo where possible: enabling a security feature
-"for all existing repos" via a single org-level call beats iterating
-every repo, both for atomicity and for new-repo coverage.
+organizations (Kicksecure, Whonix) and the mirror org
+(org-ai-assisted). Idempotent and apply-only - never disables a
+setting that was already on.
 
 Usage (one mode flag is required - no implicit default):
-  dm-github-org-policy --apply     ## apply policy to Kicksecure + Whonix
-  dm-github-org-policy --dry-run   ## report planned changes only
-  dm-github-org-policy --audit     ## read-only inspection of current state
-                               ## (current settings, members lacking
-                               ## 2FA, existing rulesets); no writes
+  dm-github-org-policy --apply         apply policy
+  dm-github-org-policy --dry-run       report planned changes only
+  dm-github-org-policy --audit         read-only inspection
+  dm-github-org-policy --policy-dump   print the active policy table
+                                       (cats github-policy-data.bsh)
   dm-github-org-policy --help
-
-Settings applied at the org level:
-  - Fork-PR contributor approval = all_external_contributors
-  - Default workflow GITHUB_TOKEN permissions = read; cannot
-    create or approve pull requests
-  - Allowed Actions = github-owned + Marketplace-verified-creators
-    only
-  - Members policy:
-    * Default repository permission for new members = read
-    * Members cannot create repositories (owners only)
-  - 2FA enforcement (UI-only). The two_factor_requirement_enabled
-    field is read-only on PATCH /orgs/{org}; toggle in the UI under
-    Settings -> Authentication security. As of the Nov 2024 GA
-    change, enabling no longer removes non-compliant members - they
-    keep membership but are blocked from org resources until they
-    enroll. --audit lists who is currently non-compliant.
-    Platform-wide 2FA mandate: GitHub is rolling 2FA out as a
-    requirement for every account; the org-level toggle just front-
-    runs that.
-  - Code security via the modern Code Security Configurations
-    API: a single org-level configuration enables secret scanning,
-    push protection, Dependabot alerts and security updates, and
-    dependency graph. Attached to all existing repos (scope=all)
-    and set as the default for newly created repos. CodeQL default
-    setup and private vulnerability reporting are explicitly
-    disabled in the configuration.
-  - Repository ruleset on the default branch of all repos:
-    block force-push, block deletion, require signed commits.
-    bypass_actors pivots on org_kind:
-      SOURCE: []                 (no one, including owners, overrides)
-      MIRROR: OrganizationAdmin  (org owners can hotfix without
-                                  dropping the ruleset)
-    Deliberately does NOT include the pull_request rule (would
-    require all merges to go through a PR; maintainers push
-    directly to master), required_status_checks (per-repo CI
-    coupling), or required_linear_history.
-  - Repository ruleset on tags of all repos: block deletion,
-    block re-pointing, require signed tags. bypass_actors=[] on
-    both SOURCE and MIRROR (tags are immutable anchors regardless
-    of where the repo lives).
-  - PAT and App policy toggles: SKIPPED (UI-only; --audit reports
-    state). Apply path prints UI links for manual configuration.
-
-Settings applied per-repo (no org-wide endpoint):
-  Pivots on org_kind (see SOURCE_ORGS / MIRROR_ORGS at the top of
-  this script). The full policy table - including the SOURCE-vs-
-  MIRROR diff - lives in the data lib at
-  /usr/libexec/developer-meta-files/github-policy-data.bsh
-  (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
-    SOURCE = Kicksecure, Whonix (canonical upstream)
-      - has_wiki = false
-      - has_issues = true       (file bugs here)
-    MIRROR = org-ai-assisted    (fork org for AI-assisted dev work)
-      - has_wiki = false
-      - has_issues = false      (file upstream, not on the mirror)
-      - has_projects = false    (project boards belong upstream)
-      - has_discussions = false (Discussions belong upstream)
-      - allow_forking = false   (no forks-of-forks)
-
-Deliberately NOT applied (with reasoning):
-  - Private vulnerability reporting: project channel for disclosure
-    is OpenPGP email; enabling GitHub's would split the inbox.
-  - CodeQL default setup: brittle auto-detection; a committed
-    .github/workflows/codeql.yml is more reliable. Belongs in a
-    separate workflow-files-deploy tool.
-  - Required PR reviews / status checks / linear history /
-    web-commit-signoff / disable-forking: each has a real cost
-    that does not justify uniform application.
-  - Allowed Actions tightening can break existing workflows pinned
-    to unverified third-party actions. Run --audit first to spot
-    anything you'd need to update.
-
-Note on signed commits + UI merging:
-  GitHub's "Merge pull request" and "Squash and merge" buttons sign
-  the produced commit with the web-flow GPG key, so they keep
-  working. "Rebase and merge" does NOT re-sign rebased commits, so
-  it will fail when a contributor's PR commits are unsigned.
-  Prefer Merge or Squash for fork PRs.
 
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Classic PAT needs admin:org + repo. Fine-grained PAT needs
   Administration r/w + Code security r/w + Webhooks r/w +
-  Members r/w (the last for 2FA enforcement).
+  Members r/w (the last for 2FA enforcement audit).
 
-OSSF Scorecard mapping:
-  Branch-Protection: Tier 1 (3/10) - deliberate ceiling. Higher
-    tiers require switching from maintainer-direct-push to
-    PR-required-for-merge, which conflicts with our model.
-  Token-Permissions: covered (default workflow GITHUB_TOKEN=read,
-    no PR approval).
-  Webhooks (Critical): audit lists org-level webhooks lacking a
-    secret. Per-repo webhooks not yet audited.
-  Dangerous-Workflow (Critical): partially mitigated by
-    Allowed-Actions=verified-only. Detection is per-workflow
-    content; avoid pull_request_target with explicit PR checkout
-    and avoid using untrusted github.event.* fields directly in
-    inline scripts. Reference:
+What gets applied:
+  Run 'dm-github-org-policy --policy-dump' for the full table -
+  every policy body, endpoint, method, and label flows from
+  /usr/libexec/developer-meta-files/github-policy-data.bsh and is
+  documented there. Brief outline:
+    - Fork-PR contributor approval, workflow GITHUB_TOKEN
+      permissions, Allowed Actions allow-list, members policy,
+      code security configuration, default-branch + tag rulesets.
+    - 2FA / PAT / App policies: UI-only, --audit reports state.
+
+SOURCE vs MIRROR (org_kind):
+  SOURCE = Kicksecure, Whonix    (canonical upstream)
+  MIRROR = org-ai-assisted       (fork org for AI-assisted dev)
+  Settings that diverge between the two are listed in the data
+  file's "SOURCE vs MIRROR diffs" comment table.
+
+OSSF Scorecard mapping (high-level):
+  Branch-Protection: Tier 1 (3/10) - deliberate ceiling.
+  Webhooks: --audit lists org-level webhooks lacking a secret.
+  Dangerous-Workflow: partially mitigated by Allowed-Actions=
+    verified-only. Avoid pull_request_target with explicit PR
+    checkout. See:
     https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-  Code-Review (High): deliberately skipped. Maintainer-direct-push
-    workflow.
-  Vulnerabilities (High): covered indirectly via Dependabot alerts
-    enabled by the code-security configuration.
-  Dependency-Update-Tool (High): coverage requires a committed
-    .github/dependabot.yml per repo (Scorecard checks file
-    presence). Audit lists missing repos as a worklist.
-  Signed-Releases (High): tag ruleset enforces signed tags;
-    per-release artifact signing is build-time per repo.
-  SAST / CodeQL (Medium): deliberately skipped at the API level
-    (default-setup is brittle). A committed
-    .github/workflows/codeql.yml is the better path; outside this
-    tool's scope.
-  Maintained (High): organic activity metric; not addressable by
-    policy.
+
+Note on signed commits + UI merging:
+  GitHub's "Merge" and "Squash" buttons re-sign with the web-flow
+  GPG key. "Rebase and merge" does NOT re-sign; it fails on PRs
+  with unsigned contributor commits.
 EOF
 }
 
