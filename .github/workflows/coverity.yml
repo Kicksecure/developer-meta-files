@@ -67,8 +67,20 @@
 ## Read from caller's namespace via 'secrets: inherit':
 ##
 ## - COVERITY_SCAN_TOKEN  (required)  Coverity project token.
+##                                    MUST be set as a repository
+##                                    secret per consumer - tokens
+##                                    are scoped per project on
+##                                    scan.coverity.com, and our
+##                                    consumers (helper-scripts,
+##                                    kloak, security-misc) are
+##                                    distinct Coverity projects
+##                                    with distinct tokens.
+##                                    Cannot be set org-wide.
 ## - COVERITY_SCAN_EMAIL  (required)  Notification email registered
-##                                    on the Coverity project.
+##                                    on the Coverity project. CAN
+##                                    be set org-wide if every
+##                                    project shares one notification
+##                                    address.
 ##
 ## ## Caller example - Python-only repo
 ##
