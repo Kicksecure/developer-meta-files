@@ -107,8 +107,9 @@ readonly POLICY_CODE_SECURITY='{
 }'
 
 ## Org Actions scope (PUT /orgs/{org}/actions/permissions). Switches
-## allowed_actions to "selected"; the per-action allowlist itself is
-## set by a follow-up call via policy_actions_selected_allowlist_body.
+## allowed_actions to "selected"; the per-action allowlist itself
+## (POLICY_ACTIONS_ALLOWLIST in github-policy-lib.bsh) is set by a
+## follow-up call to /actions/permissions/selected-actions.
 readonly POLICY_ACTIONS_SCOPE='{
    enabled_repositories: "all",
    allowed_actions: "selected"
@@ -405,31 +406,35 @@ apply_org_policy() {
 
    log notice "=== org policy: ${org} ==="
 
+   ## Body shapes for steps 1-3 are shared static constants in the
+   ## lib (POLICY_FORK_PR_APPROVAL / POLICY_WORKFLOW_PERMS /
+   ## POLICY_ACTIONS_ALLOWLIST). Body shape for step 3a (the scope-
+   ## switch body) is local to this script (POLICY_ACTIONS_SCOPE).
+
    ## 1. Fork-PR contributor approval = all_external_contributors.
    policy_api_call "${org}: fork-PR approval=all_external_contributors" \
       PUT "/orgs/${org}/actions/permissions/fork-pr-contributor-approval" \
-      "$(policy_fork_pr_approval_body)" \
+      "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
       || true
 
    ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot
    ##    approve PRs.
    policy_api_call "${org}: workflow GITHUB_TOKEN read-only, no PR approval" \
       PUT "/orgs/${org}/actions/permissions/workflow" \
-      "$(policy_workflow_perms_body)" \
+      "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
       || true
 
    ## 3. Allowed Actions = selected (github-owned + verified creators).
    ##    Two calls: switch allowed_actions to "selected", then set the
    ##    list. CAUTION: workflows pinned to unverified third-party
    ##    actions will start failing after this; audit first.
-   ##    Body shape at top of file (POLICY_ACTIONS_SCOPE).
    body="$(jq -n -- "${POLICY_ACTIONS_SCOPE}")"
    policy_api_call "${org}: actions enabled=all, allowed=selected" \
       PUT "/orgs/${org}/actions/permissions" "${body}" \
       || true
    policy_api_call "${org}: selected-actions = github-owned + verified-creators" \
       PUT "/orgs/${org}/actions/permissions/selected-actions" \
-      "$(policy_actions_selected_allowlist_body)" \
+      "$(jq -n -- "${POLICY_ACTIONS_ALLOWLIST}")" \
       || true
 
    ## 4. Member-side org policy: default repo permission = read,

@@ -111,6 +111,41 @@ fi
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
+## ===== Policies =====
+##
+## Body shapes specific to this script. Shared bodies
+## (POLICY_FORK_PR_APPROVAL, POLICY_WORKFLOW_PERMS) come from
+## github-policy-lib.bsh. Trivial inline bodies stay at their use
+## site.
+
+## Disable GitHub Actions on the repo entirely. PUT
+## /repos/{owner}/{repo}/actions/permissions. The personal account
+## is a backup/mirror; CI runs in the upstream orgs, so no workflow
+## needs to fire here. Disabling is the strongest cut against
+## malicious-fork-PR or accidentally-triggered runs and saves the
+## operator's free CI minutes.
+readonly POLICY_ACTIONS_DISABLED='{
+   enabled: false
+}'
+
+## Repo settings + secret-scanning + push-protection. PATCH
+## /repos/{owner}/{repo}.
+##   - has_wiki / has_projects / has_discussions = false:
+##     cut the abuse vectors. has_issues left untouched (defaults
+##     on; useful for a backup mirror).
+##   - secret_scanning + push_protection: flag accidental secrets
+##     and block them at push time. Free for public repos; we scope
+##     to public-only anyway.
+readonly POLICY_REPO='{
+   has_wiki: false,
+   has_projects: false,
+   has_discussions: false,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
+}'
+
 ## --verbose suppresses the 'ok:' line otherwise printed by
 ## policy_api_call. Apply runs without --verbose are quiet on success.
 [ "${verbose}" = '1' ] || POLICY_QUIET_OK=1
@@ -120,51 +155,36 @@ apply_repo_policy() {
 
    repo="$1"
 
+   ## Body shapes for steps 1-2 are shared static constants in the
+   ## lib (POLICY_FORK_PR_APPROVAL / POLICY_WORKFLOW_PERMS). Bodies
+   ## for steps 3 and 4 are specific to this script and live at the
+   ## top (POLICY_ACTIONS_DISABLED / POLICY_REPO).
+
    ## 1. Fork-PR contributor approval = all_external_contributors.
    policy_api_call "${target_user}/${repo}: fork-PR approval=all_external_contributors" \
       PUT "/repos/${target_user}/${repo}/actions/permissions/fork-pr-contributor-approval" \
-      "$(policy_fork_pr_approval_body)" \
+      "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
       || true
 
    ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot approve PRs.
    policy_api_call "${target_user}/${repo}: workflow GITHUB_TOKEN read-only" \
       PUT "/repos/${target_user}/${repo}/actions/permissions/workflow" \
-      "$(policy_workflow_perms_body)" \
+      "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
       || true
 
-   ## 3. Disable GitHub Actions entirely on the repo. The personal
-   ##    account is a backup/mirror; CI runs in the upstream orgs, so
-   ##    no workflow needs to fire here. Disabling is the strongest
-   ##    cut against malicious-fork-PR or accidentally-triggered
-   ##    runs and saves the operator's free CI minutes. Steps 1+2
+   ## 3. Disable GitHub Actions entirely on the repo. Steps 1+2
    ##    above stay as defense-in-depth in case Actions is later
-   ##    re-enabled in the UI. Repo-level body uses 'enabled' (bool);
-   ##    the allow-list endpoint is a no-op while enabled=false, so
-   ##    we skip the second PUT.
+   ##    re-enabled in the UI. The allow-list endpoint is a no-op
+   ##    while enabled=false, so we skip the second PUT.
    policy_api_call "${target_user}/${repo}: actions enabled=false (CI runs disabled)" \
       PUT "/repos/${target_user}/${repo}/actions/permissions" \
-      "$(jq -n -- '{ enabled: false }')" \
+      "$(jq -n -- "${POLICY_ACTIONS_DISABLED}")" \
       || true
 
    ## 4. Repo settings + secret-scanning + push-protection in one PATCH.
-   ##    - has_wiki=false, has_projects=false, has_discussions=false:
-   ##      cuts wiki/projects/discussions abuse vectors. has_issues is
-   ##      left untouched (defaults on; useful for a backup mirror).
-   ##    - secret_scanning + secret_scanning_push_protection: enable
-   ##      both so accidental secrets are flagged AND blocked at push
-   ##      time. Free for public repos; requires Advanced Security on
-   ##      private repos. We're scoping to public-only anyway.
    policy_api_call "${target_user}/${repo}: settings (wiki/projects/discussions off, secret-scan on)" \
       PATCH "/repos/${target_user}/${repo}" \
-      "$(jq -n -- '{
-         has_wiki: false,
-         has_projects: false,
-         has_discussions: false,
-         security_and_analysis: {
-            secret_scanning: { status: "enabled" },
-            secret_scanning_push_protection: { status: "enabled" }
-         }
-      }')" \
+      "$(jq -n -- "${POLICY_REPO}")" \
       || true
 
    ## 5. Disable GitHub Pages site if any. The DELETE endpoint is
