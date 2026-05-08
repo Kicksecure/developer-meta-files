@@ -46,6 +46,14 @@ test -r "$parallel_helper" || parallel_helper="/usr/libexec/helper-scripts/paral
 # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
 source "$parallel_helper"
 
+## Shared git helpers (also sourced by dm-push). Prefer the in-tree
+## copy alongside this script during dev runs; fall back to the
+## installed path.
+git_helpers_lib="${MYDIR}/../libexec/developer-meta-files/git-helpers.bsh"
+test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files/git-helpers.bsh"
+# shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
+source "$git_helpers_lib"
+
 ## BEGIN Initialization functions {
 
 check_prerequisites() {
@@ -670,47 +678,11 @@ set_batch_current_package_remote_list() {
    fi
 }
 
-## Diffs two Git branches against each other, reporting whether they have
-## differences or not. Returns 0 when differences are found, 1 otherwise.
-internal_git_diff() {
-   local git_branch_one git_branch_two git_exit_code git_diff_output
+## internal_git_diff_local and internal_git_diff_remote are defined
+## in /usr/libexec/developer-meta-files/git-helpers.bsh (sourced
+## above). pkg_git_push_remotes selects between them via its
+## 'local' | 'remote' mode argument.
 
-   git_branch_one="${1:-}"
-   git_branch_two="${2:-}"
-   if [ -z "${git_branch_one}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR: git_branch_one argument is empty!${reset}"
-      exit 1
-   elif [ -z "${git_branch_two}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR: git_branch_two argument is empty!${reset}"
-      exit 1
-   fi
-
-   git_exit_code='0'
-   git_diff_output="$(git diff --stat "${git_branch_one}" "${git_branch_two}")" || { git_exit_code="$?"; true; };
-
-   ## Exit 128 = fatal git error (typically a missing/unknown ref).
-   ## We pause here for human inspection rather than aborting; once
-   ## the operator acknowledges with `read -r _` we deliberately fall
-   ## through and return 0 ("differences found"), so the caller will
-   ## attempt the push - which will then fail visibly with the same
-   ## git error - rather than silently skipping a repo whose diff
-   ## could not be computed.
-   ##
-   ## TODO: Is this safe? Do we risk pushing a repo that is in an
-   ## inconsistent state?
-   if [ "${git_exit_code}" = '128' ]; then
-      true "ERROR: Something is wrong. See above. Press enter to continue."
-      read -r _
-   fi
-
-   if [ -z "${git_diff_output}" ]; then
-      if [ "${git_exit_code}" = '0' ]; then
-         return 1
-      fi
-   fi
-
-   return 0
-}
 
 ## . END Utility functions }
 
@@ -1507,8 +1479,34 @@ pkg_git_fetch_remotes() {
 }
 
 ## Pushes local changes to all Git remotes for all repos.
+##
+## Argument $1 selects which gate decides "this branch needs to be
+## pushed":
+##
+##   local   (default)  uses internal_git_diff_local
+##                      tracking ref, no network round-trip
+##   remote              uses internal_git_diff_remote
+##                      authoritative `git ls-remote`, one network
+##                      round-trip per gated branch
+##
+## See git-helpers.bsh for the trade-off. Pass 'remote' when a
+## bounced push (rejected non-fast-forward) is more expensive than
+## the metadata round-trip; otherwise leave the default.
 pkg_git_push_remotes() {
-   local branch_name_list package_remote_item branch_name_item
+   local mode gate_fn branch_name_list package_remote_item branch_name_item refspec_list
+
+   mode="${1:-local}"
+   case "${mode}" in
+      local)
+         gate_fn=internal_git_diff_local
+         ;;
+      remote)
+         gate_fn=internal_git_diff_remote
+         ;;
+      *)
+         die 1 "${FUNCNAME[0]}: unknown mode '${mode}'; expected 'local' or 'remote'"
+         ;;
+   esac
 
    if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
       branch_name_list=( "master" "bookworm" "trixie" )
@@ -1519,12 +1517,22 @@ pkg_git_push_remotes() {
    fi
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
+      refspec_list=()
       for branch_name_item in "${branch_name_list[@]}"; do
-         if internal_git_diff "refs/heads/${branch_name_item}" "refs/remotes/${package_remote_item}/${branch_name_item}"; then
-            log_run info git push -- "${package_remote_item}" "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" &
-            git_pid_label[$!]="push branch ${branch_name_item} -> ${package_remote_item} (${batch_current_package_reponame})"
+         if "${gate_fn}" "${branch_name_item}" "${package_remote_item}"; then
+            refspec_list+=( "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" )
          fi
       done
+      if [ "${#refspec_list[@]}" -gt 0 ]; then
+         ## --atomic: all listed refs succeed-together-or-fail-together
+         ##   on the remote, avoiding mixed-state outcomes when a Qubes
+         ##   template repo pushes master + bookworm + trixie at once.
+         ##   Single-ref pushes are unaffected.
+         ## --porcelain: one machine-readable line per ref so failures
+         ##   in wait_for_git_processes are diagnosable beyond exit code.
+         log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
+         git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
+      fi
    done
 
    true
@@ -1540,7 +1548,7 @@ pkg_git_push_tags() {
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git push -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
+      git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
       git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
    done
 
@@ -2107,7 +2115,7 @@ pkg_need_version_bump_do() {
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
 
-   pkg_git_push_remotes
+   pkg_git_push_remotes local
    pkg_git_push_tags
 
    true

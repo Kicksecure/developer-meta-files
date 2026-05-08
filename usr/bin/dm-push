@@ -18,6 +18,14 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/parallel.bsh
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
+## Shared push gate (also sourced by dm-packaging-helper-script).
+## Prefer the in-tree copy alongside this script during dev runs;
+## fall back to the installed path.
+git_helpers_lib="${MYDIR}/../libexec/developer-meta-files/git-helpers.bsh"
+test -r "${git_helpers_lib}" || git_helpers_lib="/usr/libexec/developer-meta-files/git-helpers.bsh"
+# shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
+source "${git_helpers_lib}"
+
 log_level=info
 
 readonly DM_GITHUB_MIRROR='org-ai-assisted'
@@ -36,23 +44,33 @@ git_tag_nearest="$(git describe --abbrev=0 2>/dev/null)" || git_tag_nearest=""
 ## works on the empty case (no eligible remotes / branches).
 declare -A push_label=()
 
-queue_branch_push() {
+queue_branch_refspec() {
    local branch="$1"
    local remote="$2"
+   local -n refspecs_ref="$3"
    if ! git rev-parse --verify "refs/heads/$branch" &>/dev/null ; then
       return 0
    fi
+   ## internal_git_diff dispatches between the local (tracking-ref)
+   ## and remote (ls-remote) gate based on DM_GATE_LS_REMOTE; in both
+   ## variants 0 = differs (push needed), 1 = identical (skip).
+   if ! internal_git_diff "$branch" "$remote" ; then
+      return 0
+   fi
    log_run info git verify-commit "refs/heads/$branch"
-   log_run info git push -- "$remote" "refs/heads/$branch:refs/heads/$branch" &
-   push_label[$!]="branch $branch -> $remote"
+   refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
 }
 
-queue_tag_push() {
+queue_tag_refspec() {
    local tag="$1"
-   local remote="$2"
+   local -n refspecs_ref="$2"
+   ## Tags live in the global refs/tags/ namespace, not per-remote, so
+   ## there is no local remote-tracking ref to gate against without an
+   ## ls-remote round-trip. Always queue the tag; if the remote already
+   ## has it at the same SHA the server short-circuits with "= up to
+   ## date" inside the same atomic push.
    log_run info git verify-tag "refs/tags/$tag"
-   log_run info git push -- "$remote" "refs/tags/$tag:refs/tags/$tag" &
-   push_label[$!]="tag $tag -> $remote"
+   refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
 }
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
@@ -61,13 +79,23 @@ for repo in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
    if ! git remote get-url -- "$repo" &>/dev/null ; then
       continue
    fi
-   queue_branch_push main "$repo"
-   queue_branch_push master "$repo"
+   refspec_list=()
+   queue_branch_refspec main    "$repo" refspec_list
+   queue_branch_refspec master  "$repo" refspec_list
    ## TODO: Debian 14 / forky
-   queue_branch_push trixie "$repo"
+   queue_branch_refspec trixie  "$repo" refspec_list
    if [ -n "$git_tag_nearest" ]; then
-      queue_tag_push "$git_tag_nearest" "$repo"
+      queue_tag_refspec "$git_tag_nearest" refspec_list
    fi
+   if [ "${#refspec_list[@]}" -eq 0 ]; then
+      continue
+   fi
+   ## --atomic: branch and tag pushes to the same remote succeed
+   ##   together or fail together; no mixed-state outcomes.
+   ## --porcelain: per-ref machine-readable status lines for
+   ##   diagnosable failures via parallel_failures.
+   log_run info git push --atomic --porcelain -- "$repo" "${refspec_list[@]}" &
+   push_label[$!]="${refspec_list[*]} -> $repo"
 done
 
 if ! parallel_wait push_label ; then
