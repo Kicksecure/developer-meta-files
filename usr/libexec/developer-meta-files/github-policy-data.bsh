@@ -36,23 +36,38 @@
 ## ============================================================================
 ## Shared bodies - used by both org and personal policy
 ## ============================================================================
+##
+## Each policy is a 4-tuple, exposed as 4 readonly constants:
+##   POLICY_X         body (jq program, unquoted keys)
+##   POLICY_X_ENDPOINT  API path; '__ORG__', '__OWNER__', '__REPO__'
+##                      placeholders are substituted at the call site
+##   POLICY_X_METHOD    HTTP verb
+##   POLICY_X_LABEL     human-facing description for log lines
+##
+## ENDPOINT_ORG / ENDPOINT_REPO suffixes appear when the org and
+## personal-policy callers hit different paths with the same body.
 
-## Fork-PR contributor approval. PUT
-## /{orgs|repos}/.../actions/permissions/fork-pr-contributor-approval.
-## Same setting works at both org and repo level.
+## Fork-PR contributor approval. Same setting works at both org and
+## repo level.
 readonly POLICY_FORK_PR_APPROVAL='{
    approval_policy: "all_external_contributors"
 }'
+readonly POLICY_FORK_PR_APPROVAL_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions/fork-pr-contributor-approval'
+readonly POLICY_FORK_PR_APPROVAL_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions/fork-pr-contributor-approval'
+readonly POLICY_FORK_PR_APPROVAL_METHOD='PUT'
+readonly POLICY_FORK_PR_APPROVAL_LABEL='fork-PR approval=all_external_contributors'
 
-## Default workflow GITHUB_TOKEN permissions. PUT
-## /{orgs|repos}/.../actions/permissions/workflow.
+## Default workflow GITHUB_TOKEN permissions.
 readonly POLICY_WORKFLOW_PERMS='{
    default_workflow_permissions: "read",
    can_approve_pull_request_reviews: false
 }'
+readonly POLICY_WORKFLOW_PERMS_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions/workflow'
+readonly POLICY_WORKFLOW_PERMS_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions/workflow'
+readonly POLICY_WORKFLOW_PERMS_METHOD='PUT'
+readonly POLICY_WORKFLOW_PERMS_LABEL='workflow GITHUB_TOKEN read-only, no PR approval'
 
-## Allowed Actions allow-list (org-level only). PUT
-## /orgs/{org}/actions/permissions/selected-actions. Permits GitHub-
+## Allowed Actions allow-list (org-level only). Permits GitHub-
 ## owned actions + Marketplace actions from verified creators; no
 ## arbitrary patterns.
 ##
@@ -65,21 +80,23 @@ readonly POLICY_ACTIONS_ALLOWLIST='{
    verified_allowed: true,
    patterns_allowed: []
 }'
+readonly POLICY_ACTIONS_ALLOWLIST_ENDPOINT='/orgs/__ORG__/actions/permissions/selected-actions'
+readonly POLICY_ACTIONS_ALLOWLIST_METHOD='PUT'
+readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verified-creators'
 
 ## ============================================================================
 ## Org-policy bodies - used by dm-github-org-policy
 ## ============================================================================
 
-## Org-level code-security configuration (POST/PATCH
-## /orgs/{org}/code-security/configurations). Applied identically
-## to SOURCE and MIRROR. Note 'code_scanning_default_setup:
-## disabled' - we use the committed codeql.yml workflows instead
-## of GitHub's brittle auto-detection.
+## Org-level code-security configuration. Applied identically to
+## SOURCE and MIRROR. Note 'code_scanning_default_setup: disabled' -
+## we use the committed codeql.yml workflows instead of GitHub's
+## brittle auto-detection. apply_code_security_config drives a
+## find-or-create dance on this body and does not use the simple
+## policy_apply_org dispatcher (no ENDPOINT/METHOD/LABEL constants).
 ##
 ## The 'name' field is dynamic (set by the caller via jq --arg) and
-## intentionally omitted here. Caller renders via:
-##   jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
-##      "${POLICY_CODE_SECURITY} + {name: \$name}"
+## intentionally omitted here.
 readonly POLICY_CODE_SECURITY='{
    description: "Project-wide code security applied via dm-github-org-policy.",
    enforcement: "enforced",
@@ -92,34 +109,42 @@ readonly POLICY_CODE_SECURITY='{
    private_vulnerability_reporting: "disabled"
 }'
 
-## Org Actions scope (PUT /orgs/{org}/actions/permissions). Switches
-## allowed_actions to "selected"; the per-action allowlist itself
-## (POLICY_ACTIONS_ALLOWLIST above) is set by a follow-up call to
-## /actions/permissions/selected-actions.
+## Org Actions scope. Switches allowed_actions to "selected"; the
+## per-action allowlist itself (POLICY_ACTIONS_ALLOWLIST above) is
+## set by a follow-up call.
 readonly POLICY_ACTIONS_SCOPE='{
    enabled_repositories: "all",
    allowed_actions: "selected"
 }'
+readonly POLICY_ACTIONS_SCOPE_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
+readonly POLICY_ACTIONS_SCOPE_METHOD='PUT'
+readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
 
-## Code-security configuration attach scope (POST
-## /orgs/{org}/code-security/configurations/{id}/attach). scope=all
-## covers every existing repo in the org without listing them
-## individually; the configuration's enforcement field controls
-## on/off state.
+## Code-security configuration attach scope. scope=all covers every
+## existing repo in the org without listing them individually; the
+## configuration's enforcement field controls on/off state. The
+## endpoint embeds the configuration id (resolved at runtime in
+## apply_code_security_config), so the placeholder here is __ID__
+## rather than the usual __ORG__-only pattern.
 readonly POLICY_CODE_SECURITY_ATTACH='{
    scope: "all"
 }'
+readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
+readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
+readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
 
-## Code-security configuration default-for-new-repos (PUT
-## /orgs/{org}/code-security/configurations/{id}/defaults). Tells
-## GitHub to auto-attach this configuration to any newly created
-## repo in the org.
+## Code-security configuration default-for-new-repos. Tells GitHub
+## to auto-attach this configuration to any newly created repo in
+## the org.
 readonly POLICY_CODE_SECURITY_DEFAULTS='{
    default_for_new_repos: "all"
 }'
+readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
+readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
+readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
 
-## Org members policy (PATCH /orgs/{org}). Default repo permission
-## for new members = read; only admins can create repositories.
+## Org members policy. Default repo permission for new members =
+## read; only admins can create repositories.
 ## members_allowed_repository_creation_type (deprecated),
 ## members_can_delete_repositories (UI-only), and
 ## two_factor_requirement_enabled (read-only on PATCH) are
@@ -131,6 +156,33 @@ readonly POLICY_MEMBERS='{
    members_can_create_private_repositories: false,
    members_can_create_internal_repositories: false
 }'
+readonly POLICY_MEMBERS_ENDPOINT_ORG='/orgs/__ORG__'
+readonly POLICY_MEMBERS_METHOD='PATCH'
+readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create)'
+
+## --- UI-only policies (applied via the GitHub web UI; the
+## script just prints a 'skip' line with the URL the operator
+## opens manually) ---
+
+## 2FA enforcement. PATCH /orgs/{org} accepts no setter for
+## two_factor_requirement_enabled (read-only on PATCH; verified
+## against the OpenAPI spec). Per the Nov 2024 GA change, enabling
+## does NOT remove non-compliant members - they keep membership but
+## are blocked from org resources until they enroll. GitHub is also
+## rolling out 2FA platform-wide as a mandatory account requirement,
+## so the org-level toggle just front-runs that.
+readonly POLICY_2FA_UI_URL='https://github.com/organizations/__ORG__/settings/security'
+readonly POLICY_2FA_LABEL='2FA enforcement must be set via UI'
+
+## PAT (Personal Access Token) policy toggles. REST exposes GETs
+## for pending requests and approved PATs but no stable setters.
+readonly POLICY_PAT_UI_URL='https://github.com/organizations/__ORG__/settings/personal-access-tokens'
+readonly POLICY_PAT_LABEL='PAT policy toggles must be set via UI'
+
+## GitHub App / OAuth App install policies. UI-only.
+readonly POLICY_APPS_UI_URL_INSTALLATIONS='https://github.com/organizations/__ORG__/settings/installations'
+readonly POLICY_APPS_UI_URL_OAUTH='https://github.com/organizations/__ORG__/settings/oauth_application_policy'
+readonly POLICY_APPS_LABEL='GitHub App / OAuth App policies must be set via UI'
 
 ## --- SOURCE vs MIRROR diffs (the only place these two diverge) ---
 ##
@@ -146,12 +198,19 @@ readonly POLICY_MEMBERS='{
 ## SOURCE / MIRROR org names are listed in dm-github-org-policy as
 ## SOURCE_ORGS / MIRROR_ORGS arrays (the WHO, not the WHAT).
 
-## Per-repo PATCH body (PATCH /repos/{owner}/{repo}). Pivots on
-## org_kind in apply_repo_policy.
+## Per-repo PATCH body. apply_repo_policy in dm-github-org-policy
+## pivots on org_kind to choose between SOURCE and MIRROR. ENDPOINT
+## and METHOD are identical for both kinds (only the body differs)
+## but each kind carries its own constants to match the per-NAME
+## naming convention used by policy_apply_repo.
 readonly POLICY_REPO_SOURCE='{
    has_wiki: false,
    has_issues: true
 }'
+readonly POLICY_REPO_SOURCE_ENDPOINT='/repos/__OWNER__/__REPO__'
+readonly POLICY_REPO_SOURCE_METHOD='PATCH'
+readonly POLICY_REPO_SOURCE_LABEL='SOURCE: wiki=off, issues=on'
+
 readonly POLICY_REPO_MIRROR='{
    has_wiki: false,
    has_issues: false,
@@ -159,6 +218,9 @@ readonly POLICY_REPO_MIRROR='{
    has_discussions: false,
    allow_forking: false
 }'
+readonly POLICY_REPO_MIRROR_ENDPOINT='/repos/__OWNER__/__REPO__'
+readonly POLICY_REPO_MIRROR_METHOD='PATCH'
+readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
 
 ## Branch + tag ruleset bypass actor list (passed to
 ## policy_branch_ruleset_body / policy_tag_ruleset_body).
@@ -274,25 +336,26 @@ readonly POLICY_TAG_RULESET_BODY_REPO='{
 ## Personal-policy bodies - used by dm-github-personal-policy
 ## ============================================================================
 
-## Disable GitHub Actions on the repo entirely. PUT
-## /repos/{owner}/{repo}/actions/permissions. The personal account
-## is a backup/mirror; CI runs in the upstream orgs, so no workflow
-## needs to fire here. Disabling is the strongest cut against
-## malicious-fork-PR or accidentally-triggered runs and saves the
-## operator's free CI minutes.
+## Disable GitHub Actions on the repo entirely. The personal
+## account is a backup/mirror; CI runs in the upstream orgs, so no
+## workflow needs to fire here. Disabling is the strongest cut
+## against malicious-fork-PR or accidentally-triggered runs and
+## saves the operator's free CI minutes.
 readonly POLICY_ACTIONS_DISABLED='{
    enabled: false
 }'
+readonly POLICY_ACTIONS_DISABLED_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions'
+readonly POLICY_ACTIONS_DISABLED_METHOD='PUT'
+readonly POLICY_ACTIONS_DISABLED_LABEL='actions enabled=false (CI runs disabled)'
 
-## Repo settings + secret-scanning + push-protection. PATCH
-## /repos/{owner}/{repo}.
+## Repo settings + secret-scanning + push-protection.
 ##   - has_wiki / has_projects / has_discussions = false:
 ##     cut the abuse vectors. has_issues left untouched (defaults
 ##     on; useful for a backup mirror).
 ##   - secret_scanning + push_protection: flag accidental secrets
 ##     and block them at push time. Free for public repos; we scope
 ##     to public-only anyway.
-readonly POLICY_REPO='{
+readonly POLICY_PERSONAL_REPO='{
    has_wiki: false,
    has_projects: false,
    has_discussions: false,
@@ -301,3 +364,17 @@ readonly POLICY_REPO='{
       secret_scanning_push_protection: { status: "enabled" }
    }
 }'
+readonly POLICY_PERSONAL_REPO_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_PERSONAL_REPO_METHOD='PATCH'
+readonly POLICY_PERSONAL_REPO_LABEL='settings (wiki/projects/discussions off, secret-scan on)'
+
+## Disable GitHub Pages site on a repo. The DELETE endpoint is
+## idempotent in spirit: 204 if a site existed and was removed,
+## 404 if no site. The 'extra-ok-status' machinery in policy_api_call
+## treats 404 as success so the common case (no Pages site) does
+## not trip the warn flag. Not a permanent gate - any future Pages
+## workflow run will recreate the site.
+readonly POLICY_PAGES_DELETE_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/pages'
+readonly POLICY_PAGES_DELETE_METHOD='DELETE'
+readonly POLICY_PAGES_DELETE_EXTRA_OK_STATUS='404'
+readonly POLICY_PAGES_DELETE_LABEL='delete Pages site (if any)'

@@ -116,50 +116,42 @@ readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
 ## Policy bodies (POLICY_*) live in github-policy-data.bsh, sourced
 ## above. This script consumes POLICY_FORK_PR_APPROVAL,
-## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED, POLICY_REPO.
+## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED,
+## POLICY_PERSONAL_REPO, POLICY_PAGES_DELETE_*.
 
 ## --verbose suppresses the 'ok:' line otherwise printed by
 ## policy_api_call. Apply runs without --verbose are quiet on success.
 [ "${verbose}" = '1' ] || POLICY_QUIET_OK=1
 
 apply_repo_policy() {
-   local repo
+   local repo pages_endpoint
 
    repo="$1"
 
-   ## All body shapes used by this function live in
-   ## github-policy-data.bsh; rationale for each policy decision is
-   ## documented there.
+   ## Pure dispatch table - all policy data lives in
+   ## github-policy-data.bsh.
 
    ## 1. Fork-PR contributor approval.
-   policy_api_call "${target_user}/${repo}: fork-PR approval=all_external_contributors" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions/fork-pr-contributor-approval" \
-      "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
-      || true
+   policy_apply_repo "${target_user}" "${repo}" FORK_PR_APPROVAL
 
    ## 2. Default workflow GITHUB_TOKEN permissions.
-   policy_api_call "${target_user}/${repo}: workflow GITHUB_TOKEN read-only" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions/workflow" \
-      "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
-      || true
+   policy_apply_repo "${target_user}" "${repo}" WORKFLOW_PERMS
 
    ## 3. Disable GitHub Actions entirely on the repo.
-   policy_api_call "${target_user}/${repo}: actions enabled=false (CI runs disabled)" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions" \
-      "$(jq -n -- "${POLICY_ACTIONS_DISABLED}")" \
-      || true
+   policy_apply_repo "${target_user}" "${repo}" ACTIONS_DISABLED
 
    ## 4. Repo settings + secret-scanning + push-protection.
-   policy_api_call "${target_user}/${repo}: settings (wiki/projects/discussions off, secret-scan on)" \
-      PATCH "/repos/${target_user}/${repo}" \
-      "$(jq -n -- "${POLICY_REPO}")" \
-      || true
+   policy_apply_repo "${target_user}" "${repo}" PERSONAL_REPO
 
-   ## 5. Delete GitHub Pages site if any. Pass '404' as the extra-ok-
-   ##    status arg so the common case (no Pages site) does not trip
-   ##    the warn flag.
-   policy_api_call "${target_user}/${repo}: delete Pages site (if any)" \
-      DELETE "/repos/${target_user}/${repo}/pages" '' '404' \
+   ## 5. Delete GitHub Pages site if any. Custom call (DELETE +
+   ##    extra-ok-status arg); the simple dispatcher does not handle
+   ##    the 4th policy_api_call arg.
+   pages_endpoint="${POLICY_PAGES_DELETE_ENDPOINT_REPO}"
+   pages_endpoint="${pages_endpoint//__OWNER__/${target_user}}"
+   pages_endpoint="${pages_endpoint//__REPO__/${repo}}"
+   policy_api_call "${target_user}/${repo}: ${POLICY_PAGES_DELETE_LABEL}" \
+      "${POLICY_PAGES_DELETE_METHOD}" "${pages_endpoint}" '' \
+      "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
    ## 6. Branch ruleset on the default branch.

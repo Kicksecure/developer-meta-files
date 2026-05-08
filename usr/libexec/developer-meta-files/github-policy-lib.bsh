@@ -233,6 +233,87 @@ policy_upsert_repo_ruleset() {
 }
 
 ## ============================================================================
+## Policy dispatchers
+## ============================================================================
+##
+## Resolve a policy by NAME (suffixed POLICY_<NAME>_BODY,
+## POLICY_<NAME>_ENDPOINT_*, POLICY_<NAME>_METHOD,
+## POLICY_<NAME>_LABEL constants in github-policy-data.bsh) and
+## hand its parts to policy_api_call. The naming scheme is the
+## interface; renaming a constant means renaming both ends.
+
+## policy_apply_org <org> <NAME> [<endpoint_suffix=ENDPOINT_ORG>]
+## Substitutes __ORG__ in the endpoint with the org name.
+policy_apply_org() {
+   local org name endpoint_suffix
+   local body_v endpoint_v method_v label_v endpoint
+
+   org="$1"
+   name="$2"
+   endpoint_suffix="${3:-ENDPOINT_ORG}"
+
+   body_v="POLICY_${name}"
+   endpoint_v="POLICY_${name}_${endpoint_suffix}"
+   method_v="POLICY_${name}_METHOD"
+   label_v="POLICY_${name}_LABEL"
+
+   endpoint="${!endpoint_v}"
+   endpoint="${endpoint//__ORG__/${org}}"
+
+   policy_api_call "${org}: ${!label_v}" \
+      "${!method_v}" "${endpoint}" \
+      "$(jq -n -- "${!body_v}")" \
+      || true
+}
+
+## policy_apply_repo <owner> <repo> <NAME> [<endpoint_suffix=ENDPOINT_REPO>]
+## Substitutes __OWNER__ and __REPO__ in the endpoint.
+policy_apply_repo() {
+   local owner repo name endpoint_suffix
+   local body_v endpoint_v method_v label_v endpoint
+
+   owner="$1"
+   repo="$2"
+   name="$3"
+   endpoint_suffix="${4:-ENDPOINT_REPO}"
+
+   body_v="POLICY_${name}"
+   endpoint_v="POLICY_${name}_${endpoint_suffix}"
+   method_v="POLICY_${name}_METHOD"
+   label_v="POLICY_${name}_LABEL"
+
+   endpoint="${!endpoint_v}"
+   endpoint="${endpoint//__OWNER__/${owner}}"
+   endpoint="${endpoint//__REPO__/${repo}}"
+
+   policy_api_call "${owner}/${repo}: ${!label_v}" \
+      "${!method_v}" "${endpoint}" \
+      "$(jq -n -- "${!body_v}")" \
+      || true
+}
+
+## policy_skip_ui <org_or_label_context> <NAME> <ui_url_var_suffix>
+## For UI-only policies; emits a 'skip:' log line with the resolved
+## UI URL. The URL constant is POLICY_<NAME>_UI_URL by default; pass
+## a different suffix (e.g. UI_URL_INSTALLATIONS) to address one of
+## several URLs registered for the same logical policy.
+policy_skip_ui() {
+   local context name suffix label_v url_v url
+
+   context="$1"
+   name="$2"
+   suffix="${3:-UI_URL}"
+
+   label_v="POLICY_${name}_LABEL"
+   url_v="POLICY_${name}_${suffix}"
+
+   url="${!url_v}"
+   url="${url//__ORG__/${context}}"
+
+   log notice "skip: ${context}: ${!label_v} - see ${url}"
+}
+
+## ============================================================================
 ## JSON body factories (parameterized; pure data lives in
 ## github-policy-data.bsh)
 ## ============================================================================

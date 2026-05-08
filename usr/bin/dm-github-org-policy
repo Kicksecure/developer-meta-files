@@ -246,7 +246,7 @@ policy_tool_init 0 "$@"
 ## (rationale for each enabled / disabled feature lives there).
 apply_code_security_config() {
    local org config_body existing_id list_body create_body
-   local attach_body default_body
+   local attach_endpoint default_endpoint
 
    org="$1"
 
@@ -305,63 +305,52 @@ apply_code_security_config() {
    fi
 
    ## Attach to all existing repos in the org.
-   attach_body="$(jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")"
-   policy_api_call "${org}: attach code-security config to all repos" \
-      POST "/orgs/${org}/code-security/configurations/${existing_id}/attach" \
-      "${attach_body}" || true
+   ## The ATTACH and DEFAULTS endpoints embed the configuration id;
+   ## resolve __ID__ here, then __ORG__ is resolved by the dispatcher.
+   attach_endpoint="${POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG//__ID__/${existing_id}}"
+   policy_api_call "${org}: ${POLICY_CODE_SECURITY_ATTACH_LABEL}" \
+      "${POLICY_CODE_SECURITY_ATTACH_METHOD}" \
+      "${attach_endpoint//__ORG__/${org}}" \
+      "$(jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")" \
+      || true
 
    ## Make this configuration the default for newly created repos.
-   default_body="$(jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")"
-   policy_api_call "${org}: set code-security config as default for new repos" \
-      PUT "/orgs/${org}/code-security/configurations/${existing_id}/defaults" \
-      "${default_body}" || true
+   default_endpoint="${POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG//__ID__/${existing_id}}"
+   policy_api_call "${org}: ${POLICY_CODE_SECURITY_DEFAULTS_LABEL}" \
+      "${POLICY_CODE_SECURITY_DEFAULTS_METHOD}" \
+      "${default_endpoint//__ORG__/${org}}" \
+      "$(jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")" \
+      || true
 }
 
 ## Org-level settings: fork-PR approval, workflow permissions, allowed
 ## actions, 2FA SKIP, member policy, code-security configuration,
 ## branch and tag rulesets, PAT and App SKIPs.
+##
+## Pure dispatch table - all policy data (bodies, endpoints, methods,
+## labels, UI URLs) lives in github-policy-data.bsh.
 apply_org_policy() {
-   local org body
+   local org bypass_branch
 
    org="$1"
 
    log notice "=== org policy: ${org} ==="
 
-   ## All body shapes used by this function live in
-   ## github-policy-data.bsh; rationale for each policy decision is
-   ## documented there. This function is just the apply sequence.
-
    ## 1. Fork-PR contributor approval.
-   policy_api_call "${org}: fork-PR approval=all_external_contributors" \
-      PUT "/orgs/${org}/actions/permissions/fork-pr-contributor-approval" \
-      "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
-      || true
+   policy_apply_org "${org}" FORK_PR_APPROVAL
 
    ## 2. Default workflow GITHUB_TOKEN permissions.
-   policy_api_call "${org}: workflow GITHUB_TOKEN read-only, no PR approval" \
-      PUT "/orgs/${org}/actions/permissions/workflow" \
-      "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
-      || true
+   policy_apply_org "${org}" WORKFLOW_PERMS
 
    ## 3. Allowed Actions scope + allow-list (two calls).
-   body="$(jq -n -- "${POLICY_ACTIONS_SCOPE}")"
-   policy_api_call "${org}: actions enabled=all, allowed=selected" \
-      PUT "/orgs/${org}/actions/permissions" "${body}" \
-      || true
-   policy_api_call "${org}: selected-actions = github-owned + verified-creators" \
-      PUT "/orgs/${org}/actions/permissions/selected-actions" \
-      "$(jq -n -- "${POLICY_ACTIONS_ALLOWLIST}")" \
-      || true
+   policy_apply_org "${org}" ACTIONS_SCOPE
+   policy_apply_org "${org}" ACTIONS_ALLOWLIST ENDPOINT
 
    ## 4. Member-side org policy.
-   body="$(jq -n -- "${POLICY_MEMBERS}")"
-   policy_api_call "${org}: members policy (default-perm=read, no member create)" \
-      PATCH "/orgs/${org}" "${body}" \
-      || true
+   policy_apply_org "${org}" MEMBERS
 
-   ## 4b. 2FA enforcement is UI-only (no REST setter for
-   ##     two_factor_requirement_enabled in PATCH /orgs/{org}).
-   log notice "skip: ${org}: 2FA enforcement must be set via UI - see https://github.com/organizations/${org}/settings/security"
+   ## 4b. 2FA enforcement (UI-only).
+   policy_skip_ui "${org}" 2FA
 
    ## 5+6. Code security via the Code Security Configurations API.
    apply_code_security_config "${org}" || true
@@ -380,14 +369,11 @@ apply_org_policy() {
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" org)" \
       || true
 
-   ## 9. PAT policy toggles (UI-only). REST exposes GETs for pending
-   ##    requests and approved PATs but no stable setters; --audit
-   ##    lists what's in flight, --apply prints a skip + UI URL.
-   log notice "skip: ${org}: PAT policy toggles must be set via UI - see https://github.com/organizations/${org}/settings/personal-access-tokens"
+   ## 9. PAT policy toggles (UI-only).
+   policy_skip_ui "${org}" PAT
 
-   ## 10. GitHub App / OAuth App install policies (UI-only). Same
-   ##     pattern as step 9.
-   log notice "skip: ${org}: GitHub App / OAuth App policies must be set via UI - see https://github.com/organizations/${org}/settings/installations and https://github.com/organizations/${org}/settings/oauth_application_policy"
+   ## 10. GitHub App / OAuth App install policies (UI-only - two URLs).
+   log notice "skip: ${org}: ${POLICY_APPS_LABEL} - see ${POLICY_APPS_UI_URL_INSTALLATIONS//__ORG__/${org}} and ${POLICY_APPS_UI_URL_OAUTH//__ORG__/${org}}"
 }
 
 ## One-line GET-and-print helper for audit_org_state. Args:
@@ -630,7 +616,7 @@ audit_org_state() {
 ## github-policy-data.bsh (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR;
 ## diff table is in the data file).
 apply_repo_policy() {
-   local owner repo patch kind summary
+   local owner repo kind name
 
    owner="$1"
    repo="$2"
@@ -638,20 +624,12 @@ apply_repo_policy() {
    ghorg_validate_name "${owner}" user || return 1
    ghorg_validate_name "${repo}"  repo || return 1
 
+   ## org_kind picks REPO_SOURCE or REPO_MIRROR. The dispatcher
+   ## takes the policy NAME as a string; uppercase the kind to match
+   ## the constant naming convention.
    kind="$(org_kind "${owner}")" || return 1
-   case "${kind}" in
-      source)
-         patch="$(jq -n -- "${POLICY_REPO_SOURCE}")"
-         summary='SOURCE: wiki=off, issues=on'
-         ;;
-      mirror)
-         patch="$(jq -n -- "${POLICY_REPO_MIRROR}")"
-         summary='MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
-         ;;
-   esac
-
-   policy_api_call "${owner}/${repo}: ${summary}" \
-      PATCH "/repos/${owner}/${repo}" "${patch}" || true
+   name="REPO_${kind^^}"   ## REPO_SOURCE / REPO_MIRROR
+   policy_apply_repo "${owner}" "${repo}" "${name}" ENDPOINT
 }
 
 main() {
