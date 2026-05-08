@@ -258,6 +258,14 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##   Same threat model on branches and tags; same bypass policy
 ##   (per the bypass constants above).
 ##
+## Operator note on required_signatures + GitHub's UI merge buttons:
+##   "Merge pull request" and "Squash and merge" re-sign the
+##     produced commit with GitHub's web-flow GPG key, so they keep
+##     working on PRs with unsigned contributor commits.
+##   "Rebase and merge" does NOT re-sign rebased commits and will
+##     fail against this ruleset when the PR carries unsigned
+##     commits. Use Merge or Squash for fork PRs.
+##
 ## Why the tag ruleset matters specifically: without these rules,
 ## anyone with push access could move a release tag like v1.0 to
 ## a different commit, silently changing what 'v1.0' refers to in

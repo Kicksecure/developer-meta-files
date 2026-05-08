@@ -120,11 +120,6 @@ Auth:
   Classic PAT needs admin:org + repo. Fine-grained PAT needs
   Administration r/w + Code security r/w + Webhooks r/w +
   Members r/w (the last for 2FA enforcement audit).
-
-Note on signed commits + UI merging:
-  GitHub's "Merge" and "Squash" buttons re-sign with the web-flow
-  GPG key. "Rebase and merge" does NOT re-sign; it fails on PRs
-  with unsigned contributor commits.
 EOF
 }
 
