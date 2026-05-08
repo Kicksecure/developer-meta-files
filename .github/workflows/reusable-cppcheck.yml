@@ -130,6 +130,10 @@ jobs:
         ## bugs (null derefs, OOB access, etc.).
         ## --quiet drops the per-file scan progress lines (the actual
         ## findings still print to stderr).
+        ##
+        ## NB: cppcheck does NOT support '--' as end-of-options
+        ## separator (verified locally; rejects with 'unrecognized
+        ## command line option'). Per R-062, do not add it here.
         run: |
           cppcheck \
             --enable=${{ inputs.enable }} \
@@ -137,4 +141,4 @@ jobs:
             --error-exitcode=2 \
             --quiet \
             ${{ inputs.extra-args }} \
-            -- ${{ inputs.paths }}
+            ${{ inputs.paths }}
