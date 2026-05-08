@@ -1,11 +1,9 @@
 <!--
 Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 See the file COPYING for copying conditions.
-
-AI-Assisted
 -->
 
-# OpenSSF Scorecard - known false positives in this org
+# OpenSSF Scorecard - known false positives in this org (AI-Assisted)
 
 When [Scorecard](https://github.com/ossf/scorecard) runs against
 the org's repos it produces a number of low scores for things
