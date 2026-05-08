@@ -20,8 +20,10 @@
 ##   issue_comment + pull_request_review_comment). Schedule cannot
 ##   live in a reusable workflow per GitHub Actions G-A-002.
 ## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
-## - Pass the ANTHROPIC_API_KEY secret in the calling job's
-##   'secrets:' block.
+## - Forward secrets via 'secrets: inherit' on the calling job.
+##   The reusable reads 'secrets.ANTHROPIC_API_KEY' directly from
+##   the caller's secret namespace; the org sets this secret at
+##   org level so every consumer wrapper picks it up.
 ## - Set the 'allowed-users' input to the comma-separated list of
 ##   usernames allowed to trigger @claude. The action errors out
 ##   on actor checks if this is omitted; an explicit empty string
@@ -44,7 +46,11 @@
 ##
 ## ## Secrets
 ##
-## - anthropic-api-key  (required)  Anthropic API key.
+## Read from the caller's secret namespace via 'secrets: inherit':
+##
+## - ANTHROPIC_API_KEY  (required)  Anthropic API key. Set at org
+##                                  level; every consumer in the
+##                                  org gets it for free.
 ##
 ## ## Caller example
 ##
@@ -60,8 +66,7 @@
 ##   jobs:
 ##     review:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/claude-code-review.yml@master
-##       secrets:
-##         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+##       secrets: inherit
 ##       permissions:
 ##         contents: read
 ##         pull-requests: write
@@ -85,9 +90,12 @@ on:
         required: false
         type: number
         default: 30
-    secrets:
-      anthropic-api-key:
-        required: true
+    ## Secrets schema intentionally not declared. Callers pass
+    ## 'secrets: inherit' and the action below reads
+    ## 'secrets.ANTHROPIC_API_KEY' from the caller's namespace
+    ## directly. Declaring 'workflow_call.secrets' would force every
+    ## consumer to redeclare a secret-mapping block - the very
+    ## boilerplate this design avoids.
 
 permissions:
   contents: read
@@ -123,5 +131,5 @@ jobs:
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@62238ddb33772a079b0a6d8665a1ff3043583067  # v1
         with:
-          anthropic_api_key: ${{ secrets.anthropic-api-key }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           allowed_users: ${{ inputs.allowed-users }}

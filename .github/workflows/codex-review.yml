@@ -29,8 +29,10 @@
 ##   with a 'pr_ref' input). Schedule cannot live in a reusable
 ##   workflow per G-A-002.
 ## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
-## - Pass the OPENAI_API_KEY secret in the calling job's 'secrets:'
-##   block.
+## - Forward secrets via 'secrets: inherit' on the calling job.
+##   The reusable reads 'secrets.OPENAI_API_KEY' directly from the
+##   caller's secret namespace; the org sets this secret at org
+##   level so every consumer wrapper picks it up.
 ## - Grant the job-level permissions block listed in the caller
 ##   example below.
 ##
@@ -59,7 +61,11 @@
 ##
 ## ## Secrets
 ##
-## - openai-api-key  (required)  OpenAI API key.
+## Read from the caller's secret namespace via 'secrets: inherit':
+##
+## - OPENAI_API_KEY  (required)  OpenAI API key. Set at org level;
+##                               every consumer in the org gets it
+##                               for free.
 ##
 ## ## Caller example
 ##
@@ -79,8 +85,7 @@
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codex-review.yml@master
 ##       with:
 ##         pr-ref: ${{ inputs.pr_ref || '' }}
-##       secrets:
-##         openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+##       secrets: inherit
 ##       permissions:
 ##         contents: read
 ##         pull-requests: write
@@ -90,14 +95,19 @@ name: OpenAI Codex Review (reusable)
 on:
   workflow_call:
     inputs:
-      ## Org-canonical bot allow-list. Single source of truth -
-      ## consumer wrappers should inherit this default rather than
-      ## redeclaring the list per repo. Update here when the bot
-      ## roster changes.
+      ## Org-canonical reviewer roster. Same list as the Claude
+      ## review reusable's 'allowed-users' default - one canonical
+      ## allow-list across all org AI review workflows. Update here
+      ## when the roster changes.
+      ##
+      ## Semantically the codex-action treats this as a "bot
+      ## bypass" list (humans are normally gated by GitHub-side
+      ## actor-write-access). Including humans is a no-op for them
+      ## and keeps the list shape uniform.
       allow-bot-users:
         required: false
         type: string
-        default: "assisted-by-ai"
+        default: "adrelanos,ArrayBolt3,assisted-by-ai"
       pr-ref:
         required: false
         type: string
@@ -114,9 +124,10 @@ on:
         required: false
         type: number
         default: 30
-    secrets:
-      openai-api-key:
-        required: true
+    ## Secrets schema intentionally not declared. Callers pass
+    ## 'secrets: inherit' and the action below reads
+    ## 'secrets.OPENAI_API_KEY' from the caller's namespace
+    ## directly. Same rationale as claude-code-review.yml.
 
 permissions:
   contents: read
@@ -164,7 +175,7 @@ jobs:
       - name: Run Codex Review
         uses: openai/codex-action@e0fdf01220eb9a88167c4898839d273e3f2609d1  # main @ 2026-05-06 (no stable tag yet)
         with:
-          openai-api-key: ${{ secrets.openai-api-key }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           allow-bot-users: ${{ inputs.allow-bot-users }}
           sandbox: ${{ inputs.sandbox }}
           prompt: ${{ inputs.prompt }}
