@@ -111,35 +111,15 @@ Usage (one mode flag is required - no implicit default):
                                        (cats github-policy-data.bsh)
   dm-github-org-policy --help
 
+Run 'dm-github-org-policy --policy-dump' for the full table of what
+gets applied (bodies, endpoints, methods, labels, SOURCE vs MIRROR
+diffs).
+
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Classic PAT needs admin:org + repo. Fine-grained PAT needs
   Administration r/w + Code security r/w + Webhooks r/w +
   Members r/w (the last for 2FA enforcement audit).
-
-What gets applied:
-  Run 'dm-github-org-policy --policy-dump' for the full table -
-  every policy body, endpoint, method, and label flows from
-  /usr/libexec/developer-meta-files/github-policy-data.bsh and is
-  documented there. Brief outline:
-    - Fork-PR contributor approval, workflow GITHUB_TOKEN
-      permissions, Allowed Actions allow-list, members policy,
-      code security configuration, default-branch + tag rulesets.
-    - 2FA / PAT / App policies: UI-only, --audit reports state.
-
-SOURCE vs MIRROR (org_kind):
-  SOURCE = Kicksecure, Whonix    (canonical upstream)
-  MIRROR = org-ai-assisted       (fork org for AI-assisted dev)
-  Settings that diverge between the two are listed in the data
-  file's "SOURCE vs MIRROR diffs" comment table.
-
-OSSF Scorecard mapping (high-level):
-  Branch-Protection: Tier 1 (3/10) - deliberate ceiling.
-  Webhooks: --audit lists org-level webhooks lacking a secret.
-  Dangerous-Workflow: partially mitigated by Allowed-Actions=
-    verified-only. Avoid pull_request_target with explicit PR
-    checkout. See:
-    https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 
 Note on signed commits + UI merging:
   GitHub's "Merge" and "Squash" buttons re-sign with the web-flow

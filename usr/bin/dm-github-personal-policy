@@ -52,24 +52,12 @@ Usage (one mode flag is required - no implicit default):
                                                        (cats github-policy-data.bsh)
   dm-github-personal-policy --help
 
+Run 'dm-github-personal-policy --policy-dump' for the full table of
+what gets applied (bodies, endpoints, methods, labels).
+
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Token needs 'repo' (classic) or 'Administration: write' (fine-grained).
-
-What gets applied:
-  Run 'dm-github-personal-policy --policy-dump' for the full table -
-  every policy body, endpoint, method, and label flows from
-  /usr/libexec/developer-meta-files/github-policy-data.bsh.
-  Brief outline:
-    - GitHub Actions DISABLED entirely (this account is a backup
-      mirror; CI runs in the upstream orgs).
-    - Fork-PR approval + workflow GITHUB_TOKEN read-only = defense
-      in depth if Actions is ever re-enabled in the UI.
-    - Wiki / Projects / Discussions OFF; secret-scanning + push-
-      protection ON; Pages site deleted if present.
-    - Default-branch ruleset (force-push / delete / unsigned blocked,
-      bypass_actors=[]). Tag ruleset (delete / re-point / unsigned
-      blocked).
 
 Repos in scope:
   Public, non-archived repos owned by <username>, INCLUDING forks
