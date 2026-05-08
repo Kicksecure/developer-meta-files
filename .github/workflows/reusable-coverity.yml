@@ -142,6 +142,11 @@ on:
 permissions:
   contents: read
 
+## Coverity Scan has a 1-build/day rate limit on the free public
+## service. cancel-in-progress=false because cancelling mid-flight
+## wastes the daily slot; parallel submissions queue server-side
+## anyway. Group is workflow-only (not workflow+ref) so only one
+## run per repo is in flight at any time across all branches/PRs.
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false

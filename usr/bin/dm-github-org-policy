@@ -391,19 +391,34 @@ apply_org_policy() {
    apply_code_security_config "${org}" || true
 
    ## 7. Org ruleset on every repo's default branch: block force-push,
-   ##    block deletion, require signed commits. bypass_actors=[] -
-   ##    no one, including org owners, can override.
+   ##    block deletion, require signed commits.
+   ##    bypass_actors pivots on org_kind:
+   ##      SOURCE: [] - no one, including org owners, can override.
+   ##              Canonical history is sacred; ruleset enforces it
+   ##              uniformly. Recovery from a stuck state goes
+   ##              through GitHub support, not a one-off bypass.
+   ##      MIRROR: OrganizationAdmin - org owners can override. The
+   ##              MIRROR is fork-sync downstream; if a re-fork or
+   ##              hotfix needs a force-push or unsigned commit,
+   ##              we must be able to do it without first dropping
+   ##              the ruleset.
    ##    Omitted: pull_request (we push directly to master),
    ##    required_status_checks (per-repo CI coupling),
    ##    required_linear_history (breaks some merge workflows).
+   case "$(org_kind "${org}")" in
+      source) bypass_branch='[]' ;;
+      mirror) bypass_branch='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]' ;;
+   esac
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org)" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${bypass_branch}")" \
       || true
 
    ## 8. Org ruleset for tags: block deletion, block re-pointing,
-   ##    require signed tags. bypass_actors=[]. Without this, push
-   ##    rights would let anyone move a release tag like v1.0 to a
-   ##    different commit.
+   ##    require signed tags. Without this, push rights would let
+   ##    anyone move a release tag like v1.0 to a different commit.
+   ##    Tags are bypass=[] on BOTH SOURCE and MIRROR - tags are
+   ##    immutable anchors regardless of where the repo lives;
+   ##    a "hotfix" needs a new tag, not an existing one moved.
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" org)" \
       || true

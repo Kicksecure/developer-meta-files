@@ -233,25 +233,30 @@ policy_upsert_repo_ruleset() {
 ## ============================================================================
 
 ## Standard branch ruleset: targets the default branch, blocks
-## force-push and deletion, requires signed commits. bypass_actors=[]
-## (no one can override). repository_name condition is included only
+## force-push and deletion, requires signed commits. bypass_actors
+## defaults to "no one can override"; pass a JSON array literal to
+## allow specific actors. repository_name condition is included only
 ## for org-level rulesets; the helper takes a flag to control that.
 ##
 ## Args:
 ##   $1 - ruleset name
 ##   $2 - 'org' or 'repo' (org adds the repository_name condition)
+##   $3 - bypass_actors JSON array (default '[]'). Example to allow
+##        any organization admin to push past:
+##          '[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 policy_branch_ruleset_body() {
-   local name scope
+   local name scope bypass
 
    name="$1"
    scope="${2:-repo}"
+   bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" -- '{
+      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
          name: $name,
          target: "branch",
          enforcement: "active",
-         bypass_actors: [],
+         bypass_actors: $bypass,
          conditions: {
             ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
             repository_name: { include: ["~ALL"], exclude: [] }
@@ -263,11 +268,11 @@ policy_branch_ruleset_body() {
          ]
       }'
    else
-      jq -n --arg name "${name}" -- '{
+      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
          name: $name,
          target: "branch",
          enforcement: "active",
-         bypass_actors: [],
+         bypass_actors: $bypass,
          conditions: {
             ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
          },
@@ -285,17 +290,18 @@ policy_branch_ruleset_body() {
 ##
 ## Args: same as policy_branch_ruleset_body.
 policy_tag_ruleset_body() {
-   local name scope
+   local name scope bypass
 
    name="$1"
    scope="${2:-repo}"
+   bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" -- '{
+      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
          name: $name,
          target: "tag",
          enforcement: "active",
-         bypass_actors: [],
+         bypass_actors: $bypass,
          conditions: {
             ref_name: { include: ["~ALL"], exclude: [] },
             repository_name: { include: ["~ALL"], exclude: [] }
@@ -307,11 +313,11 @@ policy_tag_ruleset_body() {
          ]
       }'
    else
-      jq -n --arg name "${name}" -- '{
+      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
          name: $name,
          target: "tag",
          enforcement: "active",
-         bypass_actors: [],
+         bypass_actors: $bypass,
          conditions: {
             ref_name: { include: ["~ALL"], exclude: [] }
          },
