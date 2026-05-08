@@ -170,6 +170,32 @@ heuristic does not parse multi-stage builds.
 **No fix on the Scorecard side**: dismiss the alert, or wait for
 upstream Scorecard to learn multi-stage Dockerfiles.
 
+## Signed-Releases = inconclusive (and that is the goal)
+
+**Affects**: every repo in `org-ai-assisted`, `Kicksecure`,
+`Whonix`, and `adrelanos`.
+
+**Current state**: none of these repos has ever had a GitHub
+Release object created. Tags exist (signed, ruleset-enforced) but
+no Releases. Scorecard's `Signed-Releases` returns `-1`
+(inconclusive) per `checks/evaluation/signed_releases.go` and is
+excluded from the aggregate score.
+
+**Why it is intentional**: published artifacts (ISOs, .debs) ship
+via the project's signed apt repo and download server, NOT via
+GitHub releases. The maintainer's signing key is offline by
+design and never touches a GitHub runner or any remote server.
+Adding GitHub Release objects with only the auto-generated
+source archives would flip Scorecard from inconclusive to **0/10**
+(real penalty: source-only releases are NOT skipped, they count
+as unsigned). A 10/10 path would require either putting the key
+on a runner (forbidden) or adopting Sigstore/SLSA-on-Actions
+(wrong tool — GitHub Actions is deliberately not in the
+artifact path).
+
+**What to do**: nothing. Do NOT create GitHub Release objects on
+these repos. The current state is the desired state.
+
 ## What we DO act on
 
 The Scorecard signals NOT in this list are real and worth fixing.
