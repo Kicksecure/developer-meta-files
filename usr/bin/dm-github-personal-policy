@@ -128,59 +128,47 @@ apply_repo_policy() {
    repo="$1"
 
    ## All body shapes used by this function live in
-   ## github-policy-data.bsh (POLICY_FORK_PR_APPROVAL,
-   ## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED, POLICY_REPO).
+   ## github-policy-data.bsh; rationale for each policy decision is
+   ## documented there.
 
-   ## 1. Fork-PR contributor approval = all_external_contributors.
+   ## 1. Fork-PR contributor approval.
    policy_api_call "${target_user}/${repo}: fork-PR approval=all_external_contributors" \
       PUT "/repos/${target_user}/${repo}/actions/permissions/fork-pr-contributor-approval" \
       "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
       || true
 
-   ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot approve PRs.
+   ## 2. Default workflow GITHUB_TOKEN permissions.
    policy_api_call "${target_user}/${repo}: workflow GITHUB_TOKEN read-only" \
       PUT "/repos/${target_user}/${repo}/actions/permissions/workflow" \
       "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
       || true
 
-   ## 3. Disable GitHub Actions entirely on the repo. Steps 1+2
-   ##    above stay as defense-in-depth in case Actions is later
-   ##    re-enabled in the UI. The allow-list endpoint is a no-op
-   ##    while enabled=false, so we skip the second PUT.
+   ## 3. Disable GitHub Actions entirely on the repo.
    policy_api_call "${target_user}/${repo}: actions enabled=false (CI runs disabled)" \
       PUT "/repos/${target_user}/${repo}/actions/permissions" \
       "$(jq -n -- "${POLICY_ACTIONS_DISABLED}")" \
       || true
 
-   ## 4. Repo settings + secret-scanning + push-protection in one PATCH.
+   ## 4. Repo settings + secret-scanning + push-protection.
    policy_api_call "${target_user}/${repo}: settings (wiki/projects/discussions off, secret-scan on)" \
       PATCH "/repos/${target_user}/${repo}" \
       "$(jq -n -- "${POLICY_REPO}")" \
       || true
 
-   ## 5. Disable GitHub Pages site if any. The DELETE endpoint is
-   ##    idempotent in spirit: 204 if a site existed and was
-   ##    removed, 404 if no site. Pass '404' as policy_api_call's
-   ##    extra-ok-status arg so a "no Pages site" repo doesn't trip
-   ##    the warn flag - that is the common case for a backup
-   ##    mirror and would otherwise make every routine apply run
-   ##    exit non-zero. Not a permanent gate - any future Pages
-   ##    workflow run will recreate the site.
+   ## 5. Delete GitHub Pages site if any. Pass '404' as the extra-ok-
+   ##    status arg so the common case (no Pages site) does not trip
+   ##    the warn flag.
    policy_api_call "${target_user}/${repo}: delete Pages site (if any)" \
       DELETE "/repos/${target_user}/${repo}/pages" '' '404' \
       || true
 
-   ## 6. Branch ruleset on the default branch: block force-push, block
-   ##    deletion, require signed commits. bypass_actors=[] - no one,
-   ##    including the owner, can override.
+   ## 6. Branch ruleset on the default branch.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_BRANCH}" \
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo)" \
       || true
 
-   ## 7. Tag ruleset for all tags: block deletion, block re-pointing,
-   ##    require signed tags. Without this, push rights would let the
-   ##    operator (or a compromised credential) move release tags.
+   ## 7. Tag ruleset for all tags.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo)" \

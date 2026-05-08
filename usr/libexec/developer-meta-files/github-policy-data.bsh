@@ -55,6 +55,11 @@ readonly POLICY_WORKFLOW_PERMS='{
 ## /orgs/{org}/actions/permissions/selected-actions. Permits GitHub-
 ## owned actions + Marketplace actions from verified creators; no
 ## arbitrary patterns.
+##
+## CAUTION on rollout: workflows pinned to unverified third-party
+## actions will start failing the moment this lands. Run --audit
+## first; whitelist or replace any third-party action that's not
+## github-owned and not from a verified creator before applying.
 readonly POLICY_ACTIONS_ALLOWLIST='{
    github_owned_allowed: true,
    verified_allowed: true,
@@ -139,10 +144,18 @@ readonly POLICY_REPO_MIRROR='{
 }'
 
 ## Branch + tag ruleset bypass actor list (passed to
-## policy_branch_ruleset_body / policy_tag_ruleset_body). SOURCE
-## allows nobody to override; MIRROR allows OrganizationAdmin
-## (actor_id 1) so a stuck mirror state can be hot-fixed without
-## first dropping the ruleset.
+## policy_branch_ruleset_body / policy_tag_ruleset_body).
+##
+##   SOURCE = []
+##     No one - including org owners - can override. Canonical
+##     history is sacred; the ruleset enforces it uniformly.
+##     Recovery from a stuck state goes through GitHub support,
+##     not a one-off bypass.
+##   MIRROR = [OrganizationAdmin]
+##     Org owners can override. The MIRROR is a fork-sync
+##     downstream; if a re-fork or hotfix needs a force-push or
+##     unsigned commit, we must be able to do it without first
+##     dropping the ruleset.
 readonly POLICY_RULESET_BYPASS_SOURCE='[]'
 readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
@@ -165,6 +178,18 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##   - required_signatures   require GPG-signed commits / tags
 ##   Same threat model on branches and tags; same bypass policy
 ##   (per the bypass constants above).
+##
+## Why the tag ruleset matters specifically: without these rules,
+## anyone with push access could move a release tag like v1.0 to
+## a different commit, silently changing what 'v1.0' refers to in
+## the user-facing release timeline.
+##
+## Branch ruleset deliberately does NOT include:
+##   - pull_request          would force every change through a PR;
+##                           our maintainers push directly to master
+##   - required_status_checks   per-repo CI coupling - belongs in
+##                              repo-level config, not org-wide
+##   - required_linear_history  breaks some merge workflows
 
 readonly POLICY_BRANCH_RULESET_BODY_ORG='{
    name: $name,

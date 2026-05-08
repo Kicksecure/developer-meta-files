@@ -242,22 +242,15 @@ policy_tool_init 0 "$@"
 ##   2. attach it to all existing repos (scope=all)
 ##   3. set it as the default for new repos (default_for_new_repos=all)
 ##
-## Configuration body: enables secret scanning + push protection,
-## Dependabot alerts + security updates, dependency graph. Disables
-## CodeQL default setup (brittle on monorepos - prefer a committed
-## .github/workflows/codeql.yml) and private vulnerability reporting
-## (project disclosure channel is OpenPGP email; see header notes).
+## Configuration body: POLICY_CODE_SECURITY in github-policy-data.bsh
+## (rationale for each enabled / disabled feature lives there).
 apply_code_security_config() {
    local org config_body existing_id list_body create_body
    local attach_body default_body
 
    org="$1"
 
-   ## Body shape lives in github-policy-data.bsh
-   ## (POLICY_CODE_SECURITY); inject the dynamic 'name' field via
-   ## jq's --arg. The policy body is written with jq's relaxed
-   ## syntax (unquoted keys), so it must be passed as a jq program
-   ## ('-n -- <expr>'), not as JSON input.
+   ## Inject the dynamic 'name' field via jq --arg.
    config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
       "${POLICY_CODE_SECURITY} + {name: \$name}")"
 
@@ -337,27 +330,22 @@ apply_org_policy() {
    log notice "=== org policy: ${org} ==="
 
    ## All body shapes used by this function live in
-   ## github-policy-data.bsh (POLICY_FORK_PR_APPROVAL,
-   ## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_SCOPE,
-   ## POLICY_ACTIONS_ALLOWLIST, POLICY_MEMBERS).
+   ## github-policy-data.bsh; rationale for each policy decision is
+   ## documented there. This function is just the apply sequence.
 
-   ## 1. Fork-PR contributor approval = all_external_contributors.
+   ## 1. Fork-PR contributor approval.
    policy_api_call "${org}: fork-PR approval=all_external_contributors" \
       PUT "/orgs/${org}/actions/permissions/fork-pr-contributor-approval" \
       "$(jq -n -- "${POLICY_FORK_PR_APPROVAL}")" \
       || true
 
-   ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot
-   ##    approve PRs.
+   ## 2. Default workflow GITHUB_TOKEN permissions.
    policy_api_call "${org}: workflow GITHUB_TOKEN read-only, no PR approval" \
       PUT "/orgs/${org}/actions/permissions/workflow" \
       "$(jq -n -- "${POLICY_WORKFLOW_PERMS}")" \
       || true
 
-   ## 3. Allowed Actions = selected (github-owned + verified creators).
-   ##    Two calls: switch allowed_actions to "selected", then set the
-   ##    list. CAUTION: workflows pinned to unverified third-party
-   ##    actions will start failing after this; audit first.
+   ## 3. Allowed Actions scope + allow-list (two calls).
    body="$(jq -n -- "${POLICY_ACTIONS_SCOPE}")"
    policy_api_call "${org}: actions enabled=all, allowed=selected" \
       PUT "/orgs/${org}/actions/permissions" "${body}" \
@@ -367,46 +355,20 @@ apply_org_policy() {
       "$(jq -n -- "${POLICY_ACTIONS_ALLOWLIST}")" \
       || true
 
-   ## 4. Member-side org policy: default repo permission = read,
-   ##    repository creation restricted to admins.
-   ##    Body shape: POLICY_MEMBERS in github-policy-data.bsh.
+   ## 4. Member-side org policy.
    body="$(jq -n -- "${POLICY_MEMBERS}")"
    policy_api_call "${org}: members policy (default-perm=read, no member create)" \
       PATCH "/orgs/${org}" "${body}" \
       || true
 
    ## 4b. 2FA enforcement is UI-only (no REST setter for
-   ##     two_factor_requirement_enabled in PATCH /orgs/{org}; verified
-   ##     against the OpenAPI spec). Per the Nov 2024 GA change,
-   ##     enabling does NOT remove non-compliant members - they keep
-   ##     membership but are blocked from org resources until they
-   ##     enroll. GitHub is also rolling out 2FA platform-wide as a
-   ##     mandatory account requirement, so the org-level toggle just
-   ##     front-runs that. Print a skip with the UI URL.
+   ##     two_factor_requirement_enabled in PATCH /orgs/{org}).
    log notice "skip: ${org}: 2FA enforcement must be set via UI - see https://github.com/organizations/${org}/settings/security"
 
-   ## 5+6. Code security via the Code Security Configurations API
-   ##      (replaces deprecated PATCH /orgs/{org} security-defaults
-   ##      fields and /orgs/{org}/{product}/enable_all). See header
-   ##      for which features are toggled and which are deliberately
-   ##      disabled.
+   ## 5+6. Code security via the Code Security Configurations API.
    apply_code_security_config "${org}" || true
 
-   ## 7. Org ruleset on every repo's default branch: block force-push,
-   ##    block deletion, require signed commits.
-   ##    bypass_actors pivots on org_kind:
-   ##      SOURCE: [] - no one, including org owners, can override.
-   ##              Canonical history is sacred; ruleset enforces it
-   ##              uniformly. Recovery from a stuck state goes
-   ##              through GitHub support, not a one-off bypass.
-   ##      MIRROR: OrganizationAdmin - org owners can override. The
-   ##              MIRROR is fork-sync downstream; if a re-fork or
-   ##              hotfix needs a force-push or unsigned commit,
-   ##              we must be able to do it without first dropping
-   ##              the ruleset.
-   ##    Omitted: pull_request (we push directly to master),
-   ##    required_status_checks (per-repo CI coupling),
-   ##    required_linear_history (breaks some merge workflows).
+   ## 7. Org-level branch ruleset.
    case "$(org_kind "${org}")" in
       source) bypass_branch="${POLICY_RULESET_BYPASS_SOURCE}" ;;
       mirror) bypass_branch="${POLICY_RULESET_BYPASS_MIRROR}" ;;
@@ -415,12 +377,7 @@ apply_org_policy() {
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${bypass_branch}")" \
       || true
 
-   ## 8. Org ruleset for tags: block deletion, block re-pointing,
-   ##    require signed tags. Without this, push rights would let
-   ##    anyone move a release tag like v1.0 to a different commit.
-   ##    Tags are bypass=[] on BOTH SOURCE and MIRROR - tags are
-   ##    immutable anchors regardless of where the repo lives;
-   ##    a "hotfix" needs a new tag, not an existing one moved.
+   ## 8. Org-level tag ruleset.
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" org)" \
       || true
@@ -671,13 +628,9 @@ audit_org_state() {
 }
 
 ## Per-repo settings - only the ones with no org-wide alternative.
-## Pivots on org_kind:
-##   SOURCE: has_wiki=false, has_issues=true
-##           (canonical project: file bugs here)
-##   MIRROR: has_wiki=false, has_issues=false, has_projects=false,
-##           has_discussions=false
-##           (fork org: file everything upstream; the mirror-side
-##           trackers stay closed to avoid split-inbox confusion)
+## Pivots on org_kind to pick the right body from
+## github-policy-data.bsh (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR;
+## diff table is in the data file).
 apply_repo_policy() {
    local owner repo patch kind summary
 
@@ -688,8 +641,6 @@ apply_repo_policy() {
    ghorg_validate_name "${repo}"  repo || return 1
 
    kind="$(org_kind "${owner}")" || return 1
-   ## Body shapes: POLICY_REPO_SOURCE / POLICY_REPO_MIRROR in
-   ## github-policy-data.bsh.
    case "${kind}" in
       source)
          patch="$(jq -n -- "${POLICY_REPO_SOURCE}")"
