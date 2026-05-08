@@ -170,8 +170,7 @@ upstream Scorecard to learn multi-stage Dockerfiles.
 
 ## Signed-Releases = inconclusive (and that is the goal)
 
-**Affects**: every repo in `org-ai-assisted`, `Kicksecure`,
-`Whonix`, and `adrelanos`.
+**Affects**: every repo in `Kicksecure` and `Whonix`.
 
 **Current state**: none of these repos has ever had a GitHub
 Release object created. Tags exist (signed, ruleset-enforced) but
