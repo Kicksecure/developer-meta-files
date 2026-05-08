@@ -1,0 +1,140 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: cppcheck static analysis for C / C++.
+##
+## Free open-source local-runnable alternative to Coverity Scan -
+## complements (does not replace) Coverity, with a different rule
+## set and no third-party service dependency. Useful where Coverity
+## is disabled (forks of upstream Coverity-registered projects), or
+## as a faster pre-Coverity gate.
+##
+## ## Trust footprint
+##
+## cppcheck is in the Debian / Ubuntu archive; apt-installed by
+## name. No GitHub Marketplace action used.
+##
+## ## Caller responsibilities
+##
+## - Define the trigger schedule. Schedule cannot live in
+##   workflow_call per G-A-002.
+## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+##
+## ## Inputs
+##
+## - paths            (optional)  Space-separated list of paths to
+##                                scan. Default '.' (whole repo).
+## - enable           (optional)  cppcheck '--enable=' value.
+##                                Default 'warning,style,performance,
+##                                portability'. Use 'all' for
+##                                inconclusive/information too.
+## - extra-args       (optional)  Extra cppcheck flags appended
+##                                verbatim. Default empty. Useful for
+##                                '--suppress=' lines or
+##                                '-D<macro>=...' definitions.
+## - prepare-command  (optional)  Bash run AFTER checkout but BEFORE
+##                                cppcheck. Use for source-tree prep
+##                                (e.g. ci/codeql-prepare.sh-style
+##                                symlinks for genmkfile-tagged
+##                                source files). Default empty.
+## - timeout-minutes  (optional)  Job timeout. Default 15.
+##
+## ## Caller example
+##
+##   name: cppcheck
+##   on:
+##     pull_request:
+##       branches: [master]
+##     push:
+##       branches: [master]
+##   permissions:
+##     contents: read
+##   jobs:
+##     cppcheck:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/cppcheck.yml@master
+##       with:
+##         paths: src
+##       permissions:
+##         contents: read
+
+name: cppcheck (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      paths:
+        required: false
+        type: string
+        default: "."
+      enable:
+        required: false
+        type: string
+        default: "warning,style,performance,portability"
+      extra-args:
+        required: false
+        type: string
+        default: ""
+      prepare-command:
+        required: false
+        type: string
+        default: ""
+      timeout-minutes:
+        required: false
+        type: number
+        default: 15
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cppcheck:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install cppcheck
+        run: |
+          sudo --non-interactive apt-get update --error-on=any
+          sudo --non-interactive apt-get install --yes --no-install-recommends \
+            cppcheck
+
+      - name: Prepare source tree
+        if: inputs.prepare-command != ''
+        run: ${{ inputs.prepare-command }}
+        shell: bash
+
+      - name: cppcheck
+        ## --inline-suppr enables 'cppcheck-suppress' inline comments
+        ## as the per-line escape hatch.
+        ## --error-exitcode=2 means: cppcheck exits non-zero only on
+        ## the 'error' severity, not warning/style. This keeps the
+        ## job 'green' on style noise while still failing on real
+        ## bugs (null derefs, OOB access, etc.).
+        ## --quiet drops the per-file scan progress lines (the actual
+        ## findings still print to stderr).
+        run: |
+          cppcheck \
+            --enable=${{ inputs.enable }} \
+            --inline-suppr \
+            --error-exitcode=2 \
+            --quiet \
+            ${{ inputs.extra-args }} \
+            -- ${{ inputs.paths }}

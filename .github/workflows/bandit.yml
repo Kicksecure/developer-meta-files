@@ -1,0 +1,159 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: bandit security-focused Python static analysis.
+##
+## Free open-source local-runnable alternative to the Python side of
+## Coverity Scan. Complements pyflakes / pylint (those focus on
+## correctness / style) by surfacing security-relevant patterns:
+## hardcoded passwords, shell=True subprocess, weak crypto, eval(),
+## etc.
+##
+## ## Trust footprint
+##
+## bandit is published by PyCQA and packaged in the Debian / Ubuntu
+## archive; apt-installed by name. No GitHub Marketplace action
+## used.
+##
+## ## Caller responsibilities
+##
+## - Define the trigger schedule. Schedule cannot live in
+##   workflow_call per G-A-002.
+## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+##
+## ## Inputs
+##
+## - paths             (optional)  Space-separated list of paths
+##                                 to scan. Default '.' (whole repo,
+##                                 recursive).
+## - severity-level    (optional)  Minimum severity ('low' | 'medium'
+##                                 | 'high'). Default 'medium' to
+##                                 reduce style/lint-flavor noise.
+## - confidence-level  (optional)  Minimum confidence (same scale).
+##                                 Default 'medium'.
+## - skips             (optional)  Comma-separated bandit test IDs
+##                                 to skip globally (e.g.
+##                                 'B101,B404'). Default empty. Per-
+##                                 line suppression with '# nosec'
+##                                 comments is preferred over this
+##                                 input.
+## - prepare-command   (optional)  Bash run AFTER checkout but BEFORE
+##                                 bandit. Use for source-tree prep
+##                                 (e.g. ci/codeql-prepare.sh-style
+##                                 symlinks for genmkfile-tagged
+##                                 '*.py#tag' files - bandit
+##                                 discovers Python files by '.py'
+##                                 extension and would otherwise
+##                                 miss them).
+## - timeout-minutes   (optional)  Job timeout. Default 10.
+##
+## ## Caller example
+##
+##   name: bandit
+##   on:
+##     pull_request:
+##       branches: [master]
+##     push:
+##       branches: [master]
+##   permissions:
+##     contents: read
+##   jobs:
+##     bandit:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/bandit.yml@master
+##       with:
+##         paths: usr/lib/python3/dist-packages
+##       permissions:
+##         contents: read
+
+name: bandit (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      paths:
+        required: false
+        type: string
+        default: "."
+      severity-level:
+        required: false
+        type: string
+        default: "medium"
+      confidence-level:
+        required: false
+        type: string
+        default: "medium"
+      skips:
+        required: false
+        type: string
+        default: ""
+      prepare-command:
+        required: false
+        type: string
+        default: ""
+      timeout-minutes:
+        required: false
+        type: number
+        default: 10
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bandit:
+    name: bandit
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Install bandit
+        run: |
+          sudo --non-interactive apt-get update --error-on=any
+          sudo --non-interactive apt-get install --yes --no-install-recommends \
+            bandit
+
+      - name: Prepare source tree
+        if: inputs.prepare-command != ''
+        run: ${{ inputs.prepare-command }}
+        shell: bash
+
+      - name: bandit
+        ## bandit exits 0 if no issues at the configured severity /
+        ## confidence threshold; non-zero otherwise. -r recurses; -ll
+        ## maps the severity-level word to flags (low/medium/high
+        ## map to -l / -ll / -lll respectively); same for -ii.
+        run: |
+          set -- ${{ inputs.paths }}
+          case "${{ inputs.severity-level }}" in
+            low)    sev_flag="-l"   ;;
+            medium) sev_flag="-ll"  ;;
+            high)   sev_flag="-lll" ;;
+            *)      echo "::error::invalid severity-level"; exit 64 ;;
+          esac
+          case "${{ inputs.confidence-level }}" in
+            low)    conf_flag="-i"   ;;
+            medium) conf_flag="-ii"  ;;
+            high)   conf_flag="-iii" ;;
+            *)      echo "::error::invalid confidence-level"; exit 64 ;;
+          esac
+          skip_args=()
+          if [ -n "${{ inputs.skips }}" ]; then
+            skip_args=(--skip "${{ inputs.skips }}")
+          fi
+          bandit -r "${sev_flag}" "${conf_flag}" "${skip_args[@]}" -- "$@"
