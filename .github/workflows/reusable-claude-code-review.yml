@@ -30,8 +30,7 @@
 ##   means "everyone allowed" (not recommended on repos with paid
 ##   API key access).
 ## - Grant the same job-level permissions block listed in the
-##   caller example below; the action needs id-token: write to
-##   federate to Anthropic's API gateway.
+##   caller example below.
 ##
 ## ## Inputs
 ##
@@ -71,7 +70,6 @@
 ##         contents: read
 ##         pull-requests: write
 ##         issues: write
-##         id-token: write
 
 name: Claude Code Review (reusable)
 
@@ -116,11 +114,37 @@ jobs:
     name: Claude Code Review
     runs-on: ubuntu-latest
     timeout-minutes: ${{ inputs.timeout-minutes }}
+    ## Job-level gate. Two purposes:
+    ##
+    ## 1. On comment-triggered events ('issue_comment',
+    ##    'pull_request_review_comment'), only run when the comment
+    ##    body actually mentions @claude. Without this check, the
+    ##    runner would spin up on every comment, the action would
+    ##    no-op internally, and minutes would be burned for nothing.
+    ##
+    ## 2. Across all event types, restrict to the configured
+    ##    'allowed-users' roster. The 'allowed_users' parameter on
+    ##    the action below performs the same check internally; doing
+    ##    it at the job-level too prevents unauthorized actors from
+    ##    even spinning up a runner. Defense in depth: API budget
+    ##    protection (random external commenter cannot exhaust the
+    ##    org's ANTHROPIC_API_KEY by spam-mentioning @claude) and
+    ##    blast-radius reduction (a compromised allowed_users action
+    ##    arg cannot bypass this check).
+    ##
+    ## Substring-match on the comma-separated input is wrapped with
+    ## leading/trailing commas in both the haystack and needle so
+    ## that "bob" does not accidentally match "alice,bobby,charlie".
+    if: |
+      contains(format(',{0},', inputs.allowed-users), format(',{0},', github.actor)) && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+      )
     permissions:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
 
     steps:
       - name: Checkout repository
