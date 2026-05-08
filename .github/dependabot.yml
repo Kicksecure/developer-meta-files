@@ -1,0 +1,46 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Dependabot configuration for the org's reusable-workflow hub.
+##
+## ## Why this is the only Dependabot config most consumer repos
+## ## need
+##
+## After centralizing CodeQL, Scorecard, Coverity, Claude review,
+## and Codex review into reusable workflows under
+## .github/workflows/, the action SHA pins for the whole org are
+## concentrated in this one repo. Consumer wrappers in
+## kloak/security-misc/etc. reference those reusables via
+## '@master', so a single Dependabot bump here propagates to every
+## consumer's next workflow run automatically. Consumer repos that
+## have no remaining direct action SHAs do not need their own
+## Dependabot config.
+##
+## Repos that DO still need their own dependabot.yml:
+##   helper-scripts   (lint.yml + fuzz.yml are repo-specific
+##                     workflows with direct actions/checkout SHAs)
+##   derivative-maker (dry-run.yml + run_automated_builder.yml +
+##                     lint.yml have direct SHAs; also has docker
+##                     image pins covered by package-ecosystem
+##                     'docker')
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope
+    ## Bundle every action update into a single PR per cycle.
+    ## Without this, dependabot opens one PR per action and
+    ## 'open-pull-requests-limit: 1' silently drops the rest.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
