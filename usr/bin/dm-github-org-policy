@@ -584,9 +584,9 @@ audit_org_state() {
    ## file still fail Scorecard. This audit counts repos with vs
    ## without and lists the missing ones as a worklist.
    log notice '  dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
-   repos="$(ghorg_list_repos "${org}" 0 0 0 | sort --unique)"
+   repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
    if [ -z "${repos}" ]; then
-      log notice '    (no public non-archived non-fork repos)'
+      log notice '    (no public non-archived repos)'
    else
       missing_count=0
       have_count=0
@@ -637,11 +637,17 @@ main() {
       apply_org_policy "${org}"
 
       log notice "=== repo policy: ${org} ==="
-      ## Public, non-archived, non-fork repos. The org-level enable_all
-      ## endpoints already cover security products on every repo; this
-      ## loop is just for has_wiki / has_issues which have no org-wide
-      ## API.
-      repos="$(ghorg_list_repos "${org}" 0 0 0 | sort --unique)"
+      ## Public, non-archived repos (forks INCLUDED). The org-level
+      ## enable_all endpoints already cover security products on every
+      ## repo; this loop is just for has_wiki / has_issues which have
+      ## no org-wide API.
+      ##
+      ## Forks are deliberately included. The org-ai-assisted mirror
+      ## holds 100% forks of the upstream Kicksecure / Whonix repos;
+      ## excluding forks here would silently no-op the entire per-repo
+      ## phase against that org. Upstream Kicksecure / Whonix repos
+      ## have fork=false so the flip is a no-op there.
+      repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
       if [ -z "${repos}" ]; then
          log notice "no repos matched in '${org}'"
          continue
