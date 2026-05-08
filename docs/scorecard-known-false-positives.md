@@ -198,17 +198,10 @@ these repos. The current state is the desired state.
 The Scorecard signals NOT in this list are real and worth fixing.
 Notable currently-actionable categories:
 
-- **SecurityPolicyID**: add a `SECURITY.md` (likely centralized in
-  `org-ai-assisted/.github` for org-wide default).
-- **BranchProtectionID**: enable branch protection on `master` in
-  GitHub repo Settings -> Branches.
-- **CodeReviewID**: enforce "require approvals" via branch
-  protection so the PR-approval rate climbs from the current ~0%.
-- **FuzzingID**: add fuzzing harnesses where the language
-  ecosystem supports it (helper-scripts already runs Hypothesis +
-  Atheris; kloak / security-misc are open work).
-- **`pipCommand` / `containerImage` PinnedDependenciesID**: real -
-  pin pip installs by hash, or replace with apt-installed Debian
-  packages where available. derivative-maker handled in commit
-  history; reapply the same approach to any new pip/Dockerfile
-  surface.
+- **SecurityPolicyID**: add a `SECURITY.md` to the `Kicksecure/.github`
+  and `Whonix/.github` repos for org-wide default. Pending an admin
+  token scoped to those orgs (same gate as
+  `dm-github-org-policy --apply` against them).
+- **FuzzingID**: kloak C fuzzing harness (libFuzzer on the parser)
+  is the open piece; tracked in `kloak/TODO.md`. helper-scripts +
+  security-misc are covered (Hypothesis / Atheris).
