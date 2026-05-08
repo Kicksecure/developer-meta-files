@@ -233,105 +233,54 @@ policy_upsert_repo_ruleset() {
 }
 
 ## ============================================================================
-## JSON body builders
+## JSON body factories (parameterized; pure data lives in
+## github-policy-data.bsh)
 ## ============================================================================
 
-## Standard branch ruleset: targets the default branch, blocks
-## force-push and deletion, requires signed commits. bypass_actors
-## defaults to "no one can override"; pass a JSON array literal to
-## allow specific actors. repository_name condition is included only
-## for org-level rulesets; the helper takes a flag to control that.
+## Branch ruleset body. Body shape lives in github-policy-data.bsh
+## as POLICY_BRANCH_RULESET_BODY_ORG / _REPO; this factory just
+## injects the runtime args ($name, $bypass) and picks the right
+## body for the scope.
 ##
 ## Args:
 ##   $1 - ruleset name
-##   $2 - 'org' or 'repo' (org adds the repository_name condition)
-##   $3 - bypass_actors JSON array (default '[]'). Example to allow
-##        any organization admin to push past:
-##          '[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
+##   $2 - 'org' or 'repo' (org variant includes the repository_name
+##        condition so the ruleset applies to every repo in the org)
+##   $3 - bypass_actors JSON array (default '[]'); use
+##        POLICY_RULESET_BYPASS_SOURCE / _MIRROR from the data file.
 policy_branch_ruleset_body() {
-   local name scope bypass
+   local name scope bypass body
 
    name="$1"
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
-         name: $name,
-         target: "branch",
-         enforcement: "active",
-         bypass_actors: $bypass,
-         conditions: {
-            ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
-            repository_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_BRANCH_RULESET_BODY_ORG}"
    else
-      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
-         name: $name,
-         target: "branch",
-         enforcement: "active",
-         bypass_actors: $bypass,
-         conditions: {
-            ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_BRANCH_RULESET_BODY_REPO}"
    fi
+
+   jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
-## Standard tag ruleset: targets all tags, blocks deletion and
-## re-pointing, requires signed tags.
-##
-## Args: same as policy_branch_ruleset_body.
+## Tag ruleset body. Body shape lives in github-policy-data.bsh as
+## POLICY_TAG_RULESET_BODY_ORG / _REPO. Args: same as
+## policy_branch_ruleset_body.
 policy_tag_ruleset_body() {
-   local name scope bypass
+   local name scope bypass body
 
    name="$1"
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
-         name: $name,
-         target: "tag",
-         enforcement: "active",
-         bypass_actors: $bypass,
-         conditions: {
-            ref_name: { include: ["~ALL"], exclude: [] },
-            repository_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_TAG_RULESET_BODY_ORG}"
    else
-      jq -n --arg name "${name}" --argjson bypass "${bypass}" -- '{
-         name: $name,
-         target: "tag",
-         enforcement: "active",
-         bypass_actors: $bypass,
-         conditions: {
-            ref_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_TAG_RULESET_BODY_REPO}"
    fi
+
+   jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
 ## ============================================================================

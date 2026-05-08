@@ -146,6 +146,88 @@ readonly POLICY_REPO_MIRROR='{
 readonly POLICY_RULESET_BYPASS_SOURCE='[]'
 readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
+## Branch + tag ruleset body shapes. POSTed to
+## /orgs/{org}/rulesets or /repos/{owner}/{repo}/rulesets via the
+## policy_branch_ruleset_body / policy_tag_ruleset_body factories
+## in github-policy-lib.bsh; the factories inject $name and $bypass
+## via jq --arg / --argjson.
+##
+## Why 4 bodies instead of 2 with conditional fields:
+##   The 'org' variant adds 'conditions.repository_name' (so the
+##   ruleset applies to every repo in the org); the 'repo' variant
+##   doesn't (the ruleset is scoped to the single repo it's on).
+##   Cleaner to have two complete bodies than one body with a
+##   nullable field.
+##
+## Why the same three rules everywhere:
+##   - deletion           block deletion of the protected ref
+##   - non_fast_forward   block force-push (rewriting history)
+##   - required_signatures   require GPG-signed commits / tags
+##   Same threat model on branches and tags; same bypass policy
+##   (per the bypass constants above).
+
+readonly POLICY_BRANCH_RULESET_BODY_ORG='{
+   name: $name,
+   target: "branch",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+      repository_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_BRANCH_RULESET_BODY_REPO='{
+   name: $name,
+   target: "branch",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_TAG_RULESET_BODY_ORG='{
+   name: $name,
+   target: "tag",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~ALL"], exclude: [] },
+      repository_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_TAG_RULESET_BODY_REPO='{
+   name: $name,
+   target: "tag",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
 ## ============================================================================
 ## Personal-policy bodies - used by dm-github-personal-policy
 ## ============================================================================

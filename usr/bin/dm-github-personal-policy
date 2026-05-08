@@ -127,10 +127,9 @@ apply_repo_policy() {
 
    repo="$1"
 
-   ## Body shapes for steps 1-2 are shared static constants in the
-   ## lib (POLICY_FORK_PR_APPROVAL / POLICY_WORKFLOW_PERMS). Bodies
-   ## for steps 3 and 4 are specific to this script and live at the
-   ## top (POLICY_ACTIONS_DISABLED / POLICY_REPO).
+   ## All body shapes used by this function live in
+   ## github-policy-data.bsh (POLICY_FORK_PR_APPROVAL,
+   ## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED, POLICY_REPO).
 
    ## 1. Fork-PR contributor approval = all_external_contributors.
    policy_api_call "${target_user}/${repo}: fork-PR approval=all_external_contributors" \

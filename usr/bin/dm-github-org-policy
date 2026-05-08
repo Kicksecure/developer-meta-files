@@ -64,8 +64,10 @@ readonly MIRROR_ORGS=( 'org-ai-assisted' )
 readonly ORGS=( "${MIRROR_ORGS[@]}" )
 
 ## Echo 'source' or 'mirror' for the named org; die on an unknown
-## name. The per-repo policy block below pivots on this and would
-## apply incorrect defaults if a typo'd org slipped through.
+## name. apply_repo_policy pivots on this to pick between
+## POLICY_REPO_SOURCE / POLICY_REPO_MIRROR (in
+## github-policy-data.bsh); a typo'd org would otherwise silently
+## get the wrong defaults.
 org_kind() {
    local org name
    org="$1"
@@ -138,21 +140,27 @@ Settings applied at the org level:
     disabled in the configuration.
   - Repository ruleset on the default branch of all repos:
     block force-push, block deletion, require signed commits.
-    bypass_actors=[] - no one, including org owners, can override.
+    bypass_actors pivots on org_kind:
+      SOURCE: []                 (no one, including owners, overrides)
+      MIRROR: OrganizationAdmin  (org owners can hotfix without
+                                  dropping the ruleset)
     Deliberately does NOT include the pull_request rule (would
     require all merges to go through a PR; maintainers push
     directly to master), required_status_checks (per-repo CI
     coupling), or required_linear_history.
   - Repository ruleset on tags of all repos: block deletion,
-    block re-pointing, require signed tags. Same bypass_actors=[].
+    block re-pointing, require signed tags. bypass_actors=[] on
+    both SOURCE and MIRROR (tags are immutable anchors regardless
+    of where the repo lives).
   - PAT and App policy toggles: SKIPPED (UI-only; --audit reports
     state). Apply path prints UI links for manual configuration.
 
 Settings applied per-repo (no org-wide endpoint):
   Pivots on org_kind (see SOURCE_ORGS / MIRROR_ORGS at the top of
   this script). The full policy table - including the SOURCE-vs-
-  MIRROR diff - lives in the "Policies" section near the top of
-  the script (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
+  MIRROR diff - lives in the data lib at
+  /usr/libexec/developer-meta-files/github-policy-data.bsh
+  (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
     SOURCE = Kicksecure, Whonix (canonical upstream)
       - has_wiki = false
       - has_issues = true       (file bugs here)
@@ -245,10 +253,11 @@ apply_code_security_config() {
 
    org="$1"
 
-   ## Body shape lives at top of file (POLICY_CODE_SECURITY); inject
-   ## the dynamic 'name' field via jq's --arg. The policy body is
-   ## written with jq's relaxed syntax (unquoted keys), so it must
-   ## be passed as a jq program ('-n -- <expr>'), not as JSON input.
+   ## Body shape lives in github-policy-data.bsh
+   ## (POLICY_CODE_SECURITY); inject the dynamic 'name' field via
+   ## jq's --arg. The policy body is written with jq's relaxed
+   ## syntax (unquoted keys), so it must be passed as a jq program
+   ## ('-n -- <expr>'), not as JSON input.
    config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
       "${POLICY_CODE_SECURITY} + {name: \$name}")"
 
@@ -327,10 +336,10 @@ apply_org_policy() {
 
    log notice "=== org policy: ${org} ==="
 
-   ## Body shapes for steps 1-3 are shared static constants in the
-   ## lib (POLICY_FORK_PR_APPROVAL / POLICY_WORKFLOW_PERMS /
-   ## POLICY_ACTIONS_ALLOWLIST). Body shape for step 3a (the scope-
-   ## switch body) is local to this script (POLICY_ACTIONS_SCOPE).
+   ## All body shapes used by this function live in
+   ## github-policy-data.bsh (POLICY_FORK_PR_APPROVAL,
+   ## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_SCOPE,
+   ## POLICY_ACTIONS_ALLOWLIST, POLICY_MEMBERS).
 
    ## 1. Fork-PR contributor approval = all_external_contributors.
    policy_api_call "${org}: fork-PR approval=all_external_contributors" \
@@ -360,7 +369,7 @@ apply_org_policy() {
 
    ## 4. Member-side org policy: default repo permission = read,
    ##    repository creation restricted to admins.
-   ##    Body shape at top of file (POLICY_MEMBERS).
+   ##    Body shape: POLICY_MEMBERS in github-policy-data.bsh.
    body="$(jq -n -- "${POLICY_MEMBERS}")"
    policy_api_call "${org}: members policy (default-perm=read, no member create)" \
       PATCH "/orgs/${org}" "${body}" \
@@ -679,7 +688,8 @@ apply_repo_policy() {
    ghorg_validate_name "${repo}"  repo || return 1
 
    kind="$(org_kind "${owner}")" || return 1
-   ## Body shapes at top of file (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
+   ## Body shapes: POLICY_REPO_SOURCE / POLICY_REPO_MIRROR in
+   ## github-policy-data.bsh.
    case "${kind}" in
       source)
          patch="$(jq -n -- "${POLICY_REPO_SOURCE}")"
