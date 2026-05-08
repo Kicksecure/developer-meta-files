@@ -72,7 +72,15 @@ on:
       enable:
         required: false
         type: string
-        default: "warning,style,performance,portability"
+        ## 'style' deliberately omitted from the default. cppcheck's
+        ## --error-exitcode triggers on ANY finding at any enabled
+        ## severity (NOT only the 'error' severity, despite the
+        ## flag's name); style findings are typically noisy
+        ## (variableScope, constVariablePointer, etc.) and would
+        ## fail CI on every PR for repos that haven't been previously
+        ## audited. Add 'style' explicitly via the input when a repo
+        ## wants the broader check.
+        default: "warning,performance,portability"
       extra-args:
         required: false
         type: string
@@ -124,10 +132,12 @@ jobs:
       - name: cppcheck
         ## --inline-suppr enables 'cppcheck-suppress' inline comments
         ## as the per-line escape hatch.
-        ## --error-exitcode=2 means: cppcheck exits non-zero only on
-        ## the 'error' severity, not warning/style. This keeps the
-        ## job 'green' on style noise while still failing on real
-        ## bugs (null derefs, OOB access, etc.).
+        ## --error-exitcode=2 means: cppcheck exits with this code
+        ## if any finding is reported at any enabled severity
+        ## (despite the flag name, this is NOT 'error'-severity
+        ## only). Combined with the default enable list above
+        ## ('warning,performance,portability', no 'style'), this
+        ## triggers CI failure only on the bug-class findings.
         ## --quiet drops the per-file scan progress lines (the actual
         ## findings still print to stderr).
         ##
