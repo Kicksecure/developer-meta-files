@@ -81,6 +81,87 @@ readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
 readonly CODE_SEC_CONFIG_NAME='dm-github-org-policy code security'
 
+## ===== Policies =====
+##
+## Each block is the body that gets POSTed/PATCHed to GitHub. Edit
+## here rather than scattered through the apply_* functions; those
+## functions become pure plumbing (pick a body, hit an endpoint).
+## Trivial one-line bodies ('{scope: "all"}' etc.) are kept inline
+## at their use site - lifting them adds noise without value.
+
+## Org-level code-security configuration (POST/PATCH
+## /orgs/{org}/code-security/configurations). Applied identically
+## to SOURCE and MIRROR. Note 'code_scanning_default_setup:
+## disabled' - we use the committed codeql.yml workflows instead
+## of GitHub's brittle auto-detection.
+readonly POLICY_CODE_SECURITY='{
+   description: "Project-wide code security applied via dm-github-org-policy.",
+   enforcement: "enforced",
+   secret_scanning: "enabled",
+   secret_scanning_push_protection: "enabled",
+   dependabot_alerts: "enabled",
+   dependabot_security_updates: "enabled",
+   dependency_graph: "enabled",
+   code_scanning_default_setup: "disabled",
+   private_vulnerability_reporting: "disabled"
+}'
+
+## Org Actions scope (PUT /orgs/{org}/actions/permissions). Switches
+## allowed_actions to "selected"; the per-action allowlist itself is
+## set by a follow-up call via policy_actions_selected_allowlist_body.
+readonly POLICY_ACTIONS_SCOPE='{
+   enabled_repositories: "all",
+   allowed_actions: "selected"
+}'
+
+## Members policy (PATCH /orgs/{org}). Default repo permission for
+## new members = read; only admins can create repositories.
+## members_allowed_repository_creation_type (deprecated),
+## members_can_delete_repositories (UI-only), and
+## two_factor_requirement_enabled (read-only on PATCH) are
+## deliberately NOT in this body.
+readonly POLICY_MEMBERS='{
+   default_repository_permission: "read",
+   members_can_create_repositories: false,
+   members_can_create_public_repositories: false,
+   members_can_create_private_repositories: false,
+   members_can_create_internal_repositories: false
+}'
+
+## --- SOURCE vs MIRROR diffs (the only place these two diverge) ---
+##
+##                       SOURCE  MIRROR  why
+##   has_wiki              off    off    we don't use GH wikis
+##   has_issues             on    off    MIRROR: file upstream
+##   has_projects           on    off    MIRROR: project board upstream
+##   has_discussions        on    off    MIRROR: discussions upstream
+##   allow_forking          on    off    MIRROR: no forks-of-forks
+##   ruleset bypass        none  OrgAdmin   MIRROR: hotfix without
+##                                          dropping the ruleset
+
+## Per-repo PATCH body (PATCH /repos/{owner}/{repo}). Pivots on
+## org_kind in apply_repo_policy.
+readonly POLICY_REPO_SOURCE='{
+   has_wiki: false,
+   has_issues: true
+}'
+readonly POLICY_REPO_MIRROR='{
+   has_wiki: false,
+   has_issues: false,
+   has_projects: false,
+   has_discussions: false,
+   allow_forking: false
+}'
+
+## Branch + tag ruleset bypass actor list (passed to
+## policy_branch_ruleset_body / policy_tag_ruleset_body). SOURCE
+## allows nobody to override; MIRROR allows OrganizationAdmin
+## (actor_id 1) so a stuck mirror state can be hot-fixed without
+## first dropping the ruleset.
+readonly POLICY_RULESET_BYPASS_SOURCE='[]'
+readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
+
+
 ## Modes are mutually exclusive; one must be passed explicitly. No
 ## implicit default - running this tool without a mode flag would
 ## otherwise apply mutations under "what the operator forgot to type"
@@ -147,7 +228,9 @@ Settings applied at the org level:
 
 Settings applied per-repo (no org-wide endpoint):
   Pivots on org_kind (see SOURCE_ORGS / MIRROR_ORGS at the top of
-  this script):
+  this script). The full policy table - including the SOURCE-vs-
+  MIRROR diff - lives in the "Policies" section near the top of
+  the script (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
     SOURCE = Kicksecure, Whonix (canonical upstream)
       - has_wiki = false
       - has_issues = true       (file bugs here)
@@ -156,6 +239,7 @@ Settings applied per-repo (no org-wide endpoint):
       - has_issues = false      (file upstream, not on the mirror)
       - has_projects = false    (project boards belong upstream)
       - has_discussions = false (Discussions belong upstream)
+      - allow_forking = false   (no forks-of-forks)
 
 Deliberately NOT applied (with reasoning):
   - Private vulnerability reporting: project channel for disclosure
@@ -239,18 +323,12 @@ apply_code_security_config() {
 
    org="$1"
 
-   config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- '{
-      name: $name,
-      description: "Project-wide code security applied via dm-github-org-policy.",
-      enforcement: "enforced",
-      secret_scanning: "enabled",
-      secret_scanning_push_protection: "enabled",
-      dependabot_alerts: "enabled",
-      dependabot_security_updates: "enabled",
-      dependency_graph: "enabled",
-      code_scanning_default_setup: "disabled",
-      private_vulnerability_reporting: "disabled"
-   }')"
+   ## Body shape lives at top of file (POLICY_CODE_SECURITY); inject
+   ## the dynamic 'name' field via jq's --arg. The policy body is
+   ## written with jq's relaxed syntax (unquoted keys), so it must
+   ## be passed as a jq program ('-n -- <expr>'), not as JSON input.
+   config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
+      "${POLICY_CODE_SECURITY} + {name: \$name}")"
 
    if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: ${org}: upsert code-security configuration ${CODE_SEC_CONFIG_NAME}"
@@ -344,14 +422,8 @@ apply_org_policy() {
    ##    Two calls: switch allowed_actions to "selected", then set the
    ##    list. CAUTION: workflows pinned to unverified third-party
    ##    actions will start failing after this; audit first.
-   ##    Org-level body uses 'enabled_repositories' (string); the
-   ##    repo-level endpoint used by dm-github-personal-policy uses
-   ##    'enabled' (bool) instead, which is why this body is built
-   ##    inline rather than via a shared helper.
-   body="$(jq -n -- '{
-      enabled_repositories: "all",
-      allowed_actions: "selected"
-   }')"
+   ##    Body shape at top of file (POLICY_ACTIONS_SCOPE).
+   body="$(jq -n -- "${POLICY_ACTIONS_SCOPE}")"
    policy_api_call "${org}: actions enabled=all, allowed=selected" \
       PUT "/orgs/${org}/actions/permissions" "${body}" \
       || true
@@ -362,17 +434,8 @@ apply_org_policy() {
 
    ## 4. Member-side org policy: default repo permission = read,
    ##    repository creation restricted to admins.
-   ##    members_allowed_repository_creation_type (deprecated),
-   ##    members_can_delete_repositories (UI-only), and
-   ##    two_factor_requirement_enabled (read-only on PATCH; see step
-   ##    4b) are deliberately NOT in the body.
-   body="$(jq -n -- '{
-      default_repository_permission: "read",
-      members_can_create_repositories: false,
-      members_can_create_public_repositories: false,
-      members_can_create_private_repositories: false,
-      members_can_create_internal_repositories: false
-   }')"
+   ##    Body shape at top of file (POLICY_MEMBERS).
+   body="$(jq -n -- "${POLICY_MEMBERS}")"
    policy_api_call "${org}: members policy (default-perm=read, no member create)" \
       PATCH "/orgs/${org}" "${body}" \
       || true
@@ -410,8 +473,8 @@ apply_org_policy() {
    ##    required_status_checks (per-repo CI coupling),
    ##    required_linear_history (breaks some merge workflows).
    case "$(org_kind "${org}")" in
-      source) bypass_branch='[]' ;;
-      mirror) bypass_branch='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]' ;;
+      source) bypass_branch="${POLICY_RULESET_BYPASS_SOURCE}" ;;
+      mirror) bypass_branch="${POLICY_RULESET_BYPASS_MIRROR}" ;;
    esac
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_BRANCH}" \
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${bypass_branch}")" \
@@ -690,14 +753,15 @@ apply_repo_policy() {
    ghorg_validate_name "${repo}"  repo || return 1
 
    kind="$(org_kind "${owner}")" || return 1
+   ## Body shapes at top of file (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR).
    case "${kind}" in
       source)
-         patch="$(jq -n -- '{has_wiki: false, has_issues: true}')"
+         patch="$(jq -n -- "${POLICY_REPO_SOURCE}")"
          summary='SOURCE: wiki=off, issues=on'
          ;;
       mirror)
-         patch="$(jq -n -- '{has_wiki: false, has_issues: false, has_projects: false, has_discussions: false}')"
-         summary='MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+         patch="$(jq -n -- "${POLICY_REPO_MIRROR}")"
+         summary='MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
          ;;
    esac
 
