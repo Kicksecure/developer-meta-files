@@ -128,7 +128,7 @@ done
 [ "${mode_set}" -eq 1 ] \
    || { show_help >&2; die 64 'specify exactly one of --apply / --dry-run'; }
 
-has github-org-fork || die 1 "'github-org-fork' not on PATH"
+die_if_not_has github-org-fork
 
 for src in "${SOURCE_ORGS[@]}"; do
    per_src_flags=()
