@@ -27,12 +27,52 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 has github-org-fork \
   || die 1 "'github-org-fork' not on PATH"
 
-## Orgs to which the policy is applied. org-ai-assisted is our mirror
-## org. Kicksecure and Whonix can be added here once an admin token
-## scoped to those orgs is available - currently commented out so a
-## dry-run / apply against the mirror does not silently fail mid-loop.
-# readonly ORGS=( 'Kicksecure' 'Whonix' 'org-ai-assisted' )
-readonly ORGS=( 'org-ai-assisted' )
+## ===== Per-org policy distinction =====
+##
+## Two kinds of org are touched by this script:
+##
+##   SOURCE = canonical upstream org (Kicksecure, Whonix). Holds
+##            originals; first-class bug-tracker, the place where
+##            contributors and downstream tooling expect to file
+##            issues, follow Discussions, watch the project.
+##            Defaults: has_issues=true, has_projects=true,
+##            has_discussions=true.
+##   MIRROR = fork org (org-ai-assisted) for AI-assisted dev work.
+##            Holds 100% forks. Issues / Projects / Discussions
+##            belong on the SOURCE - filing upstream is the
+##            contract; the MIRROR's mirror-side trackers must
+##            stay closed or contributors get split inboxes.
+##            Defaults: has_issues=false, has_projects=false,
+##            has_discussions=false.
+##
+## Vocabulary aligns with dm-github-fork-sync, which already uses
+## SOURCE_ORGS / MIRROR.
+readonly SOURCE_ORGS=( 'Kicksecure' 'Whonix' )
+readonly MIRROR_ORGS=( 'org-ai-assisted' )
+
+## Active policy targets. SOURCE_ORGS is currently commented out
+## pending an admin token scoped to those orgs - uncomment once
+## available; the per-org case statements below already handle
+## both kinds.
+# readonly ORGS=( "${SOURCE_ORGS[@]}" "${MIRROR_ORGS[@]}" )
+readonly ORGS=( "${MIRROR_ORGS[@]}" )
+
+## Echo 'source' or 'mirror' for the named org; die on an unknown
+## name. The per-repo policy block below pivots on this and would
+## apply incorrect defaults if a typo'd org slipped through.
+org_kind() {
+   local org name
+   org="$1"
+   for name in "${SOURCE_ORGS[@]}"; do
+      [ "${name}" = "${org}" ] && { printf '%s\n' source; return 0; }
+   done
+   for name in "${MIRROR_ORGS[@]}"; do
+      [ "${name}" = "${org}" ] && { printf '%s\n' mirror; return 0; }
+   done
+   log error "org_kind: '${org}' not in SOURCE_ORGS or MIRROR_ORGS"
+   return 1
+}
+
 readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
 readonly CODE_SEC_CONFIG_NAME='dm-github-org-policy code security'
@@ -102,8 +142,16 @@ Settings applied at the org level:
     state). Apply path prints UI links for manual configuration.
 
 Settings applied per-repo (no org-wide endpoint):
-  - has_wiki = false
-  - has_issues = true
+  Pivots on org_kind (see SOURCE_ORGS / MIRROR_ORGS at the top of
+  this script):
+    SOURCE = Kicksecure, Whonix (canonical upstream)
+      - has_wiki = false
+      - has_issues = true       (file bugs here)
+    MIRROR = org-ai-assisted    (fork org for AI-assisted dev work)
+      - has_wiki = false
+      - has_issues = false      (file upstream, not on the mirror)
+      - has_projects = false    (project boards belong upstream)
+      - has_discussions = false (Discussions belong upstream)
 
 Deliberately NOT applied (with reasoning):
   - Private vulnerability reporting: project channel for disclosure
@@ -606,11 +654,15 @@ audit_org_state() {
 }
 
 ## Per-repo settings - only the ones with no org-wide alternative.
-## With the org-level rulesets and enable_all calls in apply_org_policy,
-## the per-repo loop has shrunk to wiki-off / issues-on (these have no
-## "apply to all repos" org endpoint).
+## Pivots on org_kind:
+##   SOURCE: has_wiki=false, has_issues=true
+##           (canonical project: file bugs here)
+##   MIRROR: has_wiki=false, has_issues=false, has_projects=false,
+##           has_discussions=false
+##           (fork org: file everything upstream; the mirror-side
+##           trackers stay closed to avoid split-inbox confusion)
 apply_repo_policy() {
-   local owner repo patch
+   local owner repo patch kind summary
 
    owner="$1"
    repo="$2"
@@ -618,9 +670,19 @@ apply_repo_policy() {
    ghorg_validate_name "${owner}" user || return 1
    ghorg_validate_name "${repo}"  repo || return 1
 
-   patch="$(jq -n -- '{has_wiki: false, has_issues: true}')"
+   kind="$(org_kind "${owner}")" || return 1
+   case "${kind}" in
+      source)
+         patch="$(jq -n -- '{has_wiki: false, has_issues: true}')"
+         summary='SOURCE: wiki=off, issues=on'
+         ;;
+      mirror)
+         patch="$(jq -n -- '{has_wiki: false, has_issues: false, has_projects: false, has_discussions: false}')"
+         summary='MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+         ;;
+   esac
 
-   policy_api_call "${owner}/${repo}: wiki=off, issues=on" \
+   policy_api_call "${owner}/${repo}: ${summary}" \
       PATCH "/repos/${owner}/${repo}" "${patch}" || true
 }
 
