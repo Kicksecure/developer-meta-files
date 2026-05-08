@@ -17,29 +17,75 @@ in the Scorecard output stand out by contrast.
 ## DependencyUpdateToolID = 0/10 on consumer repos
 
 **Affects**: `kloak`, `security-misc`, and any future repo that
-goes through the reusable-workflow migration.
+goes through the reusable-workflow migration. Also every
+shell-only / config-only repo in the org (`whonix-firewall`,
+`Whonix-Installer`, `usability-misc`, `tb-updater`, `genmkfile`,
+`Whonix-Starter`, `msgcollector`) - none of those have a
+language-level dependency manifest Dependabot or Renovate even
+supports.
 
-**Why Scorecard reports it**: it does not see a
-`.github/dependabot.yml` in the repo and concludes there is no
-dependency update mechanism.
+**Why Scorecard reports it**: the check looks at **file presence
+only** (verified against the source at
+[`checks/raw/dependency_update_tool.go`](https://github.com/ossf/scorecard/blob/main/checks/raw/dependency_update_tool.go))
+- `.github/dependabot.yml`, `.github/dependabot.yaml`, Renovate
+configs, scala-steward configs. Org-level Dependabot enablement
+is invisible to it.
 
-**Why it is intentional**: after the centralization in
+**Why it is intentional**:
+
+For consumer-wrapper repos: after the centralization in
 [github-actions.md](../agents/github-actions.md), action SHAs
 in consumer wrappers are `uses: org-ai-assisted/developer-meta-
 files/.github/workflows/reusable-<name>.yml@master` references.
-The actual SHA-pinned `actions/checkout`, `anthropics/claude-
-code-action`, etc. live in the reusable workflows in this repo.
-One `developer-meta-files/.github/dependabot.yml` updates them
-all;
+The actual SHA-pinned `actions/checkout`,
+`anthropics/claude-code-action`, etc. live in the reusable
+workflows in this repo. One
+`developer-meta-files/.github/dependabot.yml` updates them all;
 consumer repos pick up the bumped SHAs automatically through
 `@master` on their next workflow run. Adding per-consumer
 `dependabot.yml` files would just produce empty PR streams since
 the consumers carry no SHAs of their own.
 
-**Detection logic gap**: Scorecard cannot model "this repo
+For shell-only / config-only repos: there is genuinely nothing
+for a dependency-update tool to bump - no `package.json`,
+`requirements.txt`, `go.mod`, `Gemfile`, etc. The check has no
+way to express "N/A" so it reports 0/10.
+
+**Detection logic gap**: Scorecard cannot model (a) "this repo
 depends on another repo's reusable workflow with `@master`
-tracking", so the cross-repo dependency-update path is invisible
-to it.
+tracking", nor (b) "this repo has no language-level
+dependencies to update". Both are well-known upstream:
+
+- [ossf/scorecard#1903](https://github.com/ossf/scorecard/issues/1903)
+  - org-level Dependabot enablement should count as evidence
+  (open). Confirms the file-presence-only model.
+- [ossf/scorecard#2190](https://github.com/ossf/scorecard/issues/2190)
+  - don't penalize repos with no dependencies at all (open;
+  closest direct match for our shell-only repos).
+- [ossf/scorecard#3746](https://github.com/ossf/scorecard/issues/3746)
+  - return inconclusive (-1) score for repos with no relevant
+  deps (open; on the active "Policy per Ecosystem" milestone -
+  most likely vehicle for a fix).
+- [ossf/scorecard#1726](https://github.com/ossf/scorecard/issues/1726)
+  - check should detect ecosystems with no Dependabot / Renovate
+  support (e.g., C / C++) and not score 0/10 (open).
+- [ossf/scorecard#2483](https://github.com/ossf/scorecard/issues/2483)
+  - cURL-driven feedback that C projects without a widely-
+  adopted dep manager shouldn't be penalized (open, stale).
+- [ossf/scorecard#1014](https://github.com/ossf/scorecard/issues/1014)
+  - libraries-vs-applications framing of the check (open;
+  tangential).
+- [ossf/scorecard#4795](https://github.com/ossf/scorecard/issues/4795)
+  - "filter out incompatible repository checks" (closed
+  Sept 2025, completed); broader infrastructure that would
+  unblock the per-check fixes above.
+
+**What to do about it**: nothing on our side. Adding empty
+`dependabot.yml` files to satisfy the check would be pure
+compliance theatre - they would open zero PRs in practice
+because there is nothing for them to bump. A `+1` comment on
+**#3746** with our shell-only repos as concrete examples is
+more useful than yet another duplicate issue.
 
 ## PinnedDependenciesID firing on `@master` reusable refs
 
