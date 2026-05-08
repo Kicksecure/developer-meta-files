@@ -77,7 +77,6 @@
 ##       permissions:
 ##         security-events: write
 ##         contents: read
-##         packages: read
 ##
 ## ## Caller example (multi-language, one job per language)
 ##
@@ -89,7 +88,6 @@
 ##       permissions:
 ##         security-events: write
 ##         contents: read
-##         packages: read
 ##     c-cpp:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
 ##       with:
@@ -99,7 +97,6 @@
 ##       permissions:
 ##         security-events: write
 ##         contents: read
-##         packages: read
 
 name: CodeQL (reusable)
 
@@ -152,11 +149,14 @@ jobs:
     permissions:
       ## Required so the CodeQL action can upload SARIF results.
       security-events: write
-      ## Read access to private packages if any were referenced by the
-      ## CodeQL build step. Keep at 'read'.
-      packages: read
       ## Checkout / source read.
       contents: read
+      ## Note: 'packages: read' was previously listed as a defensive
+      ## default for CodeQL builds that pull from ghcr.io. None of
+      ## our consumers do (verified: kloak runs 'bash build.sh',
+      ## security-misc runs 'bash ci/codeql-build.sh' - neither
+      ## authenticates to ghcr.io). Add it back per-consumer if a
+      ## future build step needs it.
 
     steps:
       - name: Checkout repository
