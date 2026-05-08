@@ -304,16 +304,14 @@ apply_code_security_config() {
       log notice "ok: ${org}: created code-security configuration id=${existing_id}"
    fi
 
-   ## Attach to all existing repos in the org. scope=all covers every
-   ## repo without listing them; the configuration's enforcement field
-   ## takes care of the on/off state.
-   attach_body="$(jq -n -- '{scope: "all"}')"
+   ## Attach to all existing repos in the org.
+   attach_body="$(jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")"
    policy_api_call "${org}: attach code-security config to all repos" \
       POST "/orgs/${org}/code-security/configurations/${existing_id}/attach" \
       "${attach_body}" || true
 
    ## Make this configuration the default for newly created repos.
-   default_body="$(jq -n -- '{default_for_new_repos: "all"}')"
+   default_body="$(jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")"
    policy_api_call "${org}: set code-security config as default for new repos" \
       PUT "/orgs/${org}/code-security/configurations/${existing_id}/defaults" \
       "${default_body}" || true

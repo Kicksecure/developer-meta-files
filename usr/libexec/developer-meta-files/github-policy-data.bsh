@@ -101,6 +101,23 @@ readonly POLICY_ACTIONS_SCOPE='{
    allowed_actions: "selected"
 }'
 
+## Code-security configuration attach scope (POST
+## /orgs/{org}/code-security/configurations/{id}/attach). scope=all
+## covers every existing repo in the org without listing them
+## individually; the configuration's enforcement field controls
+## on/off state.
+readonly POLICY_CODE_SECURITY_ATTACH='{
+   scope: "all"
+}'
+
+## Code-security configuration default-for-new-repos (PUT
+## /orgs/{org}/code-security/configurations/{id}/defaults). Tells
+## GitHub to auto-attach this configuration to any newly created
+## repo in the org.
+readonly POLICY_CODE_SECURITY_DEFAULTS='{
+   default_for_new_repos: "all"
+}'
+
 ## Org members policy (PATCH /orgs/{org}). Default repo permission
 ## for new members = read; only admins can create repositories.
 ## members_allowed_repository_creation_type (deprecated),
