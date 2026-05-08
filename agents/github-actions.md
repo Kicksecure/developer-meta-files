@@ -54,6 +54,16 @@ single-source-of-truth update propagation. Both are valid; pick
 per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
 
+## See also
+
+- [`docs/scorecard-known-false-positives.md`](../docs/scorecard-known-false-positives.md)
+  for the catalogue of Scorecard signals that look like findings
+  but are intentional architectural choices in this org
+  (DependencyUpdateToolID on consumer repos, PinnedDependenciesID
+  on `@master` reusable refs, MaintainedID on fresh repos,
+  SASTID transient post-CodeQL-adoption, multi-stage `FROM
+  <stage>` flagged as unpinned).
+
 ## Action SHA pinning
 
 Per repo's own `agents/github-actions-security.md`: every
