@@ -14,6 +14,38 @@
 ## via the runner's GITHUB_TOKEN scoped to the permissions block on
 ## the calling job.
 ##
+## ## Action-input drift (2026-05)
+##
+## The action removed the 'allowed_users' input upstream; the new
+## API surface is 'allowed_non_write_users' + 'allowed_bots'. Live
+## runs against the SHA pinned below emit:
+##
+##   ##[warning]Unexpected input(s) 'allowed_users', valid inputs
+##     are [..., 'allowed_bots', 'allowed_non_write_users', ...]
+##
+## We do NOT pass either replacement: the action's default already
+## allows any actor with repo write permission, which matches our
+## roster (org members all have write). The roster gate is enforced
+## one layer up in the job's 'if:' condition - that gate runs
+## BEFORE the runner spins up, so the action-internal check would
+## be redundant even if it still existed.
+##
+## ## OIDC federation
+##
+## The action requests an OIDC token from the runner, exchanges it
+## for a GitHub App token via Anthropic's gateway, and uses that
+## elevated token to post review comments. Live log:
+##
+##   Requesting OIDC token...
+##   OIDC token successfully obtained
+##   Exchanging OIDC token for app token...
+##   Using GITHUB_TOKEN from OIDC
+##
+## 'id-token: write' on the calling job's permissions block is
+## therefore required. Without it the action fails with "Could not
+## fetch an OIDC token. Did you remember to add 'id-token: write'
+## to your workflow permissions?".
+##
 ## ## Caller responsibilities
 ##
 ## - Define the trigger schedule (typically pull_request +
