@@ -150,43 +150,6 @@ also fire CodeQL. That would push SASTID toward 10/10 faster but
 roughly multiplies CI minute consumption. Per cost-vs-coverage
 trade-off, master + PR is the chosen balance.
 
-## Dockerfile `FROM <previous-stage>` flagged as unpinned
-
-**Affects**: `derivative-maker/docker/Dockerfile:17` (`FROM
-baseimage`).
-
-**Why Scorecard reports it**: the rule reads `FROM <name>` and
-expects a registry digest pin (`@sha256:...`).
-
-**Why it is a false positive**: `baseimage` is a local multi-stage
-build target defined earlier in the same Dockerfile (`FROM
-debian:trixie-slim@sha256:... AS baseimage` on line 4). It does
-not pull from a registry; the upstream digest is already pinned
-on the AS-line and does not need to be repeated. Older Scorecard
-versions did not parse multi-stage builds.
-
-**Upstream fix status**: largely resolved in Scorecard versions
-released after late September 2025. Track via:
-
-- [ossf/scorecard#1572](https://github.com/ossf/scorecard/issues/1572)
-  - original tracker (open, broad-case).
-- [ossf/scorecard#2906](https://github.com/ossf/scorecard/issues/2906)
-  - named build stages incomplete remediation (closed,
-  completed Sep 2025).
-- [ossf/scorecard#3684](https://github.com/ossf/scorecard/issues/3684)
-  - build-args + multi-stage `FROM <stage>` (closed, completed
-  Sep 2025).
-- [ossf/scorecard#4220](https://github.com/ossf/scorecard/issues/4220)
-  - duplicate FP report on poutine's Dockerfile (closed, not
-  planned, Jul 2024 - superseded by the above).
-- [ossf/scorecard PR#4643](https://github.com/ossf/scorecard/pull/4643)
-  - fix for `FROM scratch`-derived named stages (merged May 2025).
-
-**What to do**: re-check the next Scorecard run on
-`derivative-maker`. If the alert no longer fires, drop this
-entry. If it still fires, comment on #1572 with the specific
-Dockerfile excerpt as a regression test case.
-
 ## Signed-Releases = inconclusive (and that is the goal)
 
 **Affects**: every repo in `Kicksecure` and `Whonix`.
