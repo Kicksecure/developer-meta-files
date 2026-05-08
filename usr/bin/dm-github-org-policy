@@ -21,6 +21,8 @@ shopt -s shift_verbose
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+source /usr/libexec/developer-meta-files/github-policy-data.bsh
 ## R-082: source every helper-scripts file used directly. The lib
 ## happens to source these too (transitively) but a future refactor
 ## that drops a transitive source must not break this consumer.
@@ -80,87 +82,6 @@ org_kind() {
 readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
 readonly CODE_SEC_CONFIG_NAME='dm-github-org-policy code security'
-
-## ===== Policies =====
-##
-## Each block is the body that gets POSTed/PATCHed to GitHub. Edit
-## here rather than scattered through the apply_* functions; those
-## functions become pure plumbing (pick a body, hit an endpoint).
-## Trivial one-line bodies ('{scope: "all"}' etc.) are kept inline
-## at their use site - lifting them adds noise without value.
-
-## Org-level code-security configuration (POST/PATCH
-## /orgs/{org}/code-security/configurations). Applied identically
-## to SOURCE and MIRROR. Note 'code_scanning_default_setup:
-## disabled' - we use the committed codeql.yml workflows instead
-## of GitHub's brittle auto-detection.
-readonly POLICY_CODE_SECURITY='{
-   description: "Project-wide code security applied via dm-github-org-policy.",
-   enforcement: "enforced",
-   secret_scanning: "enabled",
-   secret_scanning_push_protection: "enabled",
-   dependabot_alerts: "enabled",
-   dependabot_security_updates: "enabled",
-   dependency_graph: "enabled",
-   code_scanning_default_setup: "disabled",
-   private_vulnerability_reporting: "disabled"
-}'
-
-## Org Actions scope (PUT /orgs/{org}/actions/permissions). Switches
-## allowed_actions to "selected"; the per-action allowlist itself
-## (POLICY_ACTIONS_ALLOWLIST in github-policy-lib.bsh) is set by a
-## follow-up call to /actions/permissions/selected-actions.
-readonly POLICY_ACTIONS_SCOPE='{
-   enabled_repositories: "all",
-   allowed_actions: "selected"
-}'
-
-## Members policy (PATCH /orgs/{org}). Default repo permission for
-## new members = read; only admins can create repositories.
-## members_allowed_repository_creation_type (deprecated),
-## members_can_delete_repositories (UI-only), and
-## two_factor_requirement_enabled (read-only on PATCH) are
-## deliberately NOT in this body.
-readonly POLICY_MEMBERS='{
-   default_repository_permission: "read",
-   members_can_create_repositories: false,
-   members_can_create_public_repositories: false,
-   members_can_create_private_repositories: false,
-   members_can_create_internal_repositories: false
-}'
-
-## --- SOURCE vs MIRROR diffs (the only place these two diverge) ---
-##
-##                       SOURCE  MIRROR  why
-##   has_wiki              off    off    we don't use GH wikis
-##   has_issues             on    off    MIRROR: file upstream
-##   has_projects           on    off    MIRROR: project board upstream
-##   has_discussions        on    off    MIRROR: discussions upstream
-##   allow_forking          on    off    MIRROR: no forks-of-forks
-##   ruleset bypass        none  OrgAdmin   MIRROR: hotfix without
-##                                          dropping the ruleset
-
-## Per-repo PATCH body (PATCH /repos/{owner}/{repo}). Pivots on
-## org_kind in apply_repo_policy.
-readonly POLICY_REPO_SOURCE='{
-   has_wiki: false,
-   has_issues: true
-}'
-readonly POLICY_REPO_MIRROR='{
-   has_wiki: false,
-   has_issues: false,
-   has_projects: false,
-   has_discussions: false,
-   allow_forking: false
-}'
-
-## Branch + tag ruleset bypass actor list (passed to
-## policy_branch_ruleset_body / policy_tag_ruleset_body). SOURCE
-## allows nobody to override; MIRROR allows OrganizationAdmin
-## (actor_id 1) so a stuck mirror state can be hot-fixed without
-## first dropping the ruleset.
-readonly POLICY_RULESET_BYPASS_SOURCE='[]'
-readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
 
 ## Modes are mutually exclusive; one must be passed explicitly. No

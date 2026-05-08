@@ -17,15 +17,14 @@
 ##                       idempotent find-by-name then PUT-update or
 ##                       POST-create for org-level and repo-level
 ##                       rulesets.
-##   - POLICY_FORK_PR_APPROVAL / POLICY_WORKFLOW_PERMS /
-##     POLICY_ACTIONS_ALLOWLIST: top-of-file readonly constants
-##                       carrying the static body shapes shared by
-##                       both consumers. Render via
-##                       'jq -n -- "${POLICY_X}"' at the call site.
 ##   - policy_branch_ruleset_body / policy_tag_ruleset_body:
 ##                       parameterized factories for the branch and
 ##                       tag rulesets (need name + scope + bypass
 ##                       actor list).
+##
+## Static policy body data (POLICY_FORK_PR_APPROVAL,
+## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_ALLOWLIST, etc.) lives in
+## github-policy-data.bsh. Each consumer sources both files.
 ##   - policy_parse_mode_args / policy_tool_init:
 ##                       shared --apply / --dry-run / --audit / -v
 ##                       parser plus the post-parse + ghorg_require_deps
@@ -64,43 +63,6 @@
 ##
 ## github-org-lib.bsh must be sourced before this file (provides
 ## ghorg_api / ghorg_status_of / ghorg_body_of / GHORG_MAX_ID_LEN).
-
-## ============================================================================
-## Shared policy bodies (consumer-facing constants)
-## ============================================================================
-##
-## Static JSON-shaped jq expressions used by both dm-github-org-policy
-## and dm-github-personal-policy. Bodies that diverge between the two
-## (or between SOURCE and MIRROR orgs) live in their respective
-## consumer scripts rather than here.
-##
-## Render via 'jq -n -- "${POLICY_X}"' at the call site (the bodies
-## are written with jq's relaxed syntax - unquoted keys - so they
-## are jq programs, not JSON input).
-
-## Fork-PR contributor approval. PUT
-## /{orgs|repos}/.../actions/permissions/fork-pr-contributor-approval.
-## Same setting works at both org and repo level.
-readonly POLICY_FORK_PR_APPROVAL='{
-   approval_policy: "all_external_contributors"
-}'
-
-## Default workflow GITHUB_TOKEN permissions. PUT
-## /{orgs|repos}/.../actions/permissions/workflow.
-readonly POLICY_WORKFLOW_PERMS='{
-   default_workflow_permissions: "read",
-   can_approve_pull_request_reviews: false
-}'
-
-## Allowed Actions allow-list (org-level only). PUT
-## /orgs/{org}/actions/permissions/selected-actions. Permits GitHub-
-## owned actions + Marketplace actions from verified creators; no
-## arbitrary patterns.
-readonly POLICY_ACTIONS_ALLOWLIST='{
-   github_owned_allowed: true,
-   verified_allowed: true,
-   patterns_allowed: []
-}'
 
 ## ============================================================================
 ## API call wrapper

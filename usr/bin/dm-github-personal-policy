@@ -22,6 +22,8 @@ shopt -s shift_verbose
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
 ## Modes are mutually exclusive; one must be passed explicitly. No
 ## implicit default - running this tool without a mode flag is the
@@ -35,6 +37,7 @@ mode_set=0
 positional=()
 target_user=''
 
+# shellcheck disable=SC2317  # invoked dynamically by policy_parse_mode_args
 show_help() {
    cat <<'EOF'
 Apply per-repo lockdown policy to every public repo owned by a
@@ -111,40 +114,9 @@ fi
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
-## ===== Policies =====
-##
-## Body shapes specific to this script. Shared bodies
-## (POLICY_FORK_PR_APPROVAL, POLICY_WORKFLOW_PERMS) come from
-## github-policy-lib.bsh. Trivial inline bodies stay at their use
-## site.
-
-## Disable GitHub Actions on the repo entirely. PUT
-## /repos/{owner}/{repo}/actions/permissions. The personal account
-## is a backup/mirror; CI runs in the upstream orgs, so no workflow
-## needs to fire here. Disabling is the strongest cut against
-## malicious-fork-PR or accidentally-triggered runs and saves the
-## operator's free CI minutes.
-readonly POLICY_ACTIONS_DISABLED='{
-   enabled: false
-}'
-
-## Repo settings + secret-scanning + push-protection. PATCH
-## /repos/{owner}/{repo}.
-##   - has_wiki / has_projects / has_discussions = false:
-##     cut the abuse vectors. has_issues left untouched (defaults
-##     on; useful for a backup mirror).
-##   - secret_scanning + push_protection: flag accidental secrets
-##     and block them at push time. Free for public repos; we scope
-##     to public-only anyway.
-readonly POLICY_REPO='{
-   has_wiki: false,
-   has_projects: false,
-   has_discussions: false,
-   security_and_analysis: {
-      secret_scanning: { status: "enabled" },
-      secret_scanning_push_protection: { status: "enabled" }
-   }
-}'
+## Policy bodies (POLICY_*) live in github-policy-data.bsh, sourced
+## above. This script consumes POLICY_FORK_PR_APPROVAL,
+## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED, POLICY_REPO.
 
 ## --verbose suppresses the 'ok:' line otherwise printed by
 ## policy_api_call. Apply runs without --verbose are quiet on success.
