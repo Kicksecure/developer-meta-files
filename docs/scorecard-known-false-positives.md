@@ -197,6 +197,52 @@ artifact path).
 **What to do**: nothing. Do NOT create GitHub Release objects on
 these repos. The current state is the desired state.
 
+**Upstream docs status**:
+
+- [docs/checks.md Signed-Releases](https://github.com/ossf/scorecard/blob/main/docs/checks.md#signed-releases)
+  - the only spec. Does NOT document the inconclusive-on-zero-
+  releases behavior, does NOT acknowledge external release
+  channels (apt, custom download servers).
+
+**Source caveat - inconclusive is undocumented + treated as a
+test-fixture path**: the inconclusive branch in
+`checks/evaluation/signed_releases.go` carries a maintainer
+comment: "This should not happen in production, but it is
+useful to have for testing." A future Scorecard change could
+flip projects-with-no-releases from inconclusive to 0/10
+without breaking any documented contract. Watch the issues
+below.
+
+**Upstream tracking**:
+
+- [ossf/scorecard#3679](https://github.com/ossf/scorecard/issues/3679)
+  - **most relevant**: "Improve signed releases checks" - asks
+  Scorecard to handle projects that don't use GitHub Releases
+  or GitHub Actions; proposes checking signed git tags and
+  detecting packaging on external repos. The active issue to
+  follow / +1 for our scenario.
+- [ossf/scorecard#4528](https://github.com/ossf/scorecard/issues/4528)
+  - Maven Central as the release channel, GitHub Releases
+  empty. Same trust-boundary class as ours.
+- [ossf/scorecard#4713](https://github.com/ossf/scorecard/issues/4713)
+  - "Signed Releases documentation unhelpful" - PyPI trusted
+  publishing case; doc should acknowledge non-GitHub channels.
+- [ossf/scorecard#4823](https://github.com/ossf/scorecard/issues/4823)
+  - "Pass Signed-Releases with GitHub immutable release
+  process" - alternative to SLSA, related PR #5002.
+- [ossf/scorecard#2763](https://github.com/ossf/scorecard/issues/2763)
+  - confirms the `?` symbol on the Scorecard report represents
+  the inconclusive outcome (vs `0/10` penalty).
+- [ossf/scorecard#382](https://github.com/ossf/scorecard/issues/382)
+  - long-standing ask: actually verify signatures (vs filename
+  match). Tangential but relevant context: the current check is
+  filename-pattern only.
+
+No upstream issue analogous to #1903 (the org-level Dependabot
+trust-boundary recognition) yet exists for Signed-Releases -
+#3679 is the closest "this isn't how every project releases"
+ask but has no resolution.
+
 ## What we DO act on
 
 The Scorecard signals NOT in this list are real and worth fixing.
