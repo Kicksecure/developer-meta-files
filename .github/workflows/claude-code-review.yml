@@ -33,8 +33,13 @@
 ##
 ## ## Inputs
 ##
-## - allowed-users    (required)  Comma-separated GitHub usernames
-##                                allowed to trigger @claude.
+## - allowed-users    (optional)  Comma-separated GitHub usernames
+##                                allowed to trigger @claude. Default
+##                                is the org's canonical reviewer
+##                                roster (set inline below); pass an
+##                                explicit value to override per
+##                                repo. An empty string is rejected
+##                                by the action.
 ## - timeout-minutes  (optional)  Job timeout. Default 30.
 ##
 ## ## Secrets
@@ -55,8 +60,6 @@
 ##   jobs:
 ##     review:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/claude-code-review.yml@master
-##       with:
-##         allowed-users: "user1,user2,bot-acct"
 ##       secrets:
 ##         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 ##       permissions:
@@ -70,9 +73,14 @@ name: Claude Code Review (reusable)
 on:
   workflow_call:
     inputs:
+      ## Org-canonical reviewer roster. Single source of truth -
+      ## consumer wrappers (kloak/helper-scripts/security-misc/...)
+      ## should inherit this default rather than redeclaring the
+      ## list per repo. Update here when the roster changes.
       allowed-users:
-        required: true
+        required: false
         type: string
+        default: "adrelanos,ArrayBolt3,assisted-by-ai"
       timeout-minutes:
         required: false
         type: number

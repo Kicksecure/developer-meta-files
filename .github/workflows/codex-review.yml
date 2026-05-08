@@ -40,7 +40,8 @@
 ##                                 to bypass the action's actor-
 ##                                 write-access gate. Strictly
 ##                                 narrower than granting write.
-##                                 Default: "".
+##                                 Default: the org's canonical bot
+##                                 list (set inline below).
 ## - pr-ref            (optional)  Ref to checkout (workflow_dispatch
 ##                                 fork-PR review path). Use
 ##                                 'refs/pull/<N>/merge' (most
@@ -77,7 +78,6 @@
 ##     review:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codex-review.yml@master
 ##       with:
-##         allow-bot-users: "bot-acct"
 ##         pr-ref: ${{ inputs.pr_ref || '' }}
 ##       secrets:
 ##         openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -90,10 +90,14 @@ name: OpenAI Codex Review (reusable)
 on:
   workflow_call:
     inputs:
+      ## Org-canonical bot allow-list. Single source of truth -
+      ## consumer wrappers should inherit this default rather than
+      ## redeclaring the list per repo. Update here when the bot
+      ## roster changes.
       allow-bot-users:
         required: false
         type: string
-        default: ""
+        default: "assisted-by-ai"
       pr-ref:
         required: false
         type: string
