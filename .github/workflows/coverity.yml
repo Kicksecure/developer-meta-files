@@ -1,0 +1,213 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: Coverity Scan static analysis.
+##
+## Replaces the third-party 'vapier/coverity-scan-action' approach
+## with an inline curl + tar + cov-build flow shared across the org's
+## consumers. No third-party Action's permissions footprint, no
+## Marketplace dependency, single auditable script set in
+## developer-meta-files/ci/.
+##
+## ## Trust footprint
+##
+## scan.coverity.com (Black Duck / Synopsys) - the cov-analysis
+## tarball download is gated on a valid project token, md5-verified
+## against the same endpoint, and optionally sha256-pinned via a
+## .coverity-tool-sha256.expected file in the consumer repo root.
+## See ci/coverity-download.sh for the verification logic.
+##
+## ## Caller responsibilities
+##
+## - Define the trigger schedule. Coverity Scan rate-limits
+##   submissions (daily build limit), so weekly cron is the
+##   typical choice. Schedule cannot live in workflow_call per
+##   G-A-002.
+## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+## - Pass 'secrets: inherit' so the reusable can read
+##   COVERITY_SCAN_TOKEN / COVERITY_SCAN_EMAIL.
+## - Set repo variable 'COVERITY_PROJECT' to the project name as it
+##   appears in the scan.coverity.com URL (or pass project-name
+##   input to override).
+##
+## ## Inputs
+##
+## - apt-packages    (optional)  Space-separated apt packages to
+##                               install before the build step.
+##                               Default empty.
+## - build-command   (optional)  Bash invocation that runs cov-build
+##                               under the runner's cwd (= consumer
+##                               repo root). cov-build is reachable
+##                               at ./cov-analysis/bin/cov-build
+##                               after the download step. If empty,
+##                               falls back to the Python-only
+##                               default in
+##                               developer-meta-files/ci/coverity-
+##                               build-python.sh.
+## - project-name    (optional)  Coverity project name. Falls back
+##                               to vars.COVERITY_PROJECT, then to
+##                               the GitHub repo's basename.
+## - timeout-minutes (optional)  Job timeout. Default 30.
+## - canonical-repos (optional)  Comma-separated 'owner/repo' list
+##                               where this workflow is allowed to
+##                               run on push/schedule. Forks must
+##                               use workflow_dispatch. Defaults to
+##                               only the canonical repo (the
+##                               'github.repository' the workflow is
+##                               called from); pass an explicit list
+##                               like
+##                               'Kicksecure/foo,org-ai-assisted/foo'
+##                               to allow both upstreams.
+##
+## ## Secrets
+##
+## Read from caller's namespace via 'secrets: inherit':
+##
+## - COVERITY_SCAN_TOKEN  (required)  Coverity project token.
+## - COVERITY_SCAN_EMAIL  (required)  Notification email registered
+##                                    on the Coverity project.
+##
+## ## Caller example - Python-only repo
+##
+##   name: Coverity
+##   on:
+##     schedule:
+##       - cron: '0 6 * * 0'
+##     workflow_dispatch:
+##   permissions:
+##     contents: read
+##   jobs:
+##     coverity:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/coverity.yml@master
+##       with:
+##         project-name: helper-scripts
+##       secrets: inherit
+##       permissions:
+##         contents: read
+##
+## ## Caller example - C/C++ repo
+##
+##   jobs:
+##     coverity:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/coverity.yml@master
+##       with:
+##         apt-packages: 'libevdev-dev libinput-dev libwayland-dev libxkbcommon-dev pkg-config'
+##         build-command: ./cov-analysis/bin/cov-build --dir cov-int make
+##         project-name: kloak
+##       secrets: inherit
+##       permissions:
+##         contents: read
+
+name: Coverity Scan (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      apt-packages:
+        required: false
+        type: string
+        default: ""
+      build-command:
+        required: false
+        type: string
+        default: ""
+      project-name:
+        required: false
+        type: string
+        default: ""
+      timeout-minutes:
+        required: false
+        type: number
+        default: 30
+      canonical-repos:
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  coverity:
+    name: Coverity Scan
+    runs-on: ubuntu-latest
+
+    ## Upstream-only gate on push/schedule events. Forks lack the
+    ## scan.coverity.com secrets and would just fail; rather than
+    ## fail-noisily, skip cleanly. workflow_dispatch is allowed
+    ## anywhere - operator triggering it on a fork has set their
+    ## own secrets.
+    if: >-
+      github.event_name == 'workflow_dispatch'
+      || inputs.canonical-repos == ''
+      || contains(format(',{0},', inputs.canonical-repos), format(',{0},', github.repository))
+
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    env:
+      COVERITY_PROJECT: ${{ inputs.project-name != '' && inputs.project-name || (vars.COVERITY_PROJECT != '' && vars.COVERITY_PROJECT || github.event.repository.name) }}
+      ## Token and email come from caller's secret namespace via
+      ## 'secrets: inherit'. Hoisted to env so each step reads
+      ## them via $COVERITY_TOKEN / $COVERITY_EMAIL rather than
+      ## interpolating ${{ secrets.* }} into a shell string.
+      COVERITY_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+      COVERITY_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+
+    steps:
+      - name: Checkout consumer repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      ## Pull the orchestration scripts (coverity-check-secrets.sh,
+      ## coverity-download.sh, coverity-build-python.sh,
+      ## coverity-submit.sh) from this very repo on master. Pinning
+      ## to '@master' keeps drift-free with the reusable; the
+      ## reusable workflow's own ref is the same.
+      - name: Checkout developer-meta-files (orchestration scripts)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: master
+          path: __dmf
+          persist-credentials: false
+
+      - name: Sanity check secrets
+        run: bash __dmf/ci/coverity-check-secrets.sh
+
+      - name: Install build dependencies
+        if: inputs.apt-packages != ''
+        run: |
+          sudo --non-interactive apt-get update --error-on=any
+          sudo --non-interactive apt-get install --yes --no-install-recommends \
+            ${{ inputs.apt-packages }}
+
+      - name: Download Coverity Build Tool
+        run: bash __dmf/ci/coverity-download.sh
+
+      - name: Run Coverity build (Python default)
+        if: inputs.build-command == ''
+        run: bash __dmf/ci/coverity-build-python.sh
+
+      - name: Run Coverity build (caller-supplied)
+        if: inputs.build-command != ''
+        run: ${{ inputs.build-command }}
+
+      - name: Submit to Coverity Scan
+        run: bash __dmf/ci/coverity-submit.sh
+
+      - name: Upload cov-int artifact (always)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: cov-int
+          path: cov-int.tgz
+          if-no-files-found: ignore
+          retention-days: 7
