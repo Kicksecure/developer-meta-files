@@ -330,9 +330,10 @@ apply_code_security_config() {
 ## Pure dispatch table - all policy data (bodies, endpoints, methods,
 ## labels, UI URLs) lives in github-policy-data.bsh.
 apply_org_policy() {
-   local org bypass_branch
+   local org kind bypass_var
 
    org="$1"
+   kind="$(org_kind "${org}")" || return 1
 
    log notice "=== org policy: ${org} ==="
 
@@ -355,13 +356,11 @@ apply_org_policy() {
    ## 5+6. Code security via the Code Security Configurations API.
    apply_code_security_config "${org}" || true
 
-   ## 7. Org-level branch ruleset.
-   case "$(org_kind "${org}")" in
-      source) bypass_branch="${POLICY_RULESET_BYPASS_SOURCE}" ;;
-      mirror) bypass_branch="${POLICY_RULESET_BYPASS_MIRROR}" ;;
-   esac
+   ## 7. Org-level branch ruleset. Bypass actor list pivots on
+   ##    org_kind via the constant naming convention.
+   bypass_var="POLICY_RULESET_BYPASS_${kind^^}"
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${bypass_branch}")" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${!bypass_var}")" \
       || true
 
    ## 8. Org-level tag ruleset.
@@ -616,7 +615,7 @@ audit_org_state() {
 ## github-policy-data.bsh (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR;
 ## diff table is in the data file).
 apply_repo_policy() {
-   local owner repo kind name
+   local owner repo kind
 
    owner="$1"
    repo="$2"
@@ -624,12 +623,10 @@ apply_repo_policy() {
    ghorg_validate_name "${owner}" user || return 1
    ghorg_validate_name "${repo}"  repo || return 1
 
-   ## org_kind picks REPO_SOURCE or REPO_MIRROR. The dispatcher
-   ## takes the policy NAME as a string; uppercase the kind to match
-   ## the constant naming convention.
+   ## org_kind picks REPO_SOURCE or REPO_MIRROR via the constant
+   ## naming convention.
    kind="$(org_kind "${owner}")" || return 1
-   name="REPO_${kind^^}"   ## REPO_SOURCE / REPO_MIRROR
-   policy_apply_repo "${owner}" "${repo}" "${name}" ENDPOINT
+   policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 }
 
 main() {
