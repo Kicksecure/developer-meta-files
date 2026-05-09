@@ -356,14 +356,31 @@ readonly POLICY_ACTIONS_DISABLED_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/action
 readonly POLICY_ACTIONS_DISABLED_METHOD='PUT'
 readonly POLICY_ACTIONS_DISABLED_LABEL='actions enabled=false (CI runs disabled)'
 
-## Repo settings + secret-scanning + push-protection.
-##   - has_wiki / has_projects / has_discussions = false:
-##     cut the abuse vectors. has_issues left untouched (defaults
-##     on; useful for a backup mirror).
-##   - secret_scanning + push_protection: flag accidental secrets
-##     and block them at push time. Free for public repos; we scope
-##     to public-only anyway.
-readonly POLICY_PERSONAL_REPO='{
+## Per-user repo settings + secret-scanning + push-protection.
+## apply_repo_policy in dm-github-personal-policy pivots on
+## user_kind to choose between PERSON and BOT. ENDPOINT and METHOD
+## are identical for both kinds (only the body differs) but each
+## kind carries its own constants to match the per-NAME naming
+## convention used by policy_apply_repo.
+##
+## --- PERSON vs BOT diffs ---
+##
+##                       PERSON  BOT  why
+##   has_wiki              off   off   we don't use GH wikis
+##   has_projects          off   off   project boards belong upstream
+##   has_discussions       off   off   discussions belong upstream
+##   has_issues             on   off   PERSON: human can triage incoming
+##                                     BOT:    bot doesn't triage; file
+##                                             upstream
+##   allow_forking          on   off   BOT: no forks-of-forks (mirrors
+##                                          MIRROR_ORGS posture)
+##   secret_scanning        on    on   same on both
+##   secret_scanning_push_protection  on    on   same on both
+
+## PERSON variant: real maintainer's account. Issues stay on so
+## the maintainer can triage incoming reports filed against the
+## personal mirror. Forks left enabled.
+readonly POLICY_PERSONAL_REPO_PERSON='{
    has_wiki: false,
    has_projects: false,
    has_discussions: false,
@@ -372,9 +389,27 @@ readonly POLICY_PERSONAL_REPO='{
       secret_scanning_push_protection: { status: "enabled" }
    }
 }'
-readonly POLICY_PERSONAL_REPO_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
-readonly POLICY_PERSONAL_REPO_METHOD='PATCH'
-readonly POLICY_PERSONAL_REPO_LABEL='settings (wiki/projects/discussions off, secret-scan on)'
+readonly POLICY_PERSONAL_REPO_PERSON_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_PERSONAL_REPO_PERSON_METHOD='PATCH'
+readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+
+## BOT variant: AI-assisted-work bot account. Identical lockdown
+## to a MIRROR org repo - everything that side-tracker-style
+## vectors could land on stays closed; everything routes upstream.
+readonly POLICY_PERSONAL_REPO_BOT='{
+   has_wiki: false,
+   has_issues: false,
+   has_projects: false,
+   has_discussions: false,
+   allow_forking: false,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
+}'
+readonly POLICY_PERSONAL_REPO_BOT_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_PERSONAL_REPO_BOT_METHOD='PATCH'
+readonly POLICY_PERSONAL_REPO_BOT_LABEL='BOT: settings (wiki/issues/projects/discussions/forking off, secret-scan on)'
 
 ## Disable GitHub Pages site on a repo. The DELETE endpoint is
 ## idempotent in spirit: 204 if a site existed and was removed,

@@ -90,13 +90,50 @@ if [ "${target_account_type}" != 'User' ]; then
    die 64 "refusing to run against '${target_user}' (account type '${target_account_type}', expected 'User'); use dm-github-org-policy for organizations"
 fi
 
+## ===== Per-user policy distinction =====
+##
+## Two kinds of user account this script applies policy to:
+##
+##   PERSON = real maintainer's personal account. Some side
+##            trackers stay open (has_issues=on - human can triage
+##            incoming reports filed against the personal mirror).
+##   BOT    = AI-assisted-work bot account. All side trackers
+##            closed; identical lockdown to a MIRROR org repo.
+##            Everything routes upstream.
+##
+## Vocabulary aligns with SOURCE_ORGS / MIRROR_ORGS in
+## dm-github-org-policy. The full PERSON-vs-BOT diff table is in
+## github-policy-data.bsh (POLICY_PERSONAL_REPO_PERSON /
+## POLICY_PERSONAL_REPO_BOT).
+readonly PERSON_USERS=( 'adrelanos' )
+readonly BOT_USERS=( 'assisted-by-ai' )
+
+## Echo 'person' or 'bot' for the named user; die on an unknown
+## name. apply_repo_policy pivots on this to pick between
+## POLICY_PERSONAL_REPO_PERSON / POLICY_PERSONAL_REPO_BOT.
+user_kind() {
+   local user name
+   user="$1"
+   for name in "${PERSON_USERS[@]}"; do
+      [ "${name}" = "${user}" ] && { printf '%s\n' person; return 0; }
+   done
+   for name in "${BOT_USERS[@]}"; do
+      [ "${name}" = "${user}" ] && { printf '%s\n' bot; return 0; }
+   done
+   log error "user_kind: '${user}' not in PERSON_USERS or BOT_USERS"
+   return 1
+}
+
+target_kind="$(user_kind "${target_user}")" \
+   || die 64 "refusing to run against '${target_user}': not in PERSON_USERS or BOT_USERS at the top of this script. Add it there if it should be in scope."
+
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
 ## Policy bodies (POLICY_*) live in github-policy-data.bsh, sourced
 ## above. This script consumes POLICY_FORK_PR_APPROVAL,
 ## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED,
-## POLICY_PERSONAL_REPO, POLICY_PAGES_DELETE_*.
+## POLICY_PERSONAL_REPO_{PERSON,BOT}, POLICY_PAGES_DELETE_*.
 
 ## --verbose suppresses the 'ok:' line otherwise printed by
 ## policy_api_call. Apply runs without --verbose are quiet on success.
@@ -120,7 +157,9 @@ apply_repo_policy() {
    policy_apply_repo "${target_user}" "${repo}" ACTIONS_DISABLED
 
    ## 4. Repo settings + secret-scanning + push-protection.
-   policy_apply_repo "${target_user}" "${repo}" PERSONAL_REPO
+   ##    Pivots on target_kind (resolved at script-init time) to
+   ##    pick PERSON or BOT body via the constant naming convention.
+   policy_apply_repo "${target_user}" "${repo}" "PERSONAL_REPO_${target_kind^^}"
 
    ## 5. Delete GitHub Pages site if any. Custom call (DELETE +
    ##    extra-ok-status arg); the simple dispatcher does not handle
