@@ -55,8 +55,23 @@ trap 'rm -r -f -- "${minpath_dir}"' EXIT
 ln -s -- "$(command -v stecho)"          "${minpath_dir}/stecho"
 ln -s -- "$(command -v sanitize-string)" "${minpath_dir}/sanitize-string"
 
+## Pass HELPER_SCRIPTS_PATH through only if it is actually set in
+## the caller's env. Defaulting to anything truthy (e.g. '/usr') is
+## a footgun: the script's source paths are
+## "${HELPER_SCRIPTS_PATH:-}/usr/libexec/helper-scripts/..." so
+## HELPER_SCRIPTS_PATH=/usr resolves to /usr/usr/libexec/... which
+## does not exist - the script dies with a 'source: No such file'
+## error instead of reaching die_if_not_has, and the fragment
+## assertions below fail. CI installs helper-scripts to system
+## paths so HELPER_SCRIPTS_PATH stays unset there; local dev
+## workflows can export HELPER_SCRIPTS_PATH=/path/to/helper-scripts
+## and it will be honored.
+helper_scripts_pass=()
+if [ -n "${HELPER_SCRIPTS_PATH+_}" ]; then
+   helper_scripts_pass=( HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH}" )
+fi
 out="$(env -i \
-   HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH:-/usr}" \
+   "${helper_scripts_pass[@]}" \
    PATH="${minpath_dir}" \
    "${bin}" --dry-run 2>&1)" || rc=$?
 
