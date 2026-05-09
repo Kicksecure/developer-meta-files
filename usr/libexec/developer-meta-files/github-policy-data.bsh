@@ -149,12 +149,21 @@ readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as defaul
 ## members_can_delete_repositories (UI-only), and
 ## two_factor_requirement_enabled (read-only on PATCH) are
 ## deliberately NOT in this body.
+##
+## members_can_create_internal_repositories is also deliberately
+## NOT in this body. Internal repositories are an Enterprise-tier
+## feature; on Free/Team/Pro orgs the field is server-side locked
+## to false and GitHub rejects the entire PATCH with HTTP 422
+## ("Validation Failed: This organization does not support
+## internal repositories") when it is mentioned at all - rolling
+## back the other (valid) fields in the same request. Enterprise
+## orgs that want the knob set explicitly should land it via a
+## separate plan-tier-specific policy block.
 readonly POLICY_MEMBERS='{
    default_repository_permission: "read",
    members_can_create_repositories: false,
    members_can_create_public_repositories: false,
-   members_can_create_private_repositories: false,
-   members_can_create_internal_repositories: false
+   members_can_create_private_repositories: false
 }'
 readonly POLICY_MEMBERS_ENDPOINT_ORG='/orgs/__ORG__'
 readonly POLICY_MEMBERS_METHOD='PATCH'
