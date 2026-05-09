@@ -15,11 +15,11 @@
 ##   ORGS=( 'Whonix' )           -> expect 'SOURCE: wiki=off, issues=on'
 ##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: ...' (no allow_forking - org level only)
 ##
-## Also pins the org-level branch-ruleset bypass actor list, which
-## also pivots on org_kind:
-##   SOURCE -> bypass_actors: []
-##   MIRROR -> bypass_actors: [{actor_type: OrganizationAdmin, ...}]
-## Verified via dry-run output (the upsert call is logged regardless).
+## The SOURCE/MIRROR split for the org-level branch-ruleset bypass
+## actor list (POLICY_RULESET_BYPASS_SOURCE/MIRROR) is currently
+## inert because the org-level ruleset upsert is PAID PLAN ONLY
+## (commented out in dm-github-org-policy on Free); the bypass-list
+## pivot is exercised again once the org upgrades to GitHub Team+.
 
 set -o errexit
 set -o nounset

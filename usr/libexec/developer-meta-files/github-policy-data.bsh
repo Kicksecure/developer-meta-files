@@ -88,6 +88,23 @@ readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verif
 ## Org-policy bodies - used by dm-github-org-policy
 ## ============================================================================
 
+## PAID PLAN ONLY (GitHub Advanced Security): the org-level
+## code-security configuration body. POST /orgs/{org}/code-security/
+## configurations rejects any request that turns on a GHAS-licensed
+## feature (secret_scanning, secret_scanning_push_protection,
+## code_scanning_default_setup) on a Free org with HTTP 400
+## "GitHub advanced security must be enabled when any GHAS feature
+## is set to enabled". Empirically tested 2026-05; the only fields
+## the configuration API accepts on Free are dependency_graph,
+## dependabot_alerts, dependabot_security_updates, and
+## private_vulnerability_reporting - and even with those alone the
+## org-wide attach/default-for-new-repos workflow has no advantage
+## over the per-repo PUT /repos/{owner}/{repo}/vulnerability-alerts
+## etc. endpoints which work today on Free for public repos. Re-
+## enable this block (and the call sites in dm-github-org-policy
+## under apply_code_security_config + step 5+6) only after the org
+## upgrades to a plan that bundles Advanced Security.
+##
 ## Org-level code-security configuration. Applied identically to
 ## SOURCE and MIRROR. Note 'code_scanning_default_setup: disabled' -
 ## we use the committed codeql.yml workflows instead of GitHub's
@@ -97,17 +114,17 @@ readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verif
 ##
 ## The 'name' field is dynamic (set by the caller via jq --arg) and
 ## intentionally omitted here.
-readonly POLICY_CODE_SECURITY='{
-   description: "Project-wide code security applied via dm-github-org-policy.",
-   enforcement: "enforced",
-   secret_scanning: "enabled",
-   secret_scanning_push_protection: "enabled",
-   dependabot_alerts: "enabled",
-   dependabot_security_updates: "enabled",
-   dependency_graph: "enabled",
-   code_scanning_default_setup: "disabled",
-   private_vulnerability_reporting: "disabled"
-}'
+# readonly POLICY_CODE_SECURITY='{
+#    description: "Project-wide code security applied via dm-github-org-policy.",
+#    enforcement: "enforced",
+#    secret_scanning: "enabled",
+#    secret_scanning_push_protection: "enabled",
+#    dependabot_alerts: "enabled",
+#    dependabot_security_updates: "enabled",
+#    dependency_graph: "enabled",
+#    code_scanning_default_setup: "disabled",
+#    private_vulnerability_reporting: "disabled"
+# }'
 
 ## Org Actions scope. Switches allowed_actions to "selected"; the
 ## per-action allowlist itself (POLICY_ACTIONS_ALLOWLIST above) is
@@ -120,28 +137,35 @@ readonly POLICY_ACTIONS_SCOPE_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
 readonly POLICY_ACTIONS_SCOPE_METHOD='PUT'
 readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
 
+## PAID PLAN ONLY: only meaningful in conjunction with the
+## (commented-out) POLICY_CODE_SECURITY block above. The attach and
+## default-for-new-repos endpoints both embed a configuration id
+## that we never have on Free.
+##
 ## Code-security configuration attach scope. scope=all covers every
 ## existing repo in the org without listing them individually; the
 ## configuration's enforcement field controls on/off state. The
 ## endpoint embeds the configuration id (resolved at runtime in
 ## apply_code_security_config), so the placeholder here is __ID__
 ## rather than the usual __ORG__-only pattern.
-readonly POLICY_CODE_SECURITY_ATTACH='{
-   scope: "all"
-}'
-readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
-readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
-readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
+# readonly POLICY_CODE_SECURITY_ATTACH='{
+#    scope: "all"
+# }'
+# readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
+# readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
+# readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
 
+## PAID PLAN ONLY: see POLICY_CODE_SECURITY_ATTACH note above.
+##
 ## Code-security configuration default-for-new-repos. Tells GitHub
 ## to auto-attach this configuration to any newly created repo in
 ## the org.
-readonly POLICY_CODE_SECURITY_DEFAULTS='{
-   default_for_new_repos: "all"
-}'
-readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
-readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
-readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
+# readonly POLICY_CODE_SECURITY_DEFAULTS='{
+#    default_for_new_repos: "all"
+# }'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
 
 ## Org members policy. Default repo permission for new members =
 ## read; only admins can create repositories.
@@ -253,8 +277,14 @@ readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, d
 ##     downstream; if a re-fork or hotfix needs a force-push or
 ##     unsigned commit, we must be able to do it without first
 ##     dropping the ruleset.
-readonly POLICY_RULESET_BYPASS_SOURCE='[]'
-readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
+## PAID PLAN ONLY: org-level rulesets require GitHub Team or higher
+## ("Upgrade to GitHub Team to enable this feature" / HTTP 403 on
+## Free). Repo-level rulesets work on Free for public repos and use
+## a different bypass-actor convention (per-repo admin), so the
+## SOURCE / MIRROR distinction does not carry over directly. Re-
+## enable when the org upgrades to Team.
+# readonly POLICY_RULESET_BYPASS_SOURCE='[]'
+# readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
 ## Branch + tag ruleset body shapes. POSTed to
 ## /orgs/{org}/rulesets or /repos/{owner}/{repo}/rulesets via the
@@ -296,21 +326,26 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##                              repo-level config, not org-wide
 ##   - required_linear_history  breaks some merge workflows
 
-readonly POLICY_BRANCH_RULESET_BODY_ORG='{
-   name: $name,
-   target: "branch",
-   enforcement: "active",
-   bypass_actors: $bypass,
-   conditions: {
-      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
-      repository_name: { include: ["~ALL"], exclude: [] }
-   },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
-}'
+## PAID PLAN ONLY: org-scoped ruleset (uses ~ALL repository_name
+## condition). Sent to /orgs/{org}/rulesets which is Team+ only.
+## The repo-scoped sibling POLICY_BRANCH_RULESET_BODY_REPO below
+## stays available; a future per-repo loop in dm-github-org-policy
+## could fan it out across the public-repo set on Free.
+# readonly POLICY_BRANCH_RULESET_BODY_ORG='{
+#    name: $name,
+#    target: "branch",
+#    enforcement: "active",
+#    bypass_actors: $bypass,
+#    conditions: {
+#       ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+#       repository_name: { include: ["~ALL"], exclude: [] }
+#    },
+#    rules: [
+#       { type: "deletion" },
+#       { type: "non_fast_forward" },
+#       { type: "required_signatures" }
+#    ]
+# }'
 
 readonly POLICY_BRANCH_RULESET_BODY_REPO='{
    name: $name,
@@ -327,21 +362,22 @@ readonly POLICY_BRANCH_RULESET_BODY_REPO='{
    ]
 }'
 
-readonly POLICY_TAG_RULESET_BODY_ORG='{
-   name: $name,
-   target: "tag",
-   enforcement: "active",
-   bypass_actors: $bypass,
-   conditions: {
-      ref_name: { include: ["~ALL"], exclude: [] },
-      repository_name: { include: ["~ALL"], exclude: [] }
-   },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
-}'
+## PAID PLAN ONLY: see POLICY_BRANCH_RULESET_BODY_ORG note above.
+# readonly POLICY_TAG_RULESET_BODY_ORG='{
+#    name: $name,
+#    target: "tag",
+#    enforcement: "active",
+#    bypass_actors: $bypass,
+#    conditions: {
+#       ref_name: { include: ["~ALL"], exclude: [] },
+#       repository_name: { include: ["~ALL"], exclude: [] }
+#    },
+#    rules: [
+#       { type: "deletion" },
+#       { type: "non_fast_forward" },
+#       { type: "required_signatures" }
+#    ]
+# }'
 
 readonly POLICY_TAG_RULESET_BODY_REPO='{
    name: $name,

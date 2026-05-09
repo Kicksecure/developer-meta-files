@@ -54,14 +54,15 @@ required=(
    'DRY-RUN: org-ai-assisted: actions enabled=all, allowed=selected'
    'DRY-RUN: org-ai-assisted: selected-actions = github-owned + verified-creators'
    'DRY-RUN: org-ai-assisted: members policy (default-perm=read, no member create)'
-   'DRY-RUN: org-ai-assisted: upsert code-security configuration dm-github-org-policy code security'
-   'DRY-RUN: org-ai-assisted: attach code-security configuration scope=all'
-   'DRY-RUN: org-ai-assisted: set code-security configuration default_for_new_repos=all'
    'skip: org-ai-assisted: 2FA enforcement must be set via UI'
+   ## PAID PLAN ONLY (commented out in dm-github-org-policy):
+   ## code-security configuration upsert/attach/default and the
+   ## org-level branch + tag ruleset upserts. The skip lines below
+   ## stand in for those.
+   'skip: org-ai-assisted: code-security configuration - PAID PLAN ONLY'
+   'skip: org-ai-assisted: org-level branch + tag rulesets - PAID PLAN ONLY'
    'skip: org-ai-assisted: PAT policy toggles must be set via UI'
    'skip: org-ai-assisted: GitHub App / OAuth App policies must be set via UI'
-   'DRY-RUN: org-ai-assisted: upsert ruleset dm-github-org-policy default-branch protection'
-   'DRY-RUN: org-ai-assisted: upsert ruleset dm-github-org-policy tag protection'
 )
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then

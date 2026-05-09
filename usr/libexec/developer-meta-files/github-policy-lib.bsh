@@ -338,11 +338,20 @@ policy_branch_ruleset_body() {
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
+   ## PAID PLAN ONLY: the 'org' scope's body lives at
+   ## POLICY_BRANCH_RULESET_BODY_ORG, which is commented out in
+   ## github-policy-data.bsh because /orgs/{org}/rulesets is Team+
+   ## only. Re-enable both together.
+   # if [ "${scope}" = 'org' ]; then
+   #    body="${POLICY_BRANCH_RULESET_BODY_ORG}"
+   # else
+   #    body="${POLICY_BRANCH_RULESET_BODY_REPO}"
+   # fi
    if [ "${scope}" = 'org' ]; then
-      body="${POLICY_BRANCH_RULESET_BODY_ORG}"
-   else
-      body="${POLICY_BRANCH_RULESET_BODY_REPO}"
+      log error "policy_branch_ruleset_body: scope=org is PAID PLAN ONLY (GitHub Team+); use scope=repo on Free"
+      return 1
    fi
+   body="${POLICY_BRANCH_RULESET_BODY_REPO}"
 
    ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
@@ -357,11 +366,17 @@ policy_tag_ruleset_body() {
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
+   ## PAID PLAN ONLY: see policy_branch_ruleset_body note above.
+   # if [ "${scope}" = 'org' ]; then
+   #    body="${POLICY_TAG_RULESET_BODY_ORG}"
+   # else
+   #    body="${POLICY_TAG_RULESET_BODY_REPO}"
+   # fi
    if [ "${scope}" = 'org' ]; then
-      body="${POLICY_TAG_RULESET_BODY_ORG}"
-   else
-      body="${POLICY_TAG_RULESET_BODY_REPO}"
+      log error "policy_tag_ruleset_body: scope=org is PAID PLAN ONLY (GitHub Team+); use scope=repo on Free"
+      return 1
    fi
+   body="${POLICY_TAG_RULESET_BODY_REPO}"
 
    ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
