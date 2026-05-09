@@ -191,7 +191,7 @@ source archives would flip Scorecard from inconclusive to **0/10**
 (real penalty: source-only releases are NOT skipped, they count
 as unsigned). A 10/10 path would require either putting the key
 on a runner (forbidden) or adopting Sigstore/SLSA-on-Actions
-(wrong tool — GitHub Actions is deliberately not in the
+(wrong tool - GitHub Actions is deliberately not in the
 artifact path).
 
 **What to do**: nothing. Do NOT create GitHub Release objects on
