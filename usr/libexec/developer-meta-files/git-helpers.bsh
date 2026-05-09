@@ -59,15 +59,12 @@ internal_git_diff_local() {
    [ -n "${branch_name}" ] || die 1 "${FUNCNAME[0]}: branch argument is empty"
    [ -n "${remote_name}" ] || die 1 "${FUNCNAME[0]}: remote argument is empty"
 
-   local_sha="$(git rev-parse --verify --quiet \
-                  "refs/heads/${branch_name}^{commit}")" \
-      || local_sha=''
-   [ -n "${local_sha}" ] \
-      || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
+   local_sha="$(git rev-parse --verify --quiet "refs/heads/${branch_name}^{commit}")" || local_sha=''
 
-   tracking_sha="$(git rev-parse --verify --quiet \
-                     "refs/remotes/${remote_name}/${branch_name}^{commit}")" \
-      || tracking_sha=''
+   [ -n "${local_sha}" ] || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
+
+   tracking_sha="$(git rev-parse --verify --quiet "refs/remotes/${remote_name}/${branch_name}^{commit}")" || tracking_sha=''
+
    if [ -z "${tracking_sha}" ]; then
       log warn "tracking ref 'refs/remotes/${remote_name}/${branch_name}' does not exist. Press enter to continue; push will create it."
       read -r _
@@ -75,9 +72,11 @@ internal_git_diff_local() {
    fi
 
    if [ "${local_sha}" = "${tracking_sha}" ]; then
+      log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes"
       return 1
    fi
 
+   log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no"
    return 0
 }
 
@@ -109,34 +108,33 @@ internal_git_diff_remote() {
    [ -n "${branch_name}" ] || die 1 "${FUNCNAME[0]}: branch argument is empty"
    [ -n "${remote_name}" ] || die 1 "${FUNCNAME[0]}: remote argument is empty"
 
-   local_sha="$(git rev-parse --verify --quiet \
-                  "refs/heads/${branch_name}^{commit}")" \
-      || local_sha=''
-   [ -n "${local_sha}" ] \
-      || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
+   local_sha="$(git rev-parse --verify --quiet "refs/heads/${branch_name}^{commit}")" || local_sha=''
+   [ -n "${local_sha}" ] || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
 
-   ls_remote_output="$(git ls-remote --heads --quiet -- \
-                         "${remote_name}" "refs/heads/${branch_name}")" \
-      || {
+   log info "git ls-remote --heads --quiet -- '${remote_name}' 'refs/heads/${branch_name}'"
+   if ! ls_remote_output="$(git ls-remote --heads --quiet -- "${remote_name}" "refs/heads/${branch_name}")"; then
       log warn "'git ls-remote ${remote_name}' failed; assuming push needed. Press enter to continue."
       read -r _
       return 0
-   }
+   fi
 
    ## ls-remote output, when the ref exists, is "<sha>\trefs/heads/<branch>".
    ## When the ref is absent on the remote the output is empty and the
    ## exit code is still 0; treat that as "push needed" so the caller's
    ## git push will create the remote ref.
    if [ -z "${ls_remote_output}" ]; then
+      log info "${FUNCNAME[0]}: ls_remote_output output empty | return 0"
       return 0
    fi
 
    remote_sha="${ls_remote_output%%$'\t'*}"
 
    if [ "${local_sha}" = "${remote_sha}" ]; then
+      log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes | return 1"
       return 1
    fi
 
+   log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no | return 0"
    return 0
 }
 

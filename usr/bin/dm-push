@@ -57,7 +57,7 @@ queue_branch_refspec() {
    if ! internal_git_diff "$branch" "$remote" ; then
       return 0
    fi
-   log_run info git verify-commit "refs/heads/$branch"
+   log_run info git verify-commit "refs/heads/$branch" &>/dev/null
    refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
 }
 
@@ -69,7 +69,7 @@ queue_tag_refspec() {
    ## ls-remote round-trip. Always queue the tag; if the remote already
    ## has it at the same SHA the server short-circuits with "= up to
    ## date" inside the same atomic push.
-   log_run info git verify-tag "refs/tags/$tag"
+   log_run info git verify-tag "refs/tags/$tag" &>/dev/null
    refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
 }
 
