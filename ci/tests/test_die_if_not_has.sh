@@ -37,9 +37,16 @@ rc=0
 ## Build a minimal PATH directory that contains every helper-scripts
 ## tool the script needs (stecho, sanitize-string for log_run_die.sh's
 ## hard-tools check) but NOT github-org-fork. Run dm-github-org-policy
-## via absolute path with PATH set to that minimal dir + the system
-## coreutils dirs. die_if_not_has fires on the first 'has
-## github-org-fork || die ...' inside the script.
+## via absolute path with PATH set to that minimal dir ONLY -
+## NOT /usr/bin or /bin. The CI workflow runs `genmkfile install`
+## before this test, which puts github-org-fork into /usr/bin; on
+## merged-/usr distros (Debian trixie) /bin -> /usr/bin so excluding
+## /usr/bin alone is not enough. die_if_not_has fires on the first
+## 'has github-org-fork || die ...' inside the script.
+##
+## env -i strips the inherited environment so a stale PATH cannot
+## leak through; HELPER_SCRIPTS_PATH is re-injected because the
+## script sources lib files from there at startup.
 bin="$(command -v dm-github-org-policy)"
 [ -n "${bin}" ] || { printf '%s\n' "FAIL: dm-github-org-policy not on the test PATH" >&2; exit 1; }
 
@@ -48,10 +55,13 @@ trap 'rm -r -f -- "${minpath_dir}"' EXIT
 ln -s -- "$(command -v stecho)"          "${minpath_dir}/stecho"
 ln -s -- "$(command -v sanitize-string)" "${minpath_dir}/sanitize-string"
 
-out="$(PATH="${minpath_dir}:/usr/bin:/bin" "${bin}" --dry-run 2>&1)" || rc=$?
+out="$(env -i \
+   HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH:-/usr}" \
+   PATH="${minpath_dir}" \
+   "${bin}" --dry-run 2>&1)" || rc=$?
 
 if [ "${rc}" -eq 0 ]; then
-   printf '%s\n' "FAIL: dm-github-org-policy with PATH=/usr/bin:/bin succeeded; expected failure (github-org-fork missing)" >&2
+   printf '%s\n' "FAIL: dm-github-org-policy with restricted PATH succeeded; expected failure (github-org-fork missing)" >&2
    printf '%s\n' "${out}" >&2
    fail=1
 fi
