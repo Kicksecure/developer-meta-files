@@ -123,18 +123,18 @@ internal_git_diff_remote() {
    ## exit code is still 0; treat that as "push needed" so the caller's
    ## git push will create the remote ref.
    if [ -z "${ls_remote_output}" ]; then
-      log info "${FUNCNAME[0]}: ls_remote_output output empty | return 0"
+      #log info "${FUNCNAME[0]}: ls_remote_output output empty | return 0"
       return 0
    fi
 
    remote_sha="${ls_remote_output%%$'\t'*}"
 
    if [ "${local_sha}" = "${remote_sha}" ]; then
-      log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes | return 1"
+      #log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes | return 1"
       return 1
    fi
 
-   log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no | return 0"
+   #log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no | return 0"
    return 0
 }
 
