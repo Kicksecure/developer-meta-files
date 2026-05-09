@@ -7,9 +7,10 @@
 
 ## Mock-API test: dm-github-personal-policy pivots its per-repo
 ## PATCH body on user_kind. PERSON_USERS entries get the PERSON body
-## (has_issues stays at GitHub default = true, no allow_forking
-## field). BOT_USERS entries get the BOT body (has_issues: false,
-## allow_forking: false).
+## (has_issues stays at GitHub default = true). BOT_USERS entries
+## get the BOT body (has_issues: false). Neither body sets
+## allow_forking - GitHub's API rejects that field on user-owned
+## repos with HTTP 422.
 ##
 ## Two dry-runs against fixture users in the respective arrays:
 ##   personal-test-user  (PERSON_USERS) -> 'PERSON: settings (...)'
@@ -82,7 +83,7 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 bot_required=(
-   'BOT: settings (wiki/issues/projects/discussions/forking off, secret-scan on)'
+   'BOT: settings (wiki/issues/projects/discussions off, secret-scan on)'
 )
 bot_forbidden=(
    'PERSON: settings'
