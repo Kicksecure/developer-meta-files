@@ -6,9 +6,31 @@ remain in each repo's own `agents/github-actions-security.md`.
 
 ## Reusable workflows
 
-Body-of-job lives in `developer-meta-files/.github/workflows/<name>.yml`
+Body-of-job lives in `developer-meta-files/.github/workflows/reusable-<name>.yml`
 with `on: workflow_call:`. Consumer wrappers in each repo carry only
 the trigger schedule + cron slot + a tiny `jobs.<id>.uses:` line.
+
+### File-naming convention (G-A-005)
+
+**Reusable filenames carry a `reusable-` prefix; consumer-wrapper
+filenames don't.** Examples:
+
+    .github/workflows/reusable-codeql.yml         (reusable)
+    .github/workflows/codeql.yml                  (consumer wrapper)
+
+This:
+
+- Lets developer-meta-files self-consume its own reusables under
+  the bare consumer name (`scorecard.yml` callers `./.github/
+  workflows/reusable-scorecard.yml`) without inventing per-file
+  workaround suffixes (`-self`, etc.).
+- Makes the consumer / reusable distinction visible in the file
+  list at a glance - critical when a single repo holds both kinds
+  (developer-meta-files does; helper-scripts/kloak/etc. only hold
+  consumers).
+- Matches the convention several large orgs use internally
+  (`reusable-*` is more searched-for than `_*` underscore prefix
+  alternatives, per the survey logged with the rename PR).
 
 This eliminates per-repo duplication of action SHA pins and step
 bodies. Updating an action SHA on the reusable propagates to all
@@ -53,6 +75,16 @@ pinning gives supply-chain stability; branch tracking gives
 single-source-of-truth update propagation. Both are valid; pick
 per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
+
+## See also
+
+- [`docs/scorecard-known-false-positives.md`](../docs/scorecard-known-false-positives.md)
+  for the catalogue of Scorecard signals that look like findings
+  but are intentional architectural choices in this org
+  (DependencyUpdateToolID on consumer repos, PinnedDependenciesID
+  on `@master` reusable refs, MaintainedID on fresh repos,
+  SASTID transient post-CodeQL-adoption, multi-stage `FROM
+  <stage>` flagged as unpinned).
 
 ## Action SHA pinning
 

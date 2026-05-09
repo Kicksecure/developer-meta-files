@@ -22,6 +22,8 @@ shopt -s shift_verbose
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
 ## Modes are mutually exclusive; one must be passed explicitly. No
 ## implicit default - running this tool without a mode flag is the
@@ -35,6 +37,7 @@ mode_set=0
 positional=()
 target_user=''
 
+# shellcheck disable=SC2317  # invoked dynamically by policy_parse_mode_args
 show_help() {
    cat <<'EOF'
 Apply per-repo lockdown policy to every public repo owned by a
@@ -42,47 +45,26 @@ GitHub user account. Designed for hardening a personal account
 against malicious fork PRs that could otherwise burn Actions minutes.
 
 Usage (one mode flag is required - no implicit default):
-  dm-github-personal-policy <username> --apply     ## apply
-  dm-github-personal-policy <username> --dry-run   ## report planned changes
-  dm-github-personal-policy <username> --audit     ## read-only inspection
+  dm-github-personal-policy <username> --apply         apply
+  dm-github-personal-policy <username> --dry-run       report planned changes
+  dm-github-personal-policy <username> --audit         read-only inspection
+  dm-github-personal-policy --policy-dump              print the active policy table
+                                                       (cats github-policy-data.bsh)
   dm-github-personal-policy --help
 
-Settings applied per repo:
-  - GitHub Actions DISABLED entirely (this account is a backup/
-    mirror; CI runs in the upstream orgs). Saves operator's free CI
-    minutes from any malicious-fork-PR or accidentally-triggered
-    workflow runs.
-  - Fork-PR contributor approval = all_external_contributors AND
-    default workflow GITHUB_TOKEN = read are still applied as
-    defense-in-depth: if Actions is later re-enabled in the UI,
-    those settings stay in force.
-  - Wiki / Projects / Discussions = disabled (cut abuse vectors)
-  - Secret scanning + push protection = enabled
-  - Pages site = deleted if present (one-shot, not a permanent gate)
-  - Branch ruleset on default branch: block force-push, block delete,
-    require signed commits (bypass_actors=[] - even the owner can't
-    override)
-  - Tag ruleset on all tags: block delete, block re-pointing, require
-    signed tags
-
-Deliberately NOT applied (commented out in source):
-  - Vulnerability alerts / Dependabot security updates: this account
-    is a backup/mirror of org-side repos; enabling here would
-    duplicate notifications. Uncomment if a repo becomes canonical
-    here.
-
-Repos in scope:
-  - Public, non-archived repos owned by <username>, INCLUDING forks.
-    Forks own their own .github/workflows + ruleset settings, so a
-    malicious-fork-PR vector exists on them too - they need the same
-    lockdown. Archived repos are read-only and return HTTP 403 on
-    PATCH/PUT regardless, so they are excluded. Private repos are
-    excluded because external (untrusted) contributors cannot open
-    PRs against them.
+Run 'dm-github-personal-policy --policy-dump' for the full table of
+what gets applied (bodies, endpoints, methods, labels).
 
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Token needs 'repo' (classic) or 'Administration: write' (fine-grained).
+
+Repos in scope:
+  Public, non-archived repos owned by <username>, INCLUDING forks
+  (they own their own .github/workflows + ruleset settings, so the
+  malicious-fork-PR vector exists on them too). Archived excluded
+  (HTTP 403 on PATCH/PUT). Private excluded (external contributors
+  cannot open PRs against private repos).
 EOF
 }
 
@@ -108,88 +90,105 @@ if [ "${target_account_type}" != 'User' ]; then
    die 64 "refusing to run against '${target_user}' (account type '${target_account_type}', expected 'User'); use dm-github-org-policy for organizations"
 fi
 
+## ===== Per-user policy distinction =====
+##
+## Two kinds of user account this script applies policy to:
+##
+##   PERSON = real maintainer's personal account. Some side
+##            trackers stay open (has_issues=on - human can triage
+##            incoming reports filed against the personal mirror).
+##   BOT    = AI-assisted-work bot account. All side trackers
+##            closed; identical lockdown to a MIRROR org repo.
+##            Everything routes upstream.
+##
+## Vocabulary aligns with SOURCE_ORGS / MIRROR_ORGS in
+## dm-github-org-policy. The full PERSON-vs-BOT diff table is in
+## github-policy-data.bsh (POLICY_PERSONAL_REPO_PERSON /
+## POLICY_PERSONAL_REPO_BOT).
+readonly PERSON_USERS=(
+   'adrelanos'
+   ## Test fixtures - referenced by ci/tests/test_dm_personal_*.sh.
+   ## Production lookup is "is this user in the list?", so extra
+   ## entries don't change behaviour for real names; they're just
+   ## resolvable when GHORG_MOCK=1 routes the API to local fixtures.
+   'personal-test-user'
+)
+readonly BOT_USERS=(
+   'assisted-by-ai'
+   'bot-test-user'
+)
+
+## Echo 'person' or 'bot' for the named user; die on an unknown
+## name. apply_repo_policy pivots on this to pick between
+## POLICY_PERSONAL_REPO_PERSON / POLICY_PERSONAL_REPO_BOT.
+user_kind() {
+   local user name
+   user="$1"
+   for name in "${PERSON_USERS[@]}"; do
+      [ "${name}" = "${user}" ] && { printf '%s\n' person; return 0; }
+   done
+   for name in "${BOT_USERS[@]}"; do
+      [ "${name}" = "${user}" ] && { printf '%s\n' bot; return 0; }
+   done
+   log error "user_kind: '${user}' not in PERSON_USERS or BOT_USERS"
+   return 1
+}
+
+target_kind="$(user_kind "${target_user}")" \
+   || die 64 "refusing to run against '${target_user}': not in PERSON_USERS or BOT_USERS at the top of this script. Add it there if it should be in scope."
+
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
+
+## Policy bodies (POLICY_*) live in github-policy-data.bsh, sourced
+## above. This script consumes POLICY_FORK_PR_APPROVAL,
+## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED,
+## POLICY_PERSONAL_REPO_{PERSON,BOT}, POLICY_PAGES_DELETE_*.
 
 ## --verbose suppresses the 'ok:' line otherwise printed by
 ## policy_api_call. Apply runs without --verbose are quiet on success.
 [ "${verbose}" = '1' ] || POLICY_QUIET_OK=1
 
 apply_repo_policy() {
-   local repo
+   local repo pages_endpoint
 
    repo="$1"
 
-   ## 1. Fork-PR contributor approval = all_external_contributors.
-   policy_api_call "${target_user}/${repo}: fork-PR approval=all_external_contributors" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions/fork-pr-contributor-approval" \
-      "$(policy_fork_pr_approval_body)" \
+   ## Pure dispatch table - all policy data lives in
+   ## github-policy-data.bsh.
+
+   ## 1. Fork-PR contributor approval.
+   policy_apply_repo "${target_user}" "${repo}" FORK_PR_APPROVAL
+
+   ## 2. Default workflow GITHUB_TOKEN permissions.
+   policy_apply_repo "${target_user}" "${repo}" WORKFLOW_PERMS
+
+   ## 3. Disable GitHub Actions entirely on the repo.
+   policy_apply_repo "${target_user}" "${repo}" ACTIONS_DISABLED
+
+   ## 4. Repo settings + secret-scanning + push-protection.
+   ##    Pivots on target_kind (resolved at script-init time) to
+   ##    pick PERSON or BOT body via the constant naming convention.
+   policy_apply_repo "${target_user}" "${repo}" "PERSONAL_REPO_${target_kind^^}"
+
+   ## 5. Delete GitHub Pages site if any. Custom call (DELETE +
+   ##    extra-ok-status arg); the simple dispatcher does not handle
+   ##    the 4th policy_api_call arg.
+   pages_endpoint="${POLICY_PAGES_DELETE_ENDPOINT_REPO}"
+   pages_endpoint="${pages_endpoint//__OWNER__/${target_user}}"
+   pages_endpoint="${pages_endpoint//__REPO__/${repo}}"
+   policy_api_call "${target_user}/${repo}: ${POLICY_PAGES_DELETE_LABEL}" \
+      "${POLICY_PAGES_DELETE_METHOD}" "${pages_endpoint}" '' \
+      "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
-   ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot approve PRs.
-   policy_api_call "${target_user}/${repo}: workflow GITHUB_TOKEN read-only" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions/workflow" \
-      "$(policy_workflow_perms_body)" \
-      || true
-
-   ## 3. Disable GitHub Actions entirely on the repo. The personal
-   ##    account is a backup/mirror; CI runs in the upstream orgs, so
-   ##    no workflow needs to fire here. Disabling is the strongest
-   ##    cut against malicious-fork-PR or accidentally-triggered
-   ##    runs and saves the operator's free CI minutes. Steps 1+2
-   ##    above stay as defense-in-depth in case Actions is later
-   ##    re-enabled in the UI. Repo-level body uses 'enabled' (bool);
-   ##    the allow-list endpoint is a no-op while enabled=false, so
-   ##    we skip the second PUT.
-   policy_api_call "${target_user}/${repo}: actions enabled=false (CI runs disabled)" \
-      PUT "/repos/${target_user}/${repo}/actions/permissions" \
-      "$(jq -n -- '{ enabled: false }')" \
-      || true
-
-   ## 4. Repo settings + secret-scanning + push-protection in one PATCH.
-   ##    - has_wiki=false, has_projects=false, has_discussions=false:
-   ##      cuts wiki/projects/discussions abuse vectors. has_issues is
-   ##      left untouched (defaults on; useful for a backup mirror).
-   ##    - secret_scanning + secret_scanning_push_protection: enable
-   ##      both so accidental secrets are flagged AND blocked at push
-   ##      time. Free for public repos; requires Advanced Security on
-   ##      private repos. We're scoping to public-only anyway.
-   policy_api_call "${target_user}/${repo}: settings (wiki/projects/discussions off, secret-scan on)" \
-      PATCH "/repos/${target_user}/${repo}" \
-      "$(jq -n -- '{
-         has_wiki: false,
-         has_projects: false,
-         has_discussions: false,
-         security_and_analysis: {
-            secret_scanning: { status: "enabled" },
-            secret_scanning_push_protection: { status: "enabled" }
-         }
-      }')" \
-      || true
-
-   ## 5. Disable GitHub Pages site if any. The DELETE endpoint is
-   ##    idempotent in spirit: 204 if a site existed and was
-   ##    removed, 404 if no site. Pass '404' as policy_api_call's
-   ##    extra-ok-status arg so a "no Pages site" repo doesn't trip
-   ##    the warn flag - that is the common case for a backup
-   ##    mirror and would otherwise make every routine apply run
-   ##    exit non-zero. Not a permanent gate - any future Pages
-   ##    workflow run will recreate the site.
-   policy_api_call "${target_user}/${repo}: delete Pages site (if any)" \
-      DELETE "/repos/${target_user}/${repo}/pages" '' '404' \
-      || true
-
-   ## 6. Branch ruleset on the default branch: block force-push, block
-   ##    deletion, require signed commits. bypass_actors=[] - no one,
-   ##    including the owner, can override.
+   ## 6. Branch ruleset on the default branch.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_BRANCH}" \
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo)" \
       || true
 
-   ## 7. Tag ruleset for all tags: block deletion, block re-pointing,
-   ##    require signed tags. Without this, push rights would let the
-   ##    operator (or a compromised credential) move release tags.
+   ## 7. Tag ruleset for all tags.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo)" \
@@ -230,7 +229,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      fork_approval="$(printf '%s' "${body}" | jq --raw-output -- '.approval_policy // "?"')"
+      fork_approval="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '.approval_policy // "?"')"
       log notice "  fork-PR approval: ${fork_approval}"
    else
       log notice "  fork-PR approval: HTTP '${status}'"
@@ -241,7 +240,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      workflow_perms="$(printf '%s' "${body}" | jq --raw-output -- '"default=" + (.default_workflow_permissions // "?") + ", can_approve_PRs=" + ((.can_approve_pull_request_reviews // false) | tostring)')"
+      workflow_perms="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '"default=" + (.default_workflow_permissions // "?") + ", can_approve_PRs=" + ((.can_approve_pull_request_reviews // false) | tostring)')"
       log notice "  workflow GITHUB_TOKEN: ${workflow_perms}"
    else
       log notice "  workflow GITHUB_TOKEN: HTTP '${status}'"
@@ -252,7 +251,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      allowed_actions="$(printf '%s' "${body}" | jq --raw-output -- '"enabled=" + ((.enabled // false) | tostring) + ", allowed_actions=" + (.allowed_actions // "?")')"
+      allowed_actions="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '"enabled=" + ((.enabled // false) | tostring) + ", allowed_actions=" + (.allowed_actions // "?")')"
       log notice "  actions: ${allowed_actions}"
    else
       log notice "  actions: HTTP '${status}'"

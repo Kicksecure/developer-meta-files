@@ -45,8 +45,13 @@ required=(
    'org webhooks (Scorecard "Webhooks" check):'
    'total=2, lacking secret=1'
    'dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
-   'have=1, missing=1'
+   ## After dm-github-org-policy switched to inc_forks=1, the fork
+   ## repo (some-fork) is also enumerated by the dependabot.yml
+   ## audit. Fixture has the file for derivative-maker only;
+   ## helper-scripts AND some-fork register as missing.
+   'have=1, missing=2'
    '    - org-ai-assisted/helper-scripts'
+   '    - org-ai-assisted/some-fork'
 )
 
 for needle in "${required[@]}"; do

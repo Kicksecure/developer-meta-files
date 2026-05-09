@@ -1,0 +1,423 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Single source of truth for GitHub policy bodies applied by the
+## dm-github-* tools. Pure data - no functions, no API calls, no
+## flow control. Sourcing is idempotent and side-effect-free.
+##
+## Why a separate file:
+##   - One place to grep "what GitHub settings does our tooling
+##     touch?". Adding a new policy = edit this file.
+##   - github-policy-lib.bsh stays focused on API helpers
+##     (policy_api_call, policy_upsert_*_ruleset, parameterized
+##     ruleset body factories). github-org-lib.bsh stays focused
+##     on the API client (auth, retry, sanitization).
+##   - dm-github-org-policy and dm-github-personal-policy each
+##     reference the subset that applies to them; the rest is
+##     just data sitting in scope.
+##
+## Render at the call site via:
+##   "$(jq -n -- "${POLICY_X}")"
+##
+## The bodies are written with jq's relaxed syntax (unquoted keys),
+## so they are jq programs - not JSON input. Pass them as the jq
+## program argument ('-n -- <expr>'), not via stdin.
+
+## Source via:
+##   source /usr/libexec/developer-meta-files/github-policy-data.bsh
+##
+## No dependencies. Source order does not matter relative to the
+## other lib files.
+
+## ============================================================================
+## Shared bodies - used by both org and personal policy
+## ============================================================================
+##
+## Each policy is a 4-tuple, exposed as 4 readonly constants:
+##   POLICY_X         body (jq program, unquoted keys)
+##   POLICY_X_ENDPOINT  API path; '__ORG__', '__OWNER__', '__REPO__'
+##                      placeholders are substituted at the call site
+##   POLICY_X_METHOD    HTTP verb
+##   POLICY_X_LABEL     human-facing description for log lines
+##
+## ENDPOINT_ORG / ENDPOINT_REPO suffixes appear when the org and
+## personal-policy callers hit different paths with the same body.
+
+## Fork-PR contributor approval. Same setting works at both org and
+## repo level.
+readonly POLICY_FORK_PR_APPROVAL='{
+   approval_policy: "all_external_contributors"
+}'
+readonly POLICY_FORK_PR_APPROVAL_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions/fork-pr-contributor-approval'
+readonly POLICY_FORK_PR_APPROVAL_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions/fork-pr-contributor-approval'
+readonly POLICY_FORK_PR_APPROVAL_METHOD='PUT'
+readonly POLICY_FORK_PR_APPROVAL_LABEL='fork-PR approval=all_external_contributors'
+
+## Default workflow GITHUB_TOKEN permissions.
+readonly POLICY_WORKFLOW_PERMS='{
+   default_workflow_permissions: "read",
+   can_approve_pull_request_reviews: false
+}'
+readonly POLICY_WORKFLOW_PERMS_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions/workflow'
+readonly POLICY_WORKFLOW_PERMS_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions/workflow'
+readonly POLICY_WORKFLOW_PERMS_METHOD='PUT'
+readonly POLICY_WORKFLOW_PERMS_LABEL='workflow GITHUB_TOKEN read-only, no PR approval'
+
+## Allowed Actions allow-list (org-level only). Permits GitHub-
+## owned actions + Marketplace actions from verified creators; no
+## arbitrary patterns.
+##
+## CAUTION on rollout: workflows pinned to unverified third-party
+## actions will start failing the moment this lands. Run --audit
+## first; whitelist or replace any third-party action that's not
+## github-owned and not from a verified creator before applying.
+readonly POLICY_ACTIONS_ALLOWLIST='{
+   github_owned_allowed: true,
+   verified_allowed: true,
+   patterns_allowed: []
+}'
+readonly POLICY_ACTIONS_ALLOWLIST_ENDPOINT='/orgs/__ORG__/actions/permissions/selected-actions'
+readonly POLICY_ACTIONS_ALLOWLIST_METHOD='PUT'
+readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verified-creators'
+
+## ============================================================================
+## Org-policy bodies - used by dm-github-org-policy
+## ============================================================================
+
+## Org-level code-security configuration. Applied identically to
+## SOURCE and MIRROR. Note 'code_scanning_default_setup: disabled' -
+## we use the committed codeql.yml workflows instead of GitHub's
+## brittle auto-detection. apply_code_security_config drives a
+## find-or-create dance on this body and does not use the simple
+## policy_apply_org dispatcher (no ENDPOINT/METHOD/LABEL constants).
+##
+## The 'name' field is dynamic (set by the caller via jq --arg) and
+## intentionally omitted here.
+readonly POLICY_CODE_SECURITY='{
+   description: "Project-wide code security applied via dm-github-org-policy.",
+   enforcement: "enforced",
+   secret_scanning: "enabled",
+   secret_scanning_push_protection: "enabled",
+   dependabot_alerts: "enabled",
+   dependabot_security_updates: "enabled",
+   dependency_graph: "enabled",
+   code_scanning_default_setup: "disabled",
+   private_vulnerability_reporting: "disabled"
+}'
+
+## Org Actions scope. Switches allowed_actions to "selected"; the
+## per-action allowlist itself (POLICY_ACTIONS_ALLOWLIST above) is
+## set by a follow-up call.
+readonly POLICY_ACTIONS_SCOPE='{
+   enabled_repositories: "all",
+   allowed_actions: "selected"
+}'
+readonly POLICY_ACTIONS_SCOPE_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
+readonly POLICY_ACTIONS_SCOPE_METHOD='PUT'
+readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
+
+## Code-security configuration attach scope. scope=all covers every
+## existing repo in the org without listing them individually; the
+## configuration's enforcement field controls on/off state. The
+## endpoint embeds the configuration id (resolved at runtime in
+## apply_code_security_config), so the placeholder here is __ID__
+## rather than the usual __ORG__-only pattern.
+readonly POLICY_CODE_SECURITY_ATTACH='{
+   scope: "all"
+}'
+readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
+readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
+readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
+
+## Code-security configuration default-for-new-repos. Tells GitHub
+## to auto-attach this configuration to any newly created repo in
+## the org.
+readonly POLICY_CODE_SECURITY_DEFAULTS='{
+   default_for_new_repos: "all"
+}'
+readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
+readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
+readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
+
+## Org members policy. Default repo permission for new members =
+## read; only admins can create repositories.
+## members_allowed_repository_creation_type (deprecated),
+## members_can_delete_repositories (UI-only), and
+## two_factor_requirement_enabled (read-only on PATCH) are
+## deliberately NOT in this body.
+readonly POLICY_MEMBERS='{
+   default_repository_permission: "read",
+   members_can_create_repositories: false,
+   members_can_create_public_repositories: false,
+   members_can_create_private_repositories: false,
+   members_can_create_internal_repositories: false
+}'
+readonly POLICY_MEMBERS_ENDPOINT_ORG='/orgs/__ORG__'
+readonly POLICY_MEMBERS_METHOD='PATCH'
+readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create)'
+
+## --- UI-only policies (applied via the GitHub web UI; the
+## script just prints a 'skip' line with the URL the operator
+## opens manually) ---
+
+## 2FA enforcement. PATCH /orgs/{org} accepts no setter for
+## two_factor_requirement_enabled (read-only on PATCH; verified
+## against the OpenAPI spec). Per the Nov 2024 GA change, enabling
+## does NOT remove non-compliant members - they keep membership but
+## are blocked from org resources until they enroll. GitHub is also
+## rolling out 2FA platform-wide as a mandatory account requirement,
+## so the org-level toggle just front-runs that.
+readonly POLICY_2FA_UI_URL='https://github.com/organizations/__ORG__/settings/security'
+readonly POLICY_2FA_LABEL='2FA enforcement must be set via UI'
+
+## PAT (Personal Access Token) policy toggles. REST exposes GETs
+## for pending requests and approved PATs but no stable setters.
+readonly POLICY_PAT_UI_URL='https://github.com/organizations/__ORG__/settings/personal-access-tokens'
+readonly POLICY_PAT_LABEL='PAT policy toggles must be set via UI'
+
+## GitHub App / OAuth App install policies. UI-only.
+readonly POLICY_APPS_UI_URL_INSTALLATIONS='https://github.com/organizations/__ORG__/settings/installations'
+readonly POLICY_APPS_UI_URL_OAUTH='https://github.com/organizations/__ORG__/settings/oauth_application_policy'
+readonly POLICY_APPS_LABEL='GitHub App / OAuth App policies must be set via UI'
+
+## --- SOURCE vs MIRROR diffs (the only place these two diverge) ---
+##
+##                       SOURCE  MIRROR  why
+##   has_wiki              off    off    we don't use GH wikis
+##   has_issues             on    off    MIRROR: file upstream
+##   has_projects           on    off    MIRROR: project board upstream
+##   has_discussions        on    off    MIRROR: discussions upstream
+##   allow_forking          on    off    MIRROR: no forks-of-forks
+##   ruleset bypass        none  OrgAdmin   MIRROR: hotfix without
+##                                          dropping the ruleset
+##
+## SOURCE / MIRROR org names are listed in dm-github-org-policy as
+## SOURCE_ORGS / MIRROR_ORGS arrays (the WHO, not the WHAT).
+
+## Per-repo PATCH body. apply_repo_policy in dm-github-org-policy
+## pivots on org_kind to choose between SOURCE and MIRROR. ENDPOINT
+## and METHOD are identical for both kinds (only the body differs)
+## but each kind carries its own constants to match the per-NAME
+## naming convention used by policy_apply_repo.
+readonly POLICY_REPO_SOURCE='{
+   has_wiki: false,
+   has_issues: true
+}'
+readonly POLICY_REPO_SOURCE_ENDPOINT='/repos/__OWNER__/__REPO__'
+readonly POLICY_REPO_SOURCE_METHOD='PATCH'
+readonly POLICY_REPO_SOURCE_LABEL='SOURCE: wiki=off, issues=on'
+
+readonly POLICY_REPO_MIRROR='{
+   has_wiki: false,
+   has_issues: false,
+   has_projects: false,
+   has_discussions: false,
+   allow_forking: false
+}'
+readonly POLICY_REPO_MIRROR_ENDPOINT='/repos/__OWNER__/__REPO__'
+readonly POLICY_REPO_MIRROR_METHOD='PATCH'
+readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
+
+## Branch + tag ruleset bypass actor list (passed to
+## policy_branch_ruleset_body / policy_tag_ruleset_body).
+##
+##   SOURCE = []
+##     No one - including org owners - can override. Canonical
+##     history is sacred; the ruleset enforces it uniformly.
+##     Recovery from a stuck state goes through GitHub support,
+##     not a one-off bypass.
+##   MIRROR = [OrganizationAdmin]
+##     Org owners can override. The MIRROR is a fork-sync
+##     downstream; if a re-fork or hotfix needs a force-push or
+##     unsigned commit, we must be able to do it without first
+##     dropping the ruleset.
+readonly POLICY_RULESET_BYPASS_SOURCE='[]'
+readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
+
+## Branch + tag ruleset body shapes. POSTed to
+## /orgs/{org}/rulesets or /repos/{owner}/{repo}/rulesets via the
+## policy_branch_ruleset_body / policy_tag_ruleset_body factories
+## in github-policy-lib.bsh; the factories inject $name and $bypass
+## via jq --arg / --argjson.
+##
+## Why 4 bodies instead of 2 with conditional fields:
+##   The 'org' variant adds 'conditions.repository_name' (so the
+##   ruleset applies to every repo in the org); the 'repo' variant
+##   doesn't (the ruleset is scoped to the single repo it's on).
+##   Cleaner to have two complete bodies than one body with a
+##   nullable field.
+##
+## Why the same three rules everywhere:
+##   - deletion           block deletion of the protected ref
+##   - non_fast_forward   block force-push (rewriting history)
+##   - required_signatures   require GPG-signed commits / tags
+##   Same threat model on branches and tags; same bypass policy
+##   (per the bypass constants above).
+##
+## Operator note on required_signatures + GitHub's UI merge buttons:
+##   "Merge pull request" and "Squash and merge" re-sign the
+##     produced commit with GitHub's web-flow GPG key, so they keep
+##     working on PRs with unsigned contributor commits.
+##   "Rebase and merge" does NOT re-sign rebased commits and will
+##     fail against this ruleset when the PR carries unsigned
+##     commits. Use Merge or Squash for fork PRs.
+##
+## Why the tag ruleset matters specifically: without these rules,
+## anyone with push access could move a release tag like v1.0 to
+## a different commit, silently changing what 'v1.0' refers to in
+## the user-facing release timeline.
+##
+## Branch ruleset deliberately does NOT include:
+##   - pull_request          would force every change through a PR;
+##                           our maintainers push directly to master
+##   - required_status_checks   per-repo CI coupling - belongs in
+##                              repo-level config, not org-wide
+##   - required_linear_history  breaks some merge workflows
+
+readonly POLICY_BRANCH_RULESET_BODY_ORG='{
+   name: $name,
+   target: "branch",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+      repository_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_BRANCH_RULESET_BODY_REPO='{
+   name: $name,
+   target: "branch",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_TAG_RULESET_BODY_ORG='{
+   name: $name,
+   target: "tag",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~ALL"], exclude: [] },
+      repository_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+readonly POLICY_TAG_RULESET_BODY_REPO='{
+   name: $name,
+   target: "tag",
+   enforcement: "active",
+   bypass_actors: $bypass,
+   conditions: {
+      ref_name: { include: ["~ALL"], exclude: [] }
+   },
+   rules: [
+      { type: "deletion" },
+      { type: "non_fast_forward" },
+      { type: "required_signatures" }
+   ]
+}'
+
+## ============================================================================
+## Personal-policy bodies - used by dm-github-personal-policy
+## ============================================================================
+
+## Disable GitHub Actions on the repo entirely. The personal
+## account is a backup/mirror; CI runs in the upstream orgs, so no
+## workflow needs to fire here. Disabling is the strongest cut
+## against malicious-fork-PR or accidentally-triggered runs and
+## saves the operator's free CI minutes.
+readonly POLICY_ACTIONS_DISABLED='{
+   enabled: false
+}'
+readonly POLICY_ACTIONS_DISABLED_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/actions/permissions'
+readonly POLICY_ACTIONS_DISABLED_METHOD='PUT'
+readonly POLICY_ACTIONS_DISABLED_LABEL='actions enabled=false (CI runs disabled)'
+
+## Per-user repo settings + secret-scanning + push-protection.
+## apply_repo_policy in dm-github-personal-policy pivots on
+## user_kind to choose between PERSON and BOT. ENDPOINT and METHOD
+## are identical for both kinds (only the body differs) but each
+## kind carries its own constants to match the per-NAME naming
+## convention used by policy_apply_repo.
+##
+## --- PERSON vs BOT diffs ---
+##
+##                       PERSON  BOT  why
+##   has_wiki              off   off   we don't use GH wikis
+##   has_projects          off   off   project boards belong upstream
+##   has_discussions       off   off   discussions belong upstream
+##   has_issues             on   off   PERSON: human can triage incoming
+##                                     BOT:    bot doesn't triage; file
+##                                             upstream
+##   allow_forking          on   off   BOT: no forks-of-forks (mirrors
+##                                          MIRROR_ORGS posture)
+##   secret_scanning        on    on   same on both
+##   secret_scanning_push_protection  on    on   same on both
+
+## PERSON variant: real maintainer's account. Issues stay on so
+## the maintainer can triage incoming reports filed against the
+## personal mirror. Forks left enabled.
+readonly POLICY_PERSONAL_REPO_PERSON='{
+   has_wiki: false,
+   has_projects: false,
+   has_discussions: false,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
+}'
+readonly POLICY_PERSONAL_REPO_PERSON_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_PERSONAL_REPO_PERSON_METHOD='PATCH'
+readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+
+## BOT variant: AI-assisted-work bot account. Identical lockdown
+## to a MIRROR org repo - everything that side-tracker-style
+## vectors could land on stays closed; everything routes upstream.
+readonly POLICY_PERSONAL_REPO_BOT='{
+   has_wiki: false,
+   has_issues: false,
+   has_projects: false,
+   has_discussions: false,
+   allow_forking: false,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
+}'
+readonly POLICY_PERSONAL_REPO_BOT_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_PERSONAL_REPO_BOT_METHOD='PATCH'
+readonly POLICY_PERSONAL_REPO_BOT_LABEL='BOT: settings (wiki/issues/projects/discussions/forking off, secret-scan on)'
+
+## Disable GitHub Pages site on a repo. The DELETE endpoint is
+## idempotent in spirit: 204 if a site existed and was removed,
+## 404 if no site. The 'extra-ok-status' machinery in policy_api_call
+## treats 404 as success so the common case (no Pages site) does
+## not trip the warn flag. Not a permanent gate - any future Pages
+## workflow run will recreate the site.
+readonly POLICY_PAGES_DELETE_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/pages'
+readonly POLICY_PAGES_DELETE_METHOD='DELETE'
+readonly POLICY_PAGES_DELETE_EXTRA_OK_STATUS='404'
+readonly POLICY_PAGES_DELETE_LABEL='delete Pages site (if any)'

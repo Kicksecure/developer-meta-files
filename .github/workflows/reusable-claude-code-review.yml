@@ -1,0 +1,200 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: Anthropic Claude code review on pull requests
+## and on @claude mentions in PR/review-comment threads.
+##
+## ## Trust footprint
+##
+## anthropics/claude-code-action - SHA-pinned, calls the Anthropic
+## API with the caller's ANTHROPIC_API_KEY. Posts review comments
+## via the runner's GITHUB_TOKEN scoped to the permissions block on
+## the calling job.
+##
+## ## Action-input drift (2026-05)
+##
+## The action removed the 'allowed_users' input upstream; the new
+## API surface is 'allowed_non_write_users' + 'allowed_bots'. Live
+## runs against the SHA pinned below emit:
+##
+##   ##[warning]Unexpected input(s) 'allowed_users', valid inputs
+##     are [..., 'allowed_bots', 'allowed_non_write_users', ...]
+##
+## We do NOT pass either replacement: the action's default already
+## allows any actor with repo write permission, which matches our
+## roster (org members all have write). The roster gate is enforced
+## one layer up in the job's 'if:' condition - that gate runs
+## BEFORE the runner spins up, so the action-internal check would
+## be redundant even if it still existed.
+##
+## ## OIDC federation
+##
+## The action requests an OIDC token from the runner, exchanges it
+## for a GitHub App token via Anthropic's gateway, and uses that
+## elevated token to post review comments. Live log:
+##
+##   Requesting OIDC token...
+##   OIDC token successfully obtained
+##   Exchanging OIDC token for app token...
+##   Using GITHUB_TOKEN from OIDC
+##
+## 'id-token: write' on the calling job's permissions block is
+## therefore required. Without it the action fails with "Could not
+## fetch an OIDC token. Did you remember to add 'id-token: write'
+## to your workflow permissions?".
+##
+## ## Caller responsibilities
+##
+## - Define the trigger schedule (typically pull_request +
+##   issue_comment + pull_request_review_comment). Schedule cannot
+##   live in a reusable workflow per GitHub Actions G-A-002.
+## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+## - Forward secrets via 'secrets: inherit' on the calling job.
+##   The reusable reads 'secrets.ANTHROPIC_API_KEY' directly from
+##   the caller's secret namespace; the org sets this secret at
+##   org level so every consumer wrapper picks it up.
+## - Set the 'allowed-users' input to the comma-separated list of
+##   usernames allowed to trigger @claude. The action errors out
+##   on actor checks if this is omitted; an explicit empty string
+##   means "everyone allowed" (not recommended on repos with paid
+##   API key access).
+## - Grant the same job-level permissions block listed in the
+##   caller example below. The action federates the runner's
+##   id-token (OIDC) to an Anthropic-controlled GitHub App which
+##   in turn mints a higher-privilege GITHUB_TOKEN used to post
+##   review comments. id-token: write is required.
+##
+## ## Inputs
+##
+## - allowed-users    (optional)  Comma-separated GitHub usernames
+##                                allowed to trigger @claude. Default
+##                                is the org's canonical reviewer
+##                                roster (set inline below); pass an
+##                                explicit value to override per
+##                                repo. An empty string is rejected
+##                                by the action.
+## - timeout-minutes  (optional)  Job timeout. Default 30.
+##
+## ## Secrets
+##
+## Read from the caller's secret namespace via 'secrets: inherit':
+##
+## - ANTHROPIC_API_KEY  (required)  Anthropic API key. Set at org
+##                                  level; every consumer in the
+##                                  org gets it for free.
+##
+## ## Caller example
+##
+##   name: Claude Code Review
+##   on:
+##     pull_request:
+##     issue_comment:
+##       types: [created]
+##     pull_request_review_comment:
+##       types: [created]
+##   permissions:
+##     contents: read
+##   jobs:
+##     review:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/claude-code-review.yml@master
+##       secrets: inherit
+##       permissions:
+##         contents: read
+##         pull-requests: write
+##         issues: write
+##         id-token: write
+
+name: Claude Code Review (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      ## Org-canonical reviewer roster. Single source of truth -
+      ## consumer wrappers (kloak/helper-scripts/security-misc/...)
+      ## should inherit this default rather than redeclaring the
+      ## list per repo. Update here when the roster changes.
+      allowed-users:
+        required: false
+        type: string
+        default: "adrelanos,ArrayBolt3,assisted-by-ai"
+      timeout-minutes:
+        required: false
+        type: number
+        default: 30
+    ## Secrets schema intentionally not declared. Callers pass
+    ## 'secrets: inherit' and the action below reads
+    ## 'secrets.ANTHROPIC_API_KEY' from the caller's namespace
+    ## directly. Declaring 'workflow_call.secrets' would force every
+    ## consumer to redeclare a secret-mapping block - the very
+    ## boilerplate this design avoids.
+
+permissions:
+  contents: read
+
+## Concurrency key explicitly includes the PR/issue number for
+## comment-triggered runs because GitHub documents 'issue_comment'
+## and 'pull_request_review_comment' as running on the default-
+## branch ref. Without the PR number in the key, every comment-
+## triggered run on every PR would share one group, and 'cancel-
+## in-progress: true' would silently cancel an in-flight Claude
+## review on PR #A the moment a comment lands on PR #B.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Claude Code Review
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    ## Job-level gate. Two purposes:
+    ##
+    ## 1. On comment-triggered events ('issue_comment',
+    ##    'pull_request_review_comment'), only run when the comment
+    ##    body actually mentions @claude. Without this check, the
+    ##    runner would spin up on every comment, the action would
+    ##    no-op internally, and minutes would be burned for nothing.
+    ##
+    ## 2. Across all event types, restrict to the configured
+    ##    'allowed-users' roster. The 'allowed_users' parameter on
+    ##    the action below performs the same check internally; doing
+    ##    it at the job-level too prevents unauthorized actors from
+    ##    even spinning up a runner. Defense in depth: API budget
+    ##    protection (random external commenter cannot exhaust the
+    ##    org's ANTHROPIC_API_KEY by spam-mentioning @claude) and
+    ##    blast-radius reduction (a compromised allowed_users action
+    ##    arg cannot bypass this check).
+    ##
+    ## Substring-match on the comma-separated input is wrapped with
+    ## leading/trailing commas in both the haystack and needle so
+    ## that "bob" does not accidentally match "alice,bobby,charlie".
+    if: |
+      contains(format(',{0},', inputs.allowed-users), format(',{0},', github.actor)) && (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+      )
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@62238ddb33772a079b0a6d8665a1ff3043583067  # v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          ## Note: the action no longer accepts an 'allowed_users'
+          ## input (verified against live workflow log: "Unexpected
+          ## input(s) 'allowed_users', valid inputs are [...]").
+          ## The roster gate is enforced one layer up via the job's
+          ## 'if:' condition above.

@@ -17,10 +17,14 @@
 ##                       idempotent find-by-name then PUT-update or
 ##                       POST-create for org-level and repo-level
 ##                       rulesets.
-##   - policy_*_body:    JSON body builders for the standard policy
-##                       payloads (branch ruleset, tag ruleset,
-##                       fork-PR approval, workflow perms, allowed
-##                       actions list).
+##   - policy_branch_ruleset_body / policy_tag_ruleset_body:
+##                       parameterized factories for the branch and
+##                       tag rulesets (need name + scope + bypass
+##                       actor list).
+##
+## Static policy body data (POLICY_FORK_PR_APPROVAL,
+## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_ALLOWLIST, etc.) lives in
+## github-policy-data.bsh. Each consumer sources both files.
 ##   - policy_parse_mode_args / policy_tool_init:
 ##                       shared --apply / --dry-run / --audit / -v
 ##                       parser plus the post-parse + ghorg_require_deps
@@ -180,8 +184,10 @@ _policy_upsert_ruleset() {
       GET "${list_endpoint}?per_page=100" '' '' list_body \
       || return 1
 
+   ## API response body - hostile-input path: ghorg_jq_capped caps
+   ## stdin to GHORG_JQ_MAX_BYTES before jq sees it.
    existing_id="$(printf '%s' "${list_body}" \
-      | jq -r --arg name "${name}" -- \
+      | ghorg_jq_capped -r --arg name "${name}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
 
@@ -229,122 +235,135 @@ policy_upsert_repo_ruleset() {
 }
 
 ## ============================================================================
-## JSON body builders
+## Policy dispatchers
+## ============================================================================
+##
+## Resolve a policy by NAME (suffixed POLICY_<NAME>_BODY,
+## POLICY_<NAME>_ENDPOINT_*, POLICY_<NAME>_METHOD,
+## POLICY_<NAME>_LABEL constants in github-policy-data.bsh) and
+## hand its parts to policy_api_call. The naming scheme is the
+## interface; renaming a constant means renaming both ends.
+
+## policy_apply_org <org> <NAME> [<endpoint_suffix=ENDPOINT_ORG>]
+## Substitutes __ORG__ in the endpoint with the org name.
+policy_apply_org() {
+   local org name endpoint_suffix
+   local body_v endpoint_v method_v label_v endpoint
+
+   org="$1"
+   name="$2"
+   endpoint_suffix="${3:-ENDPOINT_ORG}"
+
+   body_v="POLICY_${name}"
+   endpoint_v="POLICY_${name}_${endpoint_suffix}"
+   method_v="POLICY_${name}_METHOD"
+   label_v="POLICY_${name}_LABEL"
+
+   endpoint="${!endpoint_v}"
+   endpoint="${endpoint//__ORG__/${org}}"
+
+   policy_api_call "${org}: ${!label_v}" \
+      "${!method_v}" "${endpoint}" \
+      "$(ghorg_jq -n -- "${!body_v}")" \
+      || true
+}
+
+## policy_apply_repo <owner> <repo> <NAME> [<endpoint_suffix=ENDPOINT_REPO>]
+## Substitutes __OWNER__ and __REPO__ in the endpoint.
+policy_apply_repo() {
+   local owner repo name endpoint_suffix
+   local body_v endpoint_v method_v label_v endpoint
+
+   owner="$1"
+   repo="$2"
+   name="$3"
+   endpoint_suffix="${4:-ENDPOINT_REPO}"
+
+   body_v="POLICY_${name}"
+   endpoint_v="POLICY_${name}_${endpoint_suffix}"
+   method_v="POLICY_${name}_METHOD"
+   label_v="POLICY_${name}_LABEL"
+
+   endpoint="${!endpoint_v}"
+   endpoint="${endpoint//__OWNER__/${owner}}"
+   endpoint="${endpoint//__REPO__/${repo}}"
+
+   policy_api_call "${owner}/${repo}: ${!label_v}" \
+      "${!method_v}" "${endpoint}" \
+      "$(ghorg_jq -n -- "${!body_v}")" \
+      || true
+}
+
+## policy_skip_ui <org_or_label_context> <NAME> <ui_url_var_suffix>
+## For UI-only policies; emits a 'skip:' log line with the resolved
+## UI URL. The URL constant is POLICY_<NAME>_UI_URL by default; pass
+## a different suffix (e.g. UI_URL_INSTALLATIONS) to address one of
+## several URLs registered for the same logical policy.
+policy_skip_ui() {
+   local context name suffix label_v url_v url
+
+   context="$1"
+   name="$2"
+   suffix="${3:-UI_URL}"
+
+   label_v="POLICY_${name}_LABEL"
+   url_v="POLICY_${name}_${suffix}"
+
+   url="${!url_v}"
+   url="${url//__ORG__/${context}}"
+
+   log notice "skip: ${context}: ${!label_v} - see ${url}"
+}
+
+## ============================================================================
+## JSON body factories (parameterized; pure data lives in
+## github-policy-data.bsh)
 ## ============================================================================
 
-## Standard branch ruleset: targets the default branch, blocks
-## force-push and deletion, requires signed commits. bypass_actors=[]
-## (no one can override). repository_name condition is included only
-## for org-level rulesets; the helper takes a flag to control that.
+## Branch ruleset body. Body shape lives in github-policy-data.bsh
+## as POLICY_BRANCH_RULESET_BODY_ORG / _REPO; this factory just
+## injects the runtime args ($name, $bypass) and picks the right
+## body for the scope.
 ##
 ## Args:
 ##   $1 - ruleset name
-##   $2 - 'org' or 'repo' (org adds the repository_name condition)
+##   $2 - 'org' or 'repo' (org variant includes the repository_name
+##        condition so the ruleset applies to every repo in the org)
+##   $3 - bypass_actors JSON array (default '[]'); use
+##        POLICY_RULESET_BYPASS_SOURCE / _MIRROR from the data file.
 policy_branch_ruleset_body() {
-   local name scope
+   local name scope bypass body
 
    name="$1"
    scope="${2:-repo}"
+   bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" -- '{
-         name: $name,
-         target: "branch",
-         enforcement: "active",
-         bypass_actors: [],
-         conditions: {
-            ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
-            repository_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_BRANCH_RULESET_BODY_ORG}"
    else
-      jq -n --arg name "${name}" -- '{
-         name: $name,
-         target: "branch",
-         enforcement: "active",
-         bypass_actors: [],
-         conditions: {
-            ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_BRANCH_RULESET_BODY_REPO}"
    fi
+
+   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
-## Standard tag ruleset: targets all tags, blocks deletion and
-## re-pointing, requires signed tags.
-##
-## Args: same as policy_branch_ruleset_body.
+## Tag ruleset body. Body shape lives in github-policy-data.bsh as
+## POLICY_TAG_RULESET_BODY_ORG / _REPO. Args: same as
+## policy_branch_ruleset_body.
 policy_tag_ruleset_body() {
-   local name scope
+   local name scope bypass body
 
    name="$1"
    scope="${2:-repo}"
+   bypass="${3:-[]}"
 
    if [ "${scope}" = 'org' ]; then
-      jq -n --arg name "${name}" -- '{
-         name: $name,
-         target: "tag",
-         enforcement: "active",
-         bypass_actors: [],
-         conditions: {
-            ref_name: { include: ["~ALL"], exclude: [] },
-            repository_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_TAG_RULESET_BODY_ORG}"
    else
-      jq -n --arg name "${name}" -- '{
-         name: $name,
-         target: "tag",
-         enforcement: "active",
-         bypass_actors: [],
-         conditions: {
-            ref_name: { include: ["~ALL"], exclude: [] }
-         },
-         rules: [
-            { type: "deletion" },
-            { type: "non_fast_forward" },
-            { type: "required_signatures" }
-         ]
-      }'
+      body="${POLICY_TAG_RULESET_BODY_REPO}"
    fi
-}
 
-## Fork-PR contributor approval = all_external_contributors.
-policy_fork_pr_approval_body() {
-   jq -n -- '{approval_policy: "all_external_contributors"}'
-}
-
-## Default workflow GITHUB_TOKEN permissions = read; cannot approve
-## PRs.
-policy_workflow_perms_body() {
-   jq -n -- '{
-      default_workflow_permissions: "read",
-      can_approve_pull_request_reviews: false
-   }'
-}
-
-## Allowed actions allow-list: github-owned + verified creators only.
-policy_actions_selected_allowlist_body() {
-   jq -n -- '{
-      github_owned_allowed: true,
-      verified_allowed: true,
-      patterns_allowed: []
-   }'
+   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
 ## ============================================================================
@@ -409,6 +428,15 @@ policy_parse_mode_args() {
             ;;
          -h|--help)
             show_help
+            exit 0
+            ;;
+         --policy-dump)
+            ## Print github-policy-data.bsh verbatim. Single source
+            ## of truth for what this tool will apply; no separate
+            ## formatter to drift out of sync. Resolved relative to
+            ## this lib's path (BASH_SOURCE[0]) so dev-tree runs
+            ## also work, not just /usr/libexec/... installs.
+            cat -- "$(dirname -- "${BASH_SOURCE[0]}")/github-policy-data.bsh"
             exit 0
             ;;
          --)

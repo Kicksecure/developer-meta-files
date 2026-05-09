@@ -21,21 +21,81 @@ shopt -s shift_verbose
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+source /usr/libexec/developer-meta-files/github-policy-data.bsh
+## R-082: source every helper-scripts file used directly. The lib
+## happens to source these too (transitively) but a future refactor
+## that drops a transitive source must not break this consumer.
+# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 
-has github-org-fork \
-  || die 1 "'github-org-fork' not on PATH"
+die_if_not_has github-org-fork
 
-## Orgs to which the policy is applied. org-ai-assisted is our mirror
-## org. Kicksecure and Whonix can be added here once an admin token
-## scoped to those orgs is available - currently commented out so a
-## dry-run / apply against the mirror does not silently fail mid-loop.
-# readonly ORGS=( 'Kicksecure' 'Whonix' 'org-ai-assisted' )
-readonly ORGS=( 'org-ai-assisted' )
+## ===== Per-org policy distinction =====
+##
+## Two kinds of org are touched by this script:
+##
+##   SOURCE = canonical upstream org (Kicksecure, Whonix). Holds
+##            originals; first-class bug-tracker, the place where
+##            contributors and downstream tooling expect to file
+##            issues, follow Discussions, watch the project.
+##            Defaults: has_issues=true, has_projects=true,
+##            has_discussions=true.
+##   MIRROR = fork org (org-ai-assisted) for AI-assisted dev work.
+##            Holds 100% forks. Issues / Projects / Discussions
+##            belong on the SOURCE - filing upstream is the
+##            contract; the MIRROR's mirror-side trackers must
+##            stay closed or contributors get split inboxes.
+##            Defaults: has_issues=false, has_projects=false,
+##            has_discussions=false.
+##
+## Vocabulary aligns with dm-github-fork-sync, which already uses
+## SOURCE_ORGS / MIRROR.
+readonly SOURCE_ORGS=( 'Kicksecure' 'Whonix' )
+readonly MIRROR_ORGS=( 'org-ai-assisted' )
+
+## Active policy targets. SOURCE_ORGS is currently commented out
+## pending an admin token scoped to those orgs - uncomment once
+## available; the per-org case statements below already handle
+## both kinds.
+##
+## Tests can override the active list via the ORGS_OVERRIDE env var
+## (comma-separated org names; bash arrays cannot cross a process
+## boundary as env vars, so a string is the only portable form).
+## Example to exercise the SOURCE pivot:
+##   ORGS_OVERRIDE='Whonix' dm-github-org-policy --dry-run
+# readonly ORGS=( "${SOURCE_ORGS[@]}" "${MIRROR_ORGS[@]}" )
+if [ -n "${ORGS_OVERRIDE:-}" ]; then
+   IFS=',' read -ra ORGS <<< "${ORGS_OVERRIDE}"
+else
+   ORGS=( "${MIRROR_ORGS[@]}" )
+fi
+readonly ORGS
+
+## Echo 'source' or 'mirror' for the named org; die on an unknown
+## name. apply_repo_policy pivots on this to pick between
+## POLICY_REPO_SOURCE / POLICY_REPO_MIRROR (in
+## github-policy-data.bsh); a typo'd org would otherwise silently
+## get the wrong defaults.
+org_kind() {
+   local org name
+   org="$1"
+   for name in "${SOURCE_ORGS[@]}"; do
+      [ "${name}" = "${org}" ] && { printf '%s\n' source; return 0; }
+   done
+   for name in "${MIRROR_ORGS[@]}"; do
+      [ "${name}" = "${org}" ] && { printf '%s\n' mirror; return 0; }
+   done
+   log error "org_kind: '${org}' not in SOURCE_ORGS or MIRROR_ORGS"
+   return 1
+}
+
 readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
 readonly CODE_SEC_CONFIG_NAME='dm-github-org-policy code security'
+
 
 ## Modes are mutually exclusive; one must be passed explicitly. No
 ## implicit default - running this tool without a mode flag would
@@ -50,116 +110,27 @@ positional=()
 show_help() {
    cat <<'EOF'
 Apply project-wide GitHub security/policy settings to the source
-organizations (Kicksecure, Whonix). Idempotent and apply-only - never
-disables a setting that was already on. Org-wide settings are
-preferred over per-repo where possible: enabling a security feature
-"for all existing repos" via a single org-level call beats iterating
-every repo, both for atomicity and for new-repo coverage.
+organizations (Kicksecure, Whonix) and the mirror org
+(org-ai-assisted). Idempotent and apply-only - never disables a
+setting that was already on.
 
 Usage (one mode flag is required - no implicit default):
-  dm-github-org-policy --apply     ## apply policy to Kicksecure + Whonix
-  dm-github-org-policy --dry-run   ## report planned changes only
-  dm-github-org-policy --audit     ## read-only inspection of current state
-                               ## (current settings, members lacking
-                               ## 2FA, existing rulesets); no writes
+  dm-github-org-policy --apply         apply policy
+  dm-github-org-policy --dry-run       report planned changes only
+  dm-github-org-policy --audit         read-only inspection
+  dm-github-org-policy --policy-dump   print the active policy table
+                                       (cats github-policy-data.bsh)
   dm-github-org-policy --help
 
-Settings applied at the org level:
-  - Fork-PR contributor approval = all_external_contributors
-  - Default workflow GITHUB_TOKEN permissions = read; cannot
-    create or approve pull requests
-  - Allowed Actions = github-owned + Marketplace-verified-creators
-    only
-  - Members policy:
-    * Default repository permission for new members = read
-    * Members cannot create repositories (owners only)
-  - 2FA enforcement (UI-only). The two_factor_requirement_enabled
-    field is read-only on PATCH /orgs/{org}; toggle in the UI under
-    Settings -> Authentication security. As of the Nov 2024 GA
-    change, enabling no longer removes non-compliant members - they
-    keep membership but are blocked from org resources until they
-    enroll. --audit lists who is currently non-compliant.
-    Platform-wide 2FA mandate: GitHub is rolling 2FA out as a
-    requirement for every account; the org-level toggle just front-
-    runs that.
-  - Code security via the modern Code Security Configurations
-    API: a single org-level configuration enables secret scanning,
-    push protection, Dependabot alerts and security updates, and
-    dependency graph. Attached to all existing repos (scope=all)
-    and set as the default for newly created repos. CodeQL default
-    setup and private vulnerability reporting are explicitly
-    disabled in the configuration.
-  - Repository ruleset on the default branch of all repos:
-    block force-push, block deletion, require signed commits.
-    bypass_actors=[] - no one, including org owners, can override.
-    Deliberately does NOT include the pull_request rule (would
-    require all merges to go through a PR; maintainers push
-    directly to master), required_status_checks (per-repo CI
-    coupling), or required_linear_history.
-  - Repository ruleset on tags of all repos: block deletion,
-    block re-pointing, require signed tags. Same bypass_actors=[].
-  - PAT and App policy toggles: SKIPPED (UI-only; --audit reports
-    state). Apply path prints UI links for manual configuration.
-
-Settings applied per-repo (no org-wide endpoint):
-  - has_wiki = false
-  - has_issues = true
-
-Deliberately NOT applied (with reasoning):
-  - Private vulnerability reporting: project channel for disclosure
-    is OpenPGP email; enabling GitHub's would split the inbox.
-  - CodeQL default setup: brittle auto-detection; a committed
-    .github/workflows/codeql.yml is more reliable. Belongs in a
-    separate workflow-files-deploy tool.
-  - Required PR reviews / status checks / linear history /
-    web-commit-signoff / disable-forking: each has a real cost
-    that does not justify uniform application.
-  - Allowed Actions tightening can break existing workflows pinned
-    to unverified third-party actions. Run --audit first to spot
-    anything you'd need to update.
-
-Note on signed commits + UI merging:
-  GitHub's "Merge pull request" and "Squash and merge" buttons sign
-  the produced commit with the web-flow GPG key, so they keep
-  working. "Rebase and merge" does NOT re-sign rebased commits, so
-  it will fail when a contributor's PR commits are unsigned.
-  Prefer Merge or Squash for fork PRs.
+Run 'dm-github-org-policy --policy-dump' for the full table of what
+gets applied (bodies, endpoints, methods, labels, SOURCE vs MIRROR
+diffs).
 
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Classic PAT needs admin:org + repo. Fine-grained PAT needs
   Administration r/w + Code security r/w + Webhooks r/w +
-  Members r/w (the last for 2FA enforcement).
-
-OSSF Scorecard mapping:
-  Branch-Protection: Tier 1 (3/10) - deliberate ceiling. Higher
-    tiers require switching from maintainer-direct-push to
-    PR-required-for-merge, which conflicts with our model.
-  Token-Permissions: covered (default workflow GITHUB_TOKEN=read,
-    no PR approval).
-  Webhooks (Critical): audit lists org-level webhooks lacking a
-    secret. Per-repo webhooks not yet audited.
-  Dangerous-Workflow (Critical): partially mitigated by
-    Allowed-Actions=verified-only. Detection is per-workflow
-    content; avoid pull_request_target with explicit PR checkout
-    and avoid using untrusted github.event.* fields directly in
-    inline scripts. Reference:
-    https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-  Code-Review (High): deliberately skipped. Maintainer-direct-push
-    workflow.
-  Vulnerabilities (High): covered indirectly via Dependabot alerts
-    enabled by the code-security configuration.
-  Dependency-Update-Tool (High): coverage requires a committed
-    .github/dependabot.yml per repo (Scorecard checks file
-    presence). Audit lists missing repos as a worklist.
-  Signed-Releases (High): tag ruleset enforces signed tags;
-    per-release artifact signing is build-time per repo.
-  SAST / CodeQL (Medium): deliberately skipped at the API level
-    (default-setup is brittle). A committed
-    .github/workflows/codeql.yml is the better path; outside this
-    tool's scope.
-  Maintained (High): organic activity metric; not addressable by
-    policy.
+  Members r/w (the last for 2FA enforcement audit).
 EOF
 }
 
@@ -176,29 +147,17 @@ policy_tool_init 0 "$@"
 ##   2. attach it to all existing repos (scope=all)
 ##   3. set it as the default for new repos (default_for_new_repos=all)
 ##
-## Configuration body: enables secret scanning + push protection,
-## Dependabot alerts + security updates, dependency graph. Disables
-## CodeQL default setup (brittle on monorepos - prefer a committed
-## .github/workflows/codeql.yml) and private vulnerability reporting
-## (project disclosure channel is OpenPGP email; see header notes).
+## Configuration body: POLICY_CODE_SECURITY in github-policy-data.bsh
+## (rationale for each enabled / disabled feature lives there).
 apply_code_security_config() {
    local org config_body existing_id list_body create_body
-   local attach_body default_body
+   local attach_endpoint default_endpoint
 
    org="$1"
 
-   config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- '{
-      name: $name,
-      description: "Project-wide code security applied via dm-github-org-policy.",
-      enforcement: "enforced",
-      secret_scanning: "enabled",
-      secret_scanning_push_protection: "enabled",
-      dependabot_alerts: "enabled",
-      dependabot_security_updates: "enabled",
-      dependency_graph: "enabled",
-      code_scanning_default_setup: "disabled",
-      private_vulnerability_reporting: "disabled"
-   }')"
+   ## Inject the dynamic 'name' field via jq --arg.
+   config_body="$(ghorg_jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
+      "${POLICY_CODE_SECURITY} + {name: \$name}")"
 
    if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: ${org}: upsert code-security configuration ${CODE_SEC_CONFIG_NAME}"
@@ -215,7 +174,7 @@ apply_code_security_config() {
       || return 1
 
    existing_id="$(printf '%s' "${list_body}" \
-      | jq -r --arg name "${CODE_SEC_CONFIG_NAME}" -- \
+      | ghorg_jq_capped -r --arg name "${CODE_SEC_CONFIG_NAME}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
 
@@ -236,7 +195,7 @@ apply_code_security_config() {
       policy_api_call "${org}: create code-security configuration" \
          POST "/orgs/${org}/code-security/configurations" "${config_body}" '' create_body \
          || return 1
-      existing_id="$(printf '%s' "${create_body}" | jq -r -- '.id')"
+      existing_id="$(printf '%s' "${create_body}" | ghorg_jq_capped -r -- '.id')"
       if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] || \
          [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
          log warn "'${org}': new code-security config id '${existing_id}' not a valid numeric id"
@@ -250,124 +209,75 @@ apply_code_security_config() {
       log notice "ok: ${org}: created code-security configuration id=${existing_id}"
    fi
 
-   ## Attach to all existing repos in the org. scope=all covers every
-   ## repo without listing them; the configuration's enforcement field
-   ## takes care of the on/off state.
-   attach_body="$(jq -n -- '{scope: "all"}')"
-   policy_api_call "${org}: attach code-security config to all repos" \
-      POST "/orgs/${org}/code-security/configurations/${existing_id}/attach" \
-      "${attach_body}" || true
+   ## Attach to all existing repos in the org.
+   ## The ATTACH and DEFAULTS endpoints embed the configuration id;
+   ## resolve __ID__ here, then __ORG__ is resolved by the dispatcher.
+   attach_endpoint="${POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG//__ID__/${existing_id}}"
+   policy_api_call "${org}: ${POLICY_CODE_SECURITY_ATTACH_LABEL}" \
+      "${POLICY_CODE_SECURITY_ATTACH_METHOD}" \
+      "${attach_endpoint//__ORG__/${org}}" \
+      "$(ghorg_jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")" \
+      || true
 
    ## Make this configuration the default for newly created repos.
-   default_body="$(jq -n -- '{default_for_new_repos: "all"}')"
-   policy_api_call "${org}: set code-security config as default for new repos" \
-      PUT "/orgs/${org}/code-security/configurations/${existing_id}/defaults" \
-      "${default_body}" || true
+   default_endpoint="${POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG//__ID__/${existing_id}}"
+   policy_api_call "${org}: ${POLICY_CODE_SECURITY_DEFAULTS_LABEL}" \
+      "${POLICY_CODE_SECURITY_DEFAULTS_METHOD}" \
+      "${default_endpoint//__ORG__/${org}}" \
+      "$(ghorg_jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")" \
+      || true
 }
 
 ## Org-level settings: fork-PR approval, workflow permissions, allowed
 ## actions, 2FA SKIP, member policy, code-security configuration,
 ## branch and tag rulesets, PAT and App SKIPs.
+##
+## Pure dispatch table - all policy data (bodies, endpoints, methods,
+## labels, UI URLs) lives in github-policy-data.bsh.
 apply_org_policy() {
-   local org body
+   local org kind bypass_var
 
    org="$1"
+   kind="$(org_kind "${org}")" || return 1
 
    log notice "=== org policy: ${org} ==="
 
-   ## 1. Fork-PR contributor approval = all_external_contributors.
-   policy_api_call "${org}: fork-PR approval=all_external_contributors" \
-      PUT "/orgs/${org}/actions/permissions/fork-pr-contributor-approval" \
-      "$(policy_fork_pr_approval_body)" \
-      || true
+   ## 1. Fork-PR contributor approval.
+   policy_apply_org "${org}" FORK_PR_APPROVAL
 
-   ## 2. Default workflow GITHUB_TOKEN permissions = read; cannot
-   ##    approve PRs.
-   policy_api_call "${org}: workflow GITHUB_TOKEN read-only, no PR approval" \
-      PUT "/orgs/${org}/actions/permissions/workflow" \
-      "$(policy_workflow_perms_body)" \
-      || true
+   ## 2. Default workflow GITHUB_TOKEN permissions.
+   policy_apply_org "${org}" WORKFLOW_PERMS
 
-   ## 3. Allowed Actions = selected (github-owned + verified creators).
-   ##    Two calls: switch allowed_actions to "selected", then set the
-   ##    list. CAUTION: workflows pinned to unverified third-party
-   ##    actions will start failing after this; audit first.
-   ##    Org-level body uses 'enabled_repositories' (string); the
-   ##    repo-level endpoint used by dm-github-personal-policy uses
-   ##    'enabled' (bool) instead, which is why this body is built
-   ##    inline rather than via a shared helper.
-   body="$(jq -n -- '{
-      enabled_repositories: "all",
-      allowed_actions: "selected"
-   }')"
-   policy_api_call "${org}: actions enabled=all, allowed=selected" \
-      PUT "/orgs/${org}/actions/permissions" "${body}" \
-      || true
-   policy_api_call "${org}: selected-actions = github-owned + verified-creators" \
-      PUT "/orgs/${org}/actions/permissions/selected-actions" \
-      "$(policy_actions_selected_allowlist_body)" \
-      || true
+   ## 3. Allowed Actions scope + allow-list (two calls).
+   policy_apply_org "${org}" ACTIONS_SCOPE
+   policy_apply_org "${org}" ACTIONS_ALLOWLIST ENDPOINT
 
-   ## 4. Member-side org policy: default repo permission = read,
-   ##    repository creation restricted to admins.
-   ##    members_allowed_repository_creation_type (deprecated),
-   ##    members_can_delete_repositories (UI-only), and
-   ##    two_factor_requirement_enabled (read-only on PATCH; see step
-   ##    4b) are deliberately NOT in the body.
-   body="$(jq -n -- '{
-      default_repository_permission: "read",
-      members_can_create_repositories: false,
-      members_can_create_public_repositories: false,
-      members_can_create_private_repositories: false,
-      members_can_create_internal_repositories: false
-   }')"
-   policy_api_call "${org}: members policy (default-perm=read, no member create)" \
-      PATCH "/orgs/${org}" "${body}" \
-      || true
+   ## 4. Member-side org policy.
+   policy_apply_org "${org}" MEMBERS
 
-   ## 4b. 2FA enforcement is UI-only (no REST setter for
-   ##     two_factor_requirement_enabled in PATCH /orgs/{org}; verified
-   ##     against the OpenAPI spec). Per the Nov 2024 GA change,
-   ##     enabling does NOT remove non-compliant members - they keep
-   ##     membership but are blocked from org resources until they
-   ##     enroll. GitHub is also rolling out 2FA platform-wide as a
-   ##     mandatory account requirement, so the org-level toggle just
-   ##     front-runs that. Print a skip with the UI URL.
-   log notice "skip: ${org}: 2FA enforcement must be set via UI - see https://github.com/organizations/${org}/settings/security"
+   ## 4b. 2FA enforcement (UI-only).
+   policy_skip_ui "${org}" 2FA
 
-   ## 5+6. Code security via the Code Security Configurations API
-   ##      (replaces deprecated PATCH /orgs/{org} security-defaults
-   ##      fields and /orgs/{org}/{product}/enable_all). See header
-   ##      for which features are toggled and which are deliberately
-   ##      disabled.
+   ## 5+6. Code security via the Code Security Configurations API.
    apply_code_security_config "${org}" || true
 
-   ## 7. Org ruleset on every repo's default branch: block force-push,
-   ##    block deletion, require signed commits. bypass_actors=[] -
-   ##    no one, including org owners, can override.
-   ##    Omitted: pull_request (we push directly to master),
-   ##    required_status_checks (per-repo CI coupling),
-   ##    required_linear_history (breaks some merge workflows).
+   ## 7. Org-level branch ruleset. Bypass actor list pivots on
+   ##    org_kind via the constant naming convention.
+   bypass_var="POLICY_RULESET_BYPASS_${kind^^}"
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org)" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" org "${!bypass_var}")" \
       || true
 
-   ## 8. Org ruleset for tags: block deletion, block re-pointing,
-   ##    require signed tags. bypass_actors=[]. Without this, push
-   ##    rights would let anyone move a release tag like v1.0 to a
-   ##    different commit.
+   ## 8. Org-level tag ruleset.
    policy_upsert_org_ruleset "${org}" "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" org)" \
       || true
 
-   ## 9. PAT policy toggles (UI-only). REST exposes GETs for pending
-   ##    requests and approved PATs but no stable setters; --audit
-   ##    lists what's in flight, --apply prints a skip + UI URL.
-   log notice "skip: ${org}: PAT policy toggles must be set via UI - see https://github.com/organizations/${org}/settings/personal-access-tokens"
+   ## 9. PAT policy toggles (UI-only).
+   policy_skip_ui "${org}" PAT
 
-   ## 10. GitHub App / OAuth App install policies (UI-only). Same
-   ##     pattern as step 9.
-   log notice "skip: ${org}: GitHub App / OAuth App policies must be set via UI - see https://github.com/organizations/${org}/settings/installations and https://github.com/organizations/${org}/settings/oauth_application_policy"
+   ## 10. GitHub App / OAuth App install policies (UI-only - two URLs).
+   log notice "skip: ${org}: ${POLICY_APPS_LABEL} - see ${POLICY_APPS_UI_URL_INSTALLATIONS//__ORG__/${org}} and ${POLICY_APPS_UI_URL_OAUTH//__ORG__/${org}}"
 }
 
 ## One-line GET-and-print helper for audit_org_state. Args:
@@ -390,7 +300,7 @@ audit_get() {
    fi
    body="$(ghorg_body_of "${result}")"
    extracted="$(printf '%s' "${body}" \
-      | jq -r -- "${jq_filter}" 2>/dev/null \
+      | ghorg_jq_capped -r -- "${jq_filter}" 2>/dev/null \
       | tr -- '\n' ' ')"
    log notice "  ${label}: ${extracted:0:200}"
 }
@@ -431,8 +341,8 @@ audit_org_state() {
       ## allowed_actions also gates a downstream conditional below;
       ## the comparison there is exact-string against literals so a
       ## hostile-byte value just falls into the N/A branch.
-      allowed_actions="$(printf '%s' "${actions_body}" | jq --raw-output -- '.allowed_actions // "?"')"
-      enabled_repos="$(printf '%s' "${actions_body}" | jq --raw-output -- '.enabled_repositories // "?"')"
+      allowed_actions="$(printf '%s' "${actions_body}" | ghorg_jq_capped --raw-output -- '.allowed_actions // "?"')"
+      enabled_repos="$(printf '%s' "${actions_body}" | ghorg_jq_capped --raw-output -- '.enabled_repositories // "?"')"
       log notice "  actions allowed_actions: enabled_repos=${enabled_repos}, allowed_actions=${allowed_actions}"
    else
       log notice "  actions allowed_actions: HTTP ${actions_status}"
@@ -462,11 +372,11 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      count="$(printf '%s' "${body}" | jq -- 'length')"
+      count="$(printf '%s' "${body}" | ghorg_jq_capped -- 'length')"
       if [ "${count}" = '0' ]; then
          log notice '    (none)'
       else
-         names="$(printf '%s' "${body}" | jq -r -- '.[].login')"
+         names="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.[].login')"
          while IFS= read -r member; do
             [ -z "${member}" ] && continue
             log notice "    - ${member}"
@@ -484,7 +394,7 @@ audit_org_state() {
       for ruleset_name in "${RULESET_NAME_BRANCH}" "${RULESET_NAME_TAG}"; do
          log notice "  existing rulesets named \"${ruleset_name}\":"
          ids="$(printf '%s' "${ruleset_body}" \
-            | jq -r --arg name "${ruleset_name}" -- \
+            | ghorg_jq_capped -r --arg name "${ruleset_name}" -- \
               '.[] | select(.name == $name) | .id' || true)"
          if [ -z "${ids}" ]; then
             log notice '    (none; --apply would create one)'
@@ -511,7 +421,7 @@ audit_org_state() {
       200)
          ## Count via the JSON length on this page; use a HEAD-style
          ## follow-up if exact totals matter (skipped for simplicity).
-         pending="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+         pending="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
          log notice "    pending requests on first page: ${pending}"
          ;;
       404|403)
@@ -525,7 +435,7 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    case "${status}" in
       200)
-         approved="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+         approved="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
          log notice "    approved tokens on first page: ${approved}"
          ;;
       *)
@@ -540,7 +450,7 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       installs="$(ghorg_body_of "${result}" \
-         | jq -r -- '.installations[]? | "    - " + (.app_slug // "?") + " (id=" + ((.id // 0) | tostring) + ")"' \
+         | ghorg_jq_capped -r -- '.installations[]? | "    - " + (.app_slug // "?") + " (id=" + ((.id // 0) | tostring) + ")"' \
          2>/dev/null || true)"
       if [ -z "${installs}" ]; then
          log notice '    (none)'
@@ -564,9 +474,9 @@ audit_org_state() {
    result="$(ghorg_api GET "/orgs/${org}/hooks?per_page=100")" || true
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
-      total="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+      total="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
       no_secret="$(ghorg_body_of "${result}" \
-         | jq -- '[.[] | select(.config.secret == null or .config.secret == "")] | length' \
+         | ghorg_jq_capped -- '[.[] | select(.config.secret == null or .config.secret == "")] | length' \
          2>/dev/null || printf '%s' '?')"
       if [ "${total}" = '0' ]; then
          log notice '    (none configured)'
@@ -584,9 +494,9 @@ audit_org_state() {
    ## file still fail Scorecard. This audit counts repos with vs
    ## without and lists the missing ones as a worklist.
    log notice '  dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
-   repos="$(ghorg_list_repos "${org}" 0 0 0 | sort --unique)"
+   repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
    if [ -z "${repos}" ]; then
-      log notice '    (no public non-archived non-fork repos)'
+      log notice '    (no public non-archived repos)'
    else
       missing_count=0
       have_count=0
@@ -606,11 +516,11 @@ audit_org_state() {
 }
 
 ## Per-repo settings - only the ones with no org-wide alternative.
-## With the org-level rulesets and enable_all calls in apply_org_policy,
-## the per-repo loop has shrunk to wiki-off / issues-on (these have no
-## "apply to all repos" org endpoint).
+## Pivots on org_kind to pick the right body from
+## github-policy-data.bsh (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR;
+## diff table is in the data file).
 apply_repo_policy() {
-   local owner repo patch
+   local owner repo kind
 
    owner="$1"
    repo="$2"
@@ -618,10 +528,10 @@ apply_repo_policy() {
    ghorg_validate_name "${owner}" user || return 1
    ghorg_validate_name "${repo}"  repo || return 1
 
-   patch="$(jq -n -- '{has_wiki: false, has_issues: true}')"
-
-   policy_api_call "${owner}/${repo}: wiki=off, issues=on" \
-      PATCH "/repos/${owner}/${repo}" "${patch}" || true
+   ## org_kind picks REPO_SOURCE or REPO_MIRROR via the constant
+   ## naming convention.
+   kind="$(org_kind "${owner}")" || return 1
+   policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 }
 
 main() {
@@ -637,11 +547,17 @@ main() {
       apply_org_policy "${org}"
 
       log notice "=== repo policy: ${org} ==="
-      ## Public, non-archived, non-fork repos. The org-level enable_all
-      ## endpoints already cover security products on every repo; this
-      ## loop is just for has_wiki / has_issues which have no org-wide
-      ## API.
-      repos="$(ghorg_list_repos "${org}" 0 0 0 | sort --unique)"
+      ## Public, non-archived repos (forks INCLUDED). The org-level
+      ## enable_all endpoints already cover security products on every
+      ## repo; this loop is just for has_wiki / has_issues which have
+      ## no org-wide API.
+      ##
+      ## Forks are deliberately included. The org-ai-assisted mirror
+      ## holds 100% forks of the upstream Kicksecure / Whonix repos;
+      ## excluding forks here would silently no-op the entire per-repo
+      ## phase against that org. Upstream Kicksecure / Whonix repos
+      ## have fork=false so the flip is a no-op there.
+      repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
       if [ -z "${repos}" ]; then
          log notice "no repos matched in '${org}'"
          continue

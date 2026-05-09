@@ -1,0 +1,193 @@
+---
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: CodeQL static analysis.
+##
+## Runs CodeQL against the calling repository for a single (language,
+## build-mode) tuple and uploads the SARIF result to GitHub
+## code-scanning under the caller's Security tab.
+##
+## ## Trust footprint
+##
+## github/codeql-action - first-party. Same trust scope as
+## actions/checkout, which we already use across the org.
+##
+## ## Caller responsibilities
+##
+## - Define the trigger (push/pull_request/schedule). Schedule cannot
+##   live in a reusable workflow per GitHub Actions; pick a cron slot
+##   that does not collide with other repos in the org. (Current CodeQL
+##   slot allocation: helper-scripts '17 4 * * 0', kloak '25 3 * * 5'.)
+## - Call this reusable once per language. Multi-language repos add
+##   one job per language - GitHub Actions does not let a reusable
+##   workflow expose its own matrix to the caller in a way the caller
+##   can iterate cleanly.
+## - Hardcode the owner in 'jobs.<id>.uses:'. GitHub Actions does NOT
+##   allow the github.* context there (only inputs/vars/needs/matrix);
+##   ${{ github.repository_owner }}/... fails workflow load with
+##   'Unrecognized named-value: github'. See
+##   agents/github-actions.md G-A-001.
+##
+## ## Inputs
+##
+## - language         (required)  CodeQL language id: python, c-cpp,
+##                                java-kotlin, javascript-typescript,
+##                                go, ruby, swift, csharp, actions, ...
+## - prepare-command  (optional)  Bash run AFTER checkout but BEFORE
+##                                CodeQL init. Use for source-tree
+##                                manipulation that the init step
+##                                must see (file renames/symlinks for
+##                                the python/javascript extractors,
+##                                codegen, vendoring). Default: empty.
+## - build-mode       (optional)  none | autobuild | manual.
+##                                Default: 'none' (analysis only -
+##                                works for interpreted languages and
+##                                for compiled languages where CodeQL
+##                                can extract from the source tree
+##                                without a compile pass).
+## - build-command    (optional)  Bash invoked when build-mode ==
+##                                manual. Default: empty (caller must
+##                                supply if build-mode is manual).
+## - queries          (optional)  CodeQL query suite. Default
+##                                'security-and-quality' for broader
+##                                coverage; pass 'security-extended'
+##                                or leave to switch to security-only.
+## - timeout-minutes  (optional)  Job timeout. Default 30.
+##
+## ## Caller example (single language)
+##
+##   name: CodeQL
+##   on:
+##     push:
+##       branches: [master]
+##     pull_request:
+##       branches: [master]
+##     schedule:
+##       - cron: '17 4 * * 0'
+##   permissions:
+##     contents: read
+##   jobs:
+##     python:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##       with:
+##         language: python
+##       permissions:
+##         security-events: write
+##         contents: read
+##
+## ## Caller example (multi-language, one job per language)
+##
+##   jobs:
+##     python:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##       with:
+##         language: python
+##       permissions:
+##         security-events: write
+##         contents: read
+##     c-cpp:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##       with:
+##         language: c-cpp
+##         build-mode: manual
+##         build-command: bash build.sh
+##       permissions:
+##         security-events: write
+##         contents: read
+
+name: CodeQL (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        required: true
+        type: string
+      prepare-command:
+        required: false
+        type: string
+        default: ""
+      build-mode:
+        required: false
+        type: string
+        default: none
+      build-command:
+        required: false
+        type: string
+        default: ""
+      queries:
+        required: false
+        type: string
+        default: security-and-quality
+      timeout-minutes:
+        required: false
+        type: number
+        default: 30
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.language }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze (${{ inputs.language }})
+    runs-on: ubuntu-latest
+
+    ## Fork-PR guard: a no-op unless the caller routes pull_request
+    ## events into us, in which case it blocks PRs from forks (those
+    ## need maintainer review and a manual re-run from a trusted ref).
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+
+    permissions:
+      ## Required so the CodeQL action can upload SARIF results.
+      security-events: write
+      ## Checkout / source read.
+      contents: read
+      ## Note: 'packages: read' was previously listed as a defensive
+      ## default for CodeQL builds that pull from ghcr.io. None of
+      ## our consumers do (verified: kloak runs 'bash build.sh',
+      ## security-misc runs 'bash ci/codeql-build.sh' - neither
+      ## authenticates to ghcr.io). Add it back per-consumer if a
+      ## future build step needs it.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      ## Pre-init hook - source-tree prep that the extractor must see.
+      ## Skipped (no-op) unless caller supplies a prepare-command.
+      - name: Prepare source tree
+        if: inputs.prepare-command != ''
+        run: ${{ inputs.prepare-command }}
+        shell: bash
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
+        with:
+          languages: ${{ inputs.language }}
+          build-mode: ${{ inputs.build-mode }}
+          queries: ${{ inputs.queries }}
+
+      ## Manual build path - caller-supplied bash. Only runs when
+      ## build-mode is 'manual'. 'autobuild' is handled by the
+      ## codeql-action's own autobuild step (not invoked here, since
+      ## we want explicit knowledge of the build at the caller).
+      - name: Manual build
+        if: inputs.build-mode == 'manual' && inputs.build-command != ''
+        run: ${{ inputs.build-command }}
+        shell: bash
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
+        with:
+          category: "/language:${{ inputs.language }}"
