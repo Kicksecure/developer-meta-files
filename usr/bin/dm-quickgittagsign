@@ -12,7 +12,7 @@ shopt -s inherit_errexit
 
 commit="$(git rev-parse --verify HEAD)"
 
-git verify-commit "$commit"
+git verify-commit "$commit" &>/dev/null
 
 tag="adrelanos_${commit}"
 

@@ -82,8 +82,8 @@ queue_tag_refspec() {
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 
-for repo in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
-   if ! git remote get-url -- "$repo" &>/dev/null ; then
+for git_remote in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
+   if ! git remote get-url -- "${git_remote}" &>/dev/null ; then
       continue
    fi
 
@@ -91,10 +91,10 @@ for repo in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
 
    refspec_list=()
 
-   queue_branch_refspec main    "$repo" refspec_list
-   queue_branch_refspec master  "$repo" refspec_list
+   queue_branch_refspec main    "${git_remote}" refspec_list
+   queue_branch_refspec master  "${git_remote}" refspec_list
    ## TODO: Debian 14 / forky
-   queue_branch_refspec trixie  "$repo" refspec_list
+   queue_branch_refspec trixie  "${git_remote}" refspec_list
 
    if [ -n "$git_tag_nearest" ]; then
       queue_tag_refspec "$git_tag_nearest" refspec_list
@@ -108,14 +108,14 @@ for repo in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
    ##   together or fail together; no mixed-state outcomes.
    ## --porcelain: per-ref machine-readable status lines for
    ##   diagnosable failures via parallel_failures.
-   log_run info git push --atomic --porcelain -- "$repo" "${refspec_list[@]}" &
-   push_label[$!]="${refspec_list[*]} -> $repo"
+   log_run info git push --atomic --porcelain -- "${git_remote}" "${refspec_list[@]}" &
+   push_label[$!]="${refspec_list[*]} -> ${git_remote}"
 done
 
 if ! parallel_wait push_label ; then
-   printf '%s\n' "$0: ERROR: failed pushes:" >&2
-   printf '   - %s\n' "${parallel_failures[@]}" >&2
+   log error "failed pushes:"
+   log error "${parallel_failures[@]}"
    exit 1
 fi
 
-true "$0: OK"
+log notice "OK."
