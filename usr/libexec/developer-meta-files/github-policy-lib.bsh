@@ -184,8 +184,10 @@ _policy_upsert_ruleset() {
       GET "${list_endpoint}?per_page=100" '' '' list_body \
       || return 1
 
+   ## API response body - hostile-input path: ghorg_jq_capped caps
+   ## stdin to GHORG_JQ_MAX_BYTES before jq sees it.
    existing_id="$(printf '%s' "${list_body}" \
-      | jq -r --arg name "${name}" -- \
+      | ghorg_jq_capped -r --arg name "${name}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
 
@@ -262,7 +264,7 @@ policy_apply_org() {
 
    policy_api_call "${org}: ${!label_v}" \
       "${!method_v}" "${endpoint}" \
-      "$(jq -n -- "${!body_v}")" \
+      "$(ghorg_jq -n -- "${!body_v}")" \
       || true
 }
 
@@ -288,7 +290,7 @@ policy_apply_repo() {
 
    policy_api_call "${owner}/${repo}: ${!label_v}" \
       "${!method_v}" "${endpoint}" \
-      "$(jq -n -- "${!body_v}")" \
+      "$(ghorg_jq -n -- "${!body_v}")" \
       || true
 }
 
@@ -342,7 +344,7 @@ policy_branch_ruleset_body() {
       body="${POLICY_BRANCH_RULESET_BODY_REPO}"
    fi
 
-   jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
+   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
 ## Tag ruleset body. Body shape lives in github-policy-data.bsh as
@@ -361,7 +363,7 @@ policy_tag_ruleset_body() {
       body="${POLICY_TAG_RULESET_BODY_REPO}"
    fi
 
-   jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
+   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
 ## ============================================================================

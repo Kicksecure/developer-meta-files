@@ -48,9 +48,9 @@ rl_status="$(ghorg_status_of "${rl_result}")"
 
 rl_body="$(ghorg_body_of "${rl_result}")"
 
-remaining="$(printf '%s' "${rl_body}" | jq -r -- '.resources.core.remaining')"
-limit="$(printf '%s' "${rl_body}" | jq -r -- '.resources.core.limit')"
-reset_epoch="$(printf '%s' "${rl_body}" | jq -r -- '.resources.core.reset')"
+remaining="$(printf '%s' "${rl_body}" | ghorg_jq_capped -r -- '.resources.core.remaining')"
+limit="$(printf '%s' "${rl_body}" | ghorg_jq_capped -r -- '.resources.core.limit')"
+reset_epoch="$(printf '%s' "${rl_body}" | ghorg_jq_capped -r -- '.resources.core.reset')"
 
 is_whole_number "${remaining}" || die 1 "non-numeric core.remaining: '${remaining}'"
 is_whole_number "${limit}" || die 1 "non-numeric core.limit: '${limit}'"

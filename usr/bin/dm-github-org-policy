@@ -145,7 +145,7 @@ apply_code_security_config() {
    org="$1"
 
    ## Inject the dynamic 'name' field via jq --arg.
-   config_body="$(jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
+   config_body="$(ghorg_jq -n --arg name "${CODE_SEC_CONFIG_NAME}" -- \
       "${POLICY_CODE_SECURITY} + {name: \$name}")"
 
    if [ "${dry_run}" = '1' ]; then
@@ -163,7 +163,7 @@ apply_code_security_config() {
       || return 1
 
    existing_id="$(printf '%s' "${list_body}" \
-      | jq -r --arg name "${CODE_SEC_CONFIG_NAME}" -- \
+      | ghorg_jq_capped -r --arg name "${CODE_SEC_CONFIG_NAME}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
 
@@ -184,7 +184,7 @@ apply_code_security_config() {
       policy_api_call "${org}: create code-security configuration" \
          POST "/orgs/${org}/code-security/configurations" "${config_body}" '' create_body \
          || return 1
-      existing_id="$(printf '%s' "${create_body}" | jq -r -- '.id')"
+      existing_id="$(printf '%s' "${create_body}" | ghorg_jq_capped -r -- '.id')"
       if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] || \
          [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
          log warn "'${org}': new code-security config id '${existing_id}' not a valid numeric id"
@@ -205,7 +205,7 @@ apply_code_security_config() {
    policy_api_call "${org}: ${POLICY_CODE_SECURITY_ATTACH_LABEL}" \
       "${POLICY_CODE_SECURITY_ATTACH_METHOD}" \
       "${attach_endpoint//__ORG__/${org}}" \
-      "$(jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")" \
+      "$(ghorg_jq -n -- "${POLICY_CODE_SECURITY_ATTACH}")" \
       || true
 
    ## Make this configuration the default for newly created repos.
@@ -213,7 +213,7 @@ apply_code_security_config() {
    policy_api_call "${org}: ${POLICY_CODE_SECURITY_DEFAULTS_LABEL}" \
       "${POLICY_CODE_SECURITY_DEFAULTS_METHOD}" \
       "${default_endpoint//__ORG__/${org}}" \
-      "$(jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")" \
+      "$(ghorg_jq -n -- "${POLICY_CODE_SECURITY_DEFAULTS}")" \
       || true
 }
 
@@ -289,7 +289,7 @@ audit_get() {
    fi
    body="$(ghorg_body_of "${result}")"
    extracted="$(printf '%s' "${body}" \
-      | jq -r -- "${jq_filter}" 2>/dev/null \
+      | ghorg_jq_capped -r -- "${jq_filter}" 2>/dev/null \
       | tr -- '\n' ' ')"
    log notice "  ${label}: ${extracted:0:200}"
 }
@@ -330,8 +330,8 @@ audit_org_state() {
       ## allowed_actions also gates a downstream conditional below;
       ## the comparison there is exact-string against literals so a
       ## hostile-byte value just falls into the N/A branch.
-      allowed_actions="$(printf '%s' "${actions_body}" | jq --raw-output -- '.allowed_actions // "?"')"
-      enabled_repos="$(printf '%s' "${actions_body}" | jq --raw-output -- '.enabled_repositories // "?"')"
+      allowed_actions="$(printf '%s' "${actions_body}" | ghorg_jq_capped --raw-output -- '.allowed_actions // "?"')"
+      enabled_repos="$(printf '%s' "${actions_body}" | ghorg_jq_capped --raw-output -- '.enabled_repositories // "?"')"
       log notice "  actions allowed_actions: enabled_repos=${enabled_repos}, allowed_actions=${allowed_actions}"
    else
       log notice "  actions allowed_actions: HTTP ${actions_status}"
@@ -361,11 +361,11 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      count="$(printf '%s' "${body}" | jq -- 'length')"
+      count="$(printf '%s' "${body}" | ghorg_jq_capped -- 'length')"
       if [ "${count}" = '0' ]; then
          log notice '    (none)'
       else
-         names="$(printf '%s' "${body}" | jq -r -- '.[].login')"
+         names="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.[].login')"
          while IFS= read -r member; do
             [ -z "${member}" ] && continue
             log notice "    - ${member}"
@@ -383,7 +383,7 @@ audit_org_state() {
       for ruleset_name in "${RULESET_NAME_BRANCH}" "${RULESET_NAME_TAG}"; do
          log notice "  existing rulesets named \"${ruleset_name}\":"
          ids="$(printf '%s' "${ruleset_body}" \
-            | jq -r --arg name "${ruleset_name}" -- \
+            | ghorg_jq_capped -r --arg name "${ruleset_name}" -- \
               '.[] | select(.name == $name) | .id' || true)"
          if [ -z "${ids}" ]; then
             log notice '    (none; --apply would create one)'
@@ -410,7 +410,7 @@ audit_org_state() {
       200)
          ## Count via the JSON length on this page; use a HEAD-style
          ## follow-up if exact totals matter (skipped for simplicity).
-         pending="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+         pending="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
          log notice "    pending requests on first page: ${pending}"
          ;;
       404|403)
@@ -424,7 +424,7 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    case "${status}" in
       200)
-         approved="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+         approved="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
          log notice "    approved tokens on first page: ${approved}"
          ;;
       *)
@@ -439,7 +439,7 @@ audit_org_state() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       installs="$(ghorg_body_of "${result}" \
-         | jq -r -- '.installations[]? | "    - " + (.app_slug // "?") + " (id=" + ((.id // 0) | tostring) + ")"' \
+         | ghorg_jq_capped -r -- '.installations[]? | "    - " + (.app_slug // "?") + " (id=" + ((.id // 0) | tostring) + ")"' \
          2>/dev/null || true)"
       if [ -z "${installs}" ]; then
          log notice '    (none)'
@@ -463,9 +463,9 @@ audit_org_state() {
    result="$(ghorg_api GET "/orgs/${org}/hooks?per_page=100")" || true
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
-      total="$(ghorg_body_of "${result}" | jq -- 'length' 2>/dev/null || printf '%s' '?')"
+      total="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
       no_secret="$(ghorg_body_of "${result}" \
-         | jq -- '[.[] | select(.config.secret == null or .config.secret == "")] | length' \
+         | ghorg_jq_capped -- '[.[] | select(.config.secret == null or .config.secret == "")] | length' \
          2>/dev/null || printf '%s' '?')"
       if [ "${total}" = '0' ]; then
          log notice '    (none configured)'

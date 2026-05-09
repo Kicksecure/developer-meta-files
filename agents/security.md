@@ -126,6 +126,61 @@ through pagination, redirect chains, or oversized bodies via
 per-tool caps (max pages, max redirects, max body size, max ID
 length).
 
+## Parser-level trust assumptions
+
+The "API bytes are untrusted" rule above governs the LOGIC of how
+parsed values are used. It does NOT mitigate memory-safety bugs in
+the parser ITSELF. Every script in this org makes implicit trust
+assumptions about its parsing tools:
+
+- **`jq`** (C). Trusted to parse hostile JSON without overflowing.
+  Track record: CVE-2015-8863, CVE-2023-50246, CVE-2023-50268
+  (heap / stack-based buffer overflows in the tokenizer).
+- **`curl`** (C). Trusted to handle hostile HTTP responses
+  (header parsing, redirect chains, chunked transfer).
+- **bash globbing / parameter expansion**. Treated as safe on
+  hostile input only insofar as identifier sinks (R-140 / above)
+  pass through allowlist validation BEFORE expansion.
+
+These assumptions are deliberate. The realistic alternatives -
+sandboxing every parser invocation, swapping `jq` for a memory-
+safe reimplementation, manual byte-level pre-validation - cost
+more than they save in the threat models above.
+
+Defense-in-depth wrappers exist for the highest-volume parser
+(`jq`, used wherever an API body or constant body is processed).
+github-org-lib.bsh defines:
+
+- **`ghorg_jq <jq args...>`** - wall-clock timeout
+  (`GHORG_JQ_TIMEOUT_SOFT` soft, `GHORG_JQ_TIMEOUT_HARD` hard via
+  `--kill-after`). Use for hardcoded jq programs / hardcoded
+  bodies (POLICY_* constants).
+- **`ghorg_jq_capped <jq args...>`** - same timeout PLUS a stdin
+  byte cap (`GHORG_JQ_MAX_BYTES`, default 4 MiB) before jq sees
+  the input. Use for any path where stdin comes from an external
+  server.
+
+Every `jq` call in the dm-github-* / github-org-* tool family goes
+through one of these wrappers. The threat addressed is "hostile
+API response triggers a parser CVE"; the wrappers do not stop the
+CVE itself, only bound the wall-clock and memory blast radius if
+one fires.
+
+If a future jq CVE accelerates or a specific hot path becomes
+high-stakes, the documented escalation path is:
+
+- **`gojq`** (Debian-archive-shipped, jq-syntax-compatible Go
+  reimplementation; memory-safe). Drop-in replacement: change the
+  `jq "$@"` line in the wrappers to `gojq "$@"`. Trade-off: less
+  mature, fewer users than `jq`, different bug surface.
+- **`bubblewrap` sandbox** around the wrapper. Heavier setup;
+  helper-scripts already uses it in `ld-system-preload-disable`.
+
+NB: `timeout` does NOT support `--` as the end-of-options
+separator between DURATION and COMMAND (verified locally - yields
+"timeout: failed to run command '--'"). R-062 already excludes
+`timeout` from the verified-supports-`--` list; do not re-add.
+
 ## What we do not carry in the source tree
 
 - **Speculative / aspirational security findings** ("if X ever

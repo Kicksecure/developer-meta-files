@@ -219,7 +219,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      fork_approval="$(printf '%s' "${body}" | jq --raw-output -- '.approval_policy // "?"')"
+      fork_approval="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '.approval_policy // "?"')"
       log notice "  fork-PR approval: ${fork_approval}"
    else
       log notice "  fork-PR approval: HTTP '${status}'"
@@ -230,7 +230,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      workflow_perms="$(printf '%s' "${body}" | jq --raw-output -- '"default=" + (.default_workflow_permissions // "?") + ", can_approve_PRs=" + ((.can_approve_pull_request_reviews // false) | tostring)')"
+      workflow_perms="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '"default=" + (.default_workflow_permissions // "?") + ", can_approve_PRs=" + ((.can_approve_pull_request_reviews // false) | tostring)')"
       log notice "  workflow GITHUB_TOKEN: ${workflow_perms}"
    else
       log notice "  workflow GITHUB_TOKEN: HTTP '${status}'"
@@ -241,7 +241,7 @@ audit_one() {
    status="$(ghorg_status_of "${result}")"
    if [ "${status}" = '200' ]; then
       body="$(ghorg_body_of "${result}")"
-      allowed_actions="$(printf '%s' "${body}" | jq --raw-output -- '"enabled=" + ((.enabled // false) | tostring) + ", allowed_actions=" + (.allowed_actions // "?")')"
+      allowed_actions="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output -- '"enabled=" + ((.enabled // false) | tostring) + ", allowed_actions=" + (.allowed_actions // "?")')"
       log notice "  actions: ${allowed_actions}"
    else
       log notice "  actions: HTTP '${status}'"

@@ -493,6 +493,57 @@ ghorg_body_of() {
   printf '%s\n' "$1" | sed -- '${d}'
 }
 
+## ============================================================================
+## jq invocation wrappers (parser-CVE defense in depth)
+## ============================================================================
+##
+## All jq calls in github-org-lib / github-policy-lib / the dm-github-*
+## tools go through these wrappers so a future bump (timeout knobs,
+## gojq swap, byte cap, sandbox) is a one-place change. See
+## developer-meta-files/agents/security.md "Parser-level trust
+## assumptions" for the reasoning.
+##
+## Two variants:
+##
+##   ghorg_jq         input is hardcoded (a POLICY_* constant or
+##                    similar trusted source). Adds a wall-clock
+##                    timeout only.
+##   ghorg_jq_capped  input flows from stdin and may be hostile (an
+##                    API response from an external server). Caps
+##                    stdin to GHORG_JQ_MAX_BYTES bytes BEFORE jq
+##                    sees them, then applies the same timeout.
+##
+## --kill-after on the timeout is mandatory: if a parser bug leaves
+## jq's signal handler blocked or in an uninterruptible state, the
+## SIGTERM at the soft deadline is silently ignored. --kill-after
+## schedules a follow-up SIGKILL the kernel delivers regardless.
+##
+## NB: timeout does NOT support '--' as the end-of-options separator
+## between DURATION and COMMAND (verified locally: yields "timeout:
+## failed to run command '--': No such file or directory"). R-062
+## already excludes timeout from the verified-supports-'--' list;
+## do not re-add.
+
+## Default 4 MiB stdin cap for ghorg_jq_capped. Override per-caller
+## via 'GHORG_JQ_MAX_BYTES=<n> ghorg_jq_capped ...' if a known-large
+## but trusted-shape body is being processed.
+: "${GHORG_JQ_MAX_BYTES:=4194304}"
+
+## Default 10s soft / 2s hard timeout. Same override pattern.
+: "${GHORG_JQ_TIMEOUT_SOFT:=10}"
+: "${GHORG_JQ_TIMEOUT_HARD:=2}"
+
+ghorg_jq() {
+  timeout --kill-after="${GHORG_JQ_TIMEOUT_HARD}" \
+          "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
+}
+
+ghorg_jq_capped() {
+  head -c "${GHORG_JQ_MAX_BYTES}" \
+    | timeout --kill-after="${GHORG_JQ_TIMEOUT_HARD}" \
+              "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
+}
+
 ## Probes whether $1 is a User or an Organization on GitHub. Result is
 ## cached in ghorg_account_type_cache (declared at top of file) so
 ## repeated lookups don't burn API quota. Echoes "User" or
@@ -517,7 +568,7 @@ ghorg_account_type() {
     log error "account type lookup for '${owner}': HTTP '${status}'"
     return 1
   fi
-  type="$(printf '%s' "${body}" | jq -r -- '.type')"
+  type="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.type')"
   ## Strict allowlist - even though we control the case below, an
   ## unexpected value should trip a clear rejection rather than reach
   ## any downstream comparison.
@@ -615,13 +666,13 @@ ghorg_list_repos() {
       log error "list repos for '${owner}': HTTP '${status}'"
       return 1
     fi
-    count="$(printf '%s' "${body}" | jq -- 'length')"
+    count="$(printf '%s' "${body}" | ghorg_jq_capped -- 'length')"
     [ "${count}" = '0' ] && break
 
     ## Capture into a string then iterate; "while ... < <(jq)" would
     ## hide a jq failure from errexit + pipefail and silently treat
     ## the page as empty.
-    names_text="$(printf '%s' "${body}" | jq -r -- "${jq_filter}")"
+    names_text="$(printf '%s' "${body}" | ghorg_jq_capped -r -- "${jq_filter}")"
 
     while IFS= read -r name; do
       [ -z "${name}" ] && continue
@@ -721,7 +772,7 @@ ghorg_repo_parent() {
     return 1
   fi
   body="$(ghorg_body_of "${result}")"
-  parent="$(printf '%s' "${body}" | jq -r -- '.parent.full_name // empty')"
+  parent="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.parent.full_name // empty')"
   ## .full_name is "owner/repo"; both halves must validate cleanly.
   ## Splitting in bash to avoid trusting the API-supplied "/".
   if [ -n "${parent}" ]; then
@@ -757,7 +808,7 @@ ghorg_authenticated_user() {
     return 1
   fi
   body="$(ghorg_body_of "${result}")"
-  login="$(printf '%s' "${body}" | jq -r -- '.login')"
+  login="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.login')"
   if [ -z "${login}" ] || [ "${login}" = 'null' ]; then
     log error 'authenticated user response missing .login'
     return 1
