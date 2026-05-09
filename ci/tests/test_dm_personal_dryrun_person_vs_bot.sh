@@ -57,7 +57,6 @@ person_required=(
 )
 person_forbidden=(
    'BOT: settings'
-   'allow_forking=off'
 )
 for needle in "${person_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_person}"; then

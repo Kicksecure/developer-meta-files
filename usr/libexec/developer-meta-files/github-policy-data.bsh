@@ -191,7 +191,17 @@ readonly POLICY_APPS_LABEL='GitHub App / OAuth App policies must be set via UI'
 ##   has_issues             on    off    MIRROR: file upstream
 ##   has_projects           on    off    MIRROR: project board upstream
 ##   has_discussions        on    off    MIRROR: discussions upstream
-##   allow_forking          on    off    MIRROR: no forks-of-forks
+##   allow_forking         n/a    n/a    handled at org level only;
+##                                       sending it on a per-repo
+##                                       PATCH triggers HTTP 422
+##                                       ("This organization does
+##                                       not allow private repository
+##                                       forking") and rolls back the
+##                                       whole request, so the other
+##                                       body fields silently get
+##                                       partial-applied. Org-level
+##                                       'forking_allowed_for_private_repositories'
+##                                       is the actual gate.
 ##   ruleset bypass        none  OrgAdmin   MIRROR: hotfix without
 ##                                          dropping the ruleset
 ##
@@ -215,12 +225,11 @@ readonly POLICY_REPO_MIRROR='{
    has_wiki: false,
    has_issues: false,
    has_projects: false,
-   has_discussions: false,
-   allow_forking: false
+   has_discussions: false
 }'
 readonly POLICY_REPO_MIRROR_ENDPOINT='/repos/__OWNER__/__REPO__'
 readonly POLICY_REPO_MIRROR_METHOD='PATCH'
-readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
+readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, discussions=off'
 
 ## Branch + tag ruleset bypass actor list (passed to
 ## policy_branch_ruleset_body / policy_tag_ruleset_body).
