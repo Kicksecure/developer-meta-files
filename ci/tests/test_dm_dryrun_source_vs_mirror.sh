@@ -13,7 +13,7 @@
 ##
 ## Two separate dry-runs:
 ##   ORGS=( 'Whonix' )           -> expect 'SOURCE: wiki=off, issues=on'
-##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: ..., allow_forking=off'
+##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: ...' (no allow_forking - org level only)
 ##
 ## Also pins the org-level branch-ruleset bypass actor list, which
 ## also pivots on org_kind:
@@ -61,7 +61,6 @@ source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
    ## SOURCE org.
    'MIRROR:'
-   'allow_forking=off'
 )
 for needle in "${source_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
@@ -87,7 +86,7 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 mirror_required=(
-   'MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
+   'MIRROR: wiki=off, issues=off, projects=off, discussions=off'
 )
 mirror_forbidden=(
    'SOURCE:'

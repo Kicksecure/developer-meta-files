@@ -91,9 +91,9 @@ required=(
    ## (forks now included since dm-github-org-policy switched
    ## inc_forks=1). org-ai-assisted is a MIRROR_ORGS entry, so the
    ## body+label come from POLICY_REPO_MIRROR.
-   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
-   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
-   'ok: org-ai-assisted/some-fork: MIRROR: wiki=off, issues=off, projects=off, discussions=off, allow_forking=off'
+   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'ok: org-ai-assisted/some-fork: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
 )
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
