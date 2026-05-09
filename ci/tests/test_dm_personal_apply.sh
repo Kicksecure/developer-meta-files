@@ -63,7 +63,7 @@ required=(
    'ok: personal-test-user/backup-mirror: fork-PR approval=all_external_contributors'
    'ok: personal-test-user/backup-mirror: workflow GITHUB_TOKEN read-only'
    'ok: personal-test-user/backup-mirror: actions enabled=false (CI runs disabled)'
-   'ok: personal-test-user/backup-mirror: settings (wiki/projects/discussions off, secret-scan on)'
+   'ok: personal-test-user/backup-mirror: PERSON: settings (wiki/projects/discussions off, secret-scan on)'
    'ok: personal-test-user/backup-mirror: delete Pages site (if any)'
    ## Repo-level _policy_upsert_ruleset hits BOTH list (GET) AND
    ## create (POST) - the GET step uses policy_api_call with body-

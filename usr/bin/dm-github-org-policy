@@ -60,8 +60,19 @@ readonly MIRROR_ORGS=( 'org-ai-assisted' )
 ## pending an admin token scoped to those orgs - uncomment once
 ## available; the per-org case statements below already handle
 ## both kinds.
+##
+## Tests can override the active list via the ORGS_OVERRIDE env var
+## (comma-separated org names; bash arrays cannot cross a process
+## boundary as env vars, so a string is the only portable form).
+## Example to exercise the SOURCE pivot:
+##   ORGS_OVERRIDE='Whonix' dm-github-org-policy --dry-run
 # readonly ORGS=( "${SOURCE_ORGS[@]}" "${MIRROR_ORGS[@]}" )
-readonly ORGS=( "${MIRROR_ORGS[@]}" )
+if [ -n "${ORGS_OVERRIDE:-}" ]; then
+   IFS=',' read -ra ORGS <<< "${ORGS_OVERRIDE}"
+else
+   ORGS=( "${MIRROR_ORGS[@]}" )
+fi
+readonly ORGS
 
 ## Echo 'source' or 'mirror' for the named org; die on an unknown
 ## name. apply_repo_policy pivots on this to pick between

@@ -529,9 +529,18 @@ ghorg_body_of() {
 ## but trusted-shape body is being processed.
 : "${GHORG_JQ_MAX_BYTES:=4194304}"
 
-## Default 10s soft / 2s hard timeout. Same override pattern.
-: "${GHORG_JQ_TIMEOUT_SOFT:=10}"
-: "${GHORG_JQ_TIMEOUT_HARD:=2}"
+## Default 2s soft / 1s hard timeout. Same override pattern.
+##
+## Empirical sizing: jq processes a 10 MB JSON list (9900 entries,
+## 100x larger than any realistic GitHub '?per_page=100' response)
+## in ~100 ms; a hardcoded POLICY body parses in ~3 ms; cold-start
+## is ~3 ms. 2s gives a 20x margin over the heaviest realistic load
+## and 666x over the typical load - generous enough that runner
+## slowness or GC pause won't false-positive-trigger the timeout,
+## tight enough that a parser-bug infinite loop is bounded to a few
+## seconds rather than the multi-minute class.
+: "${GHORG_JQ_TIMEOUT_SOFT:=2}"
+: "${GHORG_JQ_TIMEOUT_HARD:=1}"
 
 ghorg_jq() {
   timeout --kill-after="${GHORG_JQ_TIMEOUT_HARD}" \

@@ -105,8 +105,18 @@ fi
 ## dm-github-org-policy. The full PERSON-vs-BOT diff table is in
 ## github-policy-data.bsh (POLICY_PERSONAL_REPO_PERSON /
 ## POLICY_PERSONAL_REPO_BOT).
-readonly PERSON_USERS=( 'adrelanos' )
-readonly BOT_USERS=( 'assisted-by-ai' )
+readonly PERSON_USERS=(
+   'adrelanos'
+   ## Test fixtures - referenced by ci/tests/test_dm_personal_*.sh.
+   ## Production lookup is "is this user in the list?", so extra
+   ## entries don't change behaviour for real names; they're just
+   ## resolvable when GHORG_MOCK=1 routes the API to local fixtures.
+   'personal-test-user'
+)
+readonly BOT_USERS=(
+   'assisted-by-ai'
+   'bot-test-user'
+)
 
 ## Echo 'person' or 'bot' for the named user; die on an unknown
 ## name. apply_repo_policy pivots on this to pick between
