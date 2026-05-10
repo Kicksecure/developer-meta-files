@@ -27,9 +27,9 @@ canonical SOURCE repo already raises. Empirically tested on Free
 
 | Feature | SOURCE | MIRROR | PERSON | BOT |
 | --- | --- | --- | --- | --- |
-| Dependabot alerts (`PUT /vulnerability-alerts`) | on | off | off | off |
-| Dependabot security updates (`PUT /automated-security-fixes`) | on | off | off | off |
-| Private vulnerability reporting (`PUT /private-vulnerability-reporting`) | on | off | off | off |
+| Dependabot alerts (`PUT /vulnerability-alerts` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
+| Dependabot security updates (`PUT /automated-security-fixes` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
+| Private vulnerability reporting (`PUT /private-vulnerability-reporting` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
 | `secret_scanning` + push protection (in PATCH body) | on | on | on | on |
 | Branch + tag rulesets (`POST /repos/{}/{}/rulesets`) | on | on | on | on |
 
@@ -37,11 +37,18 @@ Notes:
 
 - Dependabot / PVR (Private Vulnerability Reporting) off on
   MIRROR/PERSON/BOT for the same reason: split inbox / duplicate
-  notifications. The `apply_repo_policy` function in
-  `dm-github-org-policy` gates the three PUTs on
-  `kind == 'source'` and prints a single skip line on MIRROR.
+  notifications. On MIRROR `apply_repo_policy` actively DELETEs
+  the three settings (every `--apply` reconciles), so leftovers
+  from older un-gated runs or accidental UI flips are cleaned
+  up. Order: DEPENDABOT_FIXES_OFF before DEPENDABOT_ALERTS_OFF -
+  the security-fixes endpoint returns HTTP 422 once alerts are
+  off, which is the idempotent steady state and is captured as
+  ok via the `_EXTRA_OK_STATUS=422` knob (see G-035 in
+  `github-org-tools.md`). On PERSON/BOT
   `dm-github-personal-policy` keeps step 8 commented out for the
-  same reason (with the canonical-home-uncomment note).
+  same reason (with the canonical-home-uncomment note); the
+  personal mirror never had these on so an active-disable pass
+  is unnecessary.
 - Secret scanning + push protection are about local git ops, not
   inbox routing, so they stay on everywhere.
 - Rulesets stay on everywhere; only the bypass-actor list pivots
