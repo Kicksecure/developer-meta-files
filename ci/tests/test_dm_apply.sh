@@ -5,20 +5,17 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-org-policy --apply walks the entire
-## org-level apply path (fork-PR approval, workflow GITHUB_TOKEN,
-## allowed-actions, members, code-security configuration list-create-
-## attach-default, branch + tag rulesets) plus the per-repo loop
-## (PATCH wiki/issues), all served from local fixtures.
+## Mock-API test: dm-github-org-policy --apply walks the
+## Free-plan-compatible org-level apply path (fork-PR approval,
+## workflow GITHUB_TOKEN, allowed-actions, members) plus the per-
+## repo loop (PATCH wiki/issues), all served from local fixtures.
 ##
-## This is the only test that exercises the body-capture machinery in
-## policy_api_call end-to-end via apply_code_security_config (where
-## .id from a POST response feeds the subsequent attach + defaults
-## calls) and via _policy_upsert_ruleset (where the GET-list step
-## now uses policy_api_call with body capture). A regression in the
-## printf -v indirection or the 6th-arg signature trips a clear
-## warn here ("'X': code-security config id '...' not a valid numeric
-## id") and the tool exits non-zero.
+## The code-security configuration list-create-attach-default flow
+## and the org-level branch + tag ruleset upserts are PAID PLAN
+## ONLY (GHAS / GitHub Team+) and are commented out in
+## dm-github-org-policy + github-policy-data.bsh; this test reflects
+## that elision and instead asserts the corresponding 'skip:' lines
+## are emitted so an operator sees what was bypassed.
 ##
 ## Companion to test_dm_dryrun.sh (covers --dry-run output) and
 ## test_dm_audit.sh (covers --audit GETs); together they pin the full
@@ -69,32 +66,57 @@ required=(
    'ok: org-ai-assisted: workflow GITHUB_TOKEN read-only, no PR approval'
    'ok: org-ai-assisted: actions enabled=all, allowed=selected'
    'ok: org-ai-assisted: selected-actions = github-owned + verified-creators'
-   'ok: org-ai-assisted: members policy (default-perm=read, no member create)'
+   'ok: org-ai-assisted: members policy (default-perm=read, no member create, no deploy keys)'
 
-   ## apply_code_security_config: list -> create (body-capture reads
-   ## .id) -> attach -> default. The 'created code-security
-   ## configuration id=' line is the one that proves the captured
-   ## body parsed correctly; without it the attach + default calls
-   ## would target an empty id and warn.
-   'ok: org-ai-assisted: created code-security configuration id='
-   'ok: org-ai-assisted: attach code-security config to all repos'
-   'ok: org-ai-assisted: set code-security config as default for new repos'
-
-   ## _policy_upsert_ruleset list-then-create path. The 'list
-   ## rulesets' ok line is what proves policy_api_call's body-
-   ## capture works on the GET path (it feeds existing_id detection).
-   'ok: org-ai-assisted: list rulesets'
-   "create ruleset 'dm-github-org-policy default-branch protection'"
-   "create ruleset 'dm-github-org-policy tag protection'"
+   ## PAID PLAN ONLY: code-security configuration + org rulesets
+   ## are commented out in dm-github-org-policy. The two skip lines
+   ## are the contract that operator-facing log shows what was
+   ## elided.
+   'skip: org-ai-assisted: code-security configuration - PAID PLAN ONLY'
+   'skip: org-ai-assisted: org-level branch + tag rulesets - PAID PLAN ONLY'
 
    ## Per-repo apply path. Three in-scope repos in the fixture
    ## (forks now included since dm-github-org-policy switched
    ## inc_forks=1). org-ai-assisted is a MIRROR_ORGS entry, so the
    ## body+label come from POLICY_REPO_MIRROR.
-   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
-   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
-   'ok: org-ai-assisted/some-fork: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+   'ok: org-ai-assisted/some-fork: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+
+   ## Dependabot/PVR are actively disabled on MIRROR (org-ai-
+   ## assisted) so every --apply reconciles state. Order:
+   ## security-fixes BEFORE alerts. The fixture returns 422 on
+   ## DELETE /automated-security-fixes to exercise the
+   ## EXTRA_OK_STATUS=422 path; the policy treats 422 as success
+   ## (idempotent steady state) so the line still emits 'ok:'.
+   ## Asserted on one repo (the disable trio is symmetric across
+   ## all three).
+   'ok: org-ai-assisted/derivative-maker: disable Dependabot security updates (mirror)'
+   'ok: org-ai-assisted/derivative-maker: disable Dependabot alerts (mirror)'
+   'ok: org-ai-assisted/derivative-maker: disable private vulnerability reporting (mirror)'
+
+   ## Free-plan-compatible per-repo branch + tag rulesets. Applied
+   ## on both SOURCE and MIRROR (only the bypass actor list
+   ## differs). The fixture's GET /rulesets returns [] so the
+   ## upsert path falls through to a POST 'create ruleset' for each.
+   "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy default-branch protection'"
+   "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy tag protection'"
 )
+
+## MIRROR must NOT see SOURCE-only enable ok lines (those would
+## indicate apply_repo_policy fell through the kind=='source'
+## branch incorrectly).
+mirror_dep_pvr_forbidden=(
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
+   'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+)
+for needle in "${mirror_dep_pvr_forbidden[@]}"; do
+   if grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
+      printf '%s\n' "FAIL: SOURCE-only line leaked to MIRROR: ${needle}" >&2
+      fail=1
+   fi
+done
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
       printf '%s\n' "FAIL: missing expected fragment: ${needle}" >&2

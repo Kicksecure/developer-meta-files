@@ -1,0 +1,619 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Per-project metadata. Source of truth for description / website /
+## topics applied across every clone of each project. The apply tool
+## (dm-github-org-metadata-sync, TBD) fans each entry out to wherever
+## the repo actually lives via PATCH /repos/{owner}/{repo} (description
+## + homepage) and PUT /repos/{owner}/{repo}/topics (topics).
+##
+## Org layout (the apply tool reads this to decide WHERE to look):
+##
+##   Most projects live in EXACTLY ONE canonical org (Kicksecure OR
+##   Whonix - never both). REPO_HOME below names which one.
+##
+##   org-ai-assisted and adrelanos are mirror-of-everything (forks of
+##   every Kicksecure and Whonix repo). The apply tool fans each entry
+##   to the canonical org PLUS both mirrors, skipping silently when a
+##   repo does not exist in a particular owner.
+##
+##   The apply tool NEVER creates or forks repositories. If a repo
+##   listed here is missing in any of the four owners, the tool
+##   reports it and moves on. Repo creation / forking is a deliberate
+##   one-time human action via github-org-fork or the GitHub UI; not
+##   something a metadata-sync run should ever trigger.
+##
+## Format: one add_repo call per project, named-arg style. The apply
+## tool iterates the keys of REPO_HOME.
+##
+## Fields:
+##   name         - canonical repo name. Same name across all owners.
+##   home         - 'k' Kicksecure org canonical (kicksecure.com/wiki/...)
+##                  'w' Whonix org canonical    (whonix.org/wiki/...)
+##                  'd' developer-only / no public wiki page
+##   description  - short, < 200 chars target (350 GitHub max).
+##                  No trailing period in the upstream pattern.
+##   website      - full https URL or empty string. Empty = unset
+##                  homepage. Use '' explicitly so the apply tool
+##                  can clear a stale URL if one was set previously.
+##   topics       - space-separated, lowercase, hyphenated. Max 20,
+##                  each <= 50 chars matching ^[a-z0-9][a-z0-9-]*$.
+##
+## A repo not present in this file is left untouched by the apply tool.
+## Add entries incrementally; the apply tool dry-runs first.
+##
+## Future use: GitHub custom properties (org-level schema +
+## per-repo values, see PUT /orgs/{org}/properties/schema and
+## PATCH /repos/{owner}/{repo}/properties/values) could publish
+## REPO_HOME (and any future fields added here) to GitHub itself
+## as a queryable repo tag. Useful for ruleset filters and the
+## org repo-list UI. Not implemented today; the apply tool only
+## writes description / homepage / topics.
+
+declare -gA REPO_HOME REPO_DESCRIPTION REPO_WEBSITE REPO_TOPICS
+
+add_repo() {
+   local name home description website topics
+
+   name="$1"
+   home="$2"
+   description="$3"
+   website="$4"
+   topics="$5"
+
+   REPO_HOME["${name}"]="${home}"
+   REPO_DESCRIPTION["${name}"]="${description}"
+   REPO_WEBSITE["${name}"]="${website}"
+   REPO_TOPICS["${name}"]="${topics}"
+}
+
+## ============================================================================
+## Entries (108).
+##
+## Generated initial pass; review and refine descriptions / topics over time.
+## Tools that consume this file iterate the keys of REPO_HOME alphabetically.
+## ============================================================================
+
+add_repo  .github                                      d  \
+   "Org-wide community files (SECURITY.md, CONTRIBUTING.md, PR template) for the Kicksecure / Whonix mirror org."  \
+   ""  \
+   "linux debian"
+
+add_repo  age-api                                      k  \
+   "API for downloading age-encrypted release artifacts for Kicksecure."  \
+   "https://www.kicksecure.com/wiki/Age-api"  \
+   "linux debian kicksecure"
+
+add_repo  anon-apps-config                             w  \
+   "Per-application configuration overrides for anonymity-friendly app defaults on Whonix."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-apt-sources-list                        k  \
+   "/etc/apt/sources.list.d/debian.list for Security-Focused Linux Distributions"  \
+   ""  \
+   "anonymity privacy linux kicksecure"
+
+add_repo  anon-connection-wizard                       k  \
+   "Tor connection setup wizard for Whonix - choose direct, bridges, or proxy at first run."  \
+   ""  \
+   "anonymity privacy linux kicksecure"
+
+add_repo  anon-gw-anonymizer-config                    w  \
+   "Tor configuration shipped on the Whonix Gateway."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-gw-base-files                           w  \
+   "Base files installed on the Whonix Gateway."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-meta-packages                           w  \
+   "Whonix anonymity meta-packages bundling the package dependencies for Workstation and Gateway."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-shared-build-apt-sources-tpo            k  \
+   "Adds The Tor Projects's (TPO) APT repository to Derivative Linux Distributions during build. - Useful, because TPO's repository sometimes contains better/more recent versions of Tor, obfsproxy, torsocks, etc. This package is produced independently of, and carries no guarantee from, The Tor Project."  \
+   ""  \
+   "anonymity privacy linux kicksecure"
+
+add_repo  anon-ws-base-files                           w  \
+   "Base files installed on the Whonix Workstation."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-ws-disable-stacked-tor                  w  \
+   "Prevents stacked Tor on the Whonix Workstation - enforces the Workstation through Gateway design."  \
+   ""  \
+   "anonymity privacy linux whonix"
+
+add_repo  apparmor-profile-dist                        k  \
+   "AppArmor profile for Derivative Linux Distributions"  \
+   ""  \
+   "apparmor security linux kicksecure"
+
+add_repo  apparmor-profile-hexchat                     k  \
+   "AppArmor profile for HexChat IRC"  \
+   ""  \
+   "apparmor security linux kicksecure"
+
+add_repo  apparmor-profile-thunderbird                 k  \
+   "AppArmor profile for Thunderbird"  \
+   ""  \
+   "apparmor security linux kicksecure"
+
+add_repo  apparmor-profile-torbrowser                  k  \
+   "AppArmor profile for The Tor Browser Bundle (TBB)"  \
+   ""  \
+   "apparmor security linux kicksecure"
+
+add_repo  apparmor.d                                   k  \
+   "Full set of AppArmor profiles (~ 1500 profiles)"  \
+   "https://www.kicksecure.com/wiki/Apparmor.d"  \
+   "apparmor security linux kicksecure"
+
+add_repo  binaries-freedom                             k  \
+   "Empty placeholder repo - documents the policy for inclusion of compiled binaries in Kicksecure / Whonix."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  bindp                                        k  \
+   "Binding specific IP and Port for Linux Running Application"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  bootclockrandomization                       k  \
+   "Randomizes clock when systems boots by adding a few seconds and nanoseconds to enforce the design goal, that the host clock and Gateway/Workstation clock should always slightly differ (even before secure timesync succeeded!) to prevent time based fingerprinting / linkablity issues. For better anonymity and privacy."  \
+   ""  \
+   "time-synchronization security kicksecure"
+
+add_repo  browser-choice                               k  \
+   "Browser launcher for Kicksecure - lets the user pick the default browser at first run."  \
+   "https://www.kicksecure.com/wiki/Browser-choice"  \
+   "linux debian kicksecure"
+
+add_repo  calamares-settings-debian                    k  \
+   "Kicksecure fork of calamares-settings-debian backport from Sid"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  canary                                       k  \
+   "Warrant canary infrastructure for Kicksecure."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  corridor                                     w  \
+   "Tor traffic whitelisting gateway - filtering router that forces all traffic through Tor."  \
+   "https://www.whonix.org/wiki/Corridor"  \
+   "linux debian whonix"
+
+add_repo  damngpl                                      k  \
+   "Extract source package info from Debian status files"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  debug-misc                                   k  \
+   "Opt-in package which enables miscellaneous debug settings for easier debugging."  \
+   "https://www.kicksecure.com/wiki/Debug-misc"  \
+   "linux debian kicksecure"
+
+add_repo  derivative-maker                             k  \
+   "Build tool for Kicksecure and Whonix derivative images."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  desktop-config-dist                          k  \
+   "Default desktop environment settings for Kicksecure and Whonix derivatives."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  developer-meta-files                         k  \
+   "Scripts for managing derivative official repositor; debug scripts; developer documentation"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  discourse-kicksecure-onion-host-support      k  \
+   "load onion site on onion domain if used"  \
+   ""  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  discourse-whonix-onion-host-support          w  \
+   "load Whonix site on onion if used"  \
+   ""  \
+   "tor anonymity privacy whonix"
+
+add_repo  dist-base-files                              k  \
+   "base files for distributions - several important miscellaneous files, such as /etc/hostname, /etc/hosts, /var/lib/dbus/machine-id and more"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  ExternalRedirect                             k  \
+   "MediaWiki extension"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  genmkfile                                    k  \
+   "Simplifies Debian Packaging and Maintenance"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  gpg-bash-lib                                 k  \
+   "gpg file verification bash library, addresses comprehensive threat model, that covers file name tampering, indefinite freeze, rollback, endless data attacks, etc."  \
+   ""  \
+   "gpg openpgp security kicksecure"
+
+add_repo  grml-debootstrap                             k  \
+   "wrapper around debootstrap"  \
+   ""  \
+   "debian build debootstrap kicksecure"
+
+add_repo  grml-debootstraptest                         k  \
+   "RAW Image to ISO Image and tests for grml-debootstrap"  \
+   ""  \
+   "debian build debootstrap kicksecure"
+
+add_repo  grub-live                                    k  \
+   "optional grub live boot menu entry as second option https://www.kicksecure.com/wiki/Grub-live"  \
+   "https://www.kicksecure.com/wiki/Grub-live"  \
+   "linux debian kicksecure"
+
+add_repo  hardened-kernel                              k  \
+   "Hardened kernel configuration optimized for virtual machines."  \
+   "https://www.kicksecure.com/wiki/Hardened-kernel"  \
+   "kernel security hardening linux kicksecure"
+
+add_repo  helper-scripts                               k  \
+   "Helper scripts useful for Linux Distributions"  \
+   ""  \
+   "bash debian helpers kicksecure"
+
+add_repo  icon-pack-dist                               k  \
+   "Icon Pack for Derivative Distributions - Contains icons, that are used by other derivative distribution specific packages. Others are welcome to use these icons according to their Free licenses as well."  \
+   ""  \
+   "icons desktop kicksecure"
+
+add_repo  initializer-dist                             k  \
+   "for better security. Makes finding backdoors easier."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  kicksecure-base-files                        k  \
+   "Kicksecure Base Files"  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-discourse-html-backup             k  \
+   "Static HTML backup of the Kicksecure Discourse forum."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-meta-packages                     k  \
+   "Kicksecure meta-packages bundling the package dependencies for the distribution."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-network-conf                      k  \
+   "Default network configuration for Kicksecure."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-welcome-page                      k  \
+   "First-boot welcome page for Kicksecure."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-wiki-backup                       k  \
+   "Static backup of the Kicksecure wiki."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure-wiki-html                         k  \
+   "Rendered HTML of the Kicksecure wiki for offline distribution."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kicksecure.github.io                         k  \
+   "GitHub Pages hosting for Kicksecure project pages."  \
+   ""  \
+   "kicksecure security kicksecure"
+
+add_repo  kloak                                        w  \
+   "anti keystroke deanonymization tool"  \
+   "https://www.whonix.org/wiki/Kloak"  \
+   "linux debian whonix"
+
+add_repo  legacy-dist                                  k  \
+   "Prepare older Build Derivative Versions for Upgrade"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  libvirt-dist                                 k  \
+   "Libvirt XML Files for Derivative Linux Distributions KVM"  \
+   ""  \
+   "virtualization vm linux kicksecure"
+
+add_repo  live-build                                   k  \
+   "Debian live-build wrapper used to build Kicksecure and Whonix live images."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  live-config-dist                             k  \
+   "Live-mode configuration overlays for Kicksecure and Whonix derivatives."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  lxqt-wayland-session                         k  \
+   "LXQt Wayland session experimentation for Kicksecure."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  mediawiki-extensions-CookieToBodyClass       k  \
+   "MediaWiki extension - reflects request cookies as CSS classes on the page body for conditional theming."  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-extensions-CSS                     k  \
+   "Github mirror of MediaWiki extension CSS - our actual code is hosted with Gerrit (please see https://www.mediawiki.org/wiki/Developer_access for contributing)"  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-extensions-Kicksecure              k  \
+   "Wiki extension for kicksecure.com"  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-extensions-Purge                   k  \
+   "MediaWiki Purge Extension"  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-extensions-SaneCase                k  \
+   "Automatic correct some case mistakes."  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-link-to-archive                    k  \
+   "Add a link to archive.org to every external link"  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  mediawiki-shell                              k  \
+   "Fetch and edit mediawiki pages from the shell"  \
+   ""  \
+   "mediawiki wiki kicksecure"
+
+add_repo  msgcollector                                 k  \
+   "GUI / CLI Toolkit Library - collects messages send to it by applications (API) and dispatches them when instructed to do so by the application"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  onion-grater                                 w  \
+   "Tor control port filter - whitelists which Tor control commands a client can use."  \
+   "https://www.whonix.org/wiki/Onion-grater"  \
+   "tor anonymity privacy whonix"
+
+add_repo  open-link-confirmation                       k  \
+   "Asks for confirmation before opening links - For better security. - Asks before a link is (accidentally) opened in a browser to avoid linking activities."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  privleap                                     k  \
+   "Limited Privilege Escalation Framework"  \
+   "https://www.kicksecure.com/wiki/Privleap"  \
+   "linux debian kicksecure"
+
+add_repo  proposals                                    k  \
+   "Proposals and design discussions for Kicksecure and Whonix."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  qubes-template-kicksecure                    k  \
+   "Qubes OS template for Kicksecure."  \
+   ""  \
+   "qubes-os qubes kicksecure"
+
+add_repo  qubes-template-whonix                        w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  qubes-whonix                                 w  \
+   "Qubes OS template for Whonix."  \
+   "https://www.whonix.org/wiki/Qubes-Whonix"  \
+   "whonix anonymity whonix"
+
+add_repo  rads                                         k  \
+   "RAM Adjusted Desktop Starter - Starts [no] desktop environment based on available RAM. Automagically boots into graphical desktop environment, when there is enough RAM. Or into terminal-only, when there is too little RAM. Useful inside virtual machines. - For better usability."  \
+   "https://www.kicksecure.com/wiki/Rads"  \
+   "linux debian kicksecure"
+
+add_repo  ram-wipe                                     k  \
+   "Wipe RAM on shutdown and reboot - Cold Boot Attack Defense"  \
+   "https://www.kicksecure.com/wiki/Ram-wipe"  \
+   "linux debian kicksecure"
+
+add_repo  repository-dist                              k  \
+   "Adds the Kicksecure / Whonix APT repository to derivative builds."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  ro-mode-init                                 k  \
+   "Detects read-only disks and automatically enables live-boot https://www.kicksecure.com/wiki/VM_Live_Mode/ro-mode-init"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  sandbox-app-launcher                         k  \
+   "An app launcher to start apps in a restrictive sandbox https://www.kicksecure.com/wiki/sandbox-app-launcher"  \
+   "https://www.kicksecure.com/wiki/Sandbox-app-launcher"  \
+   "security hardening linux kicksecure"
+
+add_repo  sdwdate                                      k  \
+   "Secure Distributed Web Date; privacy, anonymity and Tor friendly; console time fetcher and daemon; optional graphical user interface etc. Website: https://www.kicksecure.com/wiki/sdwdate"  \
+   "https://www.kicksecure.com/wiki/Sdwdate"  \
+   "time-synchronization security kicksecure"
+
+add_repo  sdwdate-gui                                  k  \
+   "Grapical User Interface (gui), Systray Icon for for sdwdate"  \
+   "https://www.kicksecure.com/wiki/Sdwdate-gui"  \
+   "time-synchronization security kicksecure"
+
+add_repo  security-misc                                k  \
+   "Kernel Hardening; Protect Linux User Accounts against Brute Force Attacks; Improve Entropy Collection; Strong Linux User Account Separation; Enhances Misc Security Settings"  \
+   "https://www.kicksecure.com/wiki/Security-misc"  \
+   "security hardening linux kicksecure"
+
+add_repo  serial-console-enable                        k  \
+   "Allows login through command line interface (CLI) by enabling serial console for example for use with 'virsh console vm-name'"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  setup-dist                                   k  \
+   "First-run setup tooling for Kicksecure and Whonix derivative distributions."  \
+   ""  \
+   "desktop linux debian kicksecure"
+
+add_repo  setup-wizard-dist                            k  \
+   "Graphical first-run setup wizard for Kicksecure and Whonix derivatives."  \
+   ""  \
+   "desktop linux debian kicksecure"
+
+add_repo  swap-file-creator                            k  \
+   "Adds encrypted swap file to the system - for better protection of locally stored data and to aid environments with low RAM. https://www.kicksecure.com/wiki/swap-file-creator"  \
+   "https://www.kicksecure.com/wiki/Swap-file-creator"  \
+   "linux debian kicksecure"
+
+add_repo  sysmaint-panel                               k  \
+   "System maintenance control panel for Kicksecure"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  systemcheck                                  k  \
+   "https://www.kicksecure.com/wiki/systemcheck"  \
+   "https://www.kicksecure.com/wiki/Systemcheck"  \
+   "linux debian kicksecure"
+
+add_repo  tb-default-browser                           k  \
+   "Configures system to use /usr/bin/torbrowser as default browser"  \
+   ""  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  tb-starter                                   k  \
+   "Tor Browser Starter. Open Link Confirmation; Qubes integration; Command line --new-tab, --new-window; start menu entry; This package is produced independently of, and carries no guarantee from, The Tor Project."  \
+   ""  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  tb-updater                                   k  \
+   "Tor Browser Downloader - Automates download and verification of Tor Browser from The Tor Project's website. This package is produced independently of, and carries no guarantee from, The Tor Project."  \
+   ""  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  timesanitycheck                              k  \
+   "Checks if the system clock is sane between build timestamp and expiration date - useful in context of secure network time synchronization."  \
+   ""  \
+   "time-synchronization security kicksecure"
+
+add_repo  tirdad                                       k  \
+   "TCP ISN CPU Information Leak Protection. TCP Initial Sequence Numbers Randomization to prevent TCP ISN based CPU Information Leaks."  \
+   "https://www.kicksecure.com/wiki/Tirdad"  \
+   "linux debian kicksecure"
+
+add_repo  tor-control-panel                            k  \
+   "Tor controller"  \
+   "https://www.whonix.org/wiki/Tor-control-panel"  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  tor-ctrl                                     k  \
+   "Raw use of tor's controller"  \
+   ""  \
+   "tor anonymity privacy kicksecure"
+
+add_repo  updates-status                               w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "linux debian whonix"
+
+add_repo  usability-misc                               k  \
+   "Misc usability improvements"  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  user-sysmaint-split                          k  \
+   "Splits administrative privileges between an unprivileged user account and a separate sysmaint account."  \
+   ""  \
+   "linux debian kicksecure"
+
+add_repo  uwt                                          w  \
+   "Transparent Tor wrapper that prevents non-Tor leaks for command-line tools (apt, gpg, wget, curl)."  \
+   ""  \
+   "linux debian whonix"
+
+add_repo  vm-config-dist                               k  \
+   "usability enhancements for Debian guest operating systems running inside virtual machines (VMs)"  \
+   ""  \
+   "virtualization vm linux kicksecure"
+
+add_repo  vpn-firewall                                 k  \
+   "Leak Protection (Fail Safe Mechanism) for (Open)VPN"  \
+   ""  \
+   "firewall security linux kicksecure"
+
+add_repo  whonix-base-files                            w  \
+   "Base files shared across the Whonix Workstation and Gateway."  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-discourse-html-backup                 w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-firewall                              w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "firewall security linux whonix"
+
+add_repo  whonix-gw-network-conf                       w  \
+   "Default network configuration for the Whonix Gateway."  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  Whonix-Installer                             w  \
+   "Simple Installer for Whonix-Starter to setup and configure Whonix with VirtualBox"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  Whonix-Starter                               w  \
+   "Advanced Whonix Starter for platform-independent use"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-welcome-page                          w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-wiki-backup                           w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-wiki-html                             w  \
+   "https://www.whonix.org/wiki/Imprint"  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix-ws-network-conf                       w  \
+   "Default network configuration for the Whonix Workstation."  \
+   ""  \
+   "whonix anonymity whonix"
+
+add_repo  whonix.github.io                             w  \
+   "GitHub Pages hosting for Whonix project pages."  \
+   ""  \
+   "whonix anonymity whonix"

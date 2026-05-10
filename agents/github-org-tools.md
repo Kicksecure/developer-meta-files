@@ -157,6 +157,19 @@ an optional 5th arg "extra ok status" (single value). The
 GitHub Pages cleanup step passes `'404'` because that is the
 documented "no Pages site to delete" response and not a warn.
 
+**G-035: Declarative `_EXTRA_OK_STATUS` flows through the
+dispatchers.** A `POLICY_<NAME>_EXTRA_OK_STATUS` constant in
+`github-policy-data.bsh` is forwarded as `policy_api_call`'s 5th
+arg by both `policy_apply_org` and `policy_apply_repo`. Use this
+when an endpoint has a documented non-2xx steady-state response
+that should not raise a warn - e.g. `DELETE
+/repos/{}/{}/automated-security-fixes` returns 422 ("alerts are
+off") once Dependabot alerts have been disabled, which is the
+idempotent steady state on a mirror. The dispatcher path keeps
+the data file declarative; G-034's Pages example is the older
+direct-call shape and stays valid for cases that need the 5th
+arg without the dispatcher.
+
 
 ## Mock-API tests
 

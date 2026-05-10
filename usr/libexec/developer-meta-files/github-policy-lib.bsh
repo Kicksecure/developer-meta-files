@@ -246,9 +246,16 @@ policy_upsert_repo_ruleset() {
 
 ## policy_apply_org <org> <NAME> [<endpoint_suffix=ENDPOINT_ORG>]
 ## Substitutes __ORG__ in the endpoint with the org name.
+##
+## Optional declarative knob: a POLICY_<NAME>_EXTRA_OK_STATUS
+## constant in github-policy-data.bsh is forwarded as the 5th arg
+## to policy_api_call. Use for endpoints with a documented non-2xx
+## "nothing to do" response that should not raise a warn (e.g. the
+## 422 returned by DELETE /repos/{}/{}/automated-security-fixes
+## once Dependabot alerts are already off).
 policy_apply_org() {
    local org name endpoint_suffix
-   local body_v endpoint_v method_v label_v endpoint
+   local body_v endpoint_v method_v label_v extra_ok_v endpoint
 
    org="$1"
    name="$2"
@@ -258,6 +265,7 @@ policy_apply_org() {
    endpoint_v="POLICY_${name}_${endpoint_suffix}"
    method_v="POLICY_${name}_METHOD"
    label_v="POLICY_${name}_LABEL"
+   extra_ok_v="POLICY_${name}_EXTRA_OK_STATUS"
 
    endpoint="${!endpoint_v}"
    endpoint="${endpoint//__ORG__/${org}}"
@@ -265,14 +273,17 @@ policy_apply_org() {
    policy_api_call "${org}: ${!label_v}" \
       "${!method_v}" "${endpoint}" \
       "$(ghorg_jq -n -- "${!body_v}")" \
+      "${!extra_ok_v:-}" \
       || true
 }
 
 ## policy_apply_repo <owner> <repo> <NAME> [<endpoint_suffix=ENDPOINT_REPO>]
-## Substitutes __OWNER__ and __REPO__ in the endpoint.
+## Substitutes __OWNER__ and __REPO__ in the endpoint. Honors the
+## same optional POLICY_<NAME>_EXTRA_OK_STATUS knob as
+## policy_apply_org above.
 policy_apply_repo() {
    local owner repo name endpoint_suffix
-   local body_v endpoint_v method_v label_v endpoint
+   local body_v endpoint_v method_v label_v extra_ok_v endpoint
 
    owner="$1"
    repo="$2"
@@ -283,6 +294,7 @@ policy_apply_repo() {
    endpoint_v="POLICY_${name}_${endpoint_suffix}"
    method_v="POLICY_${name}_METHOD"
    label_v="POLICY_${name}_LABEL"
+   extra_ok_v="POLICY_${name}_EXTRA_OK_STATUS"
 
    endpoint="${!endpoint_v}"
    endpoint="${endpoint//__OWNER__/${owner}}"
@@ -291,6 +303,7 @@ policy_apply_repo() {
    policy_api_call "${owner}/${repo}: ${!label_v}" \
       "${!method_v}" "${endpoint}" \
       "$(ghorg_jq -n -- "${!body_v}")" \
+      "${!extra_ok_v:-}" \
       || true
 }
 
@@ -338,11 +351,20 @@ policy_branch_ruleset_body() {
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
+   ## PAID PLAN ONLY: the 'org' scope's body lives at
+   ## POLICY_BRANCH_RULESET_BODY_ORG, which is commented out in
+   ## github-policy-data.bsh because /orgs/{org}/rulesets is Team+
+   ## only. Re-enable both together.
+   # if [ "${scope}" = 'org' ]; then
+   #    body="${POLICY_BRANCH_RULESET_BODY_ORG}"
+   # else
+   #    body="${POLICY_BRANCH_RULESET_BODY_REPO}"
+   # fi
    if [ "${scope}" = 'org' ]; then
-      body="${POLICY_BRANCH_RULESET_BODY_ORG}"
-   else
-      body="${POLICY_BRANCH_RULESET_BODY_REPO}"
+      log error "policy_branch_ruleset_body: scope=org is PAID PLAN ONLY (GitHub Team+); use scope=repo on Free"
+      return 1
    fi
+   body="${POLICY_BRANCH_RULESET_BODY_REPO}"
 
    ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
@@ -357,11 +379,17 @@ policy_tag_ruleset_body() {
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
+   ## PAID PLAN ONLY: see policy_branch_ruleset_body note above.
+   # if [ "${scope}" = 'org' ]; then
+   #    body="${POLICY_TAG_RULESET_BODY_ORG}"
+   # else
+   #    body="${POLICY_TAG_RULESET_BODY_REPO}"
+   # fi
    if [ "${scope}" = 'org' ]; then
-      body="${POLICY_TAG_RULESET_BODY_ORG}"
-   else
-      body="${POLICY_TAG_RULESET_BODY_REPO}"
+      log error "policy_tag_ruleset_body: scope=org is PAID PLAN ONLY (GitHub Team+); use scope=repo on Free"
+      return 1
    fi
+   body="${POLICY_TAG_RULESET_BODY_REPO}"
 
    ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }

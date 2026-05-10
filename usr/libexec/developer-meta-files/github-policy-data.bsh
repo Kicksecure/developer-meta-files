@@ -88,6 +88,23 @@ readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verif
 ## Org-policy bodies - used by dm-github-org-policy
 ## ============================================================================
 
+## PAID PLAN ONLY (GitHub Advanced Security): the org-level
+## code-security configuration body. POST /orgs/{org}/code-security/
+## configurations rejects any request that turns on a GHAS-licensed
+## feature (secret_scanning, secret_scanning_push_protection,
+## code_scanning_default_setup) on a Free org with HTTP 400
+## "GitHub advanced security must be enabled when any GHAS feature
+## is set to enabled". Empirically tested 2026-05; the only fields
+## the configuration API accepts on Free are dependency_graph,
+## dependabot_alerts, dependabot_security_updates, and
+## private_vulnerability_reporting - and even with those alone the
+## org-wide attach/default-for-new-repos workflow has no advantage
+## over the per-repo PUT /repos/{owner}/{repo}/vulnerability-alerts
+## etc. endpoints which work today on Free for public repos. Re-
+## enable this block (and the call sites in dm-github-org-policy
+## under apply_code_security_config + step 5+6) only after the org
+## upgrades to a plan that bundles Advanced Security.
+##
 ## Org-level code-security configuration. Applied identically to
 ## SOURCE and MIRROR. Note 'code_scanning_default_setup: disabled' -
 ## we use the committed codeql.yml workflows instead of GitHub's
@@ -97,17 +114,17 @@ readonly POLICY_ACTIONS_ALLOWLIST_LABEL='selected-actions = github-owned + verif
 ##
 ## The 'name' field is dynamic (set by the caller via jq --arg) and
 ## intentionally omitted here.
-readonly POLICY_CODE_SECURITY='{
-   description: "Project-wide code security applied via dm-github-org-policy.",
-   enforcement: "enforced",
-   secret_scanning: "enabled",
-   secret_scanning_push_protection: "enabled",
-   dependabot_alerts: "enabled",
-   dependabot_security_updates: "enabled",
-   dependency_graph: "enabled",
-   code_scanning_default_setup: "disabled",
-   private_vulnerability_reporting: "disabled"
-}'
+# readonly POLICY_CODE_SECURITY='{
+#    description: "Project-wide code security applied via dm-github-org-policy.",
+#    enforcement: "enforced",
+#    secret_scanning: "enabled",
+#    secret_scanning_push_protection: "enabled",
+#    dependabot_alerts: "enabled",
+#    dependabot_security_updates: "enabled",
+#    dependency_graph: "enabled",
+#    code_scanning_default_setup: "disabled",
+#    private_vulnerability_reporting: "disabled"
+# }'
 
 ## Org Actions scope. Switches allowed_actions to "selected"; the
 ## per-action allowlist itself (POLICY_ACTIONS_ALLOWLIST above) is
@@ -120,28 +137,35 @@ readonly POLICY_ACTIONS_SCOPE_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
 readonly POLICY_ACTIONS_SCOPE_METHOD='PUT'
 readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
 
+## PAID PLAN ONLY: only meaningful in conjunction with the
+## (commented-out) POLICY_CODE_SECURITY block above. The attach and
+## default-for-new-repos endpoints both embed a configuration id
+## that we never have on Free.
+##
 ## Code-security configuration attach scope. scope=all covers every
 ## existing repo in the org without listing them individually; the
 ## configuration's enforcement field controls on/off state. The
 ## endpoint embeds the configuration id (resolved at runtime in
 ## apply_code_security_config), so the placeholder here is __ID__
 ## rather than the usual __ORG__-only pattern.
-readonly POLICY_CODE_SECURITY_ATTACH='{
-   scope: "all"
-}'
-readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
-readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
-readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
+# readonly POLICY_CODE_SECURITY_ATTACH='{
+#    scope: "all"
+# }'
+# readonly POLICY_CODE_SECURITY_ATTACH_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/attach'
+# readonly POLICY_CODE_SECURITY_ATTACH_METHOD='POST'
+# readonly POLICY_CODE_SECURITY_ATTACH_LABEL='attach code-security config to all repos'
 
+## PAID PLAN ONLY: see POLICY_CODE_SECURITY_ATTACH note above.
+##
 ## Code-security configuration default-for-new-repos. Tells GitHub
 ## to auto-attach this configuration to any newly created repo in
 ## the org.
-readonly POLICY_CODE_SECURITY_DEFAULTS='{
-   default_for_new_repos: "all"
-}'
-readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
-readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
-readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
+# readonly POLICY_CODE_SECURITY_DEFAULTS='{
+#    default_for_new_repos: "all"
+# }'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_ENDPOINT_ORG='/orgs/__ORG__/code-security/configurations/__ID__/defaults'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_METHOD='PUT'
+# readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as default for new repos'
 
 ## Org members policy. Default repo permission for new members =
 ## read; only admins can create repositories.
@@ -159,15 +183,25 @@ readonly POLICY_CODE_SECURITY_DEFAULTS_LABEL='set code-security config as defaul
 ## back the other (valid) fields in the same request. Enterprise
 ## orgs that want the knob set explicitly should land it via a
 ## separate plan-tier-specific policy block.
+##
+## deploy_keys_enabled_for_repositories=false: org-wide kill of the
+## deploy-key feature. Deploy keys are a write-capable bypass of
+## user-level perms (one key, one repo, no humans involved); they
+## have legitimate uses (CI push) but the cost of "any org admin
+## can attach a key that survives credential rotation" outweighs
+## the benefit on a mirror-of-mirrors org. Repos that genuinely
+## need a deploy key would instead use a fine-grained PAT or a
+## GitHub App installation. PATCH-settable; live-tested 2026-05.
 readonly POLICY_MEMBERS='{
    default_repository_permission: "read",
    members_can_create_repositories: false,
    members_can_create_public_repositories: false,
-   members_can_create_private_repositories: false
+   members_can_create_private_repositories: false,
+   deploy_keys_enabled_for_repositories: false
 }'
 readonly POLICY_MEMBERS_ENDPOINT_ORG='/orgs/__ORG__'
 readonly POLICY_MEMBERS_METHOD='PATCH'
-readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create)'
+readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create, no deploy keys)'
 
 ## --- UI-only policies (applied via the GitHub web UI; the
 ## script just prints a 'skip' line with the URL the operator
@@ -222,23 +256,116 @@ readonly POLICY_APPS_LABEL='GitHub App / OAuth App policies must be set via UI'
 ## and METHOD are identical for both kinds (only the body differs)
 ## but each kind carries its own constants to match the per-NAME
 ## naming convention used by policy_apply_repo.
+##
+## security_and_analysis is included here so the single PATCH /repos
+## also enables secret scanning + push protection on Free orgs (the
+## paid org-level Code Security Configurations API rejects this body
+## on Free, but the per-repo PATCH equivalent does not - empirically
+## verified). Bundling avoids a second round-trip per repo.
 readonly POLICY_REPO_SOURCE='{
    has_wiki: false,
-   has_issues: true
+   has_issues: true,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
 }'
 readonly POLICY_REPO_SOURCE_ENDPOINT='/repos/__OWNER__/__REPO__'
 readonly POLICY_REPO_SOURCE_METHOD='PATCH'
-readonly POLICY_REPO_SOURCE_LABEL='SOURCE: wiki=off, issues=on'
+readonly POLICY_REPO_SOURCE_LABEL='SOURCE: wiki=off, issues=on, secret-scan on'
 
 readonly POLICY_REPO_MIRROR='{
    has_wiki: false,
    has_issues: false,
    has_projects: false,
-   has_discussions: false
+   has_discussions: false,
+   security_and_analysis: {
+      secret_scanning: { status: "enabled" },
+      secret_scanning_push_protection: { status: "enabled" }
+   }
 }'
 readonly POLICY_REPO_MIRROR_ENDPOINT='/repos/__OWNER__/__REPO__'
 readonly POLICY_REPO_MIRROR_METHOD='PATCH'
-readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+
+## SOURCE-only on the org side. The Dependabot/PVR trio is applied
+## per-repo by dm-github-org-policy on SOURCE_ORGS only - on the
+## MIRROR (a fork org) these would duplicate every alert the
+## canonical SOURCE repo already raises. Same anti-duplication
+## logic that keeps these off in dm-github-personal-policy on the
+## personal mirror.
+##
+## Per-repo Dependabot alerts toggle. Free on public repos. The
+## endpoint takes a body but accepts an empty object; we pass '{}'
+## so the same policy_apply_repo dispatcher (which always sends the
+## body via jq -n) works without a no-body special case.
+readonly POLICY_REPO_DEPENDABOT_ALERTS='{}'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_ENDPOINT='/repos/__OWNER__/__REPO__/vulnerability-alerts'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_METHOD='PUT'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_LABEL='enable Dependabot alerts'
+
+## SOURCE-only. Per-repo Dependabot security updates toggle. Free
+## on public repos. Requires Dependabot alerts already enabled
+## (which the previous step does).
+readonly POLICY_REPO_DEPENDABOT_FIXES='{}'
+readonly POLICY_REPO_DEPENDABOT_FIXES_ENDPOINT='/repos/__OWNER__/__REPO__/automated-security-fixes'
+readonly POLICY_REPO_DEPENDABOT_FIXES_METHOD='PUT'
+readonly POLICY_REPO_DEPENDABOT_FIXES_LABEL='enable Dependabot security updates'
+
+## SOURCE-only. Per-repo private vulnerability reporting toggle.
+## Free on public repos. Lets external researchers privately
+## disclose security issues via a dedicated PR-like flow.
+readonly POLICY_REPO_PVR='{}'
+readonly POLICY_REPO_PVR_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerability-reporting'
+readonly POLICY_REPO_PVR_METHOD='PUT'
+readonly POLICY_REPO_PVR_LABEL='enable private vulnerability reporting'
+
+## --- Account-wide settings, applied by dm-github-personal-policy
+## once per --apply invocation (NOT per repo). The endpoints here
+## use the token-authed user implicitly; no __OWNER__ placeholder.
+## Caller must guard "authed user == target_user" before calling.
+
+## Hide the primary email address from the public profile. PATCH
+## /user/email/visibility expects {"visibility":"private"|"public"}.
+## Returns 204 on success. Token needs user:email scope; on classic
+## PATs missing it the call returns HTTP 404 ("Not Found") - that
+## is the documented "scope insufficient" failure mode.
+readonly POLICY_USER_EMAIL_PRIVATE='{
+   visibility: "private"
+}'
+readonly POLICY_USER_EMAIL_PRIVATE_ENDPOINT='/user/email/visibility'
+readonly POLICY_USER_EMAIL_PRIVATE_METHOD='PATCH'
+readonly POLICY_USER_EMAIL_PRIVATE_LABEL='hide primary email from public profile'
+
+## --- MIRROR-only counterparts that actively turn the same three
+## features OFF (DELETE on the same paths). dm-github-org-policy
+## fans these out on kind=='mirror' so every --apply reconciles
+## the state - covers leftovers from older un-gated apply runs and
+## any accidental UI flips. No mode flag, no opt-in; this is part
+## of the steady-state policy.
+##
+## Order matters at the call site: DEPENDABOT_FIXES_OFF must run
+## BEFORE DEPENDABOT_ALERTS_OFF. The /automated-security-fixes
+## endpoint returns HTTP 422 ("alerts are off") if you DELETE it
+## after alerts have already been disabled - which is the
+## idempotent steady state on a mirror, so the 422 is captured as
+## extra_ok below to keep policy_warn_seen=0 across runs.
+
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF='{}'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/vulnerability-alerts'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_METHOD='DELETE'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_LABEL='disable Dependabot alerts (mirror)'
+
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF='{}'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/automated-security-fixes'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_METHOD='DELETE'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_LABEL='disable Dependabot security updates (mirror)'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_EXTRA_OK_STATUS='422'
+
+readonly POLICY_REPO_PVR_OFF='{}'
+readonly POLICY_REPO_PVR_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerability-reporting'
+readonly POLICY_REPO_PVR_OFF_METHOD='DELETE'
+readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting (mirror)'
 
 ## Branch + tag ruleset bypass actor list (passed to
 ## policy_branch_ruleset_body / policy_tag_ruleset_body).
@@ -253,6 +380,12 @@ readonly POLICY_REPO_MIRROR_LABEL='MIRROR: wiki=off, issues=off, projects=off, d
 ##     downstream; if a re-fork or hotfix needs a force-push or
 ##     unsigned commit, we must be able to do it without first
 ##     dropping the ruleset.
+## Bypass actor list passed to policy_branch_ruleset_body /
+## policy_tag_ruleset_body. Plan-independent: works at both org
+## level (PAID PLAN ONLY, Team+) and repo level (Free for public
+## repos). On Free the org-level upserts in dm-github-org-policy
+## are commented out; the per-repo loop still consumes these
+## constants so the SOURCE/MIRROR bypass-policy split is preserved.
 readonly POLICY_RULESET_BYPASS_SOURCE='[]'
 readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
@@ -296,21 +429,26 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##                              repo-level config, not org-wide
 ##   - required_linear_history  breaks some merge workflows
 
-readonly POLICY_BRANCH_RULESET_BODY_ORG='{
-   name: $name,
-   target: "branch",
-   enforcement: "active",
-   bypass_actors: $bypass,
-   conditions: {
-      ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
-      repository_name: { include: ["~ALL"], exclude: [] }
-   },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
-}'
+## PAID PLAN ONLY: org-scoped ruleset (uses ~ALL repository_name
+## condition). Sent to /orgs/{org}/rulesets which is Team+ only.
+## The repo-scoped sibling POLICY_BRANCH_RULESET_BODY_REPO below
+## stays available; a future per-repo loop in dm-github-org-policy
+## could fan it out across the public-repo set on Free.
+# readonly POLICY_BRANCH_RULESET_BODY_ORG='{
+#    name: $name,
+#    target: "branch",
+#    enforcement: "active",
+#    bypass_actors: $bypass,
+#    conditions: {
+#       ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
+#       repository_name: { include: ["~ALL"], exclude: [] }
+#    },
+#    rules: [
+#       { type: "deletion" },
+#       { type: "non_fast_forward" },
+#       { type: "required_signatures" }
+#    ]
+# }'
 
 readonly POLICY_BRANCH_RULESET_BODY_REPO='{
    name: $name,
@@ -327,21 +465,22 @@ readonly POLICY_BRANCH_RULESET_BODY_REPO='{
    ]
 }'
 
-readonly POLICY_TAG_RULESET_BODY_ORG='{
-   name: $name,
-   target: "tag",
-   enforcement: "active",
-   bypass_actors: $bypass,
-   conditions: {
-      ref_name: { include: ["~ALL"], exclude: [] },
-      repository_name: { include: ["~ALL"], exclude: [] }
-   },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
-}'
+## PAID PLAN ONLY: see POLICY_BRANCH_RULESET_BODY_ORG note above.
+# readonly POLICY_TAG_RULESET_BODY_ORG='{
+#    name: $name,
+#    target: "tag",
+#    enforcement: "active",
+#    bypass_actors: $bypass,
+#    conditions: {
+#       ref_name: { include: ["~ALL"], exclude: [] },
+#       repository_name: { include: ["~ALL"], exclude: [] }
+#    },
+#    rules: [
+#       { type: "deletion" },
+#       { type: "non_fast_forward" },
+#       { type: "required_signatures" }
+#    ]
+# }'
 
 readonly POLICY_TAG_RULESET_BODY_REPO='{
    name: $name,
@@ -385,23 +524,33 @@ readonly POLICY_ACTIONS_DISABLED_LABEL='actions enabled=false (CI runs disabled)
 ##
 ##                       PERSON  BOT  why
 ##   has_wiki              off   off   we don't use GH wikis
+##   has_issues            off   off   file upstream; the personal
+##                                     account is a backup/mirror
+##                                     and the upstream org repo is
+##                                     where reports belong
 ##   has_projects          off   off   project boards belong upstream
 ##   has_discussions       off   off   discussions belong upstream
-##   has_issues             on   off   PERSON: human can triage incoming
-##                                     BOT:    bot doesn't triage; file
-##                                             upstream
 ##   allow_forking          on    on   GitHub forbids tightening this
 ##                                     on user-owned repos (HTTP 422);
 ##                                     org-level MIRROR policy already
 ##                                     enforces it where it can stick
 ##   secret_scanning        on    on   same on both
 ##   secret_scanning_push_protection  on    on   same on both
+##
+## With these settings PERSON and BOT bodies are identical on the
+## currently-touched fields. The split is kept for future
+## divergence (and so the user_kind dispatcher in
+## dm-github-personal-policy stays uniform with the org-side
+## SOURCE/MIRROR pattern).
 
-## PERSON variant: real maintainer's account. Issues stay on so
-## the maintainer can triage incoming reports filed against the
-## personal mirror. Forks left enabled.
+## PERSON variant: real maintainer's account. Same lockdown as
+## BOT - the personal account is a backup mirror; issues, wikis,
+## project boards, and discussions all belong on the upstream org
+## repo, not on the mirror. Forks left enabled (GitHub HTTP 422s
+## any tightening on user-owned repos).
 readonly POLICY_PERSONAL_REPO_PERSON='{
    has_wiki: false,
+   has_issues: false,
    has_projects: false,
    has_discussions: false,
    security_and_analysis: {
@@ -411,7 +560,7 @@ readonly POLICY_PERSONAL_REPO_PERSON='{
 }'
 readonly POLICY_PERSONAL_REPO_PERSON_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
 readonly POLICY_PERSONAL_REPO_PERSON_METHOD='PATCH'
-readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/issues/projects/discussions off, secret-scan on)'
 
 ## BOT variant: AI-assisted-work bot account. Identical lockdown
 ## to a MIRROR org repo - everything that side-tracker-style

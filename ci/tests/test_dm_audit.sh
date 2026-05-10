@@ -44,6 +44,14 @@ required=(
    'installed GitHub Apps:'
    'org webhooks (Scorecard "Webhooks" check):'
    'total=2, lacking secret=1'
+   ## Private-repo audit: the GET_orgs_..._repos fixture has
+   ## private-thing (private, non-archived) plus public/archived/
+   ## fork siblings. Only private-thing should appear under the
+   ## new private-repo header. The mock dispatcher strips the
+   ## ?type=private query, so the audit's client-side
+   ## .private == true filter is what makes the test meaningful.
+   'private repos (would lose secret-scan + push-protection on Free without GHAS):'
+   '    - org-ai-assisted/private-thing'
    'dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
    ## After dm-github-org-policy switched to inc_forks=1, the fork
    ## repo (some-fork) is also enumerated by the dependabot.yml

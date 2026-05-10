@@ -58,6 +58,13 @@ what gets applied (bodies, endpoints, methods, labels).
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Token needs 'repo' (classic) or 'Administration: write' (fine-grained).
+  To also hide the primary email from the public profile, the token
+  needs 'user:email' (classic) or 'Email addresses: write'
+  (fine-grained); without it the email-visibility step prints a
+  warn and the rest of --apply continues. The token must belong
+  to the same login as the target user; otherwise the email step
+  is skipped (with a clear notice) since /user/email/visibility
+  acts on the token-authed user.
 
 Repos in scope:
   Public, non-archived repos owned by <username>, INCLUDING forks
@@ -264,6 +271,40 @@ audit_one() {
 ## vector exists on a fork too). Archived stays excluded - the API
 ## returns 403 on PATCH/PUT of archived repos. Private stays excluded
 ## - external contributors cannot open PRs against private repos.
+## Account-wide settings (applied once per --apply, not per repo).
+## Audit mode skips this block; the per-repo audit_one loop below
+## handles the read-only inspection a separate way.
+##
+## Currently one knob: hide the primary email from the public
+## profile. The /user/* endpoints implicitly act on the
+## token-authed user, so we guard "authed user == target_user"
+## first - otherwise a token belonging to user A running this
+## script against user B would mutate A's email visibility, not
+## B's. The check is harmless in dry-run too (it's a read).
+if [ "${mode}" != 'audit' ]; then
+   authed_login=''
+   authed_result="$(ghorg_api GET /user)" || true
+   authed_status="$(ghorg_status_of "${authed_result}")"
+   if [ "${authed_status}" = '200' ]; then
+      authed_login="$(ghorg_body_of "${authed_result}" \
+         | ghorg_jq_capped --raw-output -- '.login // ""')"
+   fi
+   if [ -z "${authed_login}" ]; then
+      log notice "skip: ${target_user}: ${POLICY_USER_EMAIL_PRIVATE_LABEL} - cannot determine authed user (HTTP ${authed_status})"
+   elif [ "${authed_login}" != "${target_user}" ]; then
+      log notice "skip: ${target_user}: ${POLICY_USER_EMAIL_PRIVATE_LABEL} - token belongs to '${authed_login}', not '${target_user}'; account-wide PATCHes would target the wrong account"
+   else
+      ## /user/email/visibility takes no placeholder; call the lib
+      ## directly rather than through policy_apply_repo (which is
+      ## per-repo and substitutes __OWNER__/__REPO__).
+      policy_api_call "${target_user}: ${POLICY_USER_EMAIL_PRIVATE_LABEL}" \
+         "${POLICY_USER_EMAIL_PRIVATE_METHOD}" \
+         "${POLICY_USER_EMAIL_PRIVATE_ENDPOINT}" \
+         "$(ghorg_jq -n -- "${POLICY_USER_EMAIL_PRIVATE}")" \
+         || true
+   fi
+fi
+
 repos="$(ghorg_list_repos "${target_user}" 0 0 1 \
    | sort --unique)"
 

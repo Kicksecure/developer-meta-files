@@ -5,21 +5,28 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-org-policy pivots its per-repo PATCH
-## body on org_kind. SOURCE_ORGS entries (Kicksecure, Whonix) get
-## the SOURCE body (has_issues: true, no allow_forking field).
-## MIRROR_ORGS entries (org-ai-assisted) get the MIRROR body
-## (has_issues: false, allow_forking: false).
+## Mock-API test: dm-github-org-policy pivots three things on
+## org_kind. SOURCE_ORGS entries (Kicksecure, Whonix) and
+## MIRROR_ORGS entries (org-ai-assisted) diverge as follows:
 ##
-## Two separate dry-runs:
-##   ORGS=( 'Whonix' )           -> expect 'SOURCE: wiki=off, issues=on'
-##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: ...' (no allow_forking - org level only)
+##   per-repo PATCH body:
+##     SOURCE: 'wiki=off, issues=on, secret-scan on' (issues stay on)
+##     MIRROR: 'wiki/issues/projects/discussions off, secret-scan on'
 ##
-## Also pins the org-level branch-ruleset bypass actor list, which
-## also pivots on org_kind:
-##   SOURCE -> bypass_actors: []
-##   MIRROR -> bypass_actors: [{actor_type: OrganizationAdmin, ...}]
-## Verified via dry-run output (the upsert call is logged regardless).
+##   Dependabot alerts + Dependabot security updates + PVR
+##   (Private Vulnerability Reporting):
+##     SOURCE: enabled per repo (3 PUTs each)
+##     MIRROR: actively disabled per repo (3 DELETEs each, with
+##             security-fixes BEFORE alerts to avoid 422). Every
+##             --apply reconciles - mirror would duplicate every
+##             alert the canonical SOURCE repo already raises.
+##
+##   per-repo branch + tag rulesets: applied on both; bypass actor
+##     list pivots on POLICY_RULESET_BYPASS_SOURCE/MIRROR (the
+##     repo-level ruleset upserts work on Free for public repos).
+##
+## The org-level ruleset upsert in apply_org_policy is PAID PLAN
+## ONLY (commented out); not exercised here.
 
 set -o errexit
 set -o nounset
@@ -55,12 +62,20 @@ fi
 source_required=(
    ## SOURCE per-repo body: has_issues stays on, no allow_forking
    ## field at all (the body simply omits it).
-   'SOURCE: wiki=off, issues=on'
+   'SOURCE: wiki=off, issues=on, secret-scan on'
+   ## SOURCE gets the Dependabot/PVR enable fan-out.
+   'enable Dependabot alerts'
+   'enable Dependabot security updates'
+   'enable private vulnerability reporting'
 )
 source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
    ## SOURCE org.
    'MIRROR:'
+   ## MIRROR-only disable lines MUST NOT appear on SOURCE.
+   'disable Dependabot alerts (mirror)'
+   'disable Dependabot security updates (mirror)'
+   'disable private vulnerability reporting (mirror)'
 )
 for needle in "${source_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
@@ -86,10 +101,19 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 mirror_required=(
-   'MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+   ## MIRROR actively disables Dependabot/PVR (DELETE on the same
+   ## three endpoints) so every --apply reconciles state.
+   'disable Dependabot alerts (mirror)'
+   'disable Dependabot security updates (mirror)'
+   'disable private vulnerability reporting (mirror)'
 )
 mirror_forbidden=(
    'SOURCE:'
+   ## SOURCE-only enable lines MUST NOT appear on MIRROR.
+   'enable Dependabot alerts'
+   'enable Dependabot security updates'
+   'enable private vulnerability reporting'
 )
 for needle in "${mirror_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_mirror}"; then

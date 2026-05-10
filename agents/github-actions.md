@@ -96,3 +96,29 @@ reference; do not pin to a fork.
 When a reusable workflow centralizes an action pin, only that one
 copy needs Dependabot updates. This is the main lever to reduce
 duplicate Dependabot PRs across repos.
+
+### Org-level `sha_pinning_required` is intentionally OFF
+
+GitHub exposes an org / repo Actions setting
+`sha_pinning_required` (PUT /orgs/{org}/actions/permissions or the
+per-repo equivalent). When `true`, every `uses:` reference must be
+a 40-char commit SHA; floating tags (`@v4`, `@master`) fail the
+run. We leave it `false` deliberately:
+
+- First-party reusable workflows (`org-ai-assisted/...` /
+  `Kicksecure/...` / `Whonix/...`) reference each other by
+  branch name (`@master`) on purpose - single-source-of-truth
+  update propagation, see G-A-004 above. Flipping
+  `sha_pinning_required: true` would reject every such call.
+- Threat-model-A in `agents/security.md` explicitly trusts
+  `github.com` and the org's own repos as transport. SHA-pin
+  ceremony for internal refs is over-engineering for threats
+  the CI surface does not model.
+- Third-party action refs are SHA-pinned individually anyway via
+  the per-action discipline above; the org-wide toggle adds no
+  additional protection there.
+
+The toggle would become useful if a future threat model treats
+`github.com` ref-resolution as untrusted - i.e. defense against an
+attacker re-pointing `master` on an internal repo. We do not
+currently model that.
