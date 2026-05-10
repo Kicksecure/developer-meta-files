@@ -69,7 +69,7 @@ required=(
    ## tag rulesets apply on both SOURCE and MIRROR.
    'DRY-RUN: org-ai-assisted/derivative-maker: disable Dependabot security updates (mirror)'
    'DRY-RUN: org-ai-assisted/derivative-maker: disable Dependabot alerts (mirror)'
-   'DRY-RUN: org-ai-assisted/derivative-maker: disable private vulnerability reporting (mirror)'
+   'DRY-RUN: org-ai-assisted/derivative-maker: disable private vulnerability reporting'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy default-branch protection'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy tag protection'
 )

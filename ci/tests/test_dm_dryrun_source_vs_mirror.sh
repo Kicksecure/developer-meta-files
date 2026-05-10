@@ -13,13 +13,18 @@
 ##     SOURCE: 'wiki=off, issues=on, secret-scan on' (issues stay on)
 ##     MIRROR: 'wiki/issues/projects/discussions off, secret-scan on'
 ##
-##   Dependabot alerts + Dependabot security updates + PVR
-##   (Private Vulnerability Reporting):
-##     SOURCE: enabled per repo (3 PUTs each)
-##     MIRROR: actively disabled per repo (3 DELETEs each, with
+##   Dependabot alerts + Dependabot security updates:
+##     SOURCE: enabled per repo (2 PUTs each)
+##     MIRROR: actively disabled per repo (2 DELETEs each, with
 ##             security-fixes BEFORE alerts to avoid 422). Every
 ##             --apply reconciles - mirror would duplicate every
 ##             alert the canonical SOURCE repo already raises.
+##
+##   PVR (Private Vulnerability Reporting):
+##     OFF EVERYWHERE. DELETE /private-vulnerability-reporting
+##     runs on both SOURCE and MIRROR; canonical disclosure is
+##     the wiki per .github/SECURITY.md. PUT enable-side has no
+##     constant in github-policy-data.bsh.
 ##
 ##   per-repo branch + tag rulesets: applied on both; bypass actor
 ##     list pivots on POLICY_RULESET_BYPASS_SOURCE/MIRROR (the
@@ -63,19 +68,25 @@ source_required=(
    ## SOURCE per-repo body: has_issues stays on, no allow_forking
    ## field at all (the body simply omits it).
    'SOURCE: wiki=off, issues=on, secret-scan on'
-   ## SOURCE gets the Dependabot/PVR enable fan-out.
+   ## SOURCE gets the Dependabot enable fan-out.
    'enable Dependabot alerts'
    'enable Dependabot security updates'
-   'enable private vulnerability reporting'
+   ## PVR is disabled on SOURCE too (wiki is canonical disclosure
+   ## channel per .github/SECURITY.md).
+   'disable private vulnerability reporting'
 )
 source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
    ## SOURCE org.
    'MIRROR:'
-   ## MIRROR-only disable lines MUST NOT appear on SOURCE.
-   'disable Dependabot alerts (mirror)'
-   'disable Dependabot security updates (mirror)'
-   'disable private vulnerability reporting (mirror)'
+   ## MIRROR-only Dependabot disable lines MUST NOT appear on
+   ## SOURCE. PVR disable IS expected on both (see source_required).
+   'disable Dependabot alerts'
+   'disable Dependabot security updates'
+   ## PVR enable line MUST NOT appear anywhere (the PUT-style
+   ## constant was removed - github-policy-data.bsh has only the
+   ## DELETE variant).
+   'enable private vulnerability reporting'
 )
 for needle in "${source_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
@@ -102,17 +113,20 @@ fi
 
 mirror_required=(
    'MIRROR: wiki/issues/projects/discussions off, secret-scan on'
-   ## MIRROR actively disables Dependabot/PVR (DELETE on the same
-   ## three endpoints) so every --apply reconciles state.
-   'disable Dependabot alerts (mirror)'
-   'disable Dependabot security updates (mirror)'
-   'disable private vulnerability reporting (mirror)'
+   ## MIRROR actively disables Dependabot via DELETE; PVR-OFF is
+   ## the same call run on both sides.
+   'disable Dependabot alerts'
+   'disable Dependabot security updates'
+   'disable private vulnerability reporting'
 )
 mirror_forbidden=(
    'SOURCE:'
-   ## SOURCE-only enable lines MUST NOT appear on MIRROR.
+   ## SOURCE-only Dependabot enable lines MUST NOT appear on
+   ## MIRROR.
    'enable Dependabot alerts'
    'enable Dependabot security updates'
+   ## PVR enable MUST NOT appear anywhere; only the DELETE
+   ## (disable) form exists.
    'enable private vulnerability reporting'
 )
 for needle in "${mirror_required[@]}"; do
