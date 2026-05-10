@@ -1,0 +1,30 @@
+[
+  {
+    "repository": {"full_name": "org-ai-assisted/msgcollector"},
+    "tool": {"name": "CodeQL"},
+    "rule": {"id": "py/file-not-closed", "severity": "warning"},
+    "most_recent_instance": {
+      "location": {"path": "usr/libexec/msgcollector/alert", "start_line": 55},
+      "message": {"text": "File is opened but is not closed."}
+    }
+  },
+  {
+    "repository": {"full_name": "org-ai-assisted/derivative-maker"},
+    "tool": {"name": "Scorecard"},
+    "rule": {"id": "MaintainedID", "severity": "error"},
+    "most_recent_instance": {
+      "location": {"path": "no file associated with this alert", "start_line": 1},
+      "message": {"text": "score is 0: project not maintained"}
+    }
+  },
+  {
+    "repository": {"full_name": "org-ai-assisted/derivative-maker"},
+    "tool": {"name": "Scorecard"},
+    "rule": {"id": "PinnedDependenciesID", "severity": "error"},
+    "most_recent_instance": {
+      "location": {"path": ".github/workflows/claude-code.yml", "start_line": 23},
+      "message": {"text": "third-party GitHubAction not pinned by hash"}
+    }
+  }
+]
+HTTP_STATUS:200
