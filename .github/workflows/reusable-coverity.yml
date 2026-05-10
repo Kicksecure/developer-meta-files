@@ -196,11 +196,11 @@ jobs:
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: master
-          path: __dmf
+          path: .github/dmf
           persist-credentials: false
 
       - name: Sanity check secrets
-        run: bash __dmf/ci/coverity-check-secrets.sh
+        run: bash .github/dmf/ci/coverity-check-secrets.sh
 
       ## actions/cache runs as the unprivileged runner user; the
       ## default /var/cache/apt/archives is root-owned. Take
@@ -236,18 +236,18 @@ jobs:
             ${{ inputs.apt-packages }}
 
       - name: Download Coverity Build Tool
-        run: bash __dmf/ci/coverity-download.sh
+        run: bash .github/dmf/ci/coverity-download.sh
 
       - name: Run Coverity build (Python default)
         if: inputs.build-command == ''
-        run: bash __dmf/ci/coverity-build-python.sh
+        run: bash .github/dmf/ci/coverity-build-python.sh
 
       - name: Run Coverity build (caller-supplied)
         if: inputs.build-command != ''
         run: ${{ inputs.build-command }}
 
       - name: Submit to Coverity Scan
-        run: bash __dmf/ci/coverity-submit.sh
+        run: bash .github/dmf/ci/coverity-submit.sh
 
       - name: Upload cov-int artifact (always)
         if: always()
