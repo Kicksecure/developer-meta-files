@@ -148,9 +148,12 @@ metadata_topics_json() {
    fi
 
    ## --args has to follow the program; passes positional strings as
-   ## $ARGS.positional. Zero-length array yields []. ghorg_jq (no cap)
-   ## because input is trusted (already validated above).
-   cached="$(ghorg_jq --null-input '$ARGS.positional' --args "${topics_ok[@]}")"
+   ## $ARGS.positional. Zero-length array yields []. --compact-output
+   ## keeps the JSON array on one line so the audit-drift display
+   ## prints each diff as a single log line. ghorg_jq (no cap) because
+   ## input is trusted (already validated above).
+   cached="$(ghorg_jq --null-input --compact-output \
+      '$ARGS.positional' --args "${topics_ok[@]}")"
    REPO_TOPICS_JSON_CACHE[${repo}]="${cached}"
    printf '%s' "${cached}"
 }
@@ -238,7 +241,7 @@ metadata_audit_one() {
    expected_home="${REPO_WEBSITE[${repo}]}"
    expected_topics="$(metadata_topics_json "${repo}")"
    expected_topics_sorted="$(printf '%s' "${expected_topics}" \
-      | ghorg_jq_capped -- 'sort')"
+      | ghorg_jq_capped --compact-output -- 'sort')"
 
    result="$(ghorg_api GET "/repos/${owner}/${repo}")" || {
       log notice "audit: ${owner}/${repo}: api error (skip)"
@@ -266,7 +269,7 @@ metadata_audit_one() {
    fi
    topics_body="$(ghorg_body_of "${topics_result}")"
    current_topics="$(printf '%s' "${topics_body}" \
-      | ghorg_jq_capped -- '.names | sort')"
+      | ghorg_jq_capped --compact-output -- '.names | sort')"
 
    drift_lines=()
    if [ "${current_desc}" != "${expected_desc}" ]; then
