@@ -12,8 +12,8 @@
 ## (has_issues: false, allow_forking: false).
 ##
 ## Two separate dry-runs:
-##   ORGS=( 'Whonix' )           -> expect 'SOURCE: wiki=off, issues=on'
-##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: ...' (no allow_forking - org level only)
+##   ORGS=( 'Whonix' )           -> expect 'SOURCE: wiki=off, issues=on, secret-scan on'
+##   ORGS=( 'org-ai-assisted' )  -> expect 'MIRROR: wiki/issues/projects/discussions off, secret-scan on'
 ##
 ## The SOURCE/MIRROR split for the org-level branch-ruleset bypass
 ## actor list (POLICY_RULESET_BYPASS_SOURCE/MIRROR) is currently
@@ -55,7 +55,7 @@ fi
 source_required=(
    ## SOURCE per-repo body: has_issues stays on, no allow_forking
    ## field at all (the body simply omits it).
-   'SOURCE: wiki=off, issues=on'
+   'SOURCE: wiki=off, issues=on, secret-scan on'
 )
 source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
@@ -86,7 +86,7 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 mirror_required=(
-   'MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'MIRROR: wiki/issues/projects/discussions off, secret-scan on'
 )
 mirror_forbidden=(
    'SOURCE:'

@@ -79,9 +79,22 @@ required=(
    ## (forks now included since dm-github-org-policy switched
    ## inc_forks=1). org-ai-assisted is a MIRROR_ORGS entry, so the
    ## body+label come from POLICY_REPO_MIRROR.
-   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
-   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
-   'ok: org-ai-assisted/some-fork: MIRROR: wiki=off, issues=off, projects=off, discussions=off'
+   'ok: org-ai-assisted/derivative-maker: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+   'ok: org-ai-assisted/helper-scripts: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+   'ok: org-ai-assisted/some-fork: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
+
+   ## Free-plan-compatible per-repo code-security replacements
+   ## applied alongside the MIRROR PATCH. Asserted on one repo
+   ## (the fan-out is symmetric across all three).
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
+   'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+
+   ## Free-plan-compatible per-repo branch + tag rulesets. The
+   ## fixture's GET /rulesets returns [] so the upsert path falls
+   ## through to a POST 'create ruleset' for each.
+   "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy default-branch protection'"
+   "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy tag protection'"
 )
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then

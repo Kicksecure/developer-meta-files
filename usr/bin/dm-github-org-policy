@@ -92,10 +92,11 @@ org_kind() {
    return 1
 }
 
-## PAID PLAN ONLY: ruleset names are referenced only by the org-
-## level upsert (Team+) and by the audit's matching-rulesets
-## listing (also Team+). Repo-level rulesets are free; if a future
-## per-repo fan-out gets implemented these names can be reused.
+## Ruleset names. Used at repo level (free, applied per-repo in
+## apply_repo_policy) and at org level (PAID PLAN ONLY, commented
+## out in apply_org_policy). Each name is unique within its scope
+## so reusing the same string at both levels causes no collision;
+## sharing makes a future plan upgrade trivial.
 readonly RULESET_NAME_BRANCH='dm-github-org-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-org-policy tag protection'
 ## PAID PLAN ONLY: the configuration name is only meaningful to the
@@ -561,12 +562,36 @@ audit_org_state() {
    fi
 }
 
-## Per-repo settings - only the ones with no org-wide alternative.
-## Pivots on org_kind to pick the right body from
-## github-policy-data.bsh (POLICY_REPO_SOURCE / POLICY_REPO_MIRROR;
-## diff table is in the data file).
+## Per-repo settings. Two flavours, applied in order:
+##   1. PATCH /repos/{o}/{r} body (POLICY_REPO_SOURCE / _MIRROR)
+##      - has_wiki/has_issues/has_projects/has_discussions
+##      - security_and_analysis (secret scanning + push protection)
+##   2. The Free-plan-compatible per-repo replacements for the
+##      paid-only org-level apply path:
+##      - PUT /repos/{o}/{r}/vulnerability-alerts
+##          (Dependabot alerts; replaces POLICY_CODE_SECURITY's
+##          dependabot_alerts: enabled)
+##      - PUT /repos/{o}/{r}/automated-security-fixes
+##          (Dependabot security updates; replaces
+##          dependabot_security_updates: enabled)
+##      - PUT /repos/{o}/{r}/private-vulnerability-reporting
+##          (PVR; the configurations API field equivalent)
+##      - POST/PUT /repos/{o}/{r}/rulesets x2
+##          (branch + tag rulesets; replace the org-level Team+
+##          rulesets that 403 on Free)
+##
+## All five replacement calls are free for public repos and were
+## empirically tested 2026-05 against org-ai-assisted on a Free
+## plan. The chosen body shapes match what the org-level paid path
+## would have applied, so a future plan upgrade can migrate to the
+## org-level configuration without changing what each repo ends up
+## seeing.
+##
+## Bypass actor list for the rulesets pivots on org_kind:
+##   SOURCE -> POLICY_RULESET_BYPASS_SOURCE  ([], no bypass)
+##   MIRROR -> POLICY_RULESET_BYPASS_MIRROR  ([OrgAdmin])
 apply_repo_policy() {
-   local owner repo kind
+   local owner repo kind bypass_var
 
    owner="$1"
    repo="$2"
@@ -578,6 +603,25 @@ apply_repo_policy() {
    ## naming convention.
    kind="$(org_kind "${owner}")" || return 1
    policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
+
+   ## Free-plan-compatible code-security replacements. policy_apply_repo
+   ## resolves POLICY_<NAME>_ENDPOINT (no _ORG/_REPO suffix) when the
+   ## 4th arg is 'ENDPOINT'.
+   policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
+   policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
+   policy_apply_repo "${owner}" "${repo}" REPO_PVR               ENDPOINT
+
+   ## Free-plan-compatible per-repo branch + tag rulesets. Same
+   ## three rules (deletion, non_fast_forward, required_signatures)
+   ## as the (commented-out) org-level rulesets, just scoped to the
+   ## one repo.
+   bypass_var="POLICY_RULESET_BYPASS_${kind^^}"
+   policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_BRANCH}" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo "${!bypass_var}")" \
+      || true
+   policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_TAG}" \
+      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo "${!bypass_var}")" \
+      || true
 }
 
 main() {
