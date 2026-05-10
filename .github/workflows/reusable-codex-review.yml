@@ -131,6 +131,7 @@ jobs:
     name: OpenAI Codex Review (disabled)
     if: false
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
       - run: ":"
 

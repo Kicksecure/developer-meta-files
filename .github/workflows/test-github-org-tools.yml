@@ -63,6 +63,7 @@ jobs:
   mock-tests:
     name: mock-API tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: debian:trixie
     steps:

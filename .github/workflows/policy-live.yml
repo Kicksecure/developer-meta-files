@@ -58,6 +58,7 @@ jobs:
   live-policy-check:
     name: dm-github-policy --audit + --dry-run (live)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
       image: debian:trixie
 

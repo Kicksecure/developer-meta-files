@@ -58,6 +58,7 @@ jobs:
   live:
     name: live-API audit + dry-run + unauth probe
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container:
       image: debian:trixie
 
