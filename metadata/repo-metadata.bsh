@@ -81,7 +81,7 @@ add_repo() {
 ## ============================================================================
 
 add_repo  .github                                      d  \
-   "Org-wide community files"  \
+   "GitHub organisation wide community files"  \
    ""  \
    "linux debian"
 
@@ -98,12 +98,12 @@ add_repo  anon-apps-config                             w  \
 add_repo  anon-apt-sources-list                        k  \
    "Debian APT sources configuration for security-focused Linux distributions"  \
    "https://www.kicksecure.com/wiki/Install_Software#Default_APT_Sources"  \
-   "anonymity privacy linux kicksecure"
+   "security linux kicksecure"
 
 add_repo  anon-connection-wizard                       k  \
    "Tor connection setup wizard - configures direct Tor, bridges, or proxy before Tor"  \
    "https://www.whonix.org/wiki/Anon_Connection_Wizard"  \
-   "anonymity privacy linux kicksecure"
+   "anonymity privacy linux whonix"
 
 add_repo  anon-gw-anonymizer-config                    w  \
    "Tor configuration shipped on the Whonix Gateway"  \
@@ -136,18 +136,18 @@ add_repo  anon-ws-disable-stacked-tor                  w  \
    "anonymity privacy linux whonix"
 
 add_repo  apparmor-profile-dist                        k  \
-   "AppArmor profiles for derivative Linux distributions"  \
+   "AppArmor profile for Kicksecure and derivatives"  \
    "https://www.kicksecure.com/wiki/AppArmor"  \
    "apparmor security linux kicksecure"
 
 add_repo  apparmor-profile-hexchat                     k  \
    "AppArmor profile for HexChat IRC"  \
-   "https://www.kicksecure.com/wiki/AppArmor"  \
+   "https://www.kicksecure.com/wiki/HexChat"  \
    "apparmor security linux kicksecure"
 
 add_repo  apparmor-profile-thunderbird                 k  \
    "AppArmor profile for Thunderbird"  \
-   "https://www.kicksecure.com/wiki/AppArmor"  \
+   "https://www.kicksecure.com/wiki/Encrypted_Email_with_Thunderbird"  \
    "apparmor security linux kicksecure"
 
 add_repo  apparmor-profile-torbrowser                  k  \
@@ -161,8 +161,8 @@ add_repo  apparmor.d                                   k  \
    "apparmor security linux kicksecure"
 
 add_repo  binaries-freedom                             k  \
-   "Policy documentation for inclusion of compiled binaries in Kicksecure / Whonix"  \
-   "https://www.kicksecure.com/wiki/Dev/About_Debian_Packaging"  \
+   "Freedom Software compiled binaries in Kicksecure / Whonix"  \
+   "https://www.kicksecure.com"  \
    "linux debian kicksecure"
 
 add_repo  bindp                                        k  \
@@ -176,17 +176,17 @@ add_repo  bootclockrandomization                       k  \
    "time-synchronization security kicksecure"
 
 add_repo  browser-choice                               k  \
-   "Browser launcher for Kicksecure - lets the user pick the default browser at first run"  \
+   "Browser choice for Kicksecure - lets the user pick the default browser at first run"  \
    "https://www.kicksecure.com/wiki/Browser-choice"  \
    "linux debian kicksecure"
 
 add_repo  calamares-settings-debian                    k  \
-   "Kicksecure fork of calamares-settings-debian backport from Debian Sid"  \
+   "Kicksecure fork of calamares-settings-debian"  \
    "https://www.kicksecure.com/wiki/ISO"  \
    "linux debian kicksecure"
 
 add_repo  canary                                       k  \
-   "Warrant canary infrastructure for Kicksecure"  \
+   "Warrant canary"  \
    "https://www.kicksecure.com/wiki/Trust"  \
    "linux debian kicksecure"
 
@@ -197,7 +197,7 @@ add_repo  corridor                                     w  \
 
 add_repo  damngpl                                      k  \
    "Extracts source package information from Debian status files"  \
-   "https://www.kicksecure.com/wiki/Dev/About_Debian_Packaging"  \
+   "https://www.kicksecure.com/wiki/Dev/Licensing"  \
    "linux debian kicksecure"
 
 add_repo  debug-misc                                   k  \
@@ -302,12 +302,12 @@ add_repo  kicksecure-meta-packages                     k  \
 
 add_repo  kicksecure-network-conf                      k  \
    "Default network configuration for Kicksecure"  \
-   "https://www.kicksecure.com/wiki/Network_Manager"  \
+   "https://www.kicksecure.com/wiki/Networking"  \
    "kicksecure security"
 
 add_repo  kicksecure-welcome-page                      k  \
    "First-boot welcome page for Kicksecure"  \
-   "https://www.kicksecure.com/wiki/Documentation"  \
+   "https://www.kicksecure.com/wiki/Browser"  \
    "kicksecure security"
 
 add_repo  kicksecure-wiki-backup                       k  \
@@ -322,11 +322,11 @@ add_repo  kicksecure-wiki-html                         k  \
 
 add_repo  kicksecure.github.io                         k  \
    "GitHub Pages hosting for Kicksecure project pages"  \
-   "https://www.kicksecure.com"  \
+   "https://kicksecure.github.io"  \
    "kicksecure security"
 
 add_repo  kloak                                        w  \
-   "Anti keystroke deanonymization tool"  \
+   "Kloak is a privacy tool (input device anonymization tool) that hides your typing and mouse movement patterns, which can be used to identify you online."  \
    "https://www.whonix.org/wiki/Kloak"  \
    "linux debian whonix"
 
@@ -347,7 +347,7 @@ add_repo  live-build                                   k  \
 
 add_repo  live-config-dist                             k  \
    "Live-mode configuration overlays for Kicksecure and Whonix derivatives"  \
-   "https://www.kicksecure.com/wiki/Live_Mode"  \
+   "https://www.kicksecure.com/wiki/ISO"  \
    "linux debian kicksecure"
 
 add_repo  lxqt-wayland-session                         k  \
@@ -416,17 +416,17 @@ add_repo  proposals                                    k  \
    "linux debian kicksecure"
 
 add_repo  qubes-template-kicksecure                    k  \
-   "Qubes OS template for Kicksecure"  \
+   "Kicksecure-Qubes: Qubes OS Template Kicksecure"  \
    "https://www.kicksecure.com/wiki/Qubes"  \
    "qubes-os qubes kicksecure"
 
 add_repo  qubes-template-whonix                        w  \
-   "Qubes-Whonix template package metadata and build integration"  \
+   "Qubes-Whonix: Qubes OS Template Whonix"  \
    "https://www.whonix.org/wiki/Qubes-Whonix"  \
    "qubes-os qubes whonix"
 
 add_repo  qubes-whonix                                 w  \
-   "Qubes OS integration for Whonix templates and App Qubes"  \
+   "Qubes OS integration for Whonix Templates and App Qubes"  \
    "https://www.whonix.org/wiki/Qubes-Whonix"  \
    "qubes-os qubes whonix"
 
@@ -472,17 +472,17 @@ add_repo  security-misc                                k  \
 
 add_repo  serial-console-enable                        k  \
    "Enables serial console login for command line access, for example with virsh console"  \
-   "https://www.kicksecure.com/wiki/Dev/Build_Documentation"  \
+   "https://www.kicksecure.com/wiki/Recovery#Serial_Console"  \
    "linux debian kicksecure"
 
 add_repo  setup-dist                                   k  \
-   "First-run setup tooling for Kicksecure and Whonix derivative distributions"  \
-   "https://www.kicksecure.com/wiki/Dev/Build_Documentation"  \
+   "First-run setup tooling for Kicksecure and derivative distributions"  \
+   "https://www.kicksecure.com"  \
    "desktop linux debian kicksecure"
 
 add_repo  setup-wizard-dist                            k  \
-   "Graphical first-run setup wizard for Kicksecure and Whonix derivatives"  \
-   "https://www.kicksecure.com/wiki/Dev/Build_Documentation"  \
+   "Graphical first-run setup wizard for Kicksecure and derivative distributions"  \
+   "https://www.kicksecure.com"  \
    "desktop linux debian kicksecure"
 
 add_repo  swap-file-creator                            k  \
@@ -532,8 +532,8 @@ add_repo  tor-control-panel                            k  \
 
 add_repo  tor-ctrl                                     k  \
    "Raw command line use of Tor's controller"  \
-   "https://www.whonix.org/wiki/Tor"  \
-   "tor anonymity privacy kicksecure"
+   "https://www.whonix.org/wiki/Tor_Controller#tor-ctrl"  \
+   "tor anonymity privacy"
 
 add_repo  updates-status                               w  \
    "Update status checks for Whonix"  \
@@ -547,7 +547,7 @@ add_repo  usability-misc                               k  \
 
 add_repo  user-sysmaint-split                          k  \
    "Splits privileges between an unprivileged user account and a separate sysmaint account"  \
-   "https://www.kicksecure.com/wiki/System_Maintenance_Panel"  \
+   "https://www.kicksecure.com/wiki/sysmaint"  \
    "linux debian kicksecure"
 
 add_repo  uwt                                          w  \
@@ -557,12 +557,12 @@ add_repo  uwt                                          w  \
 
 add_repo  vm-config-dist                               k  \
    "Usability enhancements for Debian guest operating systems running inside virtual machines"  \
-   "https://www.kicksecure.com/wiki/Virtualization_Platform"  \
+   "https://www.kicksecure.com"  \
    "virtualization vm linux kicksecure"
 
 add_repo  vpn-firewall                                 k  \
    "Leak protection and fail safe mechanism for OpenVPN and other VPN setups"  \
-   "https://www.whonix.org/wiki/Whonix-Gateway_System_VPN"  \
+   "https://www.whonix.org/wiki/VPN-Firewall"  \
    "firewall security linux kicksecure"
 
 add_repo  whonix-base-files                            w  \
@@ -587,12 +587,12 @@ add_repo  whonix-gw-network-conf                       w  \
 
 add_repo  Whonix-Installer                             w  \
    "Simple installer for Whonix-Starter to set up and configure Whonix with VirtualBox"  \
-   "https://www.whonix.org/wiki/Linux"  \
+   "https://www.whonix.org/wiki/Dev/Windows_Installer"  \
    "whonix anonymity"
 
 add_repo  Whonix-Starter                               w  \
    "Advanced Whonix Starter for platform-independent use"  \
-   "https://www.whonix.org/wiki/Linux"  \
+   "https://www.whonix.org/wiki/Dev/Windows_Starter"  \
    "whonix anonymity"
 
 add_repo  whonix-welcome-page                          w  \
