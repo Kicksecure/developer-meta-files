@@ -364,6 +364,7 @@ audit_org_state() {
    local ruleset_body ruleset_name ids id member
    local pending approved installs install_line total no_secret
    local repos repo missing_count have_count
+   local private_names private_count
 
    org="$1"
 
@@ -532,6 +533,40 @@ audit_org_state() {
       fi
    else
       log notice "    HTTP ${status} (token may lack admin:org_hook scope)"
+   fi
+
+   ## Private (non-archived) repos in the org. None should exist
+   ## in the active layout (everything is public-mirror-of-public-
+   ## SOURCE). Surfaces an accidental UI flip from public->private
+   ## that would silently break secret scanning + push protection
+   ## (those features need GHAS on private repos; on Free we have
+   ## no GHAS, so a private repo loses both checks). Read-only
+   ## audit; no apply mutation.
+   log notice '  private repos (would lose secret-scan + push-protection on Free without GHAS):'
+   result="$(ghorg_api GET "/orgs/${org}/repos?type=private&per_page=100")" || true
+   status="$(ghorg_status_of "${result}")"
+   if [ "${status}" = '200' ]; then
+      body="$(ghorg_body_of "${result}")"
+      ## Filter client-side on .private == true. The ?type=private
+      ## query already restricts the API result, but the mock-API
+      ## dispatcher in ghorg_mock_dispatch strips queries before
+      ## fixture lookup; the test fixture has the full mixed list,
+      ## so the explicit filter keeps real and mock paths
+      ## consistent. The .archived == false guard matches the
+      ## existing dependabot.yml audit's scope.
+      private_names="$(printf '%s' "${body}" \
+         | ghorg_jq_capped -r -- '.[] | select(.private == true and .archived == false) | .name')"
+      private_count="$(printf '%s' "${private_names}" | grep --count -- . || true)"
+      if [ "${private_count}" = '0' ]; then
+         log notice '    (none)'
+      else
+         while IFS= read -r repo; do
+            [ -z "${repo}" ] && continue
+            log notice "    - ${org}/${repo}"
+         done <<< "${private_names}"
+      fi
+   else
+      log notice "    HTTP ${status} (token may lack repo scope to enumerate private repos)"
    fi
 
    ## Dependabot config-file presence: the OSSF Scorecard

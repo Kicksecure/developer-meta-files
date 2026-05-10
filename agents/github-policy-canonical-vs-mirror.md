@@ -81,3 +81,44 @@ Net deliberate diffs after this split:
 Everything else (fork-PR approval policy, workflow GITHUB_TOKEN
 permissions, secret scanning, rulesets) is identical content with
 only the API scope (org-level vs per-repo) differing.
+
+## Potential future tightenings (not in policy yet)
+
+Surfaced during the 2026-05 GitHub web-settings sweep. Each is a
+low-risk addition; landing them is gated only on operator
+appetite for the friction trade-off.
+
+- **`web_commit_signoff_required: true`** in the per-repo PATCH
+  body (`POLICY_REPO_*`). Closes a small bypass against the
+  GPG-required-signatures ruleset: web-UI commits ("edit this
+  file" / suggestion-accept / web upload) currently produce
+  commits signed only by GitHub's web-flow GPG key, not the
+  contributor's. With this on, web edits also require a
+  `Signed-off-by:` DCO trailer (textual, no PGP key, just a
+  checkbox in the commit form). Friction: one extra checkbox
+  click on web edits. No CLI workflow impact. Apply to SOURCE
+  and MIRROR alike.
+
+- **Tag-name pattern ruleset rule** like
+  `^v[0-9]+\.[0-9]+(\.[0-9]+)?$` on the tag ruleset. Catches
+  the rare class of "tag with wrong format" pushes that the
+  current rules let through. May need a bypass exemption if
+  hotfix tags ever use a different shape.
+
+- **`interaction_limit: collaborators_only`** permanently on
+  MIRROR repos via `PUT /repos/{}/{}/interaction-limits`.
+  Issues / discussions are off everywhere on MIRROR so there is
+  not much to interact with, but a hostile drive-by PR would be
+  silently rejected at the API instead of opening a noisy issue
+  in the maintainer's queue.
+
+- **Audit flag for private repos** in `audit_org_state`. None
+  exist today, but a regression (someone flipping a public repo
+  to private via the UI) would silently break secret scanning +
+  push protection on the affected repo since GHAS is required
+  for those features on private Free-org repos. Read-only check;
+  no apply mutation.
+
+`sha_pinning_required: true` is intentionally NOT in this list -
+see `agents/github-actions.md` "Org-level `sha_pinning_required`
+is intentionally OFF" for the rationale.
