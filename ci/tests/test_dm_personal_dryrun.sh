@@ -66,7 +66,7 @@ required=(
    'DRY-RUN: personal-test-user/backup-mirror: fork-PR approval=all_external_contributors'
    'DRY-RUN: personal-test-user/backup-mirror: workflow GITHUB_TOKEN read-only'
    'DRY-RUN: personal-test-user/backup-mirror: actions enabled=false (CI runs disabled)'
-   'DRY-RUN: personal-test-user/backup-mirror: PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+   'DRY-RUN: personal-test-user/backup-mirror: PERSON: settings (wiki/issues/projects/discussions off, secret-scan on)'
    'DRY-RUN: personal-test-user/backup-mirror: delete Pages site (if any)'
    'DRY-RUN: personal-test-user/backup-mirror: upsert ruleset dm-github-personal-policy default-branch protection'
    'DRY-RUN: personal-test-user/backup-mirror: upsert ruleset dm-github-personal-policy tag protection'

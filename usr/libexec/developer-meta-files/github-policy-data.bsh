@@ -460,23 +460,33 @@ readonly POLICY_ACTIONS_DISABLED_LABEL='actions enabled=false (CI runs disabled)
 ##
 ##                       PERSON  BOT  why
 ##   has_wiki              off   off   we don't use GH wikis
+##   has_issues            off   off   file upstream; the personal
+##                                     account is a backup/mirror
+##                                     and the upstream org repo is
+##                                     where reports belong
 ##   has_projects          off   off   project boards belong upstream
 ##   has_discussions       off   off   discussions belong upstream
-##   has_issues             on   off   PERSON: human can triage incoming
-##                                     BOT:    bot doesn't triage; file
-##                                             upstream
 ##   allow_forking          on    on   GitHub forbids tightening this
 ##                                     on user-owned repos (HTTP 422);
 ##                                     org-level MIRROR policy already
 ##                                     enforces it where it can stick
 ##   secret_scanning        on    on   same on both
 ##   secret_scanning_push_protection  on    on   same on both
+##
+## With these settings PERSON and BOT bodies are identical on the
+## currently-touched fields. The split is kept for future
+## divergence (and so the user_kind dispatcher in
+## dm-github-personal-policy stays uniform with the org-side
+## SOURCE/MIRROR pattern).
 
-## PERSON variant: real maintainer's account. Issues stay on so
-## the maintainer can triage incoming reports filed against the
-## personal mirror. Forks left enabled.
+## PERSON variant: real maintainer's account. Same lockdown as
+## BOT - the personal account is a backup mirror; issues, wikis,
+## project boards, and discussions all belong on the upstream org
+## repo, not on the mirror. Forks left enabled (GitHub HTTP 422s
+## any tightening on user-owned repos).
 readonly POLICY_PERSONAL_REPO_PERSON='{
    has_wiki: false,
+   has_issues: false,
    has_projects: false,
    has_discussions: false,
    security_and_analysis: {
@@ -486,7 +496,7 @@ readonly POLICY_PERSONAL_REPO_PERSON='{
 }'
 readonly POLICY_PERSONAL_REPO_PERSON_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
 readonly POLICY_PERSONAL_REPO_PERSON_METHOD='PATCH'
-readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+readonly POLICY_PERSONAL_REPO_PERSON_LABEL='PERSON: settings (wiki/issues/projects/discussions off, secret-scan on)'
 
 ## BOT variant: AI-assisted-work bot account. Identical lockdown
 ## to a MIRROR org repo - everything that side-tracker-style

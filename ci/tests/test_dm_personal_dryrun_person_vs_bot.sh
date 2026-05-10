@@ -6,9 +6,11 @@
 ## AI-Assisted
 
 ## Mock-API test: dm-github-personal-policy pivots its per-repo
-## PATCH body on user_kind. PERSON_USERS entries get the PERSON body
-## (has_issues stays at GitHub default = true). BOT_USERS entries
-## get the BOT body (has_issues: false). Neither body sets
+## PATCH body on user_kind. PERSON_USERS and BOT_USERS entries
+## both get the lockdown body (has_wiki/has_issues/has_projects/
+## has_discussions all false; secret_scanning + push_protection
+## on). The split is preserved for future divergence. Neither
+## body sets
 ## allow_forking - GitHub's API rejects that field on user-owned
 ## repos with HTTP 422.
 ##
@@ -53,7 +55,7 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 person_required=(
-   'PERSON: settings (wiki/projects/discussions off, secret-scan on)'
+   'PERSON: settings (wiki/issues/projects/discussions off, secret-scan on)'
 )
 person_forbidden=(
    'BOT: settings'
