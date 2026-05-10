@@ -20,7 +20,8 @@
 ## Style-guide deviations, documented for reviewers:
 ##   * R-040 (log not printf): self-contained tool, must run on
 ##     a developer machine that may lack helper-scripts. Same
-##     precedent as ci/install-helper-scripts.sh per R-093.
+##     precedent as .github/actions/install-deps/install-helper-scripts.sh
+##     per R-093.
 ##   * R-090 (has not command -v): same reason; cannot source
 ##     has.sh without bootstrapping the dependency check itself.
 ##

@@ -72,17 +72,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install apt pre-reqs
-        run: ./ci/policy-live-install-apt.sh
-
-      - name: Install genmkfile
-        run: ./ci/install-genmkfile.sh
-
-      - name: Install helper-scripts (provides sanitize-string)
-        run: ./ci/install-helper-scripts.sh
-
-      - name: Install developer-meta-files
-        run: genmkfile install
+      - name: Install genmkfile + helper-scripts + self
+        uses: ./.github/actions/install-deps
+        with:
+          apt-packages: ca-certificates curl jq git sudo build-essential dctrl-tools python3 safe-rm
+          install-self: 'true'
 
       - name: Verify token secret is set
         env:

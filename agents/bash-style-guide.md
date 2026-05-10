@@ -381,9 +381,9 @@ provides a single helper.**
 Don't add an inline `has git || die ...` at the per-feature site
 when the shared pre-flight already covers it.
 
-**R-093: Exception for `ci/install-helper-scripts.sh`.** That
-script runs BEFORE helper-scripts is installed, so it falls back
-to plain `command -v`. The same exception applies to
+**R-093: Exception for `.github/actions/install-deps/install-helper-scripts.sh`.**
+That script runs BEFORE helper-scripts is installed, so it falls
+back to plain `command -v`. The same exception applies to
 `agents/pre-push-static.sh`, which must run as a bare git hook
 without sourcing helper-scripts.
 
