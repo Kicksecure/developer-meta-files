@@ -119,6 +119,13 @@ appetite for the friction trade-off.
   for those features on private Free-org repos. Read-only check;
   no apply mutation.
 
+- **Org Copilot `public_code_suggestions: block`** (currently
+  `allow`). Moot today - 0 seats assigned - but the moment a
+  seat lands, blocking verbatim public-code suggestions reduces
+  the risk of GPL / BSD-licensed snippets being accepted into
+  Kicksecure / Whonix without their attribution. Org-level UI
+  toggle, not in any of our policy scripts.
+
 `sha_pinning_required: true` is intentionally NOT in this list -
 see `agents/github-actions.md` "Org-level `sha_pinning_required`
 is intentionally OFF" for the rationale.
