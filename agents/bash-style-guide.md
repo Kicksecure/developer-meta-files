@@ -84,6 +84,26 @@ Why: shorter, errexit-on-by-default never lapses, `inherit_errexit`-
 safe.
 
 
+**R-012: Arithmetic assignment uses `var=$((expr))`, never
+`(( expr ))`.** Under `errexit`, an arithmetic expression that
+evaluates to zero exits the shell.
+
+Bad:
+
+    (( count += 1 ))            # if count was 0, now (( 1 )) -> ok
+    (( found = 0 ))             # exits the script (rc=1)
+
+Good:
+
+    count=$((count + 1))
+    found=0
+
+Why: `(( expr ))` returns rc=1 when `expr` evaluates to 0 (POSIX
+arithmetic-expression semantics), which `errexit` interprets as a
+command failure. `var=$((expr))` is an assignment - rc is always
+the assignment's rc (0), not the computed value.
+
+
 ## Variables
 
 **R-020: Wrap every variable reference in `${var}` braces.** No
