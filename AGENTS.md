@@ -21,3 +21,4 @@ rather than duplicating.
 | Topic | Where |
 | --- | --- |
 | github-org-* / dm-github-* specifics | [`agents/github-org-tools.md`](agents/github-org-tools.md) |
+| Canonical-vs-mirror policy split (SOURCE / MIRROR / PERSON / BOT diffs) | [`agents/github-policy-canonical-vs-mirror.md`](agents/github-policy-canonical-vs-mirror.md) |

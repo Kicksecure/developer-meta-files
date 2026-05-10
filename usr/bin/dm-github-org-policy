@@ -562,34 +562,27 @@ audit_org_state() {
    fi
 }
 
-## Per-repo settings. Two flavours, applied in order:
+## Per-repo settings. Three flavours, applied in order:
 ##   1. PATCH /repos/{o}/{r} body (POLICY_REPO_SOURCE / _MIRROR)
 ##      - has_wiki/has_issues/has_projects/has_discussions
 ##      - security_and_analysis (secret scanning + push protection)
-##   2. The Free-plan-compatible per-repo replacements for the
-##      paid-only org-level apply path:
+##   2. SOURCE-ONLY: Dependabot + PVR fan-out. The MIRROR org is a
+##      fork of SOURCE; running these on MIRROR would duplicate
+##      every alert that the canonical SOURCE repo already raises
+##      (same anti-duplication logic personal-policy applies to its
+##      personal-mirror). Skipped on MIRROR with a notice line.
 ##      - PUT /repos/{o}/{r}/vulnerability-alerts
-##          (Dependabot alerts; replaces POLICY_CODE_SECURITY's
-##          dependabot_alerts: enabled)
 ##      - PUT /repos/{o}/{r}/automated-security-fixes
-##          (Dependabot security updates; replaces
-##          dependabot_security_updates: enabled)
 ##      - PUT /repos/{o}/{r}/private-vulnerability-reporting
-##          (PVR; the configurations API field equivalent)
-##      - POST/PUT /repos/{o}/{r}/rulesets x2
-##          (branch + tag rulesets; replace the org-level Team+
-##          rulesets that 403 on Free)
+##   3. Per-repo branch + tag rulesets (both kinds; bypass actor
+##      list pivots on org_kind):
+##      - SOURCE -> POLICY_RULESET_BYPASS_SOURCE  ([], no bypass)
+##      - MIRROR -> POLICY_RULESET_BYPASS_MIRROR  ([OrgAdmin])
 ##
-## All five replacement calls are free for public repos and were
-## empirically tested 2026-05 against org-ai-assisted on a Free
-## plan. The chosen body shapes match what the org-level paid path
-## would have applied, so a future plan upgrade can migrate to the
-## org-level configuration without changing what each repo ends up
-## seeing.
-##
-## Bypass actor list for the rulesets pivots on org_kind:
-##   SOURCE -> POLICY_RULESET_BYPASS_SOURCE  ([], no bypass)
-##   MIRROR -> POLICY_RULESET_BYPASS_MIRROR  ([OrgAdmin])
+## Body shapes match what the (currently commented-out) paid org-
+## level configuration / rulesets would have applied, so a future
+## plan upgrade can migrate to the org-level flow without changing
+## what each repo ends up seeing.
 apply_repo_policy() {
    local owner repo kind bypass_var
 
@@ -604,17 +597,25 @@ apply_repo_policy() {
    kind="$(org_kind "${owner}")" || return 1
    policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 
-   ## Free-plan-compatible code-security replacements. policy_apply_repo
-   ## resolves POLICY_<NAME>_ENDPOINT (no _ORG/_REPO suffix) when the
-   ## 4th arg is 'ENDPOINT'.
-   policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
-   policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
-   policy_apply_repo "${owner}" "${repo}" REPO_PVR               ENDPOINT
+   ## Free-plan-compatible code-security replacements. Applied to
+   ## SOURCE only - on MIRROR these would produce duplicate
+   ## notifications for findings already raised against the
+   ## upstream SOURCE repo. policy_apply_repo resolves
+   ## POLICY_<NAME>_ENDPOINT (no _ORG/_REPO suffix) when the 4th
+   ## arg is 'ENDPOINT'.
+   if [ "${kind}" = 'source' ]; then
+      policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
+      policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
+      policy_apply_repo "${owner}" "${repo}" REPO_PVR               ENDPOINT
+   else
+      log notice "skip: ${owner}/${repo}: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications"
+   fi
 
    ## Free-plan-compatible per-repo branch + tag rulesets. Same
    ## three rules (deletion, non_fast_forward, required_signatures)
    ## as the (commented-out) org-level rulesets, just scoped to the
-   ## one repo.
+   ## one repo. Applied on both SOURCE and MIRROR; only the bypass
+   ## actor list differs.
    bypass_var="POLICY_RULESET_BYPASS_${kind^^}"
    policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_BRANCH}" \
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo "${!bypass_var}")" \

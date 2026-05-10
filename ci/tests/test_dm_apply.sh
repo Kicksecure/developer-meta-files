@@ -83,19 +83,32 @@ required=(
    'ok: org-ai-assisted/helper-scripts: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
    'ok: org-ai-assisted/some-fork: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
 
-   ## Free-plan-compatible per-repo code-security replacements
-   ## applied alongside the MIRROR PATCH. Asserted on one repo
-   ## (the fan-out is symmetric across all three).
-   'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
-   'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
-   'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+   ## Dependabot/PVR are SOURCE-only. org-ai-assisted is MIRROR;
+   ## those calls are skipped here with a single notice line.
+   ## Asserted on one repo (the skip is symmetric across all three).
+   'skip: org-ai-assisted/derivative-maker: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications'
 
-   ## Free-plan-compatible per-repo branch + tag rulesets. The
-   ## fixture's GET /rulesets returns [] so the upsert path falls
-   ## through to a POST 'create ruleset' for each.
+   ## Free-plan-compatible per-repo branch + tag rulesets. Applied
+   ## on both SOURCE and MIRROR (only the bypass actor list
+   ## differs). The fixture's GET /rulesets returns [] so the
+   ## upsert path falls through to a POST 'create ruleset' for each.
    "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy default-branch protection'"
    "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy tag protection'"
 )
+
+## MIRROR must NOT see Dependabot/PVR ok lines (those are
+## SOURCE-only per apply_repo_policy).
+mirror_dep_pvr_forbidden=(
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
+   'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
+   'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+)
+for needle in "${mirror_dep_pvr_forbidden[@]}"; do
+   if grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
+      printf '%s\n' "FAIL: SOURCE-only line leaked to MIRROR: ${needle}" >&2
+      fail=1
+   fi
+done
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
       printf '%s\n' "FAIL: missing expected fragment: ${needle}" >&2

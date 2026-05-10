@@ -64,17 +64,27 @@ required=(
    'skip: org-ai-assisted: PAT policy toggles must be set via UI'
    'skip: org-ai-assisted: GitHub App / OAuth App policies must be set via UI'
 
-   ## Free-plan-compatible per-repo code-security replacements +
-   ## per-repo branch / tag rulesets. The MIRROR PATCH already
-   ## carried 'security_and_analysis' in this PR; the four lines
-   ## below are the additional Dependabot/PVR PUTs and the ruleset
-   ## upserts.
-   'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot alerts'
-   'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot security updates'
-   'DRY-RUN: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+   ## Per-repo branch + tag rulesets (applied on both SOURCE and
+   ## MIRROR). Dependabot/PVR are SOURCE-only and should NOT
+   ## appear in DRY-RUN output for org-ai-assisted (MIRROR); the
+   ## skip line below stands in for them.
+   'skip: org-ai-assisted/derivative-maker: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy default-branch protection'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy tag protection'
 )
+
+## MIRROR must NOT see Dependabot/PVR DRY-RUN lines.
+mirror_dep_pvr_forbidden=(
+   'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot alerts'
+   'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot security updates'
+   'DRY-RUN: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
+)
+for needle in "${mirror_dep_pvr_forbidden[@]}"; do
+   if grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
+      printf '%s\n' "FAIL: SOURCE-only line leaked to MIRROR: ${needle}" >&2
+      fail=1
+   fi
+done
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
       printf '%s\n' "FAIL: missing expected fragment: ${needle}" >&2
