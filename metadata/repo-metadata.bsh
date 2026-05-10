@@ -45,6 +45,14 @@
 ##
 ## A repo not present in this file is left untouched by the apply tool.
 ## Add entries incrementally; the apply tool dry-runs first.
+##
+## Future use: GitHub custom properties (org-level schema +
+## per-repo values, see PUT /orgs/{org}/properties/schema and
+## PATCH /repos/{owner}/{repo}/properties/values) could publish
+## REPO_HOME (and any future fields added here) to GitHub itself
+## as a queryable repo tag. Useful for ruleset filters and the
+## org repo-list UI. Not implemented today; the apply tool only
+## writes description / homepage / topics.
 
 declare -gA REPO_HOME REPO_DESCRIPTION REPO_WEBSITE REPO_TOPICS
 

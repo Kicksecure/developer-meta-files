@@ -35,9 +35,10 @@ canonical SOURCE repo already raises. Empirically tested on Free
 
 Notes:
 
-- Dependabot/PVR off on MIRROR/PERSON/BOT for the same reason: split
-  inbox / duplicate notifications. The `apply_repo_policy` function
-  in `dm-github-org-policy` gates the three PUTs on
+- Dependabot / PVR (Private Vulnerability Reporting) off on
+  MIRROR/PERSON/BOT for the same reason: split inbox / duplicate
+  notifications. The `apply_repo_policy` function in
+  `dm-github-org-policy` gates the three PUTs on
   `kind == 'source'` and prints a single skip line on MIRROR.
   `dm-github-personal-policy` keeps step 8 commented out for the
   same reason (with the canonical-home-uncomment note).
@@ -54,7 +55,7 @@ Notes:
 | Project boards / discussions / wikis | (default on, unset) | off |
 | Ruleset bypass | `[]` (no bypass) | `[OrgAdmin]` on MIRROR; `[]` on PERSON/BOT |
 | CI / Actions | enabled, allow-list = github-owned + verified-creators | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on (it is where AI-assisted dev runs) |
-| Dependabot alerts + security updates + PVR | on | off (would duplicate upstream alerts) |
+| Dependabot alerts + security updates + PVR (Private Vulnerability Reporting) | on | off (would duplicate upstream alerts) |
 | GitHub Pages site | not touched | `DELETE /pages` on PERSON/BOT (mirror should not host Pages) |
 
 Net deliberate diffs after this split:
@@ -66,7 +67,8 @@ Net deliberate diffs after this split:
 3. CI disabled entirely on PERSON/BOT (no workflows run on the
    personal mirrors); SOURCE/MIRROR run CI under the same selected-
    actions allow-list.
-4. Dependabot + PVR enabled only on SOURCE.
+4. Dependabot + PVR (Private Vulnerability Reporting) enabled
+   only on SOURCE.
 5. GitHub Pages cleanup (DELETE) only on PERSON/BOT.
 
 Everything else (fork-PR approval policy, workflow GITHUB_TOKEN
