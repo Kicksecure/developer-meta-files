@@ -84,33 +84,53 @@ add_repo  .github                                      d  \
    "linux debian"
 
 add_repo  age-api                                      k  \
-   "API for downloading age-encrypted release artifacts for Kicksecure."  \
+   "Local age bracket storage and query helper for age signaling use cases."  \
    "https://www.kicksecure.com/wiki/Age-api"  \
    "linux debian kicksecure"
 
 add_repo  anon-apps-config                             w  \
-   "Per-application configuration overrides for anonymity-friendly app defaults on Whonix."  \
-   ""  \
+   "Anonymity, privacy, and security configuration defaults for applications in Whonix."  \
+   "https://www.whonix.org/wiki/Features"  \
    "anonymity privacy linux whonix"
 
 add_repo  anon-apt-sources-list                        k  \
-   "/etc/apt/sources.list.d/debian.list for security-focused Linux distributions"  \
-   ""  \
+   "Debian APT sources configuration for security-focused Linux distributions."  \
+   "https://www.kicksecure.com/wiki/Install_Software#Default_APT_Sources"  \
    "anonymity privacy linux kicksecure"
 
 add_repo  anon-connection-wizard                       k  \
-   "Tor connection setup wizard for Whonix - choose direct, bridges, or proxy at first run."  \
-   ""  \
+   "Tor connection setup wizard - configures direct Tor, bridges, or proxy before Tor."  \
+   "https://www.whonix.org/wiki/Anon_Connection_Wizard"  \
    "anonymity privacy linux kicksecure"
 
 add_repo  anon-gw-anonymizer-config                    w  \
    "Tor configuration shipped on the Whonix Gateway."  \
-   ""  \
+   "https://www.whonix.org/wiki/Whonix-Gateway"  \
    "anonymity privacy linux whonix"
 
 add_repo  anon-gw-base-files                           w  \
    "Base files installed on the Whonix Gateway."  \
-   ""  \
+   "https://www.whonix.org/wiki/Whonix-Gateway"  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-meta-packages                           w  \
+   "Whonix meta-packages bundling package dependencies for Workstation and Gateway variants."  \
+   "https://www.whonix.org/wiki/Debian_Packages"  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-shared-build-apt-sources-tpo            k  \
+   "Adds The Tor Project APT repository and signing key during derivative builds."  \
+   "https://www.kicksecure.com/wiki/Tor_Versioning"  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-ws-base-files                           w  \
+   "Base files installed on the Whonix Workstation."  \
+   "https://www.whonix.org/wiki/Whonix-Workstation"  \
+   "anonymity privacy linux whonix"
+
+add_repo  anon-ws-disable-stacked-tor                  w  \
+   "Prevents stacked Tor on the Whonix Workstation - enforces the Workstation through Gateway design."  \
+   "https://www.whonix.org/wiki/Dev/anon-ws-disable-stacked-tor"  \
    "anonymity privacy linux whonix"
 
 add_repo  anon-meta-packages                           w  \
