@@ -118,6 +118,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Prepare apt cache directory
+        run: |
+          sudo mkdir -p /var/cache/apt/archives
+          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+
+      - name: Cache apt packages
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles('.github/workflows/reusable-cppcheck.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-cppcheck-
+
       - name: Install cppcheck
         run: |
           sudo --non-interactive apt-get update --error-on=any

@@ -1,49 +1,64 @@
----
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 ## AI-Assisted
 
-## Reusable workflow: OpenAI Codex code review on pull requests,
-## with a workflow_dispatch override path for fork PRs.
+## Reusable workflow: OpenAI Codex code review.
 ##
-## ## Trust footprint
+## ## Status: DISABLED (org-wide kill-switch)
+##
+## The Codex review workflow path is currently disabled via the
+## job-level 'if: false' kill-switch in the active 'review:' job
+## below. Every consumer wrapper calls this reusable via '@master',
+## so flipping the switch here propagates to every caller
+## immediately - no consumer wrapper edits needed to disable, and
+## no edits needed to re-enable.
+##
+## ## Re-enabling
+##
+## The full implementation (PR / comment / workflow_dispatch
+## triggers, fork-PR safety, PR-head resolve, openai/codex-action
+## invocation) is preserved as commented YAML at the bottom of
+## this file under '## ARCHIVED IMPLEMENTATION ##'. Inputs schema,
+## permissions, and concurrency block above stay identical between
+## disabled and enabled states; only the 'review:' job body needs
+## to swap.
+##
+## To re-enable:
+##   1. Delete the active 'review:' job below (the one with
+##      'if: false').
+##   2. Uncomment the archived 'review:' block at the bottom
+##      (remove the leading '## ' on each line of the block
+##      between the BEGIN/END markers).
+##   3. Update the file 'name:' from "DISABLED" to drop the suffix.
+##   4. Update this header doc status accordingly.
+##
+## ## What this does NOT disable
+##
+## - OpenAI's hosted Codex Cloud GitHub App
+##   (chatgpt-codex-connector[bot]) which listens natively for
+##   '@codex review' comments and PR-open events. That App is
+##   configured at https://chatgpt.com/codex/cloud/settings/general
+##   and is independent of this workflow.
+## - The OPENAI_API_KEY org secret. Leave it in place - it is
+##   simply unreferenced while this stub is in effect.
+##
+## ## Trust footprint (when enabled)
 ##
 ## openai/codex-action - SHA-pinned, calls the OpenAI API with the
 ## caller's OPENAI_API_KEY. Posts review comments via the runner's
 ## GITHUB_TOKEN scoped to the permissions block on the calling job.
 ##
-## ## Fork-PR safety
-##
-## On 'pull_request' events the job hard-skips fork PRs so
-## attacker-controlled prompts/code cannot burn the paid OPENAI_API_KEY.
-## To review a fork PR after maintainer triage, the caller's wrapper
-## exposes a 'workflow_dispatch' trigger with a 'pr_ref' input and
-## forwards it via inputs.pr-ref here; on workflow_dispatch the
-## fork-PR skip is bypassed (workflow_dispatch is implicitly
-## maintainer-authorized).
-##
-## ## Caller responsibilities
-##
-## - Define triggers (pull_request, optionally workflow_dispatch
-##   with a 'pr_ref' input). Schedule cannot live in a reusable
-##   workflow per G-A-002.
-## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
-## - Forward secrets via 'secrets: inherit' on the calling job.
-##   The reusable reads 'secrets.OPENAI_API_KEY' directly from the
-##   caller's secret namespace; the org sets this secret at org
-##   level so every consumer wrapper picks it up.
-## - Grant the job-level permissions block listed in the caller
-##   example below.
-##
-## ## Inputs
+## ## Inputs (preserved for caller compatibility)
 ##
 ## - allow-bot-users   (optional)  Comma-separated bot usernames
 ##                                 to bypass the action's actor-
-##                                 write-access gate. Strictly
-##                                 narrower than granting write.
-##                                 Default: the org's canonical bot
-##                                 list (set inline below).
+##                                 write-access gate. Doubles as
+##                                 the @codex-review comment-
+##                                 trigger roster (humans in this
+##                                 list are also allowed to invoke
+##                                 via comment).
+##                                 Default: org canonical bot list.
 ## - pr-ref            (optional)  Ref to checkout (workflow_dispatch
 ##                                 fork-PR review path). Use
 ##                                 'refs/pull/<N>/merge' (most
@@ -59,51 +74,14 @@
 ##                                 review prompt.
 ## - timeout-minutes   (optional)  Job timeout. Default 30.
 ##
-## ## Secrets
-##
-## Read from the caller's secret namespace via 'secrets: inherit':
-##
-## - OPENAI_API_KEY  (required)  OpenAI API key. Set at org level;
-##                               every consumer in the org gets it
-##                               for free.
-##
-## ## Caller example
-##
-##   name: OpenAI Codex Review
-##   on:
-##     pull_request:
-##     workflow_dispatch:
-##       inputs:
-##         pr_ref:
-##           description: "refs/pull/<N>/merge or refs/pull/<N>/head"
-##           required: true
-##           type: string
-##   permissions:
-##     contents: read
-##   jobs:
-##     review:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codex-review.yml@master
-##       with:
-##         pr-ref: ${{ inputs.pr_ref || '' }}
-##       secrets: inherit
-##       permissions:
-##         contents: read
-##         pull-requests: write
+## Defaults are kept at their enabled-state values so that a
+## re-enable does not silently change behavior.
 
-name: OpenAI Codex Review (reusable)
+name: OpenAI Codex Review (reusable, DISABLED)
 
 on:
   workflow_call:
     inputs:
-      ## Org-canonical reviewer roster. Same list as the Claude
-      ## review reusable's 'allowed-users' default - one canonical
-      ## allow-list across all org AI review workflows. Update here
-      ## when the roster changes.
-      ##
-      ## Semantically the codex-action treats this as a "bot
-      ## bypass" list (humans are normally gated by GitHub-side
-      ## actor-write-access). Including humans is a no-op for them
-      ## and keeps the list shape uniform.
       allow-bot-users:
         required: false
         type: string
@@ -124,58 +102,141 @@ on:
         required: false
         type: number
         default: 30
-    ## Secrets schema intentionally not declared. Callers pass
-    ## 'secrets: inherit' and the action below reads
-    ## 'secrets.OPENAI_API_KEY' from the caller's namespace
-    ## directly. Same rationale as claude-code-review.yml.
+    ## When re-enabling, consider tightening to an explicit
+    ## 'secrets:' schema declaration mirroring the Claude reusable's
+    ## hardening (force callers to pass OPENAI_API_KEY explicitly
+    ## rather than via 'secrets: inherit'). Currently kept loose
+    ## since the active stub does not read any secrets.
 
 permissions:
   contents: read
 
-## Concurrency key includes inputs.pr-ref so manual reviews of
-## different fork PRs (workflow_dispatch with different pr_ref
-## values) get distinct groups and don't cancel each other. On
-## pull_request, inputs.pr-ref is empty and we fall through to
-## github.ref (the PR's head ref).
+## Concurrency key includes the PR/issue number so different PRs
+## don't share a group on issue_comment events (which run on the
+## default branch ref, not the PR head ref). Kept identical to the
+## archived implementation so a future re-enable does not change
+## concurrency semantics mid-flight.
 concurrency:
-  group: ${{ github.workflow }}-${{ inputs.pr-ref || github.ref }}
+  group: ${{ github.workflow }}-${{ inputs.pr-ref || github.event.pull_request.number || github.event.issue.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  ## ACTIVE: kill-switch stub. Every consumer wrapper calls this
+  ## reusable via '@master', so this single 'if: false' disables
+  ## Codex review across every caller in the org. The job is
+  ## skipped (no runner allocated, zero CI minutes); the
+  ## corresponding check appears as 'skipped' in the consumer's
+  ## PR check list.
   review:
-    name: OpenAI Codex Review
+    name: OpenAI Codex Review (disabled)
+    if: false
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.timeout-minutes }}
-
-    ## Skip on PRs from forks - the action consumes
-    ## secrets.OPENAI_API_KEY and would otherwise burn paid OpenAI
-    ## calls on attacker-controlled prompts/code. Maintainer can
-    ## re-trigger via workflow_dispatch (caller wrapper exposes the
-    ## input) if a fork PR genuinely needs review. workflow_dispatch
-    ## is implicitly maintainer-authorized so it short-circuits
-    ## through.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          ## On workflow_dispatch (manual fork-PR review), check
-          ## out the ref the maintainer named in inputs.pr-ref. On
-          ## pull_request, leave ref unset (default: github.ref /
-          ## the PR's head sha).
-          ref: ${{ inputs.pr-ref }}
-          persist-credentials: false
-          fetch-depth: 0
+      - run: ":"
 
-      - name: Run Codex Review
-        uses: openai/codex-action@e0fdf01220eb9a88167c4898839d273e3f2609d1  # main @ 2026-05-06 (no stable tag yet)
-        with:
-          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          allow-bot-users: ${{ inputs.allow-bot-users }}
-          sandbox: ${{ inputs.sandbox }}
-          prompt: ${{ inputs.prompt }}
+## ## ARCHIVED IMPLEMENTATION ##
+##
+## Below is the full Codex review job body, preserved for revival.
+## To re-enable, delete the active 'review:' job above and
+## uncomment the block between the BEGIN/END markers (remove the
+## leading '## ' on each line).
+##
+## Notes for revival:
+## - When re-enabled, both this workflow path AND the OpenAI Codex
+##   Cloud App will respond to '@codex review' comments. Intentional;
+##   mirrors the Claude reusable + Anthropic-side App parallel.
+## - The openai/codex-action SHA below was current as of 2026-05-06.
+##   Re-pin to a more recent SHA at revival time and verify the
+##   action's input surface has not drifted (allow-bot-users,
+##   sandbox, prompt names).
+## - The fork-PR skip in both the job-level 'if:' and the
+##   'Resolve PR head' step are deliberate - they prevent attacker-
+##   controlled prompts/code on fork PRs from burning the paid
+##   OPENAI_API_KEY. Maintainers can still review fork PRs via the
+##   workflow_dispatch path with a 'pr_ref' input.
+##
+## ----- BEGIN ARCHIVED 'review:' JOB -----
+##
+##  review:
+##    name: OpenAI Codex Review
+##    runs-on: ubuntu-latest
+##    timeout-minutes: ${{ inputs.timeout-minutes }}
+##
+##    ## Trigger surface:
+##    ##   workflow_dispatch  - always allowed (maintainer-authorized).
+##    ##   pull_request       - only same-repo PRs (fork skip; fork
+##    ##                        review goes via workflow_dispatch).
+##    ##   issue_comment / pull_request_review_comment - only when
+##    ##                        the comment body contains '@codex
+##    ##                        review' AND the actor is in the
+##    ##                        roster (allow-bot-users). The
+##    ##                        comment-triggered run also fork-skips
+##    ##                        in the resolve step below.
+##    if: |
+##      github.event_name == 'workflow_dispatch' ||
+##      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+##      (
+##        contains(format(',{0},', inputs.allow-bot-users), format(',{0},', github.actor)) &&
+##        (
+##          (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@codex review')) ||
+##          (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@codex review'))
+##        )
+##      )
+##
+##    permissions:
+##      contents: read
+##      pull-requests: write
+##
+##    steps:
+##      ## Comment-triggered path: resolve the PR head SHA via the
+##      ## REST API (github.ref on issue_comment is the default
+##      ## branch, not the PR head). Hard-fail on fork PRs - same
+##      ## security stance as the pull_request fork skip in the
+##      ## job-level if: above.
+##      - name: Resolve PR head (comment-triggered)
+##        id: resolve_pr
+##        if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
+##        env:
+##          GH_TOKEN: ${{ github.token }}
+##        run: |
+##          case "${{ github.event_name }}" in
+##            issue_comment)
+##              pr_url="${{ github.event.issue.pull_request.url }}"
+##              ;;
+##            pull_request_review_comment)
+##              pr_url="${{ github.event.pull_request.url }}"
+##              ;;
+##          esac
+##          if [ -z "$pr_url" ]; then
+##            echo "::error::Could not resolve PR URL from ${{ github.event_name }} event"
+##            exit 1
+##          fi
+##          json="$(gh api "$pr_url")"
+##          head_repo="$(jq -r '.head.repo.full_name' <<<"$json")"
+##          head_sha="$(jq -r '.head.sha' <<<"$json")"
+##          if [ "$head_repo" != "${{ github.repository }}" ]; then
+##            echo "::error::PR is from fork '$head_repo'. Use workflow_dispatch with pr_ref to review fork PRs."
+##            exit 1
+##          fi
+##          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+##
+##      - name: Checkout repository
+##        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+##        with:
+##          ## Three checkout cases:
+##          ##   comment-triggered  -> resolved PR head SHA
+##          ##   workflow_dispatch  -> caller-supplied pr-ref
+##          ##   pull_request       -> default github.ref (PR head)
+##          ref: ${{ steps.resolve_pr.outputs.head_sha || inputs.pr-ref }}
+##          persist-credentials: false
+##          fetch-depth: 0
+##
+##      - name: Run Codex Review
+##        uses: openai/codex-action@e0fdf01220eb9a88167c4898839d273e3f2609d1  # main @ 2026-05-06 (no stable tag yet)
+##        with:
+##          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+##          allow-bot-users: ${{ inputs.allow-bot-users }}
+##          sandbox: ${{ inputs.sandbox }}
+##          prompt: ${{ inputs.prompt }}
+##
+## ----- END ARCHIVED 'review:' JOB -----
