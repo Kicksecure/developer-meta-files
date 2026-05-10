@@ -5,8 +5,8 @@
 
 ## AI-Assisted
 
-## Fork every selected repository from a source GitHub user/org into a
-## target user/org. Idempotent. Optional flags re-apply per-repo
+## Fork every selected repository from a source GitHub user/org into
+## a target user/org. Idempotent. Optional flags re-apply per-repo
 ## settings on the target side. Run `github-org-fork --help` for full
 ## usage.
 
@@ -19,9 +19,7 @@ shopt -s shift_verbose
 
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-## R-082: source every helper-scripts file used directly. The lib
-## happens to source these too (transitively) but a future refactor
-## that drops a transitive source must not break this consumer.
+## R-082: source every helper-scripts file used directly.
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
@@ -31,10 +29,9 @@ include_private=0
 include_archived=0
 include_forks=0
 ## --include / --exclude can each be passed multiple times; OR-combine
-## the patterns so a wrapper-supplied filter (e.g. dm-github-fork-sync's
-## per-source SOURCE_EXCLUDE_RE) is not silently overridden by a
-## user-supplied --exclude on the same command line. Stored as arrays
-## during parsing; OR-combined into a single regex below.
+## so a wrapper-supplied filter (e.g. dm-github-fork-sync's per-source
+## SOURCE_EXCLUDE_RE) is not silently overridden by a user-supplied
+## --exclude on the same command line.
 include_re_list=()
 exclude_re_list=()
 include_re=''
@@ -206,19 +203,17 @@ target_owner="$2"
 [ "${mode_set}" -eq 1 ] \
    || { show_help >&2; die 64 'specify exactly one of --apply / --dry-run'; }
 
-## OR-combine multi-flag --include / --exclude lists into single
-## regexes (extended) consumed by ghorg_filter_names below. Each
-## individual pattern wrapped in (...) so alternation between user-
-## supplied and wrapper-supplied filters cannot be unbalanced by
-## bare '|' inside one of them.
+## Each pattern wrapped in (...) so alternation between user-supplied
+## and wrapper-supplied filters cannot be unbalanced by bare '|'
+## inside one of them.
 combine_alt() {
   check_variable_name "$1" || return 1
   local -n list_ref="$1"
   local item out=''
   for item in "${list_ref[@]}"; do
-    ## Empty pattern is treated as "no filter at this slot". A wrapper
-    ## that forwards an optional regex with --exclude "${EXCLUDE_RE:-}"
-    ## should not silently match every repo via 'grep -v -E ()'.
+    ## Empty pattern = no filter at this slot. A wrapper forwarding
+    ## an optional regex with --exclude "${EXCLUDE_RE:-}" should not
+    ## silently match every repo via 'grep -v -E ()'.
     [ -z "${item}" ] && continue
     if [ -z "${out}" ]; then
       out="(${item})"
@@ -237,12 +232,11 @@ ghorg_validate_name "${source_owner}" user
 ghorg_validate_name "${target_owner}" user
 
 ## POST /repos/{owner}/{repo}/forks. The `organization` body field
-## applies only when the target is an Organization; for a User it must
-## be omitted, and GitHub then forks to the *authenticated* user
-## regardless of `target_owner`. Because there is no API parameter to
-## name a different user, we explicitly verify the auth user equals
-## target_owner up front and refuse otherwise - the alternative is
-## creating forks in the wrong account while logs claim otherwise.
+## applies only when the target is an Organization; for a User it
+## must be omitted, and GitHub then forks to the *authenticated* user
+## regardless of `target_owner`. There is no API parameter to name a
+## different user - verify auth user equals target_owner up front and
+## refuse otherwise.
 fork_one() {
   local repo target_type body auth_user result status
 
@@ -280,12 +274,10 @@ fork_one() {
   esac
 }
 
-## Detects cross-source name collisions. When a target repo with the
-## given name already exists, look up its parent.full_name; if the
-## parent isn't the source we're processing, the operator has two
-## different upstream repos collapsed onto one mirror name. We warn
-## but don't fail - the operator sees the collision and decides what
-## to do (rename, archive, or accept).
+## When a target repo with the given name already exists, look up its
+## parent.full_name; if the parent isn't the source we're processing,
+## the operator has two different upstream repos collapsed onto one
+## mirror name. Warn but don't fail.
 check_collision() {
   local repo parent expected
 
@@ -299,15 +291,14 @@ check_collision() {
   fi
 }
 
-## Apply the optional --disable-* / --actions / --workflow-perms flags
-## to a single target repo. Idempotent and skipped entirely when no
-## flags were passed.
+## Apply optional --disable-* / --actions / --workflow-perms flags to
+## a single target repo. Idempotent and skipped when no flags were
+## passed.
 configure_one() {
   local repo patch enabled body result status
 
   repo="$1"
 
-  ## Repo settings PATCH only sent if at least one toggle was requested.
   if [ "${disable_issues}${disable_wiki}${disable_projects}" != '000' ]; then
     patch='{}'
     [ "${disable_issues}"   = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
@@ -360,17 +351,15 @@ configure_one() {
 }
 
 ## Fast-forward target_owner/repo's default branch from upstream via
-## POST /repos/{owner}/{repo}/merge-upstream. The merge-upstream
-## endpoint:
+## POST /repos/{owner}/{repo}/merge-upstream:
 ##   200 - synced (or already up-to-date); .merge_type tells the form.
-##   409 - upstream and fork have diverged in a way merge-upstream
-##         cannot fast-forward (someone pushed to the mirror directly).
+##   409 - upstream and fork diverged in a way merge-upstream cannot
+##         fast-forward (someone pushed to the mirror directly).
 ##   422 - default branch missing on either side.
-## We accept 200 and downgrade 409/422 to warn so a single repo's
-## divergence does not abort the run.
+## 409/422 are warn so a single repo's divergence does not abort.
 ##
-## Default branch is looked up via /repos/{owner}/{repo}.default_branch.
-## Most are 'master', some are 'main' or other names; do not hard-code.
+## Default branch via /repos/{owner}/{repo}.default_branch. Most are
+## 'master', some 'main' or other; do not hard-code.
 sync_one() {
   local repo result status info default_branch body
   local merge_type merged_commits
@@ -382,7 +371,6 @@ sync_one() {
     return 0
   fi
 
-  ## Need the default branch name. Fetch the repo metadata once.
   info="$(ghorg_api GET "/repos/${target_owner}/${repo}")" || return 1
   status="$(ghorg_status_of "${info}")"
   if [ "${status}" != '200' ]; then
@@ -394,23 +382,19 @@ sync_one() {
     log warn "sync-branches: '${target_owner}/${repo}' has no default branch"
     return 0
   fi
-  ## Default branch is API-derived; passes into the request body
-  ## (jq escapes safely) and into display via log() (which sanitizes
-  ## internally). The remaining validation here is defense-in-depth.
+  ## Default branch is API-derived; passes into the request body (jq
+  ## escapes safely) and into log() (which sanitizes internally).
   ##
   ## Use git's own ref-name validator instead of an inline allowlist.
-  ## Branch names can legitimately contain characters beyond a simple
-  ## class (e.g. '+'), and any homegrown regex tends to false-positive
-  ## on edge cases.
+  ## Branch names can legitimately contain '+' etc.
   ##
-  ## 'git check-ref-format' does not support '--' as an end-of-options
-  ## separator on any of its forms (verified against git 2.43); both
+  ## 'git check-ref-format' does not support '--' as end-of-options on
+  ## any of its forms (verified against git 2.43); both
   ## '--branch -- <X>' and '-- <refname>' return usage error 129 even
   ## for valid names. Validate as a full refname instead, prefixing
-  ## 'refs/heads/' ourselves. The prefix ensures the resulting argv
-  ## element never starts with '-', so the missing '--' end-of-options
-  ## doesn't create a shell-level arg-injection path from a hostile
-  ## API response.
+  ## 'refs/heads/' ourselves - the prefix ensures the resulting argv
+  ## element never starts with '-', closing a shell-level arg-injection
+  ## path from a hostile API response.
   if ! git check-ref-format "refs/heads/${default_branch}" >/dev/null 2>&1; then
     log warn "sync-branches: '${target_owner}/${repo}' default branch invalid: '${default_branch}'"
     return 0
@@ -440,7 +424,7 @@ sync_one() {
 }
 
 ## Populates the associative array named in $1 with one key per
-## newline-separated repo name in $2. Empty lines skipped.
+## newline-separated repo name in $2.
 fork_main_build_repo_set() {
   local set_name list_text repo_name
 
@@ -461,9 +445,9 @@ main() {
 
   log notice "source: ${source_owner} -> target: ${target_owner}"
 
-  ## If the target is a User, GitHub will fork to the authenticated
-  ## user regardless of target_owner. Verify equivalence up front and
-  ## abort the whole run rather than discovering this per repo.
+  ## If the target is a User, GitHub forks to the authenticated user
+  ## regardless of target_owner. Verify equivalence up front rather
+  ## than discovering this per repo.
   target_type="$(ghorg_account_type "${target_owner}")"
   if [ "${target_type}" = 'User' ]; then
     auth_user="$(ghorg_authenticated_user)"
@@ -484,7 +468,6 @@ main() {
     return 0
   fi
 
-  ## Set difference: source repos absent from target.
   ## ${target_set[$key]:-} is required because nounset triggers on an
   ## associative-array subscript with an unset key.
   fork_main_build_repo_set target_set "${target_repos}"
@@ -501,14 +484,11 @@ main() {
     done
   fi
 
-  ## Re-list target after potential new forks (GitHub fork creation is
-  ## async; brand-new forks may not appear yet, but configure_one is
-  ## idempotent on the next run).
+  ## GitHub fork creation is async; brand-new forks may not appear
+  ## yet, but configure_one is idempotent on the next run.
   target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
     | sort --unique)"
 
-  ## Set intersection: source repos that exist on target. Configures
-  ## only matching repos; leaves unrelated target-side repos alone.
   target_set=()
   fork_main_build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
@@ -517,13 +497,11 @@ main() {
   done <<< "${source_repos}"
 
   ## Best-effort: a single repo's check_collision or configure_one
-  ## failing must not abort the whole run. Common transient cause is
-  ## that GitHub fork creation is async; right after POST /forks
-  ## returns 202 the fork's Actions subsystem may not yet accept
-  ## PUT /repos/{owner}/{repo}/actions/permissions and that returns
-  ## 404/403. Without '|| true' here, errexit would skip every
-  ## subsequent repo and any further source orgs the caller queues.
-  ## A second run picks the failures up idempotently.
+  ## failing must not abort the whole run. Common transient cause:
+  ## right after POST /forks returns 202, the fork's Actions subsystem
+  ## may not yet accept PUT /actions/permissions and returns 404/403.
+  ## Without '|| true', errexit would skip every subsequent repo. A
+  ## second run picks failures up idempotently.
   if [ "${#to_configure[@]}" -gt 0 ]; then
     for repo_name in "${to_configure[@]}"; do
       check_collision "${repo_name}" || true
@@ -531,10 +509,9 @@ main() {
     done
   fi
 
-  ## Branch sync (--sync-branches). Same best-effort guarantee.
-  ## sync_one calls 'git check-ref-format' to validate API-derived
-  ## default branch names; check git up-front so a missing binary
-  ## fails loudly instead of silently rejecting every repo.
+  ## sync_one calls 'git check-ref-format'; check git up-front so a
+  ## missing binary fails loudly instead of silently rejecting every
+  ## repo.
   if [ "${sync_branches}" = '1' ] && [ "${#to_configure[@]}" -gt 0 ]; then
     die_if_not_has git
     for repo_name in "${to_configure[@]}"; do

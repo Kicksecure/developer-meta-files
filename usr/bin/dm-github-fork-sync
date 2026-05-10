@@ -22,31 +22,21 @@ shopt -s shift_verbose
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-## Sourced for its LOG_MAX_LEN default (the helper-scripts log()
-## reads it to truncate every log line through sanitize-string). The
-## lib also pulls in helper-scripts files above; per R-082 those
-## are sourced directly in addition.
+## Sourced for its LOG_MAX_LEN default.
 # shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
-## Mirror destination: the GitHub org that holds forks of every
-## source-org repo. Production target.
 readonly MIRROR='org-ai-assisted'
 
-## Source orgs to mirror from. Production list:
 readonly SOURCE_ORGS=( 'Kicksecure' 'Whonix' )
 
 ## --include-forks: Kicksecure has ~13 repos that are forks of
-## upstream projects (grml-debootstrap, tirdad, etc.). github-org-fork
-## defaults to skipping forks; add the flag here so the org-ai-assisted
-## mirror covers the full Kicksecure surface, not just non-forks.
+## upstream projects. github-org-fork defaults to skipping forks; the
+## flag here makes the mirror cover the full Kicksecure surface.
 ##
-## --sync-branches: keep mirror default branches fast-forwarded from
-## upstream every run. Without this, dm-github-fork-sync only creates
-## new forks and reconfigures existing ones - it does NOT advance
-## branch tips when upstream commits land. Re-running this script
-## periodically (cron, or before each release-build) keeps the mirror
-## current.
+## --sync-branches: without this, fork-sync only creates new forks
+## and reconfigures existing ones - it does NOT advance branch tips
+## when upstream commits land.
 readonly POLICY_FLAGS=(
    --include-forks
    --sync-branches
@@ -57,14 +47,11 @@ readonly POLICY_FLAGS=(
    --workflow-perms read
 )
 
-## Per-source exclusions.
-##
-## Whonix and Kicksecure both have '.github' (org-meta repo) and
-## 'canary' (warrant canary). Forking both lands the second-arriving
-## source on a target name already taken by the first - GitHub
-## returns HTTP 422 'name already exists' on the second fork. We
-## process Kicksecure first (Kicksecure wins those two names), then
-## skip the same names on the Whonix iteration.
+## Whonix and Kicksecure both have '.github' and 'canary'. Forking
+## both lands the second-arriving source on a name already taken by
+## the first - GitHub returns HTTP 422 'name already exists' on the
+## second fork. Kicksecure first wins those two names; skip them on
+## the Whonix iteration.
 declare -g -A SOURCE_EXCLUDE_RE=(
    ['Whonix']='^(\.github|canary)$'
 )
@@ -85,8 +72,7 @@ Usage (one mode flag is required - no implicit default):
   dm-github-fork-sync --dry-run   ## report planned actions only
   dm-github-fork-sync --help
 
-All extra flags are forwarded to github-org-fork, so --dry-run, -v,
---include / --exclude REGEX, etc. all work.
+All extra flags are forwarded to github-org-fork.
 
 Auth: ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
 The token must have admin access to the org-ai-assisted org so that
@@ -94,13 +80,9 @@ github-org-fork can create forks under it.
 EOF
 }
 
-## Intercept --help / -h and --debug up front. --debug enables
-## 'set -x' here AND in the spawned github-org-fork (via the flag
-## passing the option as an argv element). Other args ('$@') fall
-## through to github-org-fork untouched. Mode (--apply / --dry-run)
-## is required: github-org-fork itself rejects an absent mode flag,
-## but checking up front in the wrapper lets the error message name
-## dm-github-fork-sync rather than the spawned tool.
+## --debug enables 'set -x' here AND in the spawned github-org-fork.
+## Mode (--apply / --dry-run) is required: checking up front lets the
+## error message name dm-github-fork-sync rather than the spawned tool.
 debug_flag=()
 positional_args=()
 mode_set=0

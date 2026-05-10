@@ -6,9 +6,8 @@
 ## AI-Assisted
 
 ## Shared helpers for the policy-applying tools (dm-github-org-policy,
-## dm-github-personal-policy). The lower layer (github-org-lib.bsh)
-## handles the API client (auth, retry, sanitization, validation).
-## This file sits on top of that and adds:
+## dm-github-personal-policy). Sits on top of github-org-lib.bsh
+## (API client: auth, retry, sanitization, validation) and adds:
 ##
 ##   - policy_api_call:  dry-run-aware wrapper that prints
 ##                       ok / warn / DRY-RUN labels and bumps the
@@ -19,83 +18,55 @@
 ##                       rulesets.
 ##   - policy_branch_ruleset_body / policy_tag_ruleset_body:
 ##                       parameterized factories for the branch and
-##                       tag rulesets (need name + scope + bypass
-##                       actor list).
-##
-## Static policy body data (POLICY_FORK_PR_APPROVAL,
-## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_ALLOWLIST, etc.) lives in
-## github-policy-data.bsh. Each consumer sources both files.
+##                       tag rulesets.
 ##   - policy_parse_mode_args / policy_tool_init:
 ##                       shared --apply / --dry-run / --audit / -v
-##                       parser plus the post-parse + ghorg_require_deps
-##                       + warn-flag-init boilerplate the apply tools
-##                       all repeat.
+##                       parser plus post-parse boilerplate.
 ##
-## Caller is expected to have these set in scope (bash dynamic
-## scoping):
+## Static policy body data lives in github-policy-data.bsh.
 ##
-##   ${dry_run}    0|1   - if 1, policy_api_call prints the planned
-##                         call and returns 0 without contacting the
-##                         API.
+## Caller-scope (bash dynamic scoping):
 ##
-## Caller-mutated globals (bash dynamic scoping):
-##
-##   ${policy_warn_seen}  - every warn path in this lib sets this to
-##                          '1'. Caller initializes it to '0' before
-##                          the apply loop and tests
-##                          '[ "${policy_warn_seen}" -eq 1 ]'
-##                          afterward to learn "did at least one warn
-##                          happen anywhere". Replaces a per-status
-##                          counting scheme - the operator already
-##                          sees each warn line in the log; CI / cron
-##                          callers only need the at-least-one bit.
-##                          The lib's writes happen in the same shell
-##                          as the loop, so sequential apply paths can
-##                          rely on the var directly.
+##   ${dry_run}    0|1   - policy_api_call prints planned call only
+##                         when 1.
+##   ${policy_warn_seen}  - every warn path sets this to '1'. Caller
+##                          initializes to '0' before the apply loop
+##                          and tests after; one-bit "did at least
+##                          one warn happen anywhere".
 ##
 ## Optional caller-set globals:
 ##
-##   ${POLICY_QUIET_OK}   - if '1', the 'ok:' line is suppressed
-##                          (apply runs without --verbose).
+##   ${POLICY_QUIET_OK}   - if '1', the 'ok:' line is suppressed.
 
 ## Source via:
 ##   source /usr/libexec/developer-meta-files/github-policy-lib.bsh
 ##
-## github-org-lib.bsh must be sourced before this file (provides
-## ghorg_api / ghorg_status_of / ghorg_body_of / GHORG_MAX_ID_LEN).
+## github-org-lib.bsh must be sourced before this file.
 
 ## ============================================================================
 ## API call wrapper
 ## ============================================================================
 
-## Dry-run-aware wrapper around ghorg_api. Logs at notice / warn
-## level and, on warn, sets the caller-scope ${policy_warn_seen} to
-## '1' (bash dynamic scoping) so the caller can detect "at least
-## one warn happened anywhere" without a counting scheme.
+## Dry-run-aware wrapper around ghorg_api. Sets caller-scope
+## ${policy_warn_seen}=1 on failure.
 ##
 ## Args:
-##   $1 - human-readable label (printed after the prefix)
-##   $2 - HTTP method (GET / POST / PUT / PATCH / DELETE)
+##   $1 - human-readable label
+##   $2 - HTTP method
 ##   $3 - URL path (relative to ${GHORG_API})
-##   $4 - JSON body (optional; required by POST / PUT / PATCH)
+##   $4 - JSON body (optional)
 ##   $5 - one extra HTTP status code to accept as success (optional;
-##        single code, not a list - the case statement below expands
-##        it as a literal glob pattern, so pipe-separated forms will
-##        not work). Use for endpoints where a non-2xx is a
-##        documented "nothing to do" response that should not raise
-##        a warn - e.g. the GitHub Pages DELETE endpoint returns 404
-##        when the repo has no Pages site, which is the normal
-##        idempotent-cleanup case.
+##        single code only - the case statement expands it as a
+##        literal glob pattern). Use for endpoints where a non-2xx is
+##        a documented "nothing to do" - e.g. Pages DELETE returns 404
+##        when there's no Pages site.
 ##   $6 - body capture variable name (optional). When non-empty, the
-##        response body is written into that caller-scope variable
-##        via 'printf -v' on a 2xx (or extra_ok) success path. Used
-##        when the caller needs to read a field (e.g. .id) out of a
-##        POST response without re-implementing the
-##        ghorg_api+status+warn dance. The variable is also cleared
+##        response body is written into that caller-scope variable on
+##        a 2xx (or extra_ok) success path. The variable is cleared
 ##        ('') on warn / dry-run paths so callers can rely on "empty
 ##        means no body to parse".
 ##
-## Returns: 0 on success (or dry-run), 1 on failure (after warn).
+## Returns: 0 on success (or dry-run), 1 on failure.
 policy_api_call() {
    local label method path body extra_ok body_var_name
    local result status response_body
@@ -104,15 +75,11 @@ policy_api_call() {
    method="$2"
    path="$3"
    body="${4:-}"
-   ## Default to a sentinel that no real HTTP code can equal so the
-   ## interpolated case pattern below ('200|201|202|204|${extra_ok}')
-   ## stays well-formed when no extras were passed.
+   ## Sentinel no real HTTP code can equal so the interpolated case
+   ## pattern stays well-formed when no extras were passed.
    extra_ok="${5:-__none__}"
    body_var_name="${6:-}"
-   ## Empty means "skip body capture" (handled by the [ -n ... ]
-   ## guards on every printf -v site below). Non-empty must be a
-   ## legal bash identifier, since it flows into 'printf -v
-   ## "${body_var_name}"'.
+   ## Non-empty must be a legal bash identifier (flows into 'printf -v').
    [ -z "${body_var_name}" ] || check_variable_name "${body_var_name}" || return 1
 
    if [ "${dry_run}" = '1' ]; then
@@ -150,15 +117,13 @@ policy_api_call() {
 ## Ruleset upsert
 ## ============================================================================
 
-## Internal: shared find-or-create logic for org-level and repo-level
-## rulesets. Callers should use policy_upsert_org_ruleset /
-## policy_upsert_repo_ruleset rather than this directly.
+## Shared find-or-create for org-level and repo-level rulesets. Use
+## policy_upsert_org_ruleset / policy_upsert_repo_ruleset rather than
+## this directly.
 ##
 ## Args:
-##   $1 - listing endpoint (e.g. /orgs/{org}/rulesets or
-##        /repos/{owner}/{repo}/rulesets)
-##   $2 - human-readable scope label for warns (e.g. "Kicksecure" or
-##        "alice/foo")
+##   $1 - listing endpoint
+##   $2 - human-readable scope label
 ##   $3 - ruleset name (must match the .name field in the body)
 ##   $4 - JSON body
 _policy_upsert_ruleset() {
@@ -171,11 +136,9 @@ _policy_upsert_ruleset() {
    body="$4"
 
    if [ "${dry_run}" = '1' ]; then
-      ## Format must match the dry-run line the previous in-tool
-      ## upsert_org_ruleset / upsert_repo_ruleset printed - the
-      ## ci/tests/test_dm_dryrun.sh test does a fixed-string grep
-      ## against "DRY-RUN: ${scope}: upsert ruleset ${name}" (no
-      ## quotes around the name). Don't add quoting here.
+      ## Format matches what ci/tests/test_dm_dryrun.sh greps for as a
+      ## fixed string ("DRY-RUN: ${scope}: upsert ruleset ${name}",
+      ## no quotes around the name). Don't add quoting here.
       log notice "DRY-RUN: ${scope_label}: upsert ruleset ${name}"
       return 0
    fi
@@ -184,15 +147,15 @@ _policy_upsert_ruleset() {
       GET "${list_endpoint}?per_page=100" '' '' list_body \
       || return 1
 
-   ## API response body - hostile-input path: ghorg_jq_capped caps
-   ## stdin to GHORG_JQ_MAX_BYTES before jq sees it.
+   ## Hostile-input path: ghorg_jq_capped caps stdin to
+   ## GHORG_JQ_MAX_BYTES before jq sees it.
    existing_id="$(printf '%s' "${list_body}" \
       | ghorg_jq_capped -r --arg name "${name}" -- \
         '.[] | select(.name == $name) | .id' \
       | head --lines=1)"
 
    if [ -n "${existing_id}" ] && [ "${existing_id}" != 'null' ]; then
-      ## Numeric + length cap: API-derived id flows into a URL path.
+      ## API-derived id flows into a URL path.
       if ! [[ "${existing_id}" =~ ^[0-9]+$ ]] \
          || [ "${#existing_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
          log warn "'${scope_label}': ruleset id '${existing_id}' not a valid numeric id"
@@ -239,20 +202,14 @@ policy_upsert_repo_ruleset() {
 ## ============================================================================
 ##
 ## Resolve a policy by NAME (suffixed POLICY_<NAME>_BODY,
-## POLICY_<NAME>_ENDPOINT_*, POLICY_<NAME>_METHOD,
-## POLICY_<NAME>_LABEL constants in github-policy-data.bsh) and
-## hand its parts to policy_api_call. The naming scheme is the
-## interface; renaming a constant means renaming both ends.
+## POLICY_<NAME>_ENDPOINT_*, POLICY_<NAME>_METHOD, POLICY_<NAME>_LABEL
+## constants in github-policy-data.bsh) and hand its parts to
+## policy_api_call. The naming scheme is the interface; renaming a
+## constant means renaming both ends.
 
 ## policy_apply_org <org> <NAME> [<endpoint_suffix=ENDPOINT_ORG>]
-## Substitutes __ORG__ in the endpoint with the org name.
-##
-## Optional declarative knob: a POLICY_<NAME>_EXTRA_OK_STATUS
-## constant in github-policy-data.bsh is forwarded as the 5th arg
-## to policy_api_call. Use for endpoints with a documented non-2xx
-## "nothing to do" response that should not raise a warn (e.g. the
-## 422 returned by DELETE /repos/{}/{}/automated-security-fixes
-## once Dependabot alerts are already off).
+## Substitutes __ORG__ in the endpoint. A POLICY_<NAME>_EXTRA_OK_STATUS
+## constant is forwarded as policy_api_call's 5th arg (G-035).
 policy_apply_org() {
    local org name endpoint_suffix
    local body_v endpoint_v method_v label_v extra_ok_v endpoint
@@ -278,9 +235,8 @@ policy_apply_org() {
 }
 
 ## policy_apply_repo <owner> <repo> <NAME> [<endpoint_suffix=ENDPOINT_REPO>]
-## Substitutes __OWNER__ and __REPO__ in the endpoint. Honors the
-## same optional POLICY_<NAME>_EXTRA_OK_STATUS knob as
-## policy_apply_org above.
+## Substitutes __OWNER__ and __REPO__. Honors POLICY_<NAME>_EXTRA_OK_STATUS
+## the same way policy_apply_org does.
 policy_apply_repo() {
    local owner repo name endpoint_suffix
    local body_v endpoint_v method_v label_v extra_ok_v endpoint
@@ -310,8 +266,8 @@ policy_apply_repo() {
 ## policy_skip_ui <org_or_label_context> <NAME> <ui_url_var_suffix>
 ## For UI-only policies; emits a 'skip:' log line with the resolved
 ## UI URL. The URL constant is POLICY_<NAME>_UI_URL by default; pass
-## a different suffix (e.g. UI_URL_INSTALLATIONS) to address one of
-## several URLs registered for the same logical policy.
+## a different suffix to address one of several URLs registered for
+## the same logical policy.
 policy_skip_ui() {
    local context name suffix label_v url_v url
 
@@ -329,21 +285,15 @@ policy_skip_ui() {
 }
 
 ## ============================================================================
-## JSON body factories (parameterized; pure data lives in
-## github-policy-data.bsh)
+## JSON body factories
 ## ============================================================================
 
-## Branch ruleset body. Body shape lives in github-policy-data.bsh
-## as POLICY_BRANCH_RULESET_BODY_ORG / _REPO; this factory just
-## injects the runtime args ($name, $bypass) and picks the right
-## body for the scope.
+## Branch ruleset body. Body shape lives in github-policy-data.bsh.
 ##
 ## Args:
 ##   $1 - ruleset name
-##   $2 - 'org' or 'repo' (org variant includes the repository_name
-##        condition so the ruleset applies to every repo in the org)
-##   $3 - bypass_actors JSON array (default '[]'); use
-##        POLICY_RULESET_BYPASS_SOURCE / _MIRROR from the data file.
+##   $2 - 'org' or 'repo'
+##   $3 - bypass_actors JSON array (default '[]')
 policy_branch_ruleset_body() {
    local name scope bypass body
 
@@ -351,10 +301,9 @@ policy_branch_ruleset_body() {
    scope="${2:-repo}"
    bypass="${3:-[]}"
 
-   ## PAID PLAN ONLY: the 'org' scope's body lives at
-   ## POLICY_BRANCH_RULESET_BODY_ORG, which is commented out in
-   ## github-policy-data.bsh because /orgs/{org}/rulesets is Team+
-   ## only. Re-enable both together.
+   ## PAID PLAN ONLY: scope=org needs POLICY_BRANCH_RULESET_BODY_ORG,
+   ## commented out in github-policy-data.bsh because
+   ## /orgs/{org}/rulesets is Team+ only. Re-enable both together.
    # if [ "${scope}" = 'org' ]; then
    #    body="${POLICY_BRANCH_RULESET_BODY_ORG}"
    # else
@@ -369,9 +318,7 @@ policy_branch_ruleset_body() {
    ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
 }
 
-## Tag ruleset body. Body shape lives in github-policy-data.bsh as
-## POLICY_TAG_RULESET_BODY_ORG / _REPO. Args: same as
-## policy_branch_ruleset_body.
+## Tag ruleset body. Args: same as policy_branch_ruleset_body.
 policy_tag_ruleset_body() {
    local name scope bypass body
 
@@ -399,29 +346,20 @@ policy_tag_ruleset_body() {
 ## ============================================================================
 
 ## Shared --apply / --dry-run / --audit / -v|--verbose / -h|--help
-## parser used by dm-github-org-policy and dm-github-personal-policy.
-## Strict mutual-exclusion guard on the mode flags - typing two of
-## them is a fatal usage error.
+## parser. Strict mutual-exclusion on the mode flags.
 ##
-## Sets the following variables in CALLER scope (bash dynamic
-## scoping):
+## Sets in CALLER scope (bash dynamic scoping):
 ##
-##   mode='apply'|'audit'   (set when a mode flag is seen)
+##   mode='apply'|'audit'
 ##   dry_run=0|1
 ##   verbose=0|1
-##   mode_set=0|1           (1 once any mode flag is seen)
+##   mode_set=0|1
 ##   positional+=( ... )    non-flag args (and everything after `--`)
 ##
-## Caller must:
-##   - declare each of the above before calling, with sane defaults
-##     (mode='', dry_run=0, verbose=0, mode_set=0, positional=())
-##   - define a 'show_help' function (called on -h/--help and
-##     followed by exit 0)
-##   - perform the post-parse "[ ${mode_set} -eq 1 ] || die 64 ..."
-##     and the per-tool positional-count check itself.
-##
-## On -h/--help, calls show_help and exits 0 - that exit terminates
-## the caller's process, which is the intended behavior.
+## Caller must declare each above with sane defaults
+## (mode='', dry_run=0, verbose=0, mode_set=0, positional=()),
+## define a 'show_help' function, and perform the post-parse
+## "[ ${mode_set} -eq 1 ]" plus per-tool positional-count check.
 ##
 ## Args: the script's "$@" verbatim.
 policy_parse_mode_args() {
@@ -459,10 +397,8 @@ policy_parse_mode_args() {
             exit 0
             ;;
          --policy-dump)
-            ## Print github-policy-data.bsh verbatim. Single source
-            ## of truth for what this tool will apply; no separate
-            ## formatter to drift out of sync. Resolved relative to
-            ## this lib's path (BASH_SOURCE[0]) so dev-tree runs
+            ## Print github-policy-data.bsh verbatim. Resolved relative
+            ## to this lib's path (BASH_SOURCE[0]) so dev-tree runs
             ## also work, not just /usr/libexec/... installs.
             cat -- "$(dirname -- "${BASH_SOURCE[0]}")/github-policy-data.bsh"
             exit 0
@@ -485,21 +421,14 @@ policy_parse_mode_args() {
    done
 }
 
-## Tool-init wrapper around policy_parse_mode_args. Bundles up the
-## boilerplate every dm-github-* policy tool repeats: parse the
-## flags, post-check the positional count and that a mode flag was
-## given, run the dependency pre-flight, and zero the warn-flag.
+## Tool-init wrapper around policy_parse_mode_args. Parse the flags,
+## post-check positional count + mode flag, run ghorg_require_deps,
+## zero the warn-flag.
 ##
-## Caller is expected to:
-##   - declare 'mode='', dry_run=0, verbose=0, mode_set=0,
-##     positional=()' before calling
-##   - define a 'show_help' function (used on -h/--help and on
-##     post-check failures)
+## Caller declares 'mode='', dry_run=0, verbose=0, mode_set=0,
+## positional=()' and defines a 'show_help' function.
 ##
-## Args:
-##   $1     - expected positional argument count (e.g. 0 for org
-##            tools, 1 for the personal tool)
-##   $2...  - the script's "$@" verbatim
+## Args: $1 expected positional count, $2... "$@" verbatim.
 policy_tool_init() {
    local expected_positional
    expected_positional="$1"

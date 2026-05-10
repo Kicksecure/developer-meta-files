@@ -5,9 +5,9 @@
 
 ## AI-Assisted
 
-## Clone (or fast-forward) every public, non-archived, non-fork repo of
-## a GitHub user/organization into <dest-dir>/<repo-name>/. Idempotent.
-## Run `github-org-clone --help` for full usage.
+## Clone (or fast-forward) every public, non-archived, non-fork repo
+## of a GitHub user/organization into <dest-dir>/<repo-name>/.
+## Idempotent. Run `github-org-clone --help` for full usage.
 
 set -o errexit
 set -o nounset
@@ -19,15 +19,10 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
-## Sanity-check the system 'wc' binary before using it. wc can core
-## dump on some systems (rspamd issue #5137); helper-scripts provides
-## a one-liner test that prints a clear diagnostic and exits non-zero
-## if wc is broken, so we never silently produce an empty count.
-##
-## ${HELPER_SCRIPTS_PATH:-} prefix lets a caller (e.g. derivative-maker
-## running with helper-scripts as a submodule) point at an in-tree
-## checkout instead of the system install. Empty default = system
-## install at /usr/libexec/helper-scripts/.
+## Sanity-check the system 'wc' binary - wc can core dump on some
+## systems (rspamd issue #5137). The helper prints a clear diagnostic
+## and exits non-zero if wc is broken.
+## ${HELPER_SCRIPTS_PATH:-} lets a caller point at an in-tree checkout.
 # shellcheck source=/usr/libexec/helper-scripts/wc-test.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 
@@ -181,8 +176,7 @@ repo_url() {
   esac
 }
 
-## Clone a missing repo or fast-forward an existing one. Each call is
-## standalone so it can be safely backgrounded for parallelism.
+## Each call is standalone so it can be safely backgrounded.
 clone_or_update_one() {
   local repo repo_dir url existing_url current_branch
   local -a clone_args
@@ -196,9 +190,9 @@ clone_or_update_one() {
 
   if [ -d "${repo_dir}/.git" ]; then
     ## Origin-URL collision check: if an existing clone's origin
-    ## points elsewhere (because the operator reused dest_dir across
-    ## source orgs and a name collided), skip rather than silently
-    ## fetch from the wrong upstream.
+    ## points elsewhere (operator reused dest_dir across source orgs
+    ## and a name collided), skip rather than silently fetch from
+    ## the wrong upstream.
     existing_url="$(git -C "${repo_dir}" remote get-url origin 2>/dev/null || true)"
     if [ -n "${existing_url}" ] && [ "${existing_url}" != "${url}" ]; then
       log warn "'${repo_dir}': origin is '${existing_url}', expected '${url}'; skipping (name collision?)"
@@ -210,14 +204,14 @@ clone_or_update_one() {
       return 0
     fi
     [ "${verbose}" = '1' ] && log notice "update: ${repo_dir}"
-    ## --ff-only refuses anything but a clean fast-forward; safer than
-    ## `pull` for unattended runs where divergence would otherwise
-    ## attempt a merge.
+    ## --ff-only refuses anything but a clean fast-forward; safer
+    ## than `pull` for unattended runs where divergence would
+    ## otherwise attempt a merge.
     git -C "${repo_dir}" fetch --prune --tags -- origin
     current_branch="$(git -C "${repo_dir}" symbolic-ref --short HEAD 2>/dev/null || true)"
     if [ -n "${current_branch}" ]; then
-      ## @{u} is an unambiguous symbolic ref for the upstream of the
-      ## current branch - immune to tag/branch name collisions.
+      ## @{u} is a symbolic ref for the upstream of the current
+      ## branch - immune to tag/branch name collisions.
       if ! git -C "${repo_dir}" merge --ff-only "@{u}" 2>/dev/null; then
         log warn "'${repo_dir}': '${current_branch}' not fast-forwardable, skipping merge"
       fi
@@ -233,19 +227,16 @@ clone_or_update_one() {
     [ "${verbose}" = '1' ] && log notice "clone: ${url}"
     clone_args=( clone )
     [ "${shallow}" = '1' ] && clone_args+=( --depth=1 )
-    ## protocol.file.allow=never / protocol.ext.allow=never block a
-    ## hostile upstream from redirecting a sub-fetch through file:// or
-    ## ext:: helper protocols (CVE-class).
+    ## G-021: blocks file:// and ext:: helper protocols (CVE-class
+    ## hostile-upstream redirect).
     clone_args+=(
       --config protocol.file.allow=never
       --config protocol.ext.allow=never
     )
     clone_args+=( -- "${url}" "${repo_dir}" )
-    ## GIT_LFS_SKIP_SMUDGE=1 prevents the LFS smudge filter from
-    ## auto-fetching arbitrary objects on clone if the upstream's
-    ## .gitattributes points binary files at LFS. Operators who
-    ## genuinely want LFS payloads can pre-export the env var to
-    ## something other than 1.
+    ## G-020: prevents LFS smudge filter from auto-fetching
+    ## attacker-chosen objects on clone. Operators who want LFS
+    ## payloads can pre-export GIT_LFS_SKIP_SMUDGE to something else.
     GIT_LFS_SKIP_SMUDGE="${GIT_LFS_SKIP_SMUDGE:-1}" git "${clone_args[@]}"
   fi
 }

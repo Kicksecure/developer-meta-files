@@ -5,20 +5,16 @@
 
 ## AI-Assisted
 
-## Dump open code-scanning alerts across the active orgs as a
-## markdown table on stdout. Status messages go to stderr (via
-## log) so the report itself can be cleanly redirected to a file:
+## Dump open code-scanning alerts across the active orgs as a markdown
+## table on stdout. Status messages go to stderr (via log) so the
+## report can be cleanly redirected:
 ##
 ##   dm-github-org-security-report --report > /tmp/sec.md
 ##
-## Default mode (--report) filters to "code-fixable" tools:
-## CodeQL, Bandit, cppcheck, Coverity. These produce file+line
-## findings the operator can edit to fix.
-##
-## --all mode shows every open alert including Scorecard's
-## policy-style findings (DependencyUpdateToolID, MaintainedID,
-## etc) which are documented as known false positives in
-## docs/scorecard-known-false-positives.md.
+## --report filters to "code-fixable" tools (CodeQL, Bandit, cppcheck,
+## Coverity) that produce file+line findings the operator can edit.
+## --all shows every open alert including Scorecard's policy-style
+## findings (see docs/scorecard-known-false-positives.md).
 ##
 ## See agents/github-actions.md for the per-tool trust boundary.
 
@@ -34,8 +30,8 @@ source /usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
-## Active orgs to query. Symmetry with dm-github-org-policy's
-## ORGS_OVERRIDE convention so the same wrapper runs in tests.
+## Symmetry with dm-github-org-policy's ORGS_OVERRIDE convention so
+## the same wrapper runs in tests.
 readonly SOURCE_ORGS=( 'Kicksecure' 'Whonix' )
 readonly MIRROR_ORGS=( 'org-ai-assisted' )
 if [ -n "${ORGS_OVERRIDE:-}" ]; then
@@ -45,13 +41,9 @@ else
 fi
 readonly ORGS
 
-## Tools we consider "code-fixable" - they produce file+line
-## findings the operator can edit. Anything else (Scorecard
-## SBOM/policy, DependencyReview, etc) is policy-shaped and
-## handled separately.
-##
-## Used as a jq regex in the --report filter. Adding a tool here
-## is the single source of truth.
+## "Code-fixable" tools - produce file+line findings the operator can
+## edit. Used as a jq regex in the --report filter; single source of
+## truth for the tool list.
 readonly CODE_TOOLS_RE='^(CodeQL|Bandit|cppcheck|Coverity)$'
 
 mode=''
@@ -112,8 +104,6 @@ done
 
 policy_warn_seen=0
 
-## Build the jq filter once. The --report filter selects only
-## tools matching CODE_TOOLS_RE; --all is identity.
 case "${mode}" in
    report)
       filter_jq='.[] | select(.tool.name | test("'"${CODE_TOOLS_RE}"'"))'
@@ -123,13 +113,11 @@ case "${mode}" in
       ;;
 esac
 
-## Markdown header to stdout. Subsequent rows append from each
-## org's parsed body. Operator-facing status goes to stderr via
-## log; this is one of the cases R-041 explicitly carves out for
-## bare printf (writing to a pipe-shaped consumer).
-##
-## R-033: hoist the timestamp into a named variable; do not
-## inline $(date ...) into the printf format string.
+## Operator-facing status goes to stderr via log; this is one of the
+## cases R-041 explicitly carves out for bare printf (writing to a
+## pipe-shaped consumer).
+## R-033: hoist the timestamp; do not inline $(date ...) into the
+## printf format string.
 report_timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}"
 printf '%s\n' ""
@@ -139,9 +127,9 @@ printf '%s\n' "| --- | --- | --- | --- | --- | --- | --- |"
 total_rows=0
 for org in "${ORGS[@]}"; do
    log notice "fetching alerts for '${org}'..."
-   ## /code-scanning/alerts paginates at per_page<=100. For now
-   ## one page is enough for our scale (~100 total org-wide); add
-   ## a Link-header walk if alert count outgrows it.
+   ## /code-scanning/alerts paginates at per_page<=100. One page is
+   ## enough at current scale (~100 total org-wide); add a Link-header
+   ## walk if alert count outgrows it.
    result="$(ghorg_api GET "/orgs/${org}/code-scanning/alerts?state=open&per_page=100")" \
       || { log warn "${org}: api call failed"; policy_warn_seen=1; continue; }
    status="$(ghorg_status_of "${result}")"
@@ -151,12 +139,8 @@ for org in "${ORGS[@]}"; do
       continue
    fi
    body="$(ghorg_body_of "${result}")"
-   ## Render each filtered alert as a markdown row. The jq script:
-   ##   - select() applies the mode filter
-   ##   - extract repo/tool/severity/rule/path/line/message
-   ##   - escape "|" in message text so it does not break the
-   ##     table column separator
-   ##   - stringify line number (jq integer -> string)
+   ## Escape "|" in message text so it does not break the table
+   ## column separator.
    rows="$(printf '%s' "${body}" | ghorg_jq_capped -r -- "
       ${filter_jq}
       | [

@@ -197,17 +197,16 @@ push_one() {
   fi
 
   ## Distinguish "missing" (404) from "lookup failed for some other
-  ## reason" (auth/rate limit/network). A skip is only safe when we
-  ## know for sure the repo isn't there; otherwise treat it as a hard
-  ## error so a bad token or transient outage doesn't silently no-op
-  ## an entire run.
+  ## reason". A skip is only safe when the repo definitely isn't
+  ## there; otherwise a bad token or transient outage would silently
+  ## no-op an entire run.
   ghorg_repo_lookup "${target_owner}" "${repo}"
   case $? in
     0) ;;
     1)
       if [ "${create_missing}" = '1' ]; then
-        ## Reserved flag for future use; deliberately not implemented to
-        ## avoid surprise repo creation. github-org-fork is the supported
+        ## Reserved flag; deliberately not implemented to avoid
+        ## surprise repo creation. github-org-fork is the supported
         ## path for adding repos to the target.
         log warn "'${target_owner}/${repo}' missing - run github-org-fork to create it; skipping"
       else
@@ -238,11 +237,11 @@ push_one() {
 
   for branch in ${branches}; do
     if [ "${branch}" = 'HEAD' ]; then
-      ## Resolve HEAD to a fully qualified ref locally first, so the
-      ## push is not vulnerable to tag/branch name ambiguity (e.g. a
-      ## tag named `master` shadowing the branch). symbolic-ref returns
-      ## refs/heads/<branch> for an attached HEAD; for a detached HEAD
-      ## it returns non-zero, which we treat as "skip with warning".
+      ## Resolve HEAD to a fully qualified ref locally so the push is
+      ## not vulnerable to tag/branch name ambiguity (a tag named
+      ## `master` shadowing the branch). symbolic-ref returns
+      ## refs/heads/<branch> for an attached HEAD; non-zero for a
+      ## detached HEAD - treated as skip-with-warning.
       if ! resolved_head="$(git -C "${repo_dir}" symbolic-ref HEAD 2>/dev/null)"; then
         log warn "'${repo_dir}': HEAD detached, skipping HEAD push"
         continue
@@ -253,10 +252,10 @@ push_one() {
         "${resolved_head}:${resolved_head}" \
         || log warn "'${repo_dir}': '${resolved_head}' push to '${remote_name}' failed"
     else
-      ## Validate the user-supplied branch name as a repo-name (same
-      ## allowlist) before constructing a fully-qualified ref. This
-      ## both blocks ref injection like `master HEAD` and prevents
-      ## tag/branch ambiguity (we always use refs/heads/...).
+      ## Validate the user-supplied branch name (same allowlist as
+      ## for repo names) before constructing a fully-qualified ref.
+      ## Blocks ref injection like `master HEAD` and prevents
+      ## tag/branch ambiguity (always refs/heads/...).
       if ! ghorg_validate_name "${branch}" repo; then
         log warn "'${repo_dir}': skipping invalid branch name"
         continue
@@ -283,10 +282,8 @@ main() {
 
   [ -d "${source_dir}" ] || die 1 "source dir does not exist: '${source_dir}'"
 
-  ## Discover candidate clones: every immediate subdir that has a .git.
   ## NUL-delimited so directory names containing newlines or other
-  ## odd bytes survive intact (find -print0 + read -d ''). Subdirs
-  ## without a .git are filtered by the test on each entry.
+  ## odd bytes survive intact (find -print0 + read -d '').
   candidate_dirs=()
   while IFS= read -r -d '' candidate_dir; do
     [ -e "${candidate_dir}/.git" ] || continue
@@ -295,7 +292,6 @@ main() {
     | sort --zero-terminated --unique)
 
   if [ -n "${include_re}" ] || [ -n "${exclude_re}" ]; then
-    ## Filter by basename, then re-prefix with source_dir.
     local -a filtered
     local kept_names cand_basename
     local names_in=''
