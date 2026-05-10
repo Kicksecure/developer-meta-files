@@ -312,13 +312,17 @@ readonly POLICY_REPO_DEPENDABOT_FIXES_ENDPOINT='/repos/__OWNER__/__REPO__/automa
 readonly POLICY_REPO_DEPENDABOT_FIXES_METHOD='PUT'
 readonly POLICY_REPO_DEPENDABOT_FIXES_LABEL='enable Dependabot security updates'
 
-## SOURCE-only. Per-repo private vulnerability reporting toggle.
-## Free on public repos. Lets external researchers privately
-## disclose security issues via a dedicated PR-like flow.
-readonly POLICY_REPO_PVR='{}'
-readonly POLICY_REPO_PVR_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerability-reporting'
-readonly POLICY_REPO_PVR_METHOD='PUT'
-readonly POLICY_REPO_PVR_LABEL='enable private vulnerability reporting'
+## Private Vulnerability Reporting (PVR) - intentionally NOT
+## enabled anywhere. The canonical disclosure channel for
+## Kicksecure / Whonix is the wiki page linked from
+## org-ai-assisted/.github/SECURITY.md
+## (https://www.kicksecure.com/wiki/Reporting_Bugs#
+## Security_Vulnerabilities, plus the Vulnerability Disclosure
+## Policy page). PVR would split the inbox between that wiki
+## flow and a parallel GitHub-side flow. The active path is the
+## DELETE side (POLICY_REPO_PVR_OFF below), applied on both
+## SOURCE and MIRROR every --apply. The PUT-style enable
+## constants are intentionally absent.
 
 ## --- Account-wide settings, applied by dm-github-personal-policy
 ## once per --apply invocation (NOT per repo). The endpoints here
@@ -362,10 +366,12 @@ readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_METHOD='DELETE'
 readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_LABEL='disable Dependabot security updates (mirror)'
 readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_EXTRA_OK_STATUS='422'
 
+## Applied on BOTH SOURCE and MIRROR (not just mirror like the
+## Dependabot pair). See the PVR rationale block above.
 readonly POLICY_REPO_PVR_OFF='{}'
 readonly POLICY_REPO_PVR_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerability-reporting'
 readonly POLICY_REPO_PVR_OFF_METHOD='DELETE'
-readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting (mirror)'
+readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting'
 
 ## Branch + tag ruleset bypass actor list (passed to
 ## policy_branch_ruleset_body / policy_tag_ruleset_body).

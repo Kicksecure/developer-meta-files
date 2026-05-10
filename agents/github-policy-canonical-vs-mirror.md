@@ -29,26 +29,38 @@ canonical SOURCE repo already raises. Empirically tested on Free
 | --- | --- | --- | --- | --- |
 | Dependabot alerts (`PUT /vulnerability-alerts` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
 | Dependabot security updates (`PUT /automated-security-fixes` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
-| Private vulnerability reporting (`PUT /private-vulnerability-reporting` enable, `DELETE` on MIRROR) | on | actively disabled | off | off |
+| Private vulnerability reporting (PVR) - `DELETE /private-vulnerability-reporting` everywhere | actively disabled | actively disabled | off | off |
 | `secret_scanning` + push protection (in PATCH body) | on | on | on | on |
 | Branch + tag rulesets (`POST /repos/{}/{}/rulesets`) | on | on | on | on |
 
 Notes:
 
-- Dependabot / PVR (Private Vulnerability Reporting) off on
-  MIRROR/PERSON/BOT for the same reason: split inbox / duplicate
-  notifications. On MIRROR `apply_repo_policy` actively DELETEs
-  the three settings (every `--apply` reconciles), so leftovers
-  from older un-gated runs or accidental UI flips are cleaned
-  up. Order: DEPENDABOT_FIXES_OFF before DEPENDABOT_ALERTS_OFF -
-  the security-fixes endpoint returns HTTP 422 once alerts are
-  off, which is the idempotent steady state and is captured as
-  ok via the `_EXTRA_OK_STATUS=422` knob (see G-035 in
+- Dependabot off on MIRROR/PERSON/BOT for the split-inbox /
+  duplicate-notifications reason. On MIRROR `apply_repo_policy`
+  actively DELETEs the two Dependabot settings (every `--apply`
+  reconciles), so leftovers from older un-gated runs or
+  accidental UI flips are cleaned up. Order: DEPENDABOT_FIXES_OFF
+  before DEPENDABOT_ALERTS_OFF - the security-fixes endpoint
+  returns HTTP 422 once alerts are off, which is the idempotent
+  steady state and is captured as ok via the
+  `_EXTRA_OK_STATUS=422` knob (see G-035 in
   `github-org-tools.md`). On PERSON/BOT
   `dm-github-personal-policy` keeps step 8 commented out for the
   same reason (with the canonical-home-uncomment note); the
   personal mirror never had these on so an active-disable pass
   is unnecessary.
+
+- PVR (Private Vulnerability Reporting) is off on EVERY role,
+  including SOURCE. The canonical disclosure channel for
+  Kicksecure / Whonix is the wiki (linked from the SECURITY.md
+  committed at `org-ai-assisted/.github/SECURITY.md`, pointing
+  to https://www.kicksecure.com/wiki/Reporting_Bugs#
+  Security_Vulnerabilities and the Vulnerability Disclosure
+  Policy page). Enabling PVR on top of that would split the
+  disclosure inbox between the wiki flow and a parallel
+  GitHub-side flow. `apply_repo_policy` actively DELETEs PVR on
+  every repo unconditionally; there is no PUT-style enable
+  constant in `github-policy-data.bsh`.
 - Secret scanning + push protection are about local git ops, not
   inbox routing, so they stay on everywhere.
 - Rulesets stay on everywhere; only the bypass-actor list pivots
@@ -62,7 +74,8 @@ Notes:
 | Project boards / discussions / wikis | (default on, unset) | off |
 | Ruleset bypass | `[]` (no bypass) | `[OrgAdmin]` on MIRROR; `[]` on PERSON/BOT |
 | CI / Actions | enabled, allow-list = github-owned + verified-creators | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on (it is where AI-assisted dev runs) |
-| Dependabot alerts + security updates + PVR (Private Vulnerability Reporting) | on | off (would duplicate upstream alerts) |
+| Dependabot alerts + security updates | on | off (would duplicate upstream alerts) |
+| PVR (Private Vulnerability Reporting) | **off everywhere** (canonical disclosure is the wiki - see `.github/SECURITY.md`) | off |
 | GitHub Pages site | not touched | `DELETE /pages` on PERSON/BOT (mirror should not host Pages) |
 
 Net deliberate diffs after this split:
@@ -74,8 +87,10 @@ Net deliberate diffs after this split:
 3. CI disabled entirely on PERSON/BOT (no workflows run on the
    personal mirrors); SOURCE/MIRROR run CI under the same selected-
    actions allow-list.
-4. Dependabot + PVR (Private Vulnerability Reporting) enabled
-   only on SOURCE.
+4. Dependabot enabled only on SOURCE; PVR (Private Vulnerability
+   Reporting) actively disabled everywhere because the canonical
+   disclosure channel is the wiki (per `.github/SECURITY.md`),
+   not GitHub's PVR flow.
 5. GitHub Pages cleanup (DELETE) only on PERSON/BOT.
 
 Everything else (fork-PR approval policy, workflow GITHUB_TOKEN

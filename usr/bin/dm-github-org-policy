@@ -601,14 +601,24 @@ audit_org_state() {
 ##   1. PATCH /repos/{o}/{r} body (POLICY_REPO_SOURCE / _MIRROR)
 ##      - has_wiki/has_issues/has_projects/has_discussions
 ##      - security_and_analysis (secret scanning + push protection)
-##   2. SOURCE-ONLY: Dependabot + PVR fan-out. The MIRROR org is a
-##      fork of SOURCE; running these on MIRROR would duplicate
-##      every alert that the canonical SOURCE repo already raises
-##      (same anti-duplication logic personal-policy applies to its
-##      personal-mirror). Skipped on MIRROR with a notice line.
-##      - PUT /repos/{o}/{r}/vulnerability-alerts
-##      - PUT /repos/{o}/{r}/automated-security-fixes
-##      - PUT /repos/{o}/{r}/private-vulnerability-reporting
+##   2. Dependabot fan-out. SOURCE-only on; MIRROR actively
+##      disabled. Mirror would duplicate every alert the
+##      canonical SOURCE repo already raises (same anti-
+##      duplication logic personal-policy applies to its
+##      personal-mirror).
+##      - PUT  /repos/{o}/{r}/vulnerability-alerts (SOURCE)
+##      - PUT  /repos/{o}/{r}/automated-security-fixes (SOURCE)
+##      - DELETE same paths on MIRROR
+##   2b. Private Vulnerability Reporting (PVR) is OFF
+##       EVERYWHERE. The canonical disclosure channel is the
+##       wiki (per the SECURITY.md committed at
+##       org-ai-assisted/.github/SECURITY.md, which points to
+##       https://www.kicksecure.com/wiki/Reporting_Bugs#
+##       Security_Vulnerabilities and the Vulnerability
+##       Disclosure Policy page). PVR would split the inbox
+##       between the wiki flow and a GitHub-side flow. The
+##       DELETE /private-vulnerability-reporting call runs on
+##       both SOURCE and MIRROR every --apply.
 ##   3. Per-repo branch + tag rulesets (both kinds; bypass actor
 ##      list pivots on org_kind):
 ##      - SOURCE -> POLICY_RULESET_BYPASS_SOURCE  ([], no bypass)
@@ -632,11 +642,9 @@ apply_repo_policy() {
    kind="$(org_kind "${owner}")" || return 1
    policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 
-   ## Free-plan-compatible code-security: enable on SOURCE,
-   ## actively disable on MIRROR. The mirror would duplicate every
-   ## alert the canonical SOURCE repo already raises, so steady
-   ## state on the mirror is "all three off". Always-enforced -
-   ## every --apply reconciles, no opt-in flag.
+   ## Free-plan-compatible code-security: Dependabot enabled on
+   ## SOURCE, actively disabled on MIRROR. PVR disabled on BOTH
+   ## (see step 2b in the docstring above).
    ##
    ## Order on the disable side matters: DEPENDABOT_FIXES_OFF
    ## BEFORE DEPENDABOT_ALERTS_OFF. The DELETE
@@ -649,12 +657,14 @@ apply_repo_policy() {
    if [ "${kind}" = 'source' ]; then
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
-      policy_apply_repo "${owner}" "${repo}" REPO_PVR               ENDPOINT
    else
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES_OFF  ENDPOINT
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS_OFF ENDPOINT
-      policy_apply_repo "${owner}" "${repo}" REPO_PVR_OFF               ENDPOINT
    fi
+
+   ## PVR off everywhere. Canonical disclosure path is the wiki
+   ## per .github/SECURITY.md - PVR would split the inbox.
+   policy_apply_repo "${owner}" "${repo}" REPO_PVR_OFF ENDPOINT
 
    ## Free-plan-compatible per-repo branch + tag rulesets. Same
    ## three rules (deletion, non_fast_forward, required_signatures)

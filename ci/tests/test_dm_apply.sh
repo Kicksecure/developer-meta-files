@@ -93,7 +93,7 @@ required=(
    ## all three).
    'ok: org-ai-assisted/derivative-maker: disable Dependabot security updates (mirror)'
    'ok: org-ai-assisted/derivative-maker: disable Dependabot alerts (mirror)'
-   'ok: org-ai-assisted/derivative-maker: disable private vulnerability reporting (mirror)'
+   'ok: org-ai-assisted/derivative-maker: disable private vulnerability reporting'
 
    ## Free-plan-compatible per-repo branch + tag rulesets. Applied
    ## on both SOURCE and MIRROR (only the bypass actor list
