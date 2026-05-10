@@ -6,9 +6,10 @@
 ## AI-Assisted
 
 ## Smoke-test the configured GitHub token before running
-## dm-github-fork-sync / dm-github-org-policy. Prints the authenticated user
-## login and the current REST API rate-limit budget, or fails with a
-## clear error if the token is missing / invalid / over quota.
+## dm-github-fork-sync / dm-github-org-policy. Prints the
+## authenticated user login and the current REST API rate-limit
+## budget, or fails with a clear error if the token is missing /
+## invalid / over quota.
 ##
 ## Usage:
 ##   GITHUB_TOKEN='ghp_...' dm-github-token-test
@@ -31,15 +32,11 @@ source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 ghorg_require_deps
 
-## /user via the lib's existing helper. ghorg_authenticated_user
-## already does the GET, status check, .login extraction, and
-## ghorg_validate_name on the result. Reusing it here avoids
-## duplicating that code path.
 login="$(ghorg_authenticated_user)" || die 1 'token rejected by /user'
 
-## /rate_limit budget. Distinct purpose from /user: /user proves the
-## token is valid, /rate_limit shows how much budget we have for the
-## upcoming dm-github-fork-sync / dm-github-org-policy work.
+## /rate_limit shows how much budget we have for the upcoming
+## dm-github-fork-sync / dm-github-org-policy work; /user above proved
+## the token is valid.
 rl_result="$(ghorg_api GET '/rate_limit')" || die 1 '/rate_limit failed'
 
 rl_status="$(ghorg_status_of "${rl_result}")"

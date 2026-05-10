@@ -7,9 +7,8 @@
 
 ## Apply per-repo lockdown policy to every public repo owned by a
 ## given GitHub user account. Mirrors the per-repo subset of
-## dm-github-org-policy (which targets orgs) for individual user
-## accounts. Idempotent and apply-only - never disables a setting
-## that was already on.
+## dm-github-org-policy for individual user accounts. Idempotent and
+## apply-only.
 
 set -o errexit
 set -o nounset
@@ -25,11 +24,6 @@ source /usr/libexec/developer-meta-files/github-policy-lib.bsh
 # shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
 source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
-## Modes are mutually exclusive; one must be passed explicitly. No
-## implicit default - running this tool without a mode flag is the
-## kind of "intent unclear" footgun we don't want operators to fall
-## into. Empty mode triggers a 'specify --apply / --audit / --dry-run'
-## error after parsing.
 dry_run=0
 verbose=0
 mode=''
@@ -75,22 +69,15 @@ Repos in scope:
 EOF
 }
 
-## Parse + post-check + dep pre-flight + warn-flag init. See the
-## docstring on policy_tool_init in github-policy-lib.bsh; this tool
-## takes one positional arg, the GitHub username to lock down.
 policy_tool_init 1 "$@"
 
 target_user="${positional[0]}"
 ghorg_validate_name "${target_user}" user
 
 ## Refuse to run against an Organization. ghorg_validate_name only
-## checks the string format - both 'alice' and 'whonix' pass. Without
-## this guard, an operator who typed an org name by mistake would
-## have the personal-mirror lockdown (Actions disabled, default
-## branch ruleset, etc.) applied to every public repo in that org.
-## That is a high-blast-radius footgun on an apply run, so resolve
-## the account type via the GET /users/{name} endpoint and bail out
-## unless GitHub reports type=User.
+## checks string format - both 'alice' and 'whonix' pass. Without
+## this guard, an org-name typo would have the personal-mirror
+## lockdown applied to every public repo in that org.
 target_account_type="$(ghorg_account_type "${target_user}")" \
    || die 1 "could not determine account type for '${target_user}'"
 if [ "${target_account_type}" != 'User' ]; then
@@ -99,25 +86,19 @@ fi
 
 ## ===== Per-user policy distinction =====
 ##
-## Two kinds of user account this script applies policy to:
-##
-##   PERSON = real maintainer's personal account. Some side
-##            trackers stay open (has_issues=on - human can triage
-##            incoming reports filed against the personal mirror).
-##   BOT    = AI-assisted-work bot account. All side trackers
-##            closed; identical lockdown to a MIRROR org repo.
-##            Everything routes upstream.
+## PERSON = real maintainer's personal account. Some side trackers
+##          stay open (has_issues=on - human can triage incoming
+##          reports filed against the personal mirror).
+## BOT    = AI-assisted-work bot account. All side trackers closed;
+##          identical lockdown to a MIRROR org repo.
 ##
 ## Vocabulary aligns with SOURCE_ORGS / MIRROR_ORGS in
-## dm-github-org-policy. The full PERSON-vs-BOT diff table is in
-## github-policy-data.bsh (POLICY_PERSONAL_REPO_PERSON /
-## POLICY_PERSONAL_REPO_BOT).
+## dm-github-org-policy. PERSON-vs-BOT diff table in
+## github-policy-data.bsh.
 readonly PERSON_USERS=(
    'adrelanos'
-   ## Test fixtures - referenced by ci/tests/test_dm_personal_*.sh.
-   ## Production lookup is "is this user in the list?", so extra
-   ## entries don't change behaviour for real names; they're just
-   ## resolvable when GHORG_MOCK=1 routes the API to local fixtures.
+   ## Test fixtures referenced by ci/tests/test_dm_personal_*.sh.
+   ## Extra entries don't change production behaviour.
    'personal-test-user'
 )
 readonly BOT_USERS=(
@@ -125,9 +106,6 @@ readonly BOT_USERS=(
    'bot-test-user'
 )
 
-## Echo 'person' or 'bot' for the named user; die on an unknown
-## name. apply_repo_policy pivots on this to pick between
-## POLICY_PERSONAL_REPO_PERSON / POLICY_PERSONAL_REPO_BOT.
 user_kind() {
    local user name
    user="$1"
@@ -147,13 +125,7 @@ target_kind="$(user_kind "${target_user}")" \
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
-## Policy bodies (POLICY_*) live in github-policy-data.bsh, sourced
-## above. This script consumes POLICY_FORK_PR_APPROVAL,
-## POLICY_WORKFLOW_PERMS, POLICY_ACTIONS_DISABLED,
-## POLICY_PERSONAL_REPO_{PERSON,BOT}, POLICY_PAGES_DELETE_*.
-
-## --verbose suppresses the 'ok:' line otherwise printed by
-## policy_api_call. Apply runs without --verbose are quiet on success.
+## --verbose suppresses the 'ok:' line from policy_api_call.
 [ "${verbose}" = '1' ] || POLICY_QUIET_OK=1
 
 apply_repo_policy() {
@@ -161,26 +133,18 @@ apply_repo_policy() {
 
    repo="$1"
 
-   ## Pure dispatch table - all policy data lives in
-   ## github-policy-data.bsh.
-
-   ## 1. Fork-PR contributor approval.
    policy_apply_repo "${target_user}" "${repo}" FORK_PR_APPROVAL
 
-   ## 2. Default workflow GITHUB_TOKEN permissions.
    policy_apply_repo "${target_user}" "${repo}" WORKFLOW_PERMS
 
-   ## 3. Disable GitHub Actions entirely on the repo.
    policy_apply_repo "${target_user}" "${repo}" ACTIONS_DISABLED
 
-   ## 4. Repo settings + secret-scanning + push-protection.
-   ##    Pivots on target_kind (resolved at script-init time) to
-   ##    pick PERSON or BOT body via the constant naming convention.
+   ## target_kind pivots PERSON vs BOT via the constant naming
+   ## convention.
    policy_apply_repo "${target_user}" "${repo}" "PERSONAL_REPO_${target_kind^^}"
 
-   ## 5. Delete GitHub Pages site if any. Custom call (DELETE +
-   ##    extra-ok-status arg); the simple dispatcher does not handle
-   ##    the 4th policy_api_call arg.
+   ## DELETE + extra-ok-status; the simple dispatcher does not handle
+   ## the 4th policy_api_call arg.
    pages_endpoint="${POLICY_PAGES_DELETE_ENDPOINT_REPO}"
    pages_endpoint="${pages_endpoint//__OWNER__/${target_user}}"
    pages_endpoint="${pages_endpoint//__REPO__/${repo}}"
@@ -189,30 +153,21 @@ apply_repo_policy() {
       "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
-   ## 6. Branch ruleset on the default branch.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_BRANCH}" \
       "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo)" \
       || true
 
-   ## 7. Tag ruleset for all tags.
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo)" \
       || true
 
-   ## 8. (DELIBERATELY DISABLED) Vulnerability alerts + Dependabot
-   ##    security updates.
-   ##
-   ##    The personal account is a backup/mirror of work that
-   ##    happens in upstream orgs (Kicksecure, Whonix). Orgs may
-   ##    delete repos for brevity; the personal account preserves
-   ##    history. Enabling Dependabot here would produce duplicate
-   ##    notifications for findings already raised on the upstream
-   ##    org-side repo. Keep these off on the personal mirror.
-   ##
-   ##    If/when this becomes the canonical home of a repo (not a
-   ##    mirror), uncomment.
+   ## DELIBERATELY DISABLED: Vulnerability alerts + Dependabot
+   ## security updates. Personal account is a backup/mirror; enabling
+   ## here would duplicate notifications for findings already raised
+   ## on the upstream org-side repo. Uncomment if/when this becomes
+   ## the canonical home of a repo (not a mirror).
    ##
    ## policy_api_call "${target_user}/${repo}: enable vulnerability alerts" \
    ##    PUT "/repos/${target_user}/${repo}/vulnerability-alerts" \
@@ -266,21 +221,15 @@ audit_one() {
 }
 
 ## inc_private=0, inc_archived=0, inc_forks=1: forks need the same
-## per-repo lockdown as non-fork repos (they have their own
-## .github/workflows + ruleset settings, so the malicious-fork-PR
-## vector exists on a fork too). Archived stays excluded - the API
-## returns 403 on PATCH/PUT of archived repos. Private stays excluded
-## - external contributors cannot open PRs against private repos.
+## per-repo lockdown as non-fork repos (malicious-fork-PR vector
+## exists on a fork too). Archived excluded (HTTP 403 on PATCH/PUT).
+## Private excluded (external contributors cannot open PRs against
+## private repos).
 ## Account-wide settings (applied once per --apply, not per repo).
-## Audit mode skips this block; the per-repo audit_one loop below
-## handles the read-only inspection a separate way.
 ##
-## Currently one knob: hide the primary email from the public
-## profile. The /user/* endpoints implicitly act on the
-## token-authed user, so we guard "authed user == target_user"
-## first - otherwise a token belonging to user A running this
-## script against user B would mutate A's email visibility, not
-## B's. The check is harmless in dry-run too (it's a read).
+## /user/* endpoints implicitly act on the token-authed user; guard
+## "authed user == target_user" first - otherwise a token belonging
+## to A running this against B would mutate A's email visibility.
 if [ "${mode}" != 'audit' ]; then
    authed_login=''
    authed_result="$(ghorg_api GET /user)" || true
@@ -295,8 +244,7 @@ if [ "${mode}" != 'audit' ]; then
       log notice "skip: ${target_user}: ${POLICY_USER_EMAIL_PRIVATE_LABEL} - token belongs to '${authed_login}', not '${target_user}'; account-wide PATCHes would target the wrong account"
    else
       ## /user/email/visibility takes no placeholder; call the lib
-      ## directly rather than through policy_apply_repo (which is
-      ## per-repo and substitutes __OWNER__/__REPO__).
+      ## directly rather than through policy_apply_repo.
       policy_api_call "${target_user}: ${POLICY_USER_EMAIL_PRIVATE_LABEL}" \
          "${POLICY_USER_EMAIL_PRIVATE_METHOD}" \
          "${POLICY_USER_EMAIL_PRIVATE_ENDPOINT}" \
@@ -328,8 +276,5 @@ case "${mode}" in
       ;;
 esac
 
-## Non-zero exit if at least one warn happened anywhere - CI / cron
-## callers can tell the run was unsuccessful without parsing log
-## output. Operator reads the warn lines above to see what failed.
 [ "${policy_warn_seen}" -eq 1 ] && exit 1
 exit 0

@@ -6,50 +6,27 @@
 ## AI-Assisted
 
 ## Shared git helpers for the developer-meta-files scripts. Sourced
-## by dm-packaging-helper-script and dm-push so both gate their pushes
-## the same way without code duplication.
+## by dm-packaging-helper-script and dm-push.
 ##
-## This file MUST be safe to source: no top-level side effects beyond
-## function and constant definitions. No `set` directives, no `cd`,
-## no I/O.
+## Safe to source: no top-level side effects beyond function and
+## constant definitions.
 ##
-## Two push-gate variants are exposed; both take the same arguments
-## and have the same return-code contract (0 = differs, push needed;
-## 1 = identical, skip push):
-##
-##   internal_git_diff_local   tracking-ref comparison, no network
-##   internal_git_diff_remote  authoritative `git ls-remote` query
-##
-## Both compare commit SHAs rather than tree contents: amend, rebased
-## message, or cherry-pick of an already-applied change all produce a
-## new commit SHA with an unchanged tree, and all need to be pushed.
-## Tree-level `git diff` would falsely report "no diff" in those
-## cases.
-##
-## Callers should default to internal_git_diff_local and opt in to
-## internal_git_diff_remote when the cost of a bounced push (rejected
-## non-fast-forward, manual recovery) outweighs the cost of one
-## metadata-only network round-trip per gated branch.
+## Both variants compare commit SHAs rather than tree contents:
+## amend, rebased message, or cherry-pick of an already-applied
+## change all produce a new commit SHA with an unchanged tree, and
+## all need to be pushed. Tree-level `git diff` would falsely
+## report "no diff" in those cases.
 
-## Returns 0 if the local branch and the local remote-tracking ref
-## differ (push needed), 1 if they point at the same commit (skip).
+## Returns 0 if local branch and tracking ref differ (push needed),
+## 1 if same commit (skip).
 ##
-## Compares refs/heads/<branch> to refs/remotes/<remote>/<branch>.
-## NO network round-trip; only as fresh as the last `git fetch`.
+## No network round-trip; only as fresh as the last `git fetch`.
 ## Misses concurrent-pusher races: if someone advanced the remote
 ## since our last fetch, this gate will incorrectly say "skip"; the
 ## eventual `git push` will be rejected non-fast-forward and the
 ## caller is responsible for re-fetching and retrying.
 ##
-## Arguments:
-##   $1  local branch name (e.g. "master"; no refs/heads/ prefix)
-##   $2  remote name       (e.g. "origin")
-##
-## Behavior on errors:
-##   - empty argument                     => FATAL, exit 1
-##   - missing local branch               => FATAL, exit 1
-##   - missing remote-tracking ref        => warn, prompt, return 0
-##                                            (push will create it)
+## Arguments: $1 branch name (no refs/heads/), $2 remote name.
 internal_git_diff_local() {
    local branch_name remote_name local_sha tracking_sha
 
@@ -80,25 +57,14 @@ internal_git_diff_local() {
    return 0
 }
 
-## Returns 0 if the local branch differs from the remote branch
-## (push needed), 1 if they point at the same commit (skip).
+## Returns 0 if local branch differs from remote (push needed),
+## 1 if same commit (skip).
 ##
 ## Authoritative: queries the remote via `git ls-remote` rather than
-## comparing against the possibly-stale local tracking ref. Costs one
-## network round-trip per call but catches the concurrent-pusher case
-## where someone else advanced the remote between our last fetch and
-## now, and avoids relying on a tracking ref that may never have been
-## fetched.
+## the possibly-stale local tracking ref. Costs one network
+## round-trip per call but catches the concurrent-pusher case.
 ##
-## Arguments:
-##   $1  local branch name (e.g. "master"; no refs/heads/ prefix)
-##   $2  remote name       (e.g. "origin")
-##
-## Behavior on errors:
-##   - empty argument               => FATAL, exit 1
-##   - missing local branch         => FATAL, exit 1
-##   - `git ls-remote` failure      => warn, prompt, fall through to "push needed"
-##   - branch absent on remote      => return 0 ("push needed"; push will create it)
+## Arguments: $1 branch name (no refs/heads/), $2 remote name.
 internal_git_diff_remote() {
    local branch_name remote_name local_sha ls_remote_output remote_sha
 
@@ -118,30 +84,23 @@ internal_git_diff_remote() {
       return 0
    fi
 
-   ## ls-remote output, when the ref exists, is "<sha>\trefs/heads/<branch>".
-   ## When the ref is absent on the remote the output is empty and the
-   ## exit code is still 0; treat that as "push needed" so the caller's
-   ## git push will create the remote ref.
+   ## When the ref is absent on the remote the output is empty and
+   ## the exit code is still 0; treat that as "push needed".
    if [ -z "${ls_remote_output}" ]; then
-      #log info "${FUNCNAME[0]}: ls_remote_output output empty | return 0"
       return 0
    fi
 
    remote_sha="${ls_remote_output%%$'\t'*}"
 
    if [ "${local_sha}" = "${remote_sha}" ]; then
-      #log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes | return 1"
       return 1
    fi
 
-   #log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no | return 0"
    return 0
 }
 
-## Dispatcher. Default is the local (tracking-ref) variant - no
-## network round-trip - to match historical behavior. Set
-## DM_GATE_LS_REMOTE=1 in the environment to opt in to the
-## authoritative ls-remote variant.
+## Set DM_GATE_LS_REMOTE=1 to opt in to the authoritative
+## ls-remote variant; default is the local tracking-ref variant.
 internal_git_diff() {
    if [ "${DM_GATE_LS_REMOTE:-0}" = 1 ]; then
       internal_git_diff_remote "$@"
