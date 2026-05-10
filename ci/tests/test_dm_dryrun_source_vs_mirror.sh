@@ -13,12 +13,13 @@
 ##     SOURCE: 'wiki=off, issues=on, secret-scan on' (issues stay on)
 ##     MIRROR: 'wiki/issues/projects/discussions off, secret-scan on'
 ##
-##   Dependabot alerts + Dependabot security updates + PVR PUTs:
-##     SOURCE: applied per repo (3 PUTs each)
-##     MIRROR: skipped with a single notice line - mirror would
-##             duplicate every alert the canonical SOURCE repo
-##             already raises (same anti-duplication logic
-##             dm-github-personal-policy applies)
+##   Dependabot alerts + Dependabot security updates + PVR
+##   (Private Vulnerability Reporting):
+##     SOURCE: enabled per repo (3 PUTs each)
+##     MIRROR: actively disabled per repo (3 DELETEs each, with
+##             security-fixes BEFORE alerts to avoid 422). Every
+##             --apply reconciles - mirror would duplicate every
+##             alert the canonical SOURCE repo already raises.
 ##
 ##   per-repo branch + tag rulesets: applied on both; bypass actor
 ##     list pivots on POLICY_RULESET_BYPASS_SOURCE/MIRROR (the
@@ -62,8 +63,7 @@ source_required=(
    ## SOURCE per-repo body: has_issues stays on, no allow_forking
    ## field at all (the body simply omits it).
    'SOURCE: wiki=off, issues=on, secret-scan on'
-   ## SOURCE gets the Dependabot/PVR fan-out (one set of three
-   ## DRY-RUN lines per in-scope repo).
+   ## SOURCE gets the Dependabot/PVR enable fan-out.
    'enable Dependabot alerts'
    'enable Dependabot security updates'
    'enable private vulnerability reporting'
@@ -72,8 +72,10 @@ source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
    ## SOURCE org.
    'MIRROR:'
-   ## MIRROR-only skip line MUST NOT appear on SOURCE.
-   'mirror would duplicate upstream SOURCE notifications'
+   ## MIRROR-only disable lines MUST NOT appear on SOURCE.
+   'disable Dependabot alerts (mirror)'
+   'disable Dependabot security updates (mirror)'
+   'disable private vulnerability reporting (mirror)'
 )
 for needle in "${source_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
@@ -100,12 +102,15 @@ fi
 
 mirror_required=(
    'MIRROR: wiki/issues/projects/discussions off, secret-scan on'
-   ## MIRROR skips Dependabot/PVR with a single notice line.
-   'mirror would duplicate upstream SOURCE notifications'
+   ## MIRROR actively disables Dependabot/PVR (DELETE on the same
+   ## three endpoints) so every --apply reconciles state.
+   'disable Dependabot alerts (mirror)'
+   'disable Dependabot security updates (mirror)'
+   'disable private vulnerability reporting (mirror)'
 )
 mirror_forbidden=(
    'SOURCE:'
-   ## Dependabot/PVR DRY-RUN lines MUST NOT appear on MIRROR.
+   ## SOURCE-only enable lines MUST NOT appear on MIRROR.
    'enable Dependabot alerts'
    'enable Dependabot security updates'
    'enable private vulnerability reporting'

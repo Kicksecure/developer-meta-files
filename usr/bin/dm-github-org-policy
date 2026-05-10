@@ -597,18 +597,28 @@ apply_repo_policy() {
    kind="$(org_kind "${owner}")" || return 1
    policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 
-   ## Free-plan-compatible code-security replacements. Applied to
-   ## SOURCE only - on MIRROR these would produce duplicate
-   ## notifications for findings already raised against the
-   ## upstream SOURCE repo. policy_apply_repo resolves
-   ## POLICY_<NAME>_ENDPOINT (no _ORG/_REPO suffix) when the 4th
-   ## arg is 'ENDPOINT'.
+   ## Free-plan-compatible code-security: enable on SOURCE,
+   ## actively disable on MIRROR. The mirror would duplicate every
+   ## alert the canonical SOURCE repo already raises, so steady
+   ## state on the mirror is "all three off". Always-enforced -
+   ## every --apply reconciles, no opt-in flag.
+   ##
+   ## Order on the disable side matters: DEPENDABOT_FIXES_OFF
+   ## BEFORE DEPENDABOT_ALERTS_OFF. The DELETE
+   ## /automated-security-fixes endpoint returns 422 once alerts
+   ## are off (idempotent steady state); FIXES_OFF carries an
+   ## EXTRA_OK_STATUS=422 to keep that case warn-free.
+   ##
+   ## policy_apply_repo resolves POLICY_<NAME>_ENDPOINT (no
+   ## _ORG/_REPO suffix) when the 4th arg is 'ENDPOINT'.
    if [ "${kind}" = 'source' ]; then
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
       policy_apply_repo "${owner}" "${repo}" REPO_PVR               ENDPOINT
    else
-      log notice "skip: ${owner}/${repo}: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications"
+      policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES_OFF  ENDPOINT
+      policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS_OFF ENDPOINT
+      policy_apply_repo "${owner}" "${repo}" REPO_PVR_OFF               ENDPOINT
    fi
 
    ## Free-plan-compatible per-repo branch + tag rulesets. Same

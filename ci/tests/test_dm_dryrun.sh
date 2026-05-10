@@ -64,16 +64,17 @@ required=(
    'skip: org-ai-assisted: PAT policy toggles must be set via UI'
    'skip: org-ai-assisted: GitHub App / OAuth App policies must be set via UI'
 
-   ## Per-repo branch + tag rulesets (applied on both SOURCE and
-   ## MIRROR). Dependabot/PVR are SOURCE-only and should NOT
-   ## appear in DRY-RUN output for org-ai-assisted (MIRROR); the
-   ## skip line below stands in for them.
-   'skip: org-ai-assisted/derivative-maker: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications'
+   ## MIRROR (org-ai-assisted) actively disables Dependabot/PVR
+   ## via DELETE on the same three endpoints. Per-repo branch +
+   ## tag rulesets apply on both SOURCE and MIRROR.
+   'DRY-RUN: org-ai-assisted/derivative-maker: disable Dependabot security updates (mirror)'
+   'DRY-RUN: org-ai-assisted/derivative-maker: disable Dependabot alerts (mirror)'
+   'DRY-RUN: org-ai-assisted/derivative-maker: disable private vulnerability reporting (mirror)'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy default-branch protection'
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy tag protection'
 )
 
-## MIRROR must NOT see Dependabot/PVR DRY-RUN lines.
+## MIRROR must NOT see SOURCE-only enable DRY-RUN lines.
 mirror_dep_pvr_forbidden=(
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot security updates'

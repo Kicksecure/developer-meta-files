@@ -83,10 +83,17 @@ required=(
    'ok: org-ai-assisted/helper-scripts: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
    'ok: org-ai-assisted/some-fork: MIRROR: wiki/issues/projects/discussions off, secret-scan on'
 
-   ## Dependabot/PVR are SOURCE-only. org-ai-assisted is MIRROR;
-   ## those calls are skipped here with a single notice line.
-   ## Asserted on one repo (the skip is symmetric across all three).
-   'skip: org-ai-assisted/derivative-maker: Dependabot alerts + security updates + PVR - mirror would duplicate upstream SOURCE notifications'
+   ## Dependabot/PVR are actively disabled on MIRROR (org-ai-
+   ## assisted) so every --apply reconciles state. Order:
+   ## security-fixes BEFORE alerts. The fixture returns 422 on
+   ## DELETE /automated-security-fixes to exercise the
+   ## EXTRA_OK_STATUS=422 path; the policy treats 422 as success
+   ## (idempotent steady state) so the line still emits 'ok:'.
+   ## Asserted on one repo (the disable trio is symmetric across
+   ## all three).
+   'ok: org-ai-assisted/derivative-maker: disable Dependabot security updates (mirror)'
+   'ok: org-ai-assisted/derivative-maker: disable Dependabot alerts (mirror)'
+   'ok: org-ai-assisted/derivative-maker: disable private vulnerability reporting (mirror)'
 
    ## Free-plan-compatible per-repo branch + tag rulesets. Applied
    ## on both SOURCE and MIRROR (only the bypass actor list
@@ -96,8 +103,9 @@ required=(
    "org-ai-assisted/derivative-maker: create ruleset 'dm-github-org-policy tag protection'"
 )
 
-## MIRROR must NOT see Dependabot/PVR ok lines (those are
-## SOURCE-only per apply_repo_policy).
+## MIRROR must NOT see SOURCE-only enable ok lines (those would
+## indicate apply_repo_policy fell through the kind=='source'
+## branch incorrectly).
 mirror_dep_pvr_forbidden=(
    'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'

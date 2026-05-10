@@ -310,6 +310,36 @@ readonly POLICY_REPO_PVR_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerabili
 readonly POLICY_REPO_PVR_METHOD='PUT'
 readonly POLICY_REPO_PVR_LABEL='enable private vulnerability reporting'
 
+## --- MIRROR-only counterparts that actively turn the same three
+## features OFF (DELETE on the same paths). dm-github-org-policy
+## fans these out on kind=='mirror' so every --apply reconciles
+## the state - covers leftovers from older un-gated apply runs and
+## any accidental UI flips. No mode flag, no opt-in; this is part
+## of the steady-state policy.
+##
+## Order matters at the call site: DEPENDABOT_FIXES_OFF must run
+## BEFORE DEPENDABOT_ALERTS_OFF. The /automated-security-fixes
+## endpoint returns HTTP 422 ("alerts are off") if you DELETE it
+## after alerts have already been disabled - which is the
+## idempotent steady state on a mirror, so the 422 is captured as
+## extra_ok below to keep policy_warn_seen=0 across runs.
+
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF='{}'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/vulnerability-alerts'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_METHOD='DELETE'
+readonly POLICY_REPO_DEPENDABOT_ALERTS_OFF_LABEL='disable Dependabot alerts (mirror)'
+
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF='{}'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/automated-security-fixes'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_METHOD='DELETE'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_LABEL='disable Dependabot security updates (mirror)'
+readonly POLICY_REPO_DEPENDABOT_FIXES_OFF_EXTRA_OK_STATUS='422'
+
+readonly POLICY_REPO_PVR_OFF='{}'
+readonly POLICY_REPO_PVR_OFF_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerability-reporting'
+readonly POLICY_REPO_PVR_OFF_METHOD='DELETE'
+readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting (mirror)'
+
 ## Branch + tag ruleset bypass actor list (passed to
 ## policy_branch_ruleset_body / policy_tag_ruleset_body).
 ##
