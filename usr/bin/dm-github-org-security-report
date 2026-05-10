@@ -127,7 +127,11 @@ esac
 ## org's parsed body. Operator-facing status goes to stderr via
 ## log; this is one of the cases R-041 explicitly carves out for
 ## bare printf (writing to a pipe-shaped consumer).
-printf '%s\n' "# Security report - $(date -u +%Y-%m-%dT%H:%M:%SZ) - mode=${mode}"
+##
+## R-033: hoist the timestamp into a named variable; do not
+## inline $(date ...) into the printf format string.
+report_timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}"
 printf '%s\n' ""
 printf '%s\n' "| repo | tool | severity | rule | path | line | message |"
 printf '%s\n' "| --- | --- | --- | --- | --- | --- | --- |"
