@@ -9,7 +9,8 @@
 | Topic | Where |
 | --- | --- |
 | Bash style (variables, printf, locals, traps, ...) | [`agents/bash-style-guide.md`](agents/bash-style-guide.md) |
-| pre-push checklist | [`agents/pre-push-checklist.md`](agents/pre-push-checklist.md) |
+| pre-push checklist (skim before push) | [`agents/pre-push-checklist.md`](agents/pre-push-checklist.md) |
+| pre-push static gate (run before push; enforces R-001 ASCII, `bash -n`, `shellcheck -x`) | [`agents/pre-push-static.sh`](agents/pre-push-static.sh) |
 | GitHub Actions cross-repo conventions (reusable workflows, context constraints) | [`agents/github-actions.md`](agents/github-actions.md) |
 | General threat model + trust boundaries | [`agents/security.md`](agents/security.md) |
 

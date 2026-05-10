@@ -4,20 +4,23 @@ Skim before every push.
 
 * Scope: any change to bash script, or `agents/`.
 * Bash style: [agents/bash-style-guide.md](bash-style-guide.md).
+* Mechanical gate: [agents/pre-push-static.sh](pre-push-static.sh).
 
 The list is grouped by phase. Skip items that don't apply to your
 diff; don't skip a phase. Each item cites the relevant rule.
 
 ## Static checks
 
-    [ ] bash -n on every changed script
-    [ ] shellcheck --external-sources (-x) on the same set
-        (catches SC2317 unreachable-via-source for callbacks
-        invoked indirectly across files)
-    [ ] LC_ALL=C grep -PlI '[^\x00-\x7F]' on changed files
-        (R-001 ASCII only)
-    [ ] LC_ALL=C grep -P '[^\x00-\x7F]' on the commit message
-        (R-001 ASCII only)
+    [ ] Run pre-push-static.sh; it enforces all four items in
+        one call: bash -n, shellcheck --external-sources,
+        ASCII-only files (R-001), and ASCII-only commit-range
+        message (R-001). The shellcheck pass also catches
+        SC2317 unreachable-via-source for callbacks invoked
+        indirectly across files.
+
+Wire as a hook so the gate is unmissable:
+
+    ln -sf ../../agents/pre-push-static.sh .git/hooks/pre-push
 
 ## Style spot-check (touched code only)
 
@@ -81,6 +84,6 @@ diff; don't skip a phase. Each item cites the relevant rule.
 ## Commit
 
     [ ] Every new file from scratch has 'AI-Assisted' marker
-        (R-002)
-    [ ] No emoji, no smart quotes, no em dashes in commit message
-        (R-001)
+        (R-002). NB: R-001 (no emoji / smart quotes / em dashes
+        in commit messages) is enforced by pre-push-static.sh
+        on the commit-range message; no manual sub-item.

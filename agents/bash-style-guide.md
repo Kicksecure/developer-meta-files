@@ -24,7 +24,11 @@ only. No smart quotes, em dashes, zero-width spaces, emoji.
 Why: AI tools reflexively render bullet lists with cosmetic
 unicode (U+2014 em dash, U+2192 right-arrow); strip them. ASCII-
 only files make `LC_ALL=C grep -PlI '[^\x00-\x7F]'` a useful
-pre-push gate.
+pre-push gate. The runnable gate
+[`agents/pre-push-static.sh`](pre-push-static.sh) applies that
+grep to both changed files and the commit-range message; install
+it as `.git/hooks/pre-push` to make R-001 violations impossible
+to push.
 
 **R-002: File header includes the 'AI-Assisted' marker.** Every
 new file from scratch carries the standard 5-line header:
@@ -359,7 +363,9 @@ when the shared pre-flight already covers it.
 
 **R-093: Exception for `ci/install-helper-scripts.sh`.** That
 script runs BEFORE helper-scripts is installed, so it falls back
-to plain `command -v`.
+to plain `command -v`. The same exception applies to
+`agents/pre-push-static.sh`, which must run as a bare git hook
+without sourcing helper-scripts.
 
 
 ## Workflow scripts
