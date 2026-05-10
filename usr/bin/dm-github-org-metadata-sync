@@ -1,0 +1,351 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Apply per-repo description, homepage, and topics from
+## repo-metadata.bsh to each selected owner. Idempotent and
+## apply-only - repos absent on a given owner are skipped silently
+## (GitHub PATCH/PUT of identical values is a no-op server-side, so
+## re-runs are safe even when nothing changed).
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+source /usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
+source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+source /usr/libexec/developer-meta-files/github-policy-data.bsh
+# shellcheck source=/usr/libexec/developer-meta-files/repo-metadata.bsh
+source /usr/libexec/developer-meta-files/repo-metadata.bsh
+## R-082: source every helper-scripts file used directly.
+# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
+# shellcheck source=/usr/libexec/helper-scripts/has.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
+
+## Owner selection. Mirror-side tokens (org-ai-assisted) and
+## source-side tokens (Kicksecure / Whonix / adrelanos) are mutually
+## exclusive in scope at the GitHub PAT layer, so a single run cannot
+## cover both buckets. Default targets the mirror; an operator running
+## with a source-side token sets
+##   ORGS_OVERRIDE='Kicksecure,Whonix,adrelanos'
+## (comma-separated; bash arrays do not cross a process boundary as
+## env vars). Same pattern as dm-github-org-policy.
+readonly DEFAULT_OWNERS=( 'org-ai-assisted' )
+
+if [ -n "${ORGS_OVERRIDE:-}" ]; then
+   IFS=',' read -ra OWNERS <<< "${ORGS_OVERRIDE}"
+else
+   OWNERS=( "${DEFAULT_OWNERS[@]}" )
+fi
+readonly OWNERS
+
+## Topic format contract per repo-metadata.bsh docstring.
+readonly TOPIC_REGEX='^[a-z0-9][a-z0-9-]*$'
+readonly TOPIC_MAX_LEN=50
+readonly TOPIC_MAX_COUNT=20
+
+dry_run=0
+verbose=0
+mode=''
+mode_set=0
+positional=()
+
+## Cache so the per-repo topic-validation + jq build runs once even
+## across multiple owners (108 repos x 4 owners would otherwise be 432
+## jq invocations). Keyed by repo name; value is a JSON array string.
+declare -gA REPO_TOPICS_JSON_CACHE=()
+
+# shellcheck disable=SC2317  # invoked dynamically by policy_parse_mode_args
+show_help() {
+   cat <<'EOF'
+Apply description, homepage, and topics from repo-metadata.bsh to
+every selected owner that has a matching repo. Idempotent; missing
+repos are skipped silently.
+
+Usage (one mode flag is required - no implicit default):
+  dm-github-org-metadata-sync --apply         apply metadata
+  dm-github-org-metadata-sync --dry-run       report planned changes
+  dm-github-org-metadata-sync --audit         read-only drift report
+  dm-github-org-metadata-sync --policy-dump   print github-policy-data.bsh
+  dm-github-org-metadata-sync --help
+
+Owner selection:
+  Default:  org-ai-assisted    (mirror-side token)
+  Override: ORGS_OVERRIDE='Kicksecure,Whonix,adrelanos'  (source side)
+  Run once per token bucket; a single PAT cannot cover both.
+
+Auth:
+  ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
+  Token needs 'repo' (classic) or Administration: write (fine-grained).
+EOF
+}
+
+policy_tool_init 0 "$@"
+
+## Reject a topic that violates repo-metadata.bsh's contract. Returns
+## 0 on accept, 1 on reject; warn lines surface the rejection.
+metadata_validate_topic() {
+   local topic
+
+   topic="$1"
+
+   if [ "${#topic}" -gt "${TOPIC_MAX_LEN}" ]; then
+      log warn "reject topic '${topic}': exceeds '${TOPIC_MAX_LEN}' chars"
+      return 1
+   fi
+   if ! [[ "${topic}" =~ ${TOPIC_REGEX} ]]; then
+      log warn "reject topic '${topic}': does not match '${TOPIC_REGEX}'"
+      return 1
+   fi
+}
+
+## Build a JSON array of the validated topics for one repo and echo it
+## on stdout. Memoized via REPO_TOPICS_JSON_CACHE. Bad topics in the
+## source file set caller-scope policy_warn_seen=1 (audit and apply
+## both fail on bad input that way).
+metadata_topics_json() {
+   local repo topics_str topic cached
+   local -a topics_in topics_ok
+
+   repo="$1"
+
+   cached="${REPO_TOPICS_JSON_CACHE[${repo}]:-}"
+   if [ -n "${cached}" ]; then
+      printf '%s' "${cached}"
+      return 0
+   fi
+
+   topics_str="${REPO_TOPICS[${repo}]}"
+   topics_in=()
+   topics_ok=()
+   read -ra topics_in <<< "${topics_str}"
+
+   for topic in "${topics_in[@]}"; do
+      [ -z "${topic}" ] && continue
+      if metadata_validate_topic "${topic}"; then
+         topics_ok+=( "${topic}" )
+      else
+         policy_warn_seen=1
+      fi
+   done
+
+   if [ "${#topics_ok[@]}" -gt "${TOPIC_MAX_COUNT}" ]; then
+      log warn "repo '${repo}': '${#topics_ok[@]}' topics exceeds cap '${TOPIC_MAX_COUNT}', truncating"
+      topics_ok=( "${topics_ok[@]:0:${TOPIC_MAX_COUNT}}" )
+      policy_warn_seen=1
+   fi
+
+   ## --args has to follow the program; passes positional strings as
+   ## $ARGS.positional. Zero-length array yields []. ghorg_jq (no cap)
+   ## because input is trusted (already validated above).
+   cached="$(ghorg_jq --null-input '$ARGS.positional' --args "${topics_ok[@]}")"
+   REPO_TOPICS_JSON_CACHE[${repo}]="${cached}"
+   printf '%s' "${cached}"
+}
+
+## Populates the caller-named associative array with one key per repo
+## name from a newline-separated list. Mirrors fork_main_build_repo_set
+## in github-org-fork.
+metadata_build_repo_set() {
+   local set_name list_text repo_name
+
+   set_name="$1"
+   list_text="$2"
+
+   check_variable_name "${set_name}" || return 1
+
+   while IFS= read -r repo_name; do
+      [ -z "${repo_name}" ] && continue
+      printf -v "${set_name}[${repo_name}]" '%s' '1'
+   done <<< "${list_text}"
+}
+
+## Apply metadata + topics to one (owner, repo). Best-effort: each
+## policy_api_call failure sets policy_warn_seen and continues; the
+## other call still runs so a flaky single endpoint never blocks the
+## rest.
+metadata_apply_one() {
+   local owner repo description website topics_json
+   local meta_endpoint topics_endpoint
+   local meta_body topics_body
+
+   owner="$1"
+   repo="$2"
+
+   ghorg_validate_name "${owner}" user || return 1
+   ghorg_validate_name "${repo}" repo || return 1
+
+   description="${REPO_DESCRIPTION[${repo}]}"
+   website="${REPO_WEBSITE[${repo}]}"
+   topics_json="$(metadata_topics_json "${repo}")"
+
+   meta_endpoint="${POLICY_REPO_METADATA_ENDPOINT_REPO}"
+   meta_endpoint="${meta_endpoint//__OWNER__/${owner}}"
+   meta_endpoint="${meta_endpoint//__REPO__/${repo}}"
+
+   topics_endpoint="${POLICY_REPO_TOPICS_ENDPOINT_REPO}"
+   topics_endpoint="${topics_endpoint//__OWNER__/${owner}}"
+   topics_endpoint="${topics_endpoint//__REPO__/${repo}}"
+
+   meta_body="$(ghorg_jq --null-input \
+      --arg desc "${description}" \
+      --arg home "${website}" \
+      -- "${POLICY_REPO_METADATA}")"
+   topics_body="$(ghorg_jq --null-input \
+      --argjson topics "${topics_json}" \
+      -- "${POLICY_REPO_TOPICS}")"
+
+   policy_api_call "${owner}/${repo}: ${POLICY_REPO_METADATA_LABEL}" \
+      "${POLICY_REPO_METADATA_METHOD}" "${meta_endpoint}" "${meta_body}" \
+      || true
+   policy_api_call "${owner}/${repo}: ${POLICY_REPO_TOPICS_LABEL}" \
+      "${POLICY_REPO_TOPICS_METHOD}" "${topics_endpoint}" "${topics_body}" \
+      || true
+}
+
+## Read-only drift report for one (owner, repo). Each drifting field
+## logs a `current=... desired=...` line. With --verbose the
+## no-drift case also logs. API failures log notice but do not warn -
+## audit is informational; a bad token bucket would otherwise spam
+## warns for every repo.
+metadata_audit_one() {
+   local owner repo expected_desc expected_home expected_topics
+   local expected_topics_sorted current_desc current_home current_topics
+   local result status body
+   local topics_result topics_status topics_body
+   local drift_line
+   local -a drift_lines
+
+   owner="$1"
+   repo="$2"
+
+   ghorg_validate_name "${owner}" user || return 0
+   ghorg_validate_name "${repo}" repo || return 0
+
+   expected_desc="${REPO_DESCRIPTION[${repo}]}"
+   expected_home="${REPO_WEBSITE[${repo}]}"
+   expected_topics="$(metadata_topics_json "${repo}")"
+   expected_topics_sorted="$(printf '%s' "${expected_topics}" \
+      | ghorg_jq_capped -- 'sort')"
+
+   result="$(ghorg_api GET "/repos/${owner}/${repo}")" || {
+      log notice "audit: ${owner}/${repo}: api error (skip)"
+      return 0
+   }
+   status="$(ghorg_status_of "${result}")"
+   if [ "${status}" != '200' ]; then
+      log notice "audit: ${owner}/${repo}: HTTP '${status}' (skip)"
+      return 0
+   fi
+   body="$(ghorg_body_of "${result}")"
+   current_desc="$(printf '%s' "${body}" \
+      | ghorg_jq_capped --raw-output -- '.description // ""')"
+   current_home="$(printf '%s' "${body}" \
+      | ghorg_jq_capped --raw-output -- '.homepage // ""')"
+
+   topics_result="$(ghorg_api GET "/repos/${owner}/${repo}/topics")" || {
+      log notice "audit: ${owner}/${repo}/topics: api error (skip)"
+      return 0
+   }
+   topics_status="$(ghorg_status_of "${topics_result}")"
+   if [ "${topics_status}" != '200' ]; then
+      log notice "audit: ${owner}/${repo}/topics: HTTP '${topics_status}' (skip)"
+      return 0
+   fi
+   topics_body="$(ghorg_body_of "${topics_result}")"
+   current_topics="$(printf '%s' "${topics_body}" \
+      | ghorg_jq_capped -- '.names | sort')"
+
+   drift_lines=()
+   if [ "${current_desc}" != "${expected_desc}" ]; then
+      drift_lines+=( "  desc:   current='${current_desc}' desired='${expected_desc}'" )
+   fi
+   if [ "${current_home}" != "${expected_home}" ]; then
+      drift_lines+=( "  home:   current='${current_home}' desired='${expected_home}'" )
+   fi
+   if [ "${current_topics}" != "${expected_topics_sorted}" ]; then
+      drift_lines+=( "  topics: current=${current_topics} desired=${expected_topics_sorted}" )
+   fi
+
+   if [ "${#drift_lines[@]}" -eq 0 ]; then
+      [ "${verbose}" = '1' ] && log notice "audit: ${owner}/${repo}: no drift"
+      return 0
+   fi
+   log notice "audit: ${owner}/${repo}: drift"
+   for drift_line in "${drift_lines[@]}"; do
+      log notice "${drift_line}"
+   done
+}
+
+main() {
+   local owner repo repos_text absent_count present_count
+   local -a sorted_repos
+   local -A owner_repos
+
+   ## Source side-effect: add_repo() in repo-metadata.bsh populated
+   ## REPO_HOME / REPO_DESCRIPTION / REPO_WEBSITE / REPO_TOPICS.
+   if [ "${#REPO_HOME[@]}" -eq 0 ]; then
+      log error 'repo-metadata.bsh defined no repos'
+      return 1
+   fi
+
+   sorted_repos=()
+   repos_text="$(printf '%s\n' "${!REPO_HOME[@]}" | sort --unique)"
+   while IFS= read -r repo; do
+      [ -z "${repo}" ] && continue
+      sorted_repos+=( "${repo}" )
+   done <<< "${repos_text}"
+
+   for owner in "${OWNERS[@]}"; do
+      ghorg_validate_name "${owner}" user || {
+         policy_warn_seen=1
+         continue
+      }
+
+      log notice "=== ${owner} ==="
+
+      owner_repos=()
+      repos_text="$(ghorg_list_repos "${owner}" 0 0 1 | sort --unique)" || {
+         log warn "${owner}: could not list repos; skipping owner"
+         policy_warn_seen=1
+         continue
+      }
+      metadata_build_repo_set owner_repos "${repos_text}"
+
+      absent_count=0
+      present_count=0
+      for repo in "${sorted_repos[@]}"; do
+         if [ -z "${owner_repos[${repo}]:-}" ]; then
+            absent_count=$(( absent_count + 1 ))
+            continue
+         fi
+         present_count=$(( present_count + 1 ))
+         case "${mode}" in
+            apply)
+               metadata_apply_one "${owner}" "${repo}" || true
+               ;;
+            audit)
+               metadata_audit_one "${owner}" "${repo}" || true
+               ;;
+         esac
+      done
+      log notice "${owner}: '${present_count}' repos with metadata, '${absent_count}' absent (skipped)"
+   done
+
+   [ "${policy_warn_seen}" -eq 1 ] && return 1
+   return 0
+}
+
+main

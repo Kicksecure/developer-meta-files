@@ -466,3 +466,33 @@ readonly POLICY_PAGES_DELETE_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/pages'
 readonly POLICY_PAGES_DELETE_METHOD='DELETE'
 readonly POLICY_PAGES_DELETE_EXTRA_OK_STATUS='404'
 readonly POLICY_PAGES_DELETE_LABEL='delete Pages site (if any)'
+
+## ============================================================================
+## Metadata-sync bodies - used by dm-github-org-metadata-sync
+## ============================================================================
+##
+## Bodies are jq templates with caller-supplied --arg / --argjson:
+##   POLICY_REPO_METADATA needs --arg desc --arg home
+##   POLICY_REPO_TOPICS   needs --argjson topics '<JSON array>'
+##
+## Built and PATCH/PUTed via policy_api_call directly (not
+## policy_apply_repo) because the dispatcher does not forward
+## per-repo --arg values.
+##
+## Empty $desc / $home pass through as "" and GitHub clears the
+## stored field; per repo-metadata.bsh docstring this is the
+## intended "unset" form.
+readonly POLICY_REPO_METADATA='{
+   description: $desc,
+   homepage: $home
+}'
+readonly POLICY_REPO_METADATA_ENDPOINT_REPO='/repos/__OWNER__/__REPO__'
+readonly POLICY_REPO_METADATA_METHOD='PATCH'
+readonly POLICY_REPO_METADATA_LABEL='description + homepage'
+
+readonly POLICY_REPO_TOPICS='{
+   names: $topics
+}'
+readonly POLICY_REPO_TOPICS_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/topics'
+readonly POLICY_REPO_TOPICS_METHOD='PUT'
+readonly POLICY_REPO_TOPICS_LABEL='topics'

@@ -22,22 +22,19 @@ on:
       - 'claude/**'
     paths:
       ## Only run when github-related code or CI assets change.
+      ## Wildcard the dm-github-* family so new tools (e.g. metadata-
+      ## sync) don't need a path-filter update each time. Same for
+      ## the libexec data/lib bsh files.
       - 'usr/bin/github-org-*'
-      - 'usr/bin/dm-github-policy'
-      - 'usr/bin/dm-github-personal-policy'
-      - 'usr/bin/dm-github-fork-sync'
-      - 'usr/libexec/developer-meta-files/github-org-lib.bsh'
-      - 'usr/libexec/developer-meta-files/github-policy-lib.bsh'
+      - 'usr/bin/dm-github-*'
+      - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
       - '.github/workflows/test-github-org-tools.yml'
   pull_request:
     paths:
       - 'usr/bin/github-org-*'
-      - 'usr/bin/dm-github-policy'
-      - 'usr/bin/dm-github-personal-policy'
-      - 'usr/bin/dm-github-fork-sync'
-      - 'usr/libexec/developer-meta-files/github-org-lib.bsh'
-      - 'usr/libexec/developer-meta-files/github-policy-lib.bsh'
+      - 'usr/bin/dm-github-*'
+      - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
       - '.github/workflows/test-github-org-tools.yml'
   workflow_dispatch:
