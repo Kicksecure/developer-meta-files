@@ -67,30 +67,18 @@ jobs:
     if: ${{ github.repository == 'Kicksecure/developer-meta-files' }}
 
     steps:
-      - name: Install apt pre-reqs
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install --yes --no-install-recommends -- \
-            ca-certificates curl jq git sudo build-essential dctrl-tools \
-            python3 safe-rm
-
       - name: Checkout developer-meta-files
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           persist-credentials: false
 
+      - name: Install apt pre-reqs
+        run: ./ci/policy-live-install-apt.sh
+
       - name: Install genmkfile
-        env:
-          CI: "true"
         run: ./ci/install-genmkfile.sh
 
       - name: Install helper-scripts (provides sanitize-string)
-        env:
-          CI: "true"
         run: ./ci/install-helper-scripts.sh
 
       - name: Install developer-meta-files
@@ -98,17 +86,8 @@ jobs:
 
       - name: Verify token secret is set
         env:
-          token_present: ${{ secrets.GHORG_AUDIT_TOKEN != '' }}
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          if [ "$token_present" != 'true' ]; then
-             printf 'error: GHORG_AUDIT_TOKEN secret is not set on this repo.\n' >&2
-             printf '       Add it under Settings -> Secrets and variables -> Actions.\n' >&2
-             exit 1
-          fi
-          printf 'GHORG_AUDIT_TOKEN secret detected.\n'
+          TOKEN_PRESENT: ${{ secrets.GHORG_AUDIT_TOKEN != '' }}
+        run: ./ci/policy-live-verify-token.sh
 
       - name: Run dm-github-policy --audit (live)
         env:
