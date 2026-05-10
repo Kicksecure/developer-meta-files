@@ -1,0 +1,118 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Per-project metadata. Source of truth for description / website /
+## topics applied across every clone of each project. The apply tool
+## (dm-github-org-metadata-sync, TBD) fans each entry out to wherever
+## the repo actually lives via PATCH /repos/{owner}/{repo} (description
+## + homepage) and PUT /repos/{owner}/{repo}/topics (topics).
+##
+## Org layout (the apply tool reads this to decide WHERE to look):
+##
+##   Most projects live in EXACTLY ONE canonical org (Kicksecure OR
+##   Whonix - never both). REPO_HOME below names which one.
+##
+##   org-ai-assisted and adrelanos are mirror-of-everything (forks of
+##   every Kicksecure and Whonix repo). The apply tool fans each entry
+##   to the canonical org PLUS both mirrors, skipping silently when a
+##   repo does not exist in a particular owner.
+##
+##   The apply tool NEVER creates or forks repositories. If a repo
+##   listed here is missing in any of the four owners, the tool
+##   reports it and moves on. Repo creation / forking is a deliberate
+##   one-time human action via github-org-fork or the GitHub UI; not
+##   something a metadata-sync run should ever trigger.
+##
+## Format: one add_repo call per project, named-arg style. The apply
+## tool iterates the keys of REPO_HOME.
+##
+## Fields:
+##   name         - canonical repo name. Same name across all owners.
+##   home         - 'k' Kicksecure org canonical (kicksecure.com/wiki/...)
+##                  'w' Whonix org canonical    (whonix.org/wiki/...)
+##                  'd' developer-only / no public wiki page
+##   description  - short, < 200 chars target (350 GitHub max).
+##                  No trailing period in the upstream pattern.
+##   website      - full https URL or empty string. Empty = unset
+##                  homepage. Use '' explicitly so the apply tool
+##                  can clear a stale URL if one was set previously.
+##   topics       - space-separated, lowercase, hyphenated. Max 20,
+##                  each <= 50 chars matching ^[a-z0-9][a-z0-9-]*$.
+##
+## A repo not present in this file is left untouched by the apply tool.
+## Add entries incrementally; the apply tool dry-runs first.
+
+declare -gA REPO_HOME REPO_DESCRIPTION REPO_WEBSITE REPO_TOPICS
+
+add_repo() {
+   local name home description website topics
+
+   name="$1"
+   home="$2"
+   description="$3"
+   website="$4"
+   topics="$5"
+
+   REPO_HOME["${name}"]="${home}"
+   REPO_DESCRIPTION["${name}"]="${description}"
+   REPO_WEBSITE["${name}"]="${website}"
+   REPO_TOPICS["${name}"]="${topics}"
+}
+
+## ============================================================================
+## Entries (start small; expand once the apply tool is settled).
+## ============================================================================
+
+add_repo  security-misc        k  \
+   "Hardening package: kernel hardening, malloc hardening, sysctl hardening, attack-surface reduction. Used by Kicksecure and Whonix."  \
+   "https://www.kicksecure.com/wiki/Security-misc"  \
+   "security hardening linux debian kicksecure whonix"
+
+add_repo  hardened-kernel      k  \
+   "Hardened Linux kernel build with security-focused config and reduced attack surface."  \
+   "https://www.kicksecure.com/wiki/Hardened-kernel"  \
+   "kernel security hardening linux"
+
+add_repo  tirdad               k  \
+   "TCP Initial Sequence Number CPU Information Leak Protection kernel module."  \
+   "https://www.kicksecure.com/wiki/Tirdad"  \
+   "kernel security tcp anti-fingerprinting linux"
+
+add_repo  sdwdate               k  \
+   "Secure Distributed Web Date - sets system clock from authenticated HTTPS sources over Tor."  \
+   "https://www.kicksecure.com/wiki/Sdwdate"  \
+   "time-synchronization tor anonymity privacy"
+
+add_repo  helper-scripts       k  \
+   "Helper scripts shared across Kicksecure and Whonix packages."  \
+   ""  \
+   "bash debian"
+
+add_repo  derivative-maker     k  \
+   "Tooling to build Kicksecure and Whonix derivative images."  \
+   "https://www.kicksecure.com/wiki/Dev/derivative-maker"  \
+   "build debian image"
+
+add_repo  kloak                w  \
+   "Anti-keystroke-biometrics: obfuscates keystroke timings to defeat behavioural fingerprinting."  \
+   "https://www.whonix.org/wiki/Kloak"  \
+   "anti-fingerprinting keystroke privacy linux"
+
+add_repo  corridor             w  \
+   "Tor traffic whitelisting gateway - filtering router that forces all traffic through Tor."  \
+   "https://www.whonix.org/wiki/Corridor"  \
+   "tor anonymity gateway firewall"
+
+add_repo  onion-grater         w  \
+   "Tor control port filter - whitelists which Tor control commands a client can use."  \
+   "https://www.whonix.org/wiki/Onion-grater"  \
+   "tor anonymity security control-port"
+
+add_repo  developer-meta-files d  \
+   "Org-wide meta files: shared scripts, reusable workflows, agent guidance, dm-github-* policy tools."  \
+   ""  \
+   "meta workflows ci"
