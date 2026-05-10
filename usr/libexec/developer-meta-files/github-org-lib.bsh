@@ -174,21 +174,7 @@ ghorg_require_deps() {
   done
 }
 
-## Strict allowlist validation for any identifier supplied by the
-## GitHub API (repo name, user login, org login).
-## Rules:
-##   - non-empty
-##   - length within kind-specific cap
-##   - bytes match ^[A-Za-z0-9._-]+$
-##   - does not start with `-`
-##   - does not contain embedded `..`
-##   - is not equal to `.`, `..`, or `.git`
-##
-## Leading-dot names other than the three reserved ones are accepted -
-## .github and .gitignore are legitimate repos.
-##
-## Args: $1 = name, $2 = kind ("repo" or "user")
-## Return: 0 = valid, non-zero = invalid (error logged)
+# G-001: see agents/github-org-tools.md
 ghorg_validate_name() {
   local name kind max_len
 

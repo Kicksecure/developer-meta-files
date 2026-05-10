@@ -45,8 +45,7 @@ disable_projects=0
 actions_state='leave'    ## enable | disable | leave
 workflow_perms='leave'   ## read | write | leave
 sync_branches=0
-## Mode is mutually exclusive; one of --apply / --dry-run must be
-## passed explicitly. No implicit default.
+# G-030: --apply or --dry-run required.
 dry_run=0
 mode_set=0
 verbose=0

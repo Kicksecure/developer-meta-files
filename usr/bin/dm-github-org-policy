@@ -146,42 +146,15 @@ EOF
 ## takes no positional args.
 policy_tool_init 0 "$@"
 
-## PAID PLAN ONLY (GitHub Advanced Security): the entire code-
-## security-configuration apply path. POST /orgs/{org}/code-security/
-## configurations rejects any GHAS-licensed feature on Free with
-## HTTP 400 "GitHub advanced security must be enabled when any
-## GHAS feature is set to enabled". The function body, all of its
-## referenced POLICY_CODE_SECURITY* constants in
-## github-policy-data.bsh, and the step-5+6 call site in
-## apply_org_policy below are commented out together. Re-enable
-## as a unit after upgrading the org's plan.
-##
-## On Free, equivalent coverage is achieved per-repo (and applied
-## via a separate tool / extension - this script does not yet fan
-## the per-repo endpoints out org-wide):
+## See agents/github-policy-canonical-vs-mirror.md "Free-plan
+## code-security replacements". Free-compatible per-repo endpoints
+## (used in lieu of the org-level configuration API):
 ##   - PUT /repos/{owner}/{repo}/vulnerability-alerts
-##       (Dependabot alerts)
 ##   - PUT /repos/{owner}/{repo}/automated-security-fixes
-##       (Dependabot security updates)
 ##   - PUT /repos/{owner}/{repo}/private-vulnerability-reporting
-##       (Private vulnerability reporting)
-##   - PATCH /repos/{owner}/{repo}
-##       with security_and_analysis.{secret_scanning,
-##       secret_scanning_push_protection}.status = "enabled"
-##       (works for public repos on Free; the per-repo endpoint
-##       does not enforce a GHAS license check the way the org
-##       configuration API does)
-##
-## Idempotent code-security-configuration upsert + attach + default.
-## Replaces the deprecated PATCH /orgs/{org} security-defaults fields
-## and /orgs/{org}/{product}/enable_all endpoints with the modern
-## /orgs/{org}/code-security/configurations API. Three steps per org:
-##   1. find-or-create the configuration named CODE_SEC_CONFIG_NAME
-##   2. attach it to all existing repos (scope=all)
-##   3. set it as the default for new repos (default_for_new_repos=all)
-##
-## Configuration body: POLICY_CODE_SECURITY in github-policy-data.bsh
-## (rationale for each enabled / disabled feature lives there).
+##   - PATCH /repos/{owner}/{repo} with security_and_analysis.{
+##       secret_scanning, secret_scanning_push_protection
+##     }.status = "enabled"
 # apply_code_security_config() {
 #    local org config_body existing_id list_body create_body
 #    local attach_endpoint default_endpoint
@@ -642,18 +615,7 @@ apply_repo_policy() {
    kind="$(org_kind "${owner}")" || return 1
    policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
 
-   ## Free-plan-compatible code-security: Dependabot enabled on
-   ## SOURCE, actively disabled on MIRROR. PVR disabled on BOTH
-   ## (see step 2b in the docstring above).
-   ##
-   ## Order on the disable side matters: DEPENDABOT_FIXES_OFF
-   ## BEFORE DEPENDABOT_ALERTS_OFF. The DELETE
-   ## /automated-security-fixes endpoint returns 422 once alerts
-   ## are off (idempotent steady state); FIXES_OFF carries an
-   ## EXTRA_OK_STATUS=422 to keep that case warn-free.
-   ##
-   ## policy_apply_repo resolves POLICY_<NAME>_ENDPOINT (no
-   ## _ORG/_REPO suffix) when the 4th arg is 'ENDPOINT'.
+   # Order: G-035 / see github-policy-canonical-vs-mirror.md
    if [ "${kind}" = 'source' ]; then
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_ALERTS ENDPOINT
       policy_apply_repo "${owner}" "${repo}" REPO_DEPENDABOT_FIXES  ENDPOINT
