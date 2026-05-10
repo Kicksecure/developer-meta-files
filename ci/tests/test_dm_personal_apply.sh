@@ -59,6 +59,15 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 required=(
+   ## Account-wide email-visibility step. The GET_user fixture
+   ## returns login=assisted-by-ai while the target here is
+   ## personal-test-user; the script must SKIP the
+   ## /user/email/visibility PATCH because /user/* endpoints
+   ## act on the token-authed user, not the path-specified one.
+   ## The skip line carries the diagnostic operators need to
+   ## understand what to do (run with target's own token).
+   "skip: personal-test-user: hide primary email from public profile - token belongs to 'assisted-by-ai', not 'personal-test-user'"
+
    ## Per-repo apply steps for backup-mirror (Pages DELETE -> 204):
    'ok: personal-test-user/backup-mirror: fork-PR approval=all_external_contributors'
    'ok: personal-test-user/backup-mirror: workflow GITHUB_TOKEN read-only'

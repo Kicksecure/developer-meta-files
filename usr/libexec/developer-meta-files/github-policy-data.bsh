@@ -310,6 +310,23 @@ readonly POLICY_REPO_PVR_ENDPOINT='/repos/__OWNER__/__REPO__/private-vulnerabili
 readonly POLICY_REPO_PVR_METHOD='PUT'
 readonly POLICY_REPO_PVR_LABEL='enable private vulnerability reporting'
 
+## --- Account-wide settings, applied by dm-github-personal-policy
+## once per --apply invocation (NOT per repo). The endpoints here
+## use the token-authed user implicitly; no __OWNER__ placeholder.
+## Caller must guard "authed user == target_user" before calling.
+
+## Hide the primary email address from the public profile. PATCH
+## /user/email/visibility expects {"visibility":"private"|"public"}.
+## Returns 204 on success. Token needs user:email scope; on classic
+## PATs missing it the call returns HTTP 404 ("Not Found") - that
+## is the documented "scope insufficient" failure mode.
+readonly POLICY_USER_EMAIL_PRIVATE='{
+   visibility: "private"
+}'
+readonly POLICY_USER_EMAIL_PRIVATE_ENDPOINT='/user/email/visibility'
+readonly POLICY_USER_EMAIL_PRIVATE_METHOD='PATCH'
+readonly POLICY_USER_EMAIL_PRIVATE_LABEL='hide primary email from public profile'
+
 ## --- MIRROR-only counterparts that actively turn the same three
 ## features OFF (DELETE on the same paths). dm-github-org-policy
 ## fans these out on kind=='mirror' so every --apply reconciles

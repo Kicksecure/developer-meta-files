@@ -63,6 +63,13 @@ if [ "${rc}" -ne 0 ]; then
 fi
 
 required=(
+   ## Account-wide email-visibility step. The GET_user fixture
+   ## returns login=assisted-by-ai while target=personal-test-user;
+   ## --dry-run runs the same authed-user gate as --apply, so the
+   ## same SKIP line is expected here (no DRY-RUN: line for the
+   ## PATCH because the gate caught the mismatch first).
+   "skip: personal-test-user: hide primary email from public profile - token belongs to 'assisted-by-ai', not 'personal-test-user'"
+
    'DRY-RUN: personal-test-user/backup-mirror: fork-PR approval=all_external_contributors'
    'DRY-RUN: personal-test-user/backup-mirror: workflow GITHUB_TOKEN read-only'
    'DRY-RUN: personal-test-user/backup-mirror: actions enabled=false (CI runs disabled)'
