@@ -53,7 +53,7 @@ required=(
    'DRY-RUN: org-ai-assisted: workflow GITHUB_TOKEN read-only, no PR approval'
    'DRY-RUN: org-ai-assisted: actions enabled=all, allowed=selected'
    'DRY-RUN: org-ai-assisted: selected-actions = github-owned + verified-creators'
-   'DRY-RUN: org-ai-assisted: members policy (default-perm=read, no member create)'
+   'DRY-RUN: org-ai-assisted: members policy (default-perm=read, no member create, no deploy keys)'
    'skip: org-ai-assisted: 2FA enforcement must be set via UI'
    ## PAID PLAN ONLY (commented out in dm-github-org-policy):
    ## code-security configuration upsert/attach/default and the

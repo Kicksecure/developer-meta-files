@@ -183,15 +183,25 @@ readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
 ## back the other (valid) fields in the same request. Enterprise
 ## orgs that want the knob set explicitly should land it via a
 ## separate plan-tier-specific policy block.
+##
+## deploy_keys_enabled_for_repositories=false: org-wide kill of the
+## deploy-key feature. Deploy keys are a write-capable bypass of
+## user-level perms (one key, one repo, no humans involved); they
+## have legitimate uses (CI push) but the cost of "any org admin
+## can attach a key that survives credential rotation" outweighs
+## the benefit on a mirror-of-mirrors org. Repos that genuinely
+## need a deploy key would instead use a fine-grained PAT or a
+## GitHub App installation. PATCH-settable; live-tested 2026-05.
 readonly POLICY_MEMBERS='{
    default_repository_permission: "read",
    members_can_create_repositories: false,
    members_can_create_public_repositories: false,
-   members_can_create_private_repositories: false
+   members_can_create_private_repositories: false,
+   deploy_keys_enabled_for_repositories: false
 }'
 readonly POLICY_MEMBERS_ENDPOINT_ORG='/orgs/__ORG__'
 readonly POLICY_MEMBERS_METHOD='PATCH'
-readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create)'
+readonly POLICY_MEMBERS_LABEL='members policy (default-perm=read, no member create, no deploy keys)'
 
 ## --- UI-only policies (applied via the GitHub web UI; the
 ## script just prints a 'skip' line with the URL the operator

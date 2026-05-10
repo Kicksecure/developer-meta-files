@@ -66,7 +66,7 @@ required=(
    'ok: org-ai-assisted: workflow GITHUB_TOKEN read-only, no PR approval'
    'ok: org-ai-assisted: actions enabled=all, allowed=selected'
    'ok: org-ai-assisted: selected-actions = github-owned + verified-creators'
-   'ok: org-ai-assisted: members policy (default-perm=read, no member create)'
+   'ok: org-ai-assisted: members policy (default-perm=read, no member create, no deploy keys)'
 
    ## PAID PLAN ONLY: code-security configuration + org rulesets
    ## are commented out in dm-github-org-policy. The two skip lines
