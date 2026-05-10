@@ -88,16 +88,21 @@ Surfaced during the 2026-05 GitHub web-settings sweep. Each is a
 low-risk addition; landing them is gated only on operator
 appetite for the friction trade-off.
 
-- **`web_commit_signoff_required: true`** in the per-repo PATCH
-  body (`POLICY_REPO_*`). Closes a small bypass against the
-  GPG-required-signatures ruleset: web-UI commits ("edit this
-  file" / suggestion-accept / web upload) currently produce
-  commits signed only by GitHub's web-flow GPG key, not the
-  contributor's. With this on, web edits also require a
-  `Signed-off-by:` DCO trailer (textual, no PGP key, just a
-  checkbox in the commit form). Friction: one extra checkbox
-  click on web edits. No CLI workflow impact. Apply to SOURCE
-  and MIRROR alike.
+- **`web_commit_signoff_required: true`** at the org level (or
+  per-repo via `POLICY_REPO_*`). NOT a security setting and NOT
+  related to GPG. Forces commits made through the GitHub web UI
+  ("edit this file" / suggestion-accept / web upload) to carry a
+  `Signed-off-by: Name <email>` trailer - the textual DCO
+  attestation (https://developercertificate.org/) that the
+  contributor has the right to submit the code under the
+  project's license. Same thing the Linux kernel and many other
+  projects require on every patch. Worth enabling only if
+  Kicksecure / Whonix wants to formally adopt the DCO sign-off
+  contribution model; otherwise it just adds a UI checkbox click
+  with no benefit. The cryptographic-signature requirement is a
+  separate concern handled by the existing `required_signatures`
+  ruleset rule, which web-UI commits already satisfy via
+  GitHub's web-flow GPG key.
 
 - **Tag-name pattern ruleset rule** like
   `^v[0-9]+\.[0-9]+(\.[0-9]+)?$` on the tag ruleset. Catches
