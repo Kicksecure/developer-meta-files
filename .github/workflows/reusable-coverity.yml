@@ -69,6 +69,15 @@
 ##                               like
 ##                               'Kicksecure/foo,org-ai-assisted/foo'
 ##                               to allow both upstreams.
+## - dry-run         (optional)  When true, pack cov-int.tgz and
+##                               upload it as the workflow artifact
+##                               but skip the scan.coverity.com
+##                               submission. Useful for testing
+##                               changes to the workflow / build
+##                               command without consuming the
+##                               daily submission slot. Default
+##                               false. Naming matches the input
+##                               on vapier/coverity-scan-action.
 ##
 ## ## Secrets
 ##
@@ -150,6 +159,10 @@ on:
         required: false
         type: string
         default: ""
+      dry-run:
+        required: false
+        type: boolean
+        default: false
     secrets:
       COVERITY_SCAN_TOKEN:
         required: true
@@ -246,7 +259,13 @@ jobs:
         if: inputs.build-command != ''
         run: ${{ inputs.build-command }}
 
+      ## coverity-submit.sh always packs cov-int.tgz; when DRY_RUN is
+      ## true it skips the curl submission so the daily slot is not
+      ## consumed. The cov-int artifact still uploads via the next
+      ## step (if: always()).
       - name: Submit to Coverity Scan
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
         run: bash .github/dmf/ci/coverity-submit.sh
 
       - name: Upload cov-int artifact (always)
