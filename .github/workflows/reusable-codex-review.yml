@@ -5,6 +5,13 @@
 
 ## Reusable workflow: OpenAI Codex code review.
 ##
+## Trigger asymmetry vs reusable-claude-code-review.yml: Codex
+## has no mention listener; its consumer wrapper relies on
+## pull_request + workflow_dispatch (with a pr_ref input for
+## fork PRs). Claude is mention-driven and adds issue_comment
+## + pull_request_review_comment triggers. The asymmetry is
+## intentional; do not normalize.
+##
 ## ## Status: DISABLED (org-wide kill-switch)
 ##
 ## The Codex review workflow path is currently disabled via the
