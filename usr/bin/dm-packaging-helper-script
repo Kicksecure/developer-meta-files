@@ -468,7 +468,6 @@ repo_skip_non_package() {
    repo_skip 'derivative-maker' || return 1
    repo_skip 'qubes-template-kicksecure' || return 1
    repo_skip 'qubes-template-whonix' || return 1
-   repo_skip 'virtualbox' || return 1
    repo_skip 'Whonix-Installer' || return 1
    repo_skip 'Whonix-Starter' || return 1
 }
@@ -1198,7 +1197,7 @@ pkg_git_branch_fetch_all() {
 
    #origin_name_list=( "github-${batch_current_project_name,,}" )
    origin_name_list=( "${DM_GITHUB_MIRROR}" )
-   origin_name_list=( "ArrayBolt3" )
+   #origin_name_list=( "ArrayBolt3" )
 
    for package_remote_item in "${origin_name_list[@]}"; do
       git fetch -- "${package_remote_item}" &
@@ -1213,7 +1212,7 @@ pkg_git_diff_and_merge_branch() {
 
    #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="${DM_GITHUB_MIRROR}/master"
-   origin_branch="ArrayBolt3/arraybolt3/trixie"
+   #origin_branch="ArrayBolt3/arraybolt3/trixie"
 
    ## Use the fully qualified remote-tracking ref to avoid name
    ## collision with same-named tags.
@@ -1872,8 +1871,6 @@ pkg_git_packages_git_log_writer() {
       batch_func_init_done='y'
    fi
 
-   repo_skip 'virtualbox' || return 0
-
    ## Strip the source-code directory prefix from $PWD so we get a
    ## repo-relative path; using ${derivative_maker_source_code_dir}
    ## rather than a hardcoded /home/user/... so this also works when
@@ -2432,14 +2429,6 @@ run_batch() {
    batch_current_project_website='whonix.org'
    batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
    batch_current_package_path="qubes/qubes-template-whonix"
-   run_batch_command "$@"
-
-   # Special-case for virtualbox
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='virtualbox'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="windows/virtualbox"
    run_batch_command "$@"
 
    # Special-case for Whonix-Installer
