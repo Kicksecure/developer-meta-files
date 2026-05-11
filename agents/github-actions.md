@@ -39,21 +39,34 @@ sha-bump PR per consumer (when consumers `@<sha>`-pin).
 
 ### Constraints to remember
 
-**G-A-001: `github.*` is NOT allowed in `jobs.<id>.uses:`.**
-Only `inputs`, `vars`, `needs`, and `matrix` contexts are permitted
-([docs](https://docs.github.com/en/actions/sharing-automations/reusing-workflows#using-context-when-calling-a-reusable-workflow)).
-The owner part of the cross-repo reference must be hardcoded or
-sourced from `vars.X`.
+**G-A-001: No context expressions are allowed in `jobs.<id>.uses:`.**
+The value must be a literal string (with the exception of
+`inputs.X` / `needs.X` / `matrix.X` / `strategy.X` references,
+which ARE allowed because they're resolved before workflow
+parsing). `github.*`, `vars.*`, `secrets.*`, and `env.*` are all
+rejected by the workflow file validator.
 
     ## WRONG - workflow load fails:
     ##   "Unrecognized named-value: 'github'.
     ##    Located at position 1 within expression: github.repository_owner"
     uses: ${{ github.repository_owner }}/<repo>/.github/workflows/<file>.yml@<ref>
 
-    ## OK:
-    uses: Kicksecure/<repo>/.github/workflows/<file>.yml@<ref>
-    ## OK (after setting org-level var):
+    ## WRONG - same failure mode, just with 'vars':
+    ##   "Unrecognized named-value: 'vars'.
+    ##    Located at position 1 within expression: vars.REUSABLE_OWNER"
+    ## Some community posts claim vars is allowed in uses:; empirically
+    ## the workflow file validator rejects it. Don't use this pattern.
     uses: ${{ vars.REUSABLE_OWNER }}/<repo>/.github/workflows/<file>.yml@<ref>
+
+    ## OK - hardcoded owner. This IS the supported pattern.
+    uses: Kicksecure/<repo>/.github/workflows/<file>.yml@<ref>
+
+There is no parameterization workaround for the owner part of
+`uses:`. Each first-party org (`Kicksecure`, `Whonix`,
+`org-ai-assisted`) must hardcode the canonical/mirror owner it
+consumes from. Cross-org consumption (e.g., Whonix-org repos
+calling `Kicksecure/developer-meta-files/...`) is expressed by
+hardcoding `Kicksecure/` in those consumer workflows.
 
 **G-A-002: `schedule:` cannot live under `workflow_call`.** Each
 consumer's wrapper owns its own cron slot. Pick a slot offset from
