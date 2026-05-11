@@ -165,3 +165,22 @@ jobs:
             --quiet \
             ${{ inputs.extra-args }} \
             ${{ inputs.paths }}
+
+      - name: Checkout developer-meta-files (step-summary helper)
+        if: always()
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
+      - name: Emit step summary
+        if: always()
+        run: |
+          .github/dmf/ci/step-summary-emit.sh \
+            --tool 'cppcheck' \
+            --column-header field \
+            --row "outcome=${{ job.status }}" \
+            --row "paths=${{ inputs.paths }}" \
+            --row "enable=${{ inputs.enable }}"

@@ -99,10 +99,9 @@ done
 [ -n "${tool}" ] || die_usage 'missing --tool'
 
 ## Default to /dev/null when GITHUB_STEP_SUMMARY is unset (local
-## developer runs). Plain parameter-expansion + assignment matches
-## the project's existing default-when-unset pattern in
-## github-org-lib.bsh / github-org-clone.
-GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
+## developer runs). Matches the project's [[ -v ]] || default
+## pattern from github-org-lib.bsh.
+[[ -v GITHUB_STEP_SUMMARY ]] || GITHUB_STEP_SUMMARY='/dev/null'
 
 emit() {
    local row key val extra_with_nl
