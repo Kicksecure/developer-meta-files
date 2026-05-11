@@ -6,6 +6,14 @@
 ## Reusable workflow: Anthropic Claude code review on pull requests
 ## and on @claude mentions in PR/review-comment threads.
 ##
+## Trigger asymmetry vs reusable-codex-review.yml: Claude is
+## mention-driven (listens for @claude in issue_comment and
+## pull_request_review_comment), so the consumer wrapper carries
+## those event triggers. Codex has no mention listener; its
+## consumer wrapper relies on pull_request + workflow_dispatch
+## (with a pr_ref input for fork PRs). The asymmetry is
+## intentional; do not normalize.
+##
 ## ## Trust footprint
 ##
 ## anthropics/claude-code-action - SHA-pinned, calls the Anthropic
