@@ -476,3 +476,16 @@ The github-org-* / dm-* tools implement R-140 via
 `ghorg_validate_name` and `ghorg_safe_print`; see
 [github-org-tools.md](github-org-tools.md) G-001 through G-004
 for the project-specific implementation.
+
+
+## Comments
+
+**R-150: State rationale once per file.** Don't copy-paste a
+multi-line `Why` block to multiple sites; at subsequent sites,
+drop the comment or use a one-liner referencing a rule ID
+(`R-NNN`, `G-A-NNN`, `W-NNN`).
+
+Why: copy-pasted rationale rots - site N+1 drifts from site 1
+over time; readers stop trusting all of them. Single source of
+truth survives. Applies to any source file the org maintains
+(bash, YAML, python, markdown).
