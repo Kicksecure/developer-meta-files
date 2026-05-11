@@ -75,7 +75,7 @@ jobs:
       - name: Install genmkfile + helper-scripts + self
         uses: ./.github/actions/install-deps
         with:
-          apt-packages: ca-certificates curl jq git sudo build-essential dctrl-tools python3 shellcheck safe-rm
+          apt-packages: ca-certificates curl jq git sudo build-essential dctrl-tools python3 python3-yaml shellcheck safe-rm
           install-self: 'true'
 
       - name: Smoke test sanitize-string
