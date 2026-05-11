@@ -396,7 +396,7 @@ has any control flow, retry loop, polling, error handler), put it
 in a standalone script under `ci/` and have the workflow call it.
 
     - name: Start systemd-enabled Debian container
-      run: bash ci/dry-run-start-container.sh dryrun "${DEBIAN_IMAGE}"
+      run: ./ci/dry-run-start-container.sh dryrun "${DEBIAN_IMAGE}"
 
 Why: shellcheck only sees real `.sh` files, not YAML blocks;
 inline shell silently bypasses linting. A standalone script is
@@ -413,6 +413,38 @@ explicit, named, testable contract.
 
 Why: a reader scanning either folder finds the matching
 counterpart at a glance.
+
+**R-102: Don't prepend the interpreter when the shebang suffices.**
+A script with a `#!/bin/bash` shebang and executable bit, invoked
+as `path/script.sh`, runs under its declared interpreter. Adding
+an explicit `bash` (or worse, `sh`) prefix is redundant or
+actively wrong.
+
+Bad:
+
+    bash build.sh
+    sh ci/foo.sh
+    bash ci/dry-run-start-container.sh ...
+
+Good:
+
+    ./build.sh
+    ci/foo.sh
+    ./ci/dry-run-start-container.sh ...
+
+Why: `sh script.sh` runs the script under /bin/sh, NOT bash,
+regardless of the shebang line. Bash-specific syntax (arrays,
+`[[ ]]`, `local`, `set -o pipefail`) silently breaks or behaves
+weirdly. `bash script.sh` is merely redundant when the shebang
+already says bash, but it also defeats the contract -- the
+shebang declares the interpreter; the invoker shouldn't override
+it. Applies to CI YAML `run:` blocks, Makefile recipes, wrapper
+scripts, and ad-hoc invocations.
+
+Exception: bootstrap that runs before the executable bit is set
+(fresh `git clone` with `core.fileMode=false`, or a tarball that
+lost +x), or surfaces that don't honor the shebang. State the
+reason inline.
 
 
 ## Errors and logging

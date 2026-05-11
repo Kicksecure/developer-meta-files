@@ -1,3 +1,3 @@
 # CLAUDE.md
 
-See [AGENTS.md](AGENTS.md).
+Read [AGENTS.md](AGENTS.md) first. CI enforces what it documents.
