@@ -1780,6 +1780,8 @@ pkg_bash_sanity_test() {
       '--exclude=*.md'
       '--exclude=*.pas'
       '--exclude=*.upstream'
+      '--exclude=*.yml'
+      '--exclude=*.yaml'
    )
 
    if ! grep "${grep_opts[@]}" --quiet -- '#!/bin/bash' ; then
