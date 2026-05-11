@@ -146,6 +146,32 @@ appetite for the friction trade-off.
   Kicksecure / Whonix without their attribution. Org-level UI
   toggle, not in any of our policy scripts.
 
+- **GitHub Code Quality** (CodeQL with the quality query suite,
+  public preview since 2025-10-28). Differs from the Dependabot
+  pattern because Code Quality fires on PR diffs and on the
+  default branch; PRs only exist on whichever side carries them.
+
+  | Role | Code Quality | Why |
+  | --- | --- | --- |
+  | SOURCE | on | Canonical baseline; drift detection between fork-syncs |
+  | MIRROR | on | PR-time feedback where AI-assisted PRs land; `dm-github-org-security-report`'s MIRROR-default already routes the alerts here |
+  | PERSON | off | No PRs land here |
+  | BOT | off | No PRs land here; Actions disabled entirely |
+
+  NOT the Dependabot SOURCE-only shape: Code Quality on MIRROR
+  is the point where AI-authored diffs first get a quality
+  signal. Engine is CodeQL with an extra query suite, so the
+  Actions-minute cost is incremental on top of the existing
+  Code Security scan. `require_code_quality_results` ruleset
+  rule (with a `Severity` threshold) belongs on SOURCE only;
+  enforcing it on MIRROR would block the AI's own iteration
+  loop, defeating the PR-time-feedback purpose. Per-repo enable
+  is UI-only today
+  (`https://github.com/<owner>/<repo>/settings/code-quality`);
+  the obvious REST setter slot is a new field on `PATCH
+  /repos/{owner}/{repo}/code-scanning/default-setup`, but the
+  public docs do not document one as of 2026-05.
+
 `sha_pinning_required: true` is intentionally NOT in this list -
 see `agents/github-actions.md` "Org-level `sha_pinning_required`
 is intentionally OFF" for the rationale.
