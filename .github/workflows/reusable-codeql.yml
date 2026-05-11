@@ -153,8 +153,8 @@ jobs:
       contents: read
       ## Note: 'packages: read' was previously listed as a defensive
       ## default for CodeQL builds that pull from ghcr.io. None of
-      ## our consumers do (verified: kloak runs build.sh under bash,
-      ## security-misc runs ci/codeql-build.sh under bash - neither
+      ## our consumers do (verified: kloak runs build.sh,
+      ## security-misc runs ci/codeql-build.sh - neither
       ## authenticates to ghcr.io). Add it back per-consumer if a
       ## future build step needs it.
 
