@@ -170,9 +170,7 @@ appetite for the friction trade-off.
   (`https://github.com/<owner>/<repo>/settings/code-quality`);
   the obvious REST setter slot is a new field on `PATCH
   /repos/{owner}/{repo}/code-scanning/default-setup`, but the
-  public docs do not document one as of 2026-05. Until then the
-  toggle is flipped manually on SOURCE + MIRROR repos and the
-  policy scripts only emit a `skip: ... UI only` line.
+  public docs do not document one as of 2026-05.
 
 `sha_pinning_required: true` is intentionally NOT in this list -
 see `agents/github-actions.md` "Org-level `sha_pinning_required`
