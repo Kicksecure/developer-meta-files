@@ -4,13 +4,8 @@
 
 ## AI-Assisted
 
-## Self-consumer wrapper. Calls the Codex Review reusable defined
-## in this same repo via local-path './...' rather than cross-repo
-## '@master' - so a PR that modifies the reusable exercises its
-## own changes during the PR's CI run (dogfooding).
-##
-## Docs live in the reusable:
-## .github/workflows/reusable-codex-review.yml
+## Consumer wrapper. Docs live in the reusable:
+## https://github.com/org-ai-assisted/developer-meta-files/blob/master/.github/workflows/reusable-codex-review.yml
 
 name: OpenAI Codex Review
 
@@ -37,7 +32,7 @@ concurrency:
 
 jobs:
   review:
-    uses: ./.github/workflows/reusable-codex-review.yml
+    uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codex-review.yml@master
     with:
       pr-ref: ${{ inputs.pr_ref || '' }}
     secrets:
