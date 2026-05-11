@@ -101,8 +101,9 @@ done
 ## Default to /dev/null when GITHUB_STEP_SUMMARY is unset (local
 ## developer runs). Avoids an early-return special case in the
 ## script and an awkward unset-subshell capture in the tests; the
-## emission path stays uniform.
-: "${GITHUB_STEP_SUMMARY:=/dev/null}"
+## emission path stays uniform. R-041 'building strings via
+## printf -v' rather than a no-op host for parameter expansion.
+printf -v GITHUB_STEP_SUMMARY '%s' "${GITHUB_STEP_SUMMARY:-/dev/null}"
 
 emit() {
    local row key val
