@@ -56,8 +56,14 @@ while IFS= read -r -d '' candidate; do
    fi
 done < <(
    ## SC_PATHS is space-separated; intentional word-splitting.
+   ## Prune '.git/' (actions/checkout creates it; git's default
+   ## installs hooks/*.sample with shell shebangs that we don't
+   ## own) and 'node_modules/' (third-party scripts, not ours).
+   ## Callers can override by passing more-specific 'paths:'.
    ## shellcheck disable=SC2086
-   find ${SC_PATHS} -type f -print0 2>/dev/null
+   find ${SC_PATHS} \
+      \( -name '.git' -o -name 'node_modules' \) -prune \
+      -o -type f -print0 2>/dev/null
 )
 
 if [ "${#files[@]}" -eq 0 ]; then
