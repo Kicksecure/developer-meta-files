@@ -54,6 +54,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   live:
     name: live-API audit + dry-run + unauth probe
