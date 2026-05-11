@@ -7,9 +7,9 @@
 
 ## Append a uniform markdown panel to GitHub Actions' step summary
 ## (${GITHUB_STEP_SUMMARY}). Generic across tools; one panel per
-## invocation. No-op when GITHUB_STEP_SUMMARY is unset, so callers
-## can use it unconditionally - a local developer run produces no
-## output and a GHA run produces a rendered panel.
+## invocation. When GITHUB_STEP_SUMMARY is unset (local developer
+## runs), the script defaults it to /dev/null and continues - no
+## output is observable, callers can invoke unconditionally.
 ##
 ## Helper is intentionally self-contained: no helper-scripts source,
 ## no R-040 log dependency. Same R-093 carve-out as agents/
@@ -98,9 +98,11 @@ done
 
 [ -n "${tool}" ] || die_usage 'missing --tool'
 
-if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then
-   exit 0
-fi
+## Default to /dev/null when GITHUB_STEP_SUMMARY is unset (local
+## developer runs). Avoids an early-return special case in the
+## script and an awkward unset-subshell capture in the tests; the
+## emission path stays uniform.
+: "${GITHUB_STEP_SUMMARY:=/dev/null}"
 
 emit() {
    local row key val

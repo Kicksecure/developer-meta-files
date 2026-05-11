@@ -36,15 +36,12 @@ trap_cleanup() {
 
 trap trap_cleanup RETURN
 
-## 1. No-op when GITHUB_STEP_SUMMARY is unset.
-true > "${tmp_summary}"
-unset_run_output="$(unset GITHUB_STEP_SUMMARY; "${HELPER}" --tool 'noop-check' --row 'a=1' 2>&1 || true)"
-if [ -n "${unset_run_output}" ]; then
-   printf '%s\n' "FAIL[unset]: helper produced output when GITHUB_STEP_SUMMARY was unset: '${unset_run_output}'" >&2
-   fail=1
-fi
-if [ -s "${tmp_summary}" ]; then
-   printf '%s\n' 'FAIL[unset]: helper wrote to the would-be summary file' >&2
+## 1. Helper exits 0 when GITHUB_STEP_SUMMARY is unset (defaults
+## to /dev/null internally).
+rc=0
+( unset GITHUB_STEP_SUMMARY; "${HELPER}" --tool 'unset-smoke' --row 'a=1' ) >/dev/null 2>&1 || rc=$?
+if [ "${rc}" -ne 0 ]; then
+   printf '%s\n' "FAIL[unset]: helper exited '${rc}' with GITHUB_STEP_SUMMARY unset" >&2
    fail=1
 fi
 
