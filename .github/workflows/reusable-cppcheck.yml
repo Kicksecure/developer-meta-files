@@ -97,9 +97,7 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+## No 'concurrency:' block - see agents/github-actions.md G-A-006.
 
 jobs:
   cppcheck:

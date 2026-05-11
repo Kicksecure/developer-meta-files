@@ -90,8 +90,10 @@ per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
 
 **G-A-006: Concurrency policy - cancellable by default, singleton
-for quota-limited / release-pipeline.** Every workflow declares a
-top-level `concurrency:` block. Two patterns:
+for quota-limited / release-pipeline.** Every top-level workflow
+declares a top-level `concurrency:` block (reusables follow
+different rules - see "Reusable-side concurrency" below). Two
+patterns:
 
 **Cancellable** (default for CI):
 
@@ -103,6 +105,23 @@ Group includes `github.ref` so each branch / PR has its own
 queue; a new push on the same ref cancels the in-flight run.
 Right for lint, test, codeql, cppcheck, bandit, scorecard,
 claude-code-review, codex-review, build matrices.
+
+**Reusable-side concurrency.** `github.workflow` inside a reusable
+resolves to the *caller's* workflow name, so a reusable that
+declares the same `${{ github.workflow }}-${{ github.ref }}` group
+as its caller produces an identical lock name; Actions surfaces
+this as `Canceling since a deadlock was detected for concurrency
+group: ...` and cancels the run. Reusables therefore either omit
+`concurrency:` entirely (the caller's cancellable group covers it
+- see [`reusable-pre-push-static.yml`](../.github/workflows/reusable-pre-push-static.yml),
+[`reusable-secrets-audit.yml`](../.github/workflows/reusable-secrets-audit.yml),
+[`reusable-scorecard.yml`](../.github/workflows/reusable-scorecard.yml),
+[`reusable-bandit.yml`](../.github/workflows/reusable-bandit.yml),
+[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml))
+or differentiate the group key with a per-call input the caller
+doesn't replicate ([`reusable-codeql.yml`](../.github/workflows/reusable-codeql.yml)
+adds `${{ inputs.language }}`; the AI-review reusables add a
+PR/issue-number disambiguator - see Issue-comment paragraph below).
 
 **Singleton** (cancel=false, workflow-only group):
 
