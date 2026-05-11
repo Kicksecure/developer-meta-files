@@ -678,23 +678,10 @@ set_batch_current_package_remote_list() {
    fi
 }
 
-## Replaces the destination file with the contents of the source
-## file *only if* the destination already exists. Use when bumping
-## an outdated copy of a template/config file that the package may
-## or may not have adopted yet - new packages without the file are
-## silently skipped, so callers do not need a per-repo short-circuit.
-## Stages and commits the update; nothing_to_commit guards no-op
-## runs so re-applying the helper is idempotent.
-##
-## Usage:
-##   pkg_update_if_exists <source_path> <destination_path> [<commit_msg>]
-##
-##     source_path       - full path to the canonical version
-##                         (typically under
-##                         "${derivative_maker_source_code_dir}/...")
-##     destination_path  - full path inside the current package
-##     commit_msg        - optional; defaults to
-##                         "update <basename-of-destination>"
+## Replaces the destination file with the source file only if the
+## destination already exists. Skips silently when absent. Stages
+## and commits with "update <basename>" as the default message; the
+## optional third arg overrides it.
 pkg_update_if_exists() {
    local source_path destination_path commit_msg destination_basename
 

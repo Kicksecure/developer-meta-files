@@ -77,14 +77,7 @@ on:
 permissions:
   contents: read
 
-## No 'concurrency:' block per the reusable-secrets-audit and
-## reusable-pre-push-static precedent: 'github.workflow' inside a
-## reusable resolves to the original caller's workflow name, so a
-## group declared here would deadlock with the caller's group when
-## both share the typical '${{ github.workflow }}-${{ github.ref }}'
-## key. Actions surfaces this as 'Canceling since a deadlock was
-## detected for concurrency group: ...'. The caller's cancellable
-## group already covers this run; see agents/github-actions.md G-A-006.
+## No 'concurrency:' block - see agents/github-actions.md G-A-006.
 
 jobs:
   analysis:

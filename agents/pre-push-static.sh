@@ -353,12 +353,9 @@ check_R120_rm() {
    for script in "${@}"; do
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
-      ## (lines starting with optional whitespace then '#'). Also
-      ## excludes 'git rm' / 'git remote rm' (real git subcommands
-      ## that touch the index, not the filesystem - safe-rm has no
-      ## analogue) and 'shred' (also a filesystem unlink, but with
-      ## explicit overwrite semantics that mark intent at the call
-      ## site).
+      ## (lines starting with optional whitespace then '#') and the
+      ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
+      ## remote rm).
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
