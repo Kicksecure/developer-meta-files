@@ -99,35 +99,33 @@ done
 [ -n "${tool}" ] || die_usage 'missing --tool'
 
 ## Default to /dev/null when GITHUB_STEP_SUMMARY is unset (local
-## developer runs). Avoids an early-return special case in the
-## script and an awkward unset-subshell capture in the tests; the
-## emission path stays uniform. R-041 'building strings via
-## printf -v' rather than a no-op host for parameter expansion.
-printf -v GITHUB_STEP_SUMMARY '%s' "${GITHUB_STEP_SUMMARY:-/dev/null}"
+## developer runs). Plain parameter-expansion + assignment matches
+## the project's existing default-when-unset pattern in
+## github-org-lib.bsh / github-org-clone.
+GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
 
 emit() {
-   local row key val
+   local row key val extra_with_nl
+   local -a parts=()
 
-   printf '## %s\n\n' "${tool}"
+   parts+=( "## ${tool}" "" )
    if [ "${#rows[@]}" -gt 0 ]; then
-      printf '| %s | count |\n' "${column_header}"
-      printf '| --- | --- |\n'
+      parts+=( "| ${column_header} | count |" "| --- | --- |" )
       for row in "${rows[@]}"; do
          key="${row%%=*}"
          val="${row#*=}"
-         printf '| %s | %s |\n' "${key}" "${val}"
+         parts+=( "| ${key} | ${val} |" )
       done
-      printf '\n'
+      parts+=( "" )
    fi
-   if [ -n "${total}" ]; then
-      printf '**Total: %s**\n\n' "${total}"
-   fi
-   if [ -n "${details_url}" ]; then
-      printf '[Details](%s)\n\n' "${details_url}"
-   fi
+   [ -n "${total}" ] && parts+=( "**Total: ${total}**" "" )
+   [ -n "${details_url}" ] && parts+=( "[Details](${details_url})" "" )
    if [ -n "${extra}" ]; then
-      printf '%s\n\n' "${extra//|/$'\n'}"
+      extra_with_nl="${extra//|/$'\n'}"
+      parts+=( "${extra_with_nl}" "" )
    fi
+
+   printf '%s\n' "${parts[@]}"
 }
 
 emit >> "${GITHUB_STEP_SUMMARY}"
