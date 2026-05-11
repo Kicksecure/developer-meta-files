@@ -1,0 +1,26 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Consumer wrapper for reusable-precommit-hooks.yml. Dogfoods the
+## reusable on developer-meta-files: every PR (and every push to
+## master) runs the upstream pre-commit-hooks file-hygiene gate.
+
+name: pre-commit-hooks gate
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    uses: ./.github/workflows/reusable-precommit-hooks.yml

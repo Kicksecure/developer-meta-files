@@ -1,0 +1,68 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: file-hygiene gate using the upstream
+## pre-commit-hooks binaries (check-added-large-files, check-yaml,
+## check-json, end-of-file-fixer, trailing-whitespace-fixer, ...).
+##
+## Companion to reusable-pre-push-static.yml. Different domain:
+## pre-push-static enforces bash-style-guide rules; this enforces
+## generic file hygiene (BOM, line endings, schema validity of
+## yaml/json/toml/xml, leaked credentials, large files, etc.).
+##
+## Replaces the never-finished local hook draft at
+## usr/bin/dm-precommit-bare. The same checks could later be
+## re-wired as a real .git/hooks/pre-commit on developer machines;
+## this CI gate is the durable enforcement in the meantime.
+##
+## No 'concurrency:' block here per the secrets-audit precedent.
+
+name: pre-commit-hooks gate (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      base-ref:
+        description: 'Git ref to diff against. Default: PR base for pull_request, origin/master otherwise.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: pre-commit-hooks gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      BASE_REF: >-
+        ${{
+          inputs.base-ref != '' && inputs.base-ref
+          || (github.base_ref != '' && format('origin/{0}', github.base_ref) || 'origin/master')
+        }}
+    steps:
+      - name: Checkout caller repo (full history for git diff)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout developer-meta-files (gate scripts)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
+      - name: Install pre-commit-hooks binaries
+        run: ./.github/dmf/ci/install-pre-commit-hooks.sh
+
+      - name: Run pre-commit-hooks gate
+        run: ./.github/dmf/ci/precommit-hooks-gate.sh "${BASE_REF}"

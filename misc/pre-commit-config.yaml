@@ -6,7 +6,11 @@
 ## Using instead:
 #usr/bin/dm-precommit-bare
 
-minimum_pre_commit_version: '4.2.0'
+## Lowered from '4.2.0' to match the version shipped by Debian/
+## Ubuntu apt (3.6.2 in noble; nothing in this config uses 4.x-only
+## features). Bump back up if a future hook entry needs a 4.x
+## keyword.
+minimum_pre_commit_version: '3.6.0'
 fail_fast: false
 ## Default to 'all'.
 #default_stages: [pre-commit, pre-merge-commit, manual]
