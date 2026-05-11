@@ -80,7 +80,6 @@ for test_path in "${TESTS_DIR}"/test_*.sh; do
   safe-rm --force -- "${log_file}"
 done
 
-printf '%s\n' ""
 printf '%s\n' "=== summary: ${pass} passed, ${fail} failed ==="
 if [ "${fail}" -gt 0 ]; then
   printf '%s\n' 'failures:'
