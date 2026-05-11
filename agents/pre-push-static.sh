@@ -45,6 +45,15 @@
 ## (@{u}). Pass an explicit base ref as $1 to override
 ## (e.g. 'origin/master').
 ##
+## Per-commit mode: pass '--per-commit' before the base ref to
+## check each commit in <base>..HEAD individually (detached
+## checkout per commit). Catches violations that existed in
+## intermediate commits but were fixed before the branch tip --
+## the default 'union' mode misses these because it diffs the
+## merge-base against HEAD.
+##
+##   agents/pre-push-static.sh --per-commit origin/master
+##
 ## Style-guide deviations, documented for reviewers:
 ##   * R-040 (log not printf): self-contained tool, must run on
 ##     a developer machine that may lack helper-scripts. Same
@@ -64,6 +73,13 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
+
+## Per-commit mode flag. Must precede the base-ref positional.
+per_commit_mode=0
+if [ "$#" -ge 1 ] && [ "${1}" = '--per-commit' ]; then
+   per_commit_mode=1
+   shift
+fi
 
 ## Nested-brace expansion `${1:-@{u}}` mis-parses: bash terminates
 ## the outer expansion at the first `}`, leaving a literal `}`
@@ -520,11 +536,12 @@ check_precommit_hooks() {
    run_precommit_hook requirements-txt-fixer    "${req_files[@]}"
 }
 
-main() {
+run_file_checks() {
+   ## Run all file-content checks given the current global
+   ## base_ref. Caller controls base_ref (single union pass in
+   ## default mode; per-commit loop in --per-commit mode).
    local line
    local -a shell_files yaml_files shell_or_yaml file_list
-
-   resolve_base
 
    shell_files=()
    yaml_files=()
@@ -568,8 +585,46 @@ main() {
       check_ascii_files "${file_list[@]}"
       check_precommit_hooks "${file_list[@]}"
    fi
+}
 
+restore_head_ref=""
+
+restore_head() {
+   if [ -n "${restore_head_ref}" ]; then
+      git checkout --quiet "${restore_head_ref}" 2>/dev/null || true
+   fi
+}
+
+main() {
+   local sha saved_base_ref
+
+   resolve_base
+
+   ## Commit-message R-001 check covers the whole base..HEAD range
+   ## once; per-commit iteration would re-check the same messages
+   ## N times.
    check_ascii_commit_msg
+
+   if [ "${per_commit_mode}" -eq 1 ]; then
+      ## Detached-checkout iteration. Capture the current ref so
+      ## the trap can restore the working tree even on failure.
+      restore_head_ref="$(git symbolic-ref --quiet --short HEAD \
+         || git rev-parse HEAD)"
+      trap restore_head EXIT
+      saved_base_ref="${base_ref}"
+      while IFS= read -r sha; do
+         if [ -z "${sha}" ]; then
+            continue
+         fi
+         note "per-commit: ${sha}"
+         git checkout --quiet "${sha}"
+         base_ref="${sha}^"
+         run_file_checks
+      done < <(git rev-list --reverse "${saved_base_ref}..HEAD")
+      base_ref="${saved_base_ref}"
+   else
+      run_file_checks
+   fi
 
    if [ "${fail_count}" -gt 0 ]; then
       note "${fail_count} check(s) failed"
