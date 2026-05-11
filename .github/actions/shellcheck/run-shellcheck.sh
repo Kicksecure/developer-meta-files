@@ -29,7 +29,13 @@ if [ "${CI:-}" != "true" ] && [ "${ALLOW_LOCAL:-}" != "true" ]; then
    exit 1
 fi
 
-cd -- "$(git rev-parse --show-toplevel)"
+## $GITHUB_WORKSPACE always points at the checked-out repo root in
+## a GitHub Actions runner (including container jobs). Using it
+## directly avoids requiring 'git' to be installed in the container -
+## minimal images like debian:testing or fedora:43 don't ship git
+## by default, and actions/checkout uses its own bundled git that
+## isn't on PATH.
+cd -- "${GITHUB_WORKSPACE:?GITHUB_WORKSPACE not set; must run in CI}"
 
 ## Shebang matcher. Hits:
 ##   #!/bin/bash, #!/bin/sh, #!/bin/dash, #!/bin/ksh
