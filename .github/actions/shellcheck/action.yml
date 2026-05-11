@@ -1,0 +1,70 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Composite action: run shellcheck on every shell script under the
+## configured paths. Files are discovered by first-line shebang
+## (#!/bin/bash, #!/usr/bin/env sh, etc.) - no file-extension
+## requirement, so Debian libexec-style executables get linted too.
+##
+## Insert into any job's steps list:
+##
+##   - uses: actions/checkout@<sha>
+##   - uses: org-ai-assisted/developer-meta-files/.github/actions/shellcheck@master
+##     with:
+##       paths: 'usr/libexec/msgcollector etc/profile.d'
+##       excludes: 'SC1091,SC1090,SC2034'
+##
+## Apt-installs shellcheck on the runner if it is not already on
+## PATH. Idempotent: re-runs in the same job are no-ops.
+
+name: 'Run shellcheck'
+description: 'Discover shell scripts by shebang and run shellcheck with configurable excludes / severity.'
+
+inputs:
+  paths:
+    description: 'Space-separated dirs (relative to repo root) to scan. Default: . (whole repo).'
+    required: false
+    default: '.'
+  excludes:
+    description: 'Comma-separated SC codes to exclude. Empty string = no excludes.'
+    required: false
+    default: ''
+  severity:
+    description: 'Minimum severity: style | info | warning | error. Default: warning.'
+    required: false
+    default: 'warning'
+  shell:
+    description: 'Override shellcheck --shell. Empty = let shellcheck use the script shebang.'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install shellcheck (if missing)
+      shell: bash
+      run: |
+        if command -v shellcheck >/dev/null 2>&1; then
+          exit 0
+        fi
+        sudo_prefix=()
+        if [ "$(id -u)" -ne 0 ]; then
+          sudo_prefix=(sudo --non-interactive)
+        fi
+        "${sudo_prefix[@]}" apt-get update
+        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends shellcheck
+
+    - name: Run shellcheck
+      shell: bash
+      env:
+        SC_PATHS: ${{ inputs.paths }}
+        SC_EXCLUDES: ${{ inputs.excludes }}
+        SC_SEVERITY: ${{ inputs.severity }}
+        SC_SHELL: ${{ inputs.shell }}
+      ## $GITHUB_ACTION_PATH (shell env, runtime-resolved) instead of
+      ## ${{ github.action_path }} (template, expanded before the
+      ## shell runs). Same container-safety rationale as install-deps.
+      run: "$GITHUB_ACTION_PATH/run-shellcheck.sh"
+

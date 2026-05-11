@@ -44,7 +44,7 @@ source /usr/libexec/helper-scripts/has.sh
 has sanitize-string \
    || { printf '%s\n' \
       'error: sanitize-string not found on PATH.' \
-      '       Install helper-scripts (see ci/install-helper-scripts.sh).' >&2; exit 1; }
+      '       Install helper-scripts (see .github/actions/install-deps/).' >&2; exit 1; }
 
 # shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh

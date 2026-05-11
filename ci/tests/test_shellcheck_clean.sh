@@ -47,8 +47,8 @@ files=(
    "${REPO_ROOT}/usr/libexec/developer-meta-files/github-org-lib.bsh"
    "${REPO_ROOT}/usr/libexec/developer-meta-files/github-policy-lib.bsh"
    "${REPO_ROOT}/ci/test-github-org-tools.sh"
-   "${REPO_ROOT}/ci/install-genmkfile.sh"
-   "${REPO_ROOT}/ci/install-helper-scripts.sh"
+   "${REPO_ROOT}/.github/actions/install-deps/install-genmkfile.sh"
+   "${REPO_ROOT}/.github/actions/install-deps/install-helper-scripts.sh"
    "${REPO_ROOT}/ci/live-probe-unauth.sh"
 )
 ## Append every test_*.sh under ci/tests so adding a new test

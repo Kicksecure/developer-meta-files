@@ -1,0 +1,27 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Consumer wrapper for reusable-pre-push-static.yml. Dogfoods the
+## reusable on developer-meta-files itself: every PR (and every
+## push to master) runs the same Tier-1 style-guide + ASCII gate
+## that the local hook (when installed) runs pre-push.
+
+name: pre-push static gate
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    uses: ./.github/workflows/reusable-pre-push-static.yml

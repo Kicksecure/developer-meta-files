@@ -74,6 +74,14 @@ source_required=(
    ## PVR is disabled on SOURCE too (wiki is canonical disclosure
    ## channel per .github/SECURITY.md).
    'disable private vulnerability reporting'
+   ## SOURCE-only UI-flip skip lines (no REST setter as of 2026-05);
+   ## see agents/github-policy-canonical-vs-mirror.md "SOURCE-side
+   ## UI-only operator flips".
+   'Dependabot grouped security updates: enable in UI'
+   'Code scanning: recommend security-extended query suite'
+   'Auto-triage rule "Dismiss low-impact dev-scoped" must be OFF'
+   'Auto-triage rule "Dismiss package malware alerts" must be OFF'
+   'Prevent direct Dependabot alert dismissals (delegated dismissal): enable in UI'
 )
 source_forbidden=(
    ## MIRROR-specific tokens MUST NOT appear when running against a
@@ -128,6 +136,12 @@ mirror_forbidden=(
    ## PVR enable MUST NOT appear anywhere; only the DELETE
    ## (disable) form exists.
    'enable private vulnerability reporting'
+   ## SOURCE-only UI-flip skip lines MUST NOT appear on MIRROR.
+   'Dependabot grouped security updates: enable in UI'
+   'Code scanning: recommend security-extended query suite'
+   'Auto-triage rule "Dismiss low-impact dev-scoped"'
+   'Auto-triage rule "Dismiss package malware alerts"'
+   'Prevent direct Dependabot alert dismissals'
 )
 for needle in "${mirror_required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out_mirror}"; then

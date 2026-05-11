@@ -199,13 +199,13 @@ policy_tool_init 0 "$@"
 ## commented out with skip lines so a Free-org operator sees what was
 ## elided.
 apply_org_policy() {
-   local org
+   local org kind
 
    org="$1"
-   ## kind is only used by the (commented-out) PAID-plan ruleset
-   ## bypass-actor pivot below; keep the validating call so a typo'd
-   ## org name still trips an early die.
-   org_kind "${org}" >/dev/null || return 1
+   ## kind is also consumed by the SOURCE-only UI-flip skip lines at
+   ## the end of this function; the commented-out PAID-plan ruleset
+   ## bypass-actor pivot below would also use it.
+   kind="$(org_kind "${org}")" || return 1
 
    log notice "=== org policy: ${org} ==="
 
@@ -240,6 +240,18 @@ apply_org_policy() {
    policy_skip_ui "${org}" PAT
 
    log notice "skip: ${org}: ${POLICY_APPS_LABEL} - see ${POLICY_APPS_UI_URL_INSTALLATIONS//__ORG__/${org}} and ${POLICY_APPS_UI_URL_OAUTH//__ORG__/${org}}"
+
+   ## SOURCE-only UI-flip notices for Dependabot + Code-scanning
+   ## settings with no documented REST setter as of 2026-05; see
+   ## agents/github-policy-canonical-vs-mirror.md "SOURCE-side
+   ## UI-only operator flips". MIRROR has Dependabot off entirely
+   ## (so grouping is moot) and runs CodeQL via the reusable
+   ## codeql.yml workflow (advanced setup, ignores the default-setup
+   ## query-suite recommendation).
+   if [ "${kind}" = 'source' ]; then
+      policy_skip_ui "${org}" GROUPED_SECURITY_UPDATES
+      policy_skip_ui "${org}" CODE_SCANNING_QUERY_SUITE
+   fi
 }
 
 ## GET-and-print helper for audit_org_state.
@@ -534,6 +546,17 @@ apply_repo_policy() {
    policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_TAG}" \
       "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo "${!bypass_var}")" \
       || true
+
+   ## SOURCE-only UI-flip notices for per-repo Dependabot settings
+   ## with no documented REST setter as of 2026-05; see
+   ## agents/github-policy-canonical-vs-mirror.md "SOURCE-side
+   ## UI-only operator flips". MIRROR has Dependabot off entirely,
+   ## so auto-triage rules and delegated-dismissal are moot there.
+   if [ "${kind}" = 'source' ]; then
+      policy_skip_ui_repo "${owner}" "${repo}" AUTO_TRIAGE_DISMISS_DEV
+      policy_skip_ui_repo "${owner}" "${repo}" AUTO_TRIAGE_DISMISS_MALWARE
+      policy_skip_ui_repo "${owner}" "${repo}" DELEGATED_DISMISSAL
+   fi
 }
 
 main() {

@@ -80,12 +80,31 @@ for test_path in "${TESTS_DIR}"/test_*.sh; do
   safe-rm --force -- "${log_file}"
 done
 
-printf '%s\n' ""
 printf '%s\n' "=== summary: ${pass} passed, ${fail} failed ==="
 if [ "${fail}" -gt 0 ]; then
   printf '%s\n' 'failures:'
   for fname in "${fail_names[@]}"; do
     printf '%s\n' "  - ${fname}"
   done
+fi
+
+## Helper no-ops when GITHUB_STEP_SUMMARY is unset; call always.
+summary_args=(
+  --tool 'github-org tools (mock-API tests)'
+  --column-header 'outcome'
+  --row "passed=${pass}"
+  --row "failed=${fail}"
+  --total "$(( pass + fail ))"
+)
+if [ "${fail}" -gt 0 ]; then
+  extra='Failures:'
+  for fname in "${fail_names[@]}"; do
+    extra="${extra}|- ${fname}"
+  done
+  summary_args+=( --extra "${extra}" )
+fi
+"${SCRIPT_DIR}/step-summary-emit.sh" "${summary_args[@]}"
+
+if [ "${fail}" -gt 0 ]; then
   exit 1
 fi

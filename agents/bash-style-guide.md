@@ -84,6 +84,26 @@ Why: shorter, errexit-on-by-default never lapses, `inherit_errexit`-
 safe.
 
 
+**R-012: Arithmetic assignment uses `var=$((expr))`, never
+`(( expr ))`.** Under `errexit`, an arithmetic expression that
+evaluates to zero exits the shell.
+
+Bad:
+
+    (( count += 1 ))            # if count was 0, now (( 1 )) -> ok
+    (( found = 0 ))             # exits the script (rc=1)
+
+Good:
+
+    count=$((count + 1))
+    found=0
+
+Why: `(( expr ))` returns rc=1 when `expr` evaluates to 0 (POSIX
+arithmetic-expression semantics), which `errexit` interprets as a
+command failure. `var=$((expr))` is an assignment - rc is always
+the assignment's rc (0), not the computed value.
+
+
 ## Variables
 
 **R-020: Wrap every variable reference in `${var}` braces.** No
@@ -361,9 +381,9 @@ provides a single helper.**
 Don't add an inline `has git || die ...` at the per-feature site
 when the shared pre-flight already covers it.
 
-**R-093: Exception for `ci/install-helper-scripts.sh`.** That
-script runs BEFORE helper-scripts is installed, so it falls back
-to plain `command -v`. The same exception applies to
+**R-093: Exception for `.github/actions/install-deps/install-helper-scripts.sh`.**
+That script runs BEFORE helper-scripts is installed, so it falls
+back to plain `command -v`. The same exception applies to
 `agents/pre-push-static.sh`, which must run as a bare git hook
 without sourcing helper-scripts.
 
@@ -376,7 +396,7 @@ has any control flow, retry loop, polling, error handler), put it
 in a standalone script under `ci/` and have the workflow call it.
 
     - name: Start systemd-enabled Debian container
-      run: bash ci/dry-run-start-container.sh dryrun "${DEBIAN_IMAGE}"
+      run: ./ci/dry-run-start-container.sh dryrun "${DEBIAN_IMAGE}"
 
 Why: shellcheck only sees real `.sh` files, not YAML blocks;
 inline shell silently bypasses linting. A standalone script is
@@ -393,6 +413,38 @@ explicit, named, testable contract.
 
 Why: a reader scanning either folder finds the matching
 counterpart at a glance.
+
+**R-102: Don't prepend the interpreter when the shebang suffices.**
+A script with a `#!/bin/bash` shebang and executable bit, invoked
+as `path/script.sh`, runs under its declared interpreter. Adding
+an explicit `bash` (or worse, `sh`) prefix is redundant or
+actively wrong.
+
+Bad:
+
+    bash build.sh
+    sh ci/foo.sh
+    bash ci/dry-run-start-container.sh ...
+
+Good:
+
+    ./build.sh
+    ci/foo.sh
+    ./ci/dry-run-start-container.sh ...
+
+Why: `sh script.sh` runs the script under /bin/sh, NOT bash,
+regardless of the shebang line. Bash-specific syntax (arrays,
+`[[ ]]`, `local`, `set -o pipefail`) silently breaks or behaves
+weirdly. `bash script.sh` is merely redundant when the shebang
+already says bash, but it also defeats the contract -- the
+shebang declares the interpreter; the invoker shouldn't override
+it. Applies to CI YAML `run:` blocks, Makefile recipes, wrapper
+scripts, and ad-hoc invocations.
+
+Exception: bootstrap that runs before the executable bit is set
+(fresh `git clone` with `core.fileMode=false`, or a tarball that
+lost +x), or surfaces that don't honor the shebang. State the
+reason inline.
 
 
 ## Errors and logging
@@ -456,3 +508,42 @@ The github-org-* / dm-* tools implement R-140 via
 `ghorg_validate_name` and `ghorg_safe_print`; see
 [github-org-tools.md](github-org-tools.md) G-001 through G-004
 for the project-specific implementation.
+
+
+## Comments
+
+**R-150: State rationale once per file.** Don't copy-paste a
+multi-line `Why` block to multiple sites; at subsequent sites,
+drop the comment or use a one-liner referencing a rule ID
+(`R-NNN`, `G-A-NNN`, `W-NNN`).
+
+Why: copy-pasted rationale rots - site N+1 drifts from site 1
+over time; readers stop trusting all of them. Single source of
+truth survives. Applies to any source file the org maintains
+(bash, YAML, python, markdown).
+
+
+**R-151: Comment when the code couldn't express the intent.** A
+comment is an admission the code failed to express itself; prefer
+renaming, extracting, or restructuring first. When unavoidable,
+reserve comments for hidden constraints, subtle invariants, bug
+workarounds, surprising side effects. Don't restate WHAT (well-
+named identifiers do that). Bad: `## initialize i with 0` over
+`i=0`.
+
+Why: obvious comments dilute attention from the ones that matter;
+reviewers learn to skim past them and miss the rare comment
+documenting a real gotcha. Be concise: if removing the comment
+wouldn't confuse a future reader, don't write it.
+
+
+**R-152: Match the file's existing comment style.** Before
+adding comments to an existing file, read the comments already
+there - density, tone, idiom, voice - and match them. Don't
+impose your preferred style on a file someone else established
+(unless an explicit rule above says you must).
+
+Why: file-local consistency keeps each file readable as a unified
+document; jarring shifts in voice signal copy-paste and undermine
+trust in the prose. Match locally; impose org-wide style only
+when it would otherwise conflict.

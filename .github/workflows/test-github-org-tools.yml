@@ -22,22 +22,19 @@ on:
       - 'claude/**'
     paths:
       ## Only run when github-related code or CI assets change.
+      ## Wildcard the dm-github-* family so new tools (e.g. metadata-
+      ## sync) don't need a path-filter update each time. Same for
+      ## the libexec data/lib bsh files.
       - 'usr/bin/github-org-*'
-      - 'usr/bin/dm-github-policy'
-      - 'usr/bin/dm-github-personal-policy'
-      - 'usr/bin/dm-github-fork-sync'
-      - 'usr/libexec/developer-meta-files/github-org-lib.bsh'
-      - 'usr/libexec/developer-meta-files/github-policy-lib.bsh'
+      - 'usr/bin/dm-github-*'
+      - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
       - '.github/workflows/test-github-org-tools.yml'
   pull_request:
     paths:
       - 'usr/bin/github-org-*'
-      - 'usr/bin/dm-github-policy'
-      - 'usr/bin/dm-github-personal-policy'
-      - 'usr/bin/dm-github-fork-sync'
-      - 'usr/libexec/developer-meta-files/github-org-lib.bsh'
-      - 'usr/libexec/developer-meta-files/github-policy-lib.bsh'
+      - 'usr/bin/dm-github-*'
+      - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
       - '.github/workflows/test-github-org-tools.yml'
   workflow_dispatch:
@@ -63,33 +60,20 @@ jobs:
   mock-tests:
     name: mock-API tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: debian:trixie
     steps:
-      - name: Install apt pre-reqs
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install --yes --no-install-recommends -- \
-            ca-certificates curl jq git sudo build-essential dctrl-tools \
-            python3 shellcheck safe-rm
-
       - name: Checkout developer-meta-files
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
 
-      - name: Install genmkfile
-        run: ./ci/install-genmkfile.sh
-
-      - name: Install helper-scripts (provides sanitize-string)
-        run: ./ci/install-helper-scripts.sh
-
-      - name: Install developer-meta-files
-        run: genmkfile install
+      - name: Install genmkfile + helper-scripts + self
+        uses: ./.github/actions/install-deps
+        with:
+          apt-packages: ca-certificates curl jq git sudo build-essential dctrl-tools python3 python3-yaml shellcheck safe-rm
+          install-self: 'true'
 
       - name: Smoke test sanitize-string
         run: sanitize-string -- nolimit "smoke test"

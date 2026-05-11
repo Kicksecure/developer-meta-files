@@ -1,0 +1,89 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Composite action: bootstrap a CI runner with genmkfile + (optional)
+## helper-scripts in one step. Inserts into any job's steps list:
+##
+##   - uses: actions/checkout@<sha>
+##   - uses: org-ai-assisted/developer-meta-files/.github/actions/install-deps@master
+##     with:
+##       apt-packages: 'safe-rm moreutils'
+##       install-self: 'true'
+##
+## Reusable workflows (workflow_call) become their own job and cannot
+## be inserted as a step inside another job; composite actions can.
+## That is the right shape for this bootstrap.
+
+name: 'Install genmkfile + helper-scripts'
+description: 'Install Kicksecure/genmkfile (or mirror) and optionally helper-scripts via genmkfile, then optionally genmkfile install the caller repo.'
+
+inputs:
+  apt-packages:
+    description: 'Space-separated apt packages to install before genmkfile. Empty string = no apt step.'
+    required: false
+    default: ''
+  install-helper-scripts:
+    description: 'After genmkfile, install helper-scripts via genmkfile install.'
+    required: false
+    default: 'true'
+  install-self:
+    description: 'Run sudo genmkfile install in the caller repo checkout (i.e. install the caller package).'
+    required: false
+    default: 'false'
+  helper-scripts-owner:
+    description: 'GitHub org to clone helper-scripts from. Default: github.repository_owner (org-aware mirror clone). Set to Kicksecure to pin to canonical upstream.'
+    required: false
+    default: ''
+  genmkfile-owner:
+    description: 'GitHub org to clone genmkfile from. Default: github.repository_owner. Set to Kicksecure to pin to canonical upstream.'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Install apt pre-reqs
+      if: ${{ inputs.apt-packages != '' }}
+      shell: bash
+      run: |
+        ## Context-aware sudo: works both in a root container
+        ## (debian:trixie etc., no sudo wrapper) and on a non-root
+        ## host runner (ubuntu-latest, sudo NOPASSWD).
+        sudo_prefix=()
+        if [ "$(id -u)" -ne 0 ]; then
+          sudo_prefix=(sudo --non-interactive)
+        fi
+        export DEBIAN_FRONTEND=noninteractive
+        "${sudo_prefix[@]}" apt-get update
+        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends -- ${{ inputs.apt-packages }}
+
+    - name: Install genmkfile
+      shell: bash
+      env:
+        GENMKFILE_OWNER: ${{ inputs.genmkfile-owner != '' && inputs.genmkfile-owner || github.repository_owner }}
+      ## $GITHUB_ACTION_PATH (shell env, runtime-resolved) instead of
+      ## ${{ github.action_path }} (template, expanded before the
+      ## shell runs). When the caller job uses 'container:', the
+      ## template expands to the host path which the container
+      ## cannot see; the env var resolves to the container-mapped
+      ## path correctly.
+      run: "$GITHUB_ACTION_PATH/install-genmkfile.sh"
+
+    - name: Install helper-scripts
+      if: ${{ inputs.install-helper-scripts == 'true' }}
+      shell: bash
+      env:
+        HELPER_SCRIPTS_OWNER: ${{ inputs.helper-scripts-owner != '' && inputs.helper-scripts-owner || github.repository_owner }}
+      run: "$GITHUB_ACTION_PATH/install-helper-scripts.sh"
+
+    - name: Install caller repo via genmkfile
+      if: ${{ inputs.install-self == 'true' }}
+      shell: bash
+      run: |
+        sudo_prefix=()
+        if [ "$(id -u)" -ne 0 ]; then
+          sudo_prefix=(sudo --non-interactive)
+        fi
+        "${sudo_prefix[@]}" genmkfile install

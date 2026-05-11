@@ -39,21 +39,34 @@ sha-bump PR per consumer (when consumers `@<sha>`-pin).
 
 ### Constraints to remember
 
-**G-A-001: `github.*` is NOT allowed in `jobs.<id>.uses:`.**
-Only `inputs`, `vars`, `needs`, and `matrix` contexts are permitted
-([docs](https://docs.github.com/en/actions/sharing-automations/reusing-workflows#using-context-when-calling-a-reusable-workflow)).
-The owner part of the cross-repo reference must be hardcoded or
-sourced from `vars.X`.
+**G-A-001: No context expressions are allowed in `jobs.<id>.uses:`.**
+The value must be a literal string (with the exception of
+`inputs.X` / `needs.X` / `matrix.X` / `strategy.X` references,
+which ARE allowed because they're resolved before workflow
+parsing). `github.*`, `vars.*`, `secrets.*`, and `env.*` are all
+rejected by the workflow file validator.
 
     ## WRONG - workflow load fails:
     ##   "Unrecognized named-value: 'github'.
     ##    Located at position 1 within expression: github.repository_owner"
     uses: ${{ github.repository_owner }}/<repo>/.github/workflows/<file>.yml@<ref>
 
-    ## OK:
-    uses: Kicksecure/<repo>/.github/workflows/<file>.yml@<ref>
-    ## OK (after setting org-level var):
+    ## WRONG - same failure mode, just with 'vars':
+    ##   "Unrecognized named-value: 'vars'.
+    ##    Located at position 1 within expression: vars.REUSABLE_OWNER"
+    ## Some community posts claim vars is allowed in uses:; empirically
+    ## the workflow file validator rejects it. Don't use this pattern.
     uses: ${{ vars.REUSABLE_OWNER }}/<repo>/.github/workflows/<file>.yml@<ref>
+
+    ## OK - hardcoded owner. This IS the supported pattern.
+    uses: Kicksecure/<repo>/.github/workflows/<file>.yml@<ref>
+
+There is no parameterization workaround for the owner part of
+`uses:`. Each first-party org (`Kicksecure`, `Whonix`,
+`org-ai-assisted`) must hardcode the canonical/mirror owner it
+consumes from. Cross-org consumption (e.g., Whonix-org repos
+calling `Kicksecure/developer-meta-files/...`) is expressed by
+hardcoding `Kicksecure/` in those consumer workflows.
 
 **G-A-002: `schedule:` cannot live under `workflow_call`.** Each
 consumer's wrapper owns its own cron slot. Pick a slot offset from
@@ -75,6 +88,74 @@ pinning gives supply-chain stability; branch tracking gives
 single-source-of-truth update propagation. Both are valid; pick
 per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
+
+**G-A-006: Concurrency policy - cancellable by default, singleton
+for quota-limited / release-pipeline.** Every workflow declares a
+top-level `concurrency:` block. Two patterns:
+
+**Cancellable** (default for CI):
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+Group includes `github.ref` so each branch / PR has its own
+queue; a new push on the same ref cancels the in-flight run.
+Right for lint, test, codeql, cppcheck, bandit, scorecard,
+claude-code-review, codex-review, build matrices.
+
+**Singleton** (cancel=false, workflow-only group):
+
+    concurrency:
+      group: ${{ github.workflow }}
+      cancel-in-progress: false
+
+Group omits `ref` so only one run can be in flight per repo
+across all branches/PRs/tags; new triggers queue server-side
+rather than cancel. Right when cancelling mid-flight has a
+real cost:
+
+- **Coverity Scan**: free public tier is rate-limited to one
+  build per day per project. Cancelling an in-flight upload
+  burns the daily slot for no result. See
+  [`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
+  inline comment.
+
+Consumers of singleton reusables must NOT set
+`cancel-in-progress: true` at the wrapper level: a cancelled
+wrapper cancels its called workflow run, defeating the
+reusable's no-cancel guarantee. Either omit `concurrency:` at
+the wrapper level (the reusable's controls), or mirror the
+reusable's `group + cancel=false` policy explicitly.
+
+**Differentiated by event type** (cancel within event-type,
+isolate across event-types):
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event_name == 'push' && 'tag' || 'pr' }}
+      cancel-in-progress: true
+
+Right when one workflow file serves both PR validation AND
+release-tag builds in the same file. PR pushes all share the
+`<workflow>-pr` group (latest PR push cancels older, regardless
+of which PR); tag pushes all share `<workflow>-tag` (newer tag
+supersedes); cross-event runs are isolated. So a tag push
+cannot cancel an in-flight third-party PR validation, and a PR
+push cannot cancel an in-flight 3-hour release build. Live
+example: [`derivative-maker/run_automated_builder.yml`](https://github.com/org-ai-assisted/derivative-maker/blob/master/.github/workflows/run_automated_builder.yml).
+
+**Issue-comment & PR-review-comment events** fire on the
+default branch ref, not the PR head ref - so grouping by
+`${{ github.ref }}` would put unrelated PRs into the same
+group. For AI-review workflows that listen on those events,
+the group key includes a PR/issue number disambiguator:
+
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+
+See [`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-code-review.yml)
+and [`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml)
+for the live example.
+
 
 ## See also
 

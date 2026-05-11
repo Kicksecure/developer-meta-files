@@ -1,0 +1,98 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: CI mirror of agents/pre-push-static.sh.
+##
+## Runs the unified static-checks gate developers run locally as
+## .git/hooks/pre-push. Local hook installation is opt-in per
+## developer; this CI gate is mandatory and catches what the local
+## hook misses (developers who didn't install it, AI sessions that
+## didn't read the docs, environments lacking pre-commit-hooks).
+##
+## Checks enforced (see agents/pre-push-static.sh head comment for
+## the authoritative list):
+##   - bash -n on changed shell scripts
+##   - shellcheck --external-sources on the same set
+##   - R-001 ASCII on files + commit-range messages
+##   - R-010, R-011, R-042, R-051, R-070, R-081, R-090, R-102,
+##     R-120, R-130 (Tier-1 single-grep style-guide rules)
+##   - pre-commit-hooks binaries (direct execution, no framework)
+##     against the right file-type subsets: check-yaml,
+##     check-json, check-toml, check-xml, check-ast, check-added-
+##     large-files, check-merge-conflict, detect-aws-credentials,
+##     detect-private-key, end-of-file-fixer, ...
+##
+## Runs in a Debian trixie container because:
+##   * pre-commit-hooks is NOT in Debian bookworm (stable) apt.
+##   * pre-commit-hooks is NOT in Ubuntu noble (24.04 = current
+##     ubuntu-latest in GH Actions) apt either.
+##   * pre-commit-hooks IS in Debian trixie apt (5.0.0+dfsg-5).
+## apt-only by org preference; no pip fallback. shellcheck is also
+## apt-installable in trixie, so a single container covers both.
+##
+## No 'concurrency:' block per the secrets-audit precedent:
+## github.workflow inside a reusable resolves to the original
+## caller's workflow name; a group declared here would deadlock
+## with the caller's group.
+
+name: pre-push static gate (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      base-ref:
+        description: 'Git ref to diff against. Default: PR base for pull_request, origin/master otherwise.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: pre-push static gate
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie-slim
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      ## Resolution order: explicit input > PR base ref > master
+      ## fallback. Single GitHub expression keeps this thin per
+      ## R-100 (no bash control flow in run: blocks).
+      BASE_REF: >-
+        ${{
+          inputs.base-ref != '' && inputs.base-ref
+          || (github.base_ref != '' && format('origin/{0}', github.base_ref) || 'origin/master')
+        }}
+    steps:
+      - name: Install dependencies (apt only)
+        ## R-100: 4 lines, no control flow -- inline is acceptable.
+        ## file: required by is_text_file()'s MIME-type fallback for
+        ## extension-less text files.
+        run: |
+          apt-get update --quiet
+          apt-get install --yes --no-install-recommends \
+            ca-certificates file git pre-commit-hooks shellcheck
+          git config --global --add safe.directory '*'
+
+      - name: Checkout caller repo (full history for git diff)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout developer-meta-files (gate script)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
+      - name: Run pre-push-static.sh
+        run: ./.github/dmf/agents/pre-push-static.sh "${BASE_REF}"
