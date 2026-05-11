@@ -1348,6 +1348,53 @@ pkg_copy_contributing_file() {
    true
 }
 
+## Bulk variant of pkg_update_if_exists: iterates a fixed set of
+## consumer-wrapper filenames against canonical_workflows_dir
+## (passed as the first batch-command argument). Source absence
+## logs and skips; destination absence is silently skipped by
+## pkg_update_if_exists.
+pkg_update_consumer_workflows() {
+   local canonical_workflows_dir workflow_name source_path destination_path
+   local -a workflow_list
+
+   canonical_workflows_dir="${1:-}"
+
+   if [ -z "${canonical_workflows_dir}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty canonical_workflows_dir parameter provided!${reset}"
+      exit 1
+   elif ! [ -d "${canonical_workflows_dir}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical_workflows_dir '${canonical_workflows_dir}' is not a directory!${reset}"
+      exit 1
+   fi
+
+   workflow_list=(
+      bandit.yml
+      claude-code.yml
+      codeql.yml
+      codex-review.yml
+      coverity.yml
+      cppcheck.yml
+      pre-push-static.yml
+      scorecard.yml
+      secrets-audit.yml
+   )
+
+   for workflow_name in "${workflow_list[@]}"; do
+      source_path="${canonical_workflows_dir}/${workflow_name}"
+      if ! [ -f "${source_path}" ]; then
+         true "INFO: canonical '${source_path}' absent; skipping."
+         continue
+      fi
+      destination_path="${batch_current_package_path}/.github/workflows/${workflow_name}"
+      pkg_update_if_exists \
+         "${source_path}" \
+         "${destination_path}" \
+         "update .github/workflows/${workflow_name}"
+   done
+
+   true
+}
+
 ## Gets rid of all 'debian/compat' files in all repos.
 pkg_compat_delete() {
    ## `|| true` so re-runs in repos where the file was already
