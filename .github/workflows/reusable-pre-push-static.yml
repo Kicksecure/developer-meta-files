@@ -1,0 +1,76 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: CI mirror of agents/pre-push-static.sh.
+##
+## Runs the same static-checks gate that developers (should) run
+## locally as a .git/hooks/pre-push hook. The local hook is
+## opt-in per developer; this CI gate is mandatory and catches
+## what the local hook misses (developers who didn't install it,
+## or AI sessions that didn't read the docs).
+##
+## Checks enforced (see agents/pre-push-static.sh for the
+## authoritative list):
+##   - bash -n on changed shell scripts
+##   - shellcheck --external-sources on the same set
+##   - R-001 ASCII (changed files + commit-range messages)
+##   - R-010, R-011, R-042, R-051, R-070, R-081, R-090, R-102,
+##     R-120, R-130 (Tier-1 single-grep style-guide rules)
+##
+## No 'concurrency:' block here per the secrets-audit precedent:
+## github.workflow inside a reusable resolves to the original
+## caller's workflow name, so a concurrency group declared here
+## would deadlock with the caller's group.
+
+name: pre-push static gate (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      base-ref:
+        description: 'Git ref to diff against. Default: PR base for pull_request, origin/master otherwise.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: pre-push static gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      ## Resolution order: explicit input > PR base ref > master
+      ## fallback. Single GitHub expression keeps this thin per
+      ## R-100 (no bash control flow in run: blocks).
+      BASE_REF: >-
+        ${{
+          inputs.base-ref != '' && inputs.base-ref
+          || (github.base_ref != '' && format('origin/{0}', github.base_ref) || 'origin/master')
+        }}
+    steps:
+      - name: Checkout caller repo (full history for git diff)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout developer-meta-files (gate script)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
+      - name: Install shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install --yes --quiet shellcheck
+
+      - name: Run pre-push-static.sh
+        run: ./.github/dmf/agents/pre-push-static.sh "${BASE_REF}"

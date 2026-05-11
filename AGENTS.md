@@ -6,6 +6,14 @@
 
 # AI instructions for ALL repositories
 
+**Before pushing, run [`agents/pre-push-static.sh`](agents/pre-push-static.sh)
+(or install it once as `.git/hooks/pre-push`).** It enforces
+R-001 ASCII (commit messages too), `bash -n`, `shellcheck -x`,
+and Tier-1 grep rules from the bash style guide. CI mirrors the
+same gate via
+[`reusable-pre-push-static.yml`](.github/workflows/reusable-pre-push-static.yml),
+so PRs that ignore the local hook still get blocked at merge.
+
 | Topic | Where |
 | --- | --- |
 | Bash style (variables, printf, locals, traps, ...) | [`agents/bash-style-guide.md`](agents/bash-style-guide.md) |
