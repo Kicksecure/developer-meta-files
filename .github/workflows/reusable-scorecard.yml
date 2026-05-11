@@ -125,3 +125,21 @@ jobs:
         uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
         with:
           sarif_file: results.sarif
+
+      - name: Checkout developer-meta-files (step-summary helper)
+        if: always()
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
+      - name: Emit step summary
+        if: always()
+        run: |
+          .github/dmf/ci/step-summary-emit.sh \
+            --tool 'OpenSSF Scorecard' \
+            --column-header field \
+            --row "outcome=${{ job.status }}" \
+            --details-url "${{ github.server_url }}/${{ github.repository }}/security/code-scanning?tool_name=Scorecard"
