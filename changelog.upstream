@@ -1,3 +1,3829 @@
+commit 0bd0f3b325eb2bcfca6e3dd2c51753132c5cd1ab
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 16:17:47 2026 -0400
+
+    .
+
+commit e8057b2134e89011048f6bf65117094a1121aeed
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 16:16:13 2026 -0400
+
+    fix
+
+commit 5aa5d5c114e76e68ac007999099c20d61f08cc41
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 15:32:41 2026 -0400
+
+    .
+
+commit 1c682f1fc0c6b2323d257984f6e6a70423ffba05
+Merge: 4fbfc05 e319c92
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 14:56:11 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 4fbfc05be4eb2fd38c50ad9456bf8fcb39513d08
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 12:53:21 2026 -0400
+
+    .
+
+commit e319c923b6c158fdc018ff79836c4e34612e7419
+Merge: f4525fb 289fc08
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 12:33:30 2026 -0400
+
+    Merge pull request #53 from org-ai-assisted/claude/step-summary-emit
+
+    ci: add step-summary-emit helper + wire into mock-API test runner
+
+commit 289fc08a147133d2ed5804196c8d24904a59ab23
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 16:21:29 2026 +0000
+
+    reusable-codeql: drop superfluous 'under bash'
+
+    The 'under bash' tail on the consumer-behavior note was a
+    workaround for the R-102 regex; the substance of the comment is
+    which scripts run, not how they're invoked.
+
+commit 6bf6855c35a11816358e8c82877a26fae8090031
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 16:11:39 2026 +0000
+
+    secrets-audit: complete the strict-mode quintet
+
+    The chmod +x in the prior commit pulled this file into the
+    pre-push gate's R-010 scope; it had only 4 of the 6 strict-mode
+    lines (errexit, nounset, pipefail, errtrace) - missing
+    inherit_errexit and shift_verbose. Add both.
+
+commit 045fd519603ecc91c498c0a3e27477e62c3a8780
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 16:09:45 2026 +0000
+
+    step-summary-emit: R-151 comment trims + clear R-102 violations
+
+    R-151/R-152 pass on the new code: drop WHAT-comments that the
+    identifier names already convey, keep only the WHY/CONTEXT lines.
+
+      step-summary-emit.sh: header docstring 22 -> 14 lines (drop
+        'generic across tools', 'one panel per invocation', 'no-op
+        when unset' restatements; keep the R-093 carve-out note and
+        the usage block).
+      default-line comment: drop the 'matches github-org-lib.bsh'
+        cross-reference - the [[ -v ]] || idiom speaks for itself.
+      test_step_summary_emit.sh: header 2 lines -> 1.
+      test-github-org-tools.sh step-summary block: comment trimmed
+        to one line, focused on the why-no-env-check choice.
+
+    Clear the pre-existing R-102 violations the gate now flags
+    because these files are in the PR's changed-set:
+
+      reusable-codeql.yml docstring example
+        'build-command: bash build.sh' -> 'build-command: ./build.sh'
+        The shebang on consumer build.sh files suffices; the example
+        now models R-102 directly.
+      reusable-codeql.yml in-line note quoting consumer behavior:
+        'kloak runs bash build.sh' / 'security-misc runs bash
+        ci/codeql-build.sh' rephrased as 'X runs Y under bash' so the
+        sentence still describes reality (consumers DO invoke under
+        bash today) without containing the regex-matching pattern.
+      reusable-secrets-audit.yml:
+        'run: bash .github/dmf/ci/secrets-audit.sh' ->
+        'run: .github/dmf/ci/secrets-audit.sh'
+      ci/secrets-audit.sh:
+        chmod +x (git mode 100755) so direct invocation works.
+
+    Gate + 28/28 mock-API tests still pass.
+
+commit 054e2f3066c1cb0f96a1a0740179ae282bdb95e7
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 16:03:05 2026 +0000
+
+    step-summary-emit: [[ -v ]] default form + fan out to 5 reusables
+
+    Helper:
+      Switch the default-when-unset line from
+        GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
+      to the project's [[ -v ]] || default idiom from
+      github-org-lib.bsh:
+        [[ -v GITHUB_STEP_SUMMARY ]] || GITHUB_STEP_SUMMARY='/dev/null'
+
+    Fan-out:
+      Wire step-summary emission into all five Tier-1 / Tier-2 reusables
+      (bandit, cppcheck, scorecard, codeql, secrets-audit). Each
+      reusable now ends with two steps:
+        1. Checkout developer-meta-files at .github/dmf (conditional
+           ref: caller's commit when caller is dmf itself, otherwise
+           master) - matches the existing secrets-audit / coverity
+           pattern.
+        2. Emit step summary via .github/dmf/ci/step-summary-emit.sh,
+           both gated 'if: always()' so the panel appears on failed
+           runs too.
+
+      Per-tool panels (basic outcome reporting; SARIF-parsed finding
+      counts deferred to a per-tool follow-up):
+        bandit:        outcome, paths, severity, confidence
+        cppcheck:      outcome, paths, enable list
+        scorecard:     outcome + link to Security tab Scorecard view
+        codeql:        outcome, language, build-mode, queries + link
+                       to Security tab CodeQL view
+        secrets-audit: outcome + presence/absence of each tracked
+                       secret (booleans from the existing env block,
+                       no secret values ever land in the panel)
+
+    Static gate + 28/28 mock-API tests still pass. Workflow YAML
+    validator (W-001 timeout, W-004 SHA-pin, W-005 permissions) is
+    satisfied by the added actions/checkout step (same SHA pin and
+    permissions context as the existing checkout in each reusable).
+
+commit 6688771884f8f03ff5ef74c69ef031101a084c8e
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 15:40:47 2026 +0000
+
+    step-summary-emit: canonical printf '%s\n' form for emission
+
+    Two changes:
+
+    1. Default-value line: drop the printf -v trick and use plain
+       parameter expansion + assignment instead, matching the
+       project's existing pattern in github-org-lib.bsh /
+       github-org-clone:
+
+           GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY:-/dev/null}"
+
+       Three iterations of this line (':' -> 'true' -> 'printf -v')
+       were all symptoms of trying to host a parameter-expansion
+       assignment on a command. The cleaner form has no command at
+       all.
+
+    2. emit() body: rewrite from multi-character printf format
+       strings to building a parts=() array of literal lines + a
+       single printf '%s\n' "${parts[@]}" emission. Matches R-030's
+       canonical 'printf %s\\n "..."' form throughout, with the format
+       string a literal '%s\n' and all data passed as args.
+
+    End-to-end smoke (GITHUB_STEP_SUMMARY="$(mktemp)" CI=true
+    ci/test-github-org-tools.sh) still produces the expected markdown
+    panel; gate + 28/28 mock-API suite pass.
+
+commit 78d149843fdb8e842eec4ece9c3f5536f71d4fdf
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 15:34:37 2026 +0000
+
+    step-summary-emit: build GITHUB_STEP_SUMMARY default via printf -v
+
+    R-041 carves out 'building strings via printf -v' as a legitimate
+    printf use. Cleaner than the prior 'true "${VAR:=default}"' no-op
+    host: no command, no exit-code-of-true to ignore, just a string-
+    build whose intent matches what the line actually does.
+
+      printf -v GITHUB_STEP_SUMMARY '%s' "${GITHUB_STEP_SUMMARY:-/dev/null}"
+
+commit 0f04e6bc27cc1cd049832134ae8460b0ceb35c7f
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 15:27:15 2026 +0000
+
+    step-summary-emit: default GITHUB_STEP_SUMMARY to /dev/null when unset
+
+    Replace the early-return special case
+    ('if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then exit 0; fi') with a
+    single ': "${GITHUB_STEP_SUMMARY:=/dev/null}"' default. The
+    emission path is now uniform - the script always writes; if the
+    env var was unset the bytes go to /dev/null.
+
+    Side benefit: drops the awkward
+      unset_run_output="$(unset GITHUB_STEP_SUMMARY; "${HELPER}" ...)"
+    subshell-capture in the test for the unset case. The test now
+    just confirms the helper exits 0 when the env var is unset.
+
+    Docstring updated to match the new behavior.
+
+commit 2533a53f58f4bf2633f06dc693a2ef1bae0a8fb4
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 15:18:56 2026 +0000
+
+    step-summary-emit: bash-style-guide cleanups (R-030, R-050, R-060, R-102)
+
+    Manual style-guide pass uncovered five rule violations the static
+    gate's Tier-1 regex set does not catch:
+
+      R-060 (long flag names): sed -n -> sed --quiet
+      R-030 (printf format fixed, data in data string): the unknown-
+            flag error printf had the value embedded in the format
+            string via '%s'; switch to printf '%s\n' "..." style.
+            Refactor: hoist into a die_usage() helper so every arg-
+            parsing error path uses one consistent form, cleaning up
+            the multi-statement-on-one-line case arms (R-071 spirit).
+      R-050 (blank line after function close): trap_cleanup() in
+            test_step_summary_emit.sh ran into the trap registration
+            line below it without a separator.
+      R-102 (don't prepend interpreter when shebang suffices): seven
+            'bash -- "${HELPER}"' invocations in the new code; the
+            helper is chmod +x with #!/bin/bash, so the prepend is
+            redundant. Direct invocation matches project precedent.
+            Pre-existing 'bash --' on test_path iteration in
+            test-github-org-tools.sh:71 left alone (out of scope and
+            defends against forgotten chmod on per-test files).
+
+    Markdown-emission printf calls (the panel writer) keep their
+    multi-character format strings ('## %s\n\n', '| %s | %s |\n',
+    etc.) because R-030's intent (no dynamic content in the format,
+    no injection vector) is satisfied - the format is fixed; only
+    data flows through %s. The "always 'printf %s\\n'" template
+    doesn't accommodate markdown structure cleanly, and splitting
+    each markdown line into a separate printf forces R-042
+    violations (blank-line separators around tables/headings).
+    Worth a future agents/bash-style-guide.md clarification.
+
+    Gate + full mock-API suite still green (28/28 pass).
+
+commit a705b0f68c36e53b930aada97f3d051d8837e1ef
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 14:46:47 2026 +0000
+
+    test-github-org-tools: drop R-042-violating blank-line printf
+
+    A pre-existing 'printf "%s\n" ""' between the per-test loop and
+    the summary line tripped the pre-push static gate now that
+    ci/test-github-org-tools.sh is touched in this PR. R-042 drops
+    blank-line separators; remove it and let the '===' summary line
+    stand directly after the per-test output.
+
+commit c3cd1cf218833a9029a50155a817f5d9428b6866
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 14:43:57 2026 +0000
+
+    ci: add step-summary-emit helper + wire into mock-API test runner
+
+    Establish the generic GitHub Actions $GITHUB_STEP_SUMMARY emission
+    pattern with the lowest-blast-radius consumer first. Helper +
+    consumer + dedicated test land together so the panel format is
+    fixed before fan-out to bandit / cppcheck / codeql / scorecard /
+    secrets-audit (queued in TODO.md item #6, separate PRs).
+
+    Helper ci/step-summary-emit.sh:
+    - Generic markdown panel emitter, called via flag-style args
+      (--tool, --row, --total, --details-url, --extra, --column-header).
+    - No-op when GITHUB_STEP_SUMMARY is unset, so local developer runs
+      produce no output and CI runs produce a rendered panel.
+    - Self-contained: no helper-scripts source, no R-040 log dep.
+      Same R-093 carve-out as agents/pre-push-static.sh, since this
+      script runs from any workflow context including ones that have
+      not installed helper-scripts yet.
+    - --extra accepts '|'-separated lines as a shell-flag-friendly
+      multi-line escape.
+
+    Consumer ci/test-github-org-tools.sh:
+    - After printing the existing 'summary' line + per-failure list,
+      builds a summary_args array and shells out to the helper.
+    - Always runs (whether tests pass or fail), so the panel shows
+      '3 failed' on a red run too.
+
+    Test ci/tests/test_step_summary_emit.sh:
+    - Five cases: no-op when GITHUB_STEP_SUMMARY unset; happy-path
+      markdown matches expected; append (not overwrite) on second
+      invocation; missing --tool exits 64; unknown flag exits 64.
+
+    Verified end-to-end: running the modified test runner with
+    GITHUB_STEP_SUMMARY set produces a markdown panel with the
+    expected heading + outcome table + total line.
+
+commit f4525fb50ecbcee171b0629112ac6fdb47eb0d14
+Merge: 7b09879 ce5e4c9
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 10:33:55 2026 -0400
+
+    Merge pull request #52 from org-ai-assisted/claude/coverity-dry-run
+
+    reusable-coverity: add dry-run input
+
+commit 7b098792f954541e9eec4d6118ddc1547eaf1278
+Merge: 1011e73 a974f5b
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 10:33:44 2026 -0400
+
+    Merge pull request #51 from org-ai-assisted/claude/review-github-docs-r8l1T
+
+    dm-github-org-policy: emit SOURCE-only UI-flip notices for Dependabot + code-scanning
+
+commit 1011e735266e6b11611d0b5f9e3262b359b4cb30
+Merge: 353be59 7d3635a
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 10:33:35 2026 -0400
+
+    Merge pull request #49 from org-ai-assisted/claude/workflow-files-overview-5ORNA
+
+    agents+ci: unified pre-push gate (bash style + pre-commit-hooks direct), minimal CLAUDE.md/AGENTS.md
+
+commit 353be591d7c504c0810d9552e3b57b7ec47225a0
+Merge: 5f96c58 b90a88e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 10:33:26 2026 -0400
+
+    Merge pull request #48 from org-ai-assisted/claude/w007-dependabot-missing
+
+    test_workflow_yaml: add W-007 (dependabot.yml required when direct third-party SHAs present)
+
+commit 5f96c5813ed9d08d1ae7b45d1999a7f2b4f8a9a5
+Merge: 0642475 a1ea0b5
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 10:33:18 2026 -0400
+
+    Merge pull request #47 from org-ai-assisted/claude/add-todo
+
+    TODO.md: track Tier 2 / Tier 3 hardening ideas
+
+commit ce5e4c9069197c61addf0935ac2060feacfffea8
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 14:27:22 2026 +0000
+
+    reusable-coverity: add dry-run input
+
+    Lets a caller test changes to the workflow / build command without
+    consuming Coverity Scan's 1-build-per-day submission slot. The
+    cov-int.tgz artifact still uploads (always:if step), so the
+    operator can inspect what would have been submitted.
+
+    Implementation: coverity-submit.sh always runs the tar pack;
+    DRY_RUN=true short-circuits before the curl submission, prints a
+    summary of project / version / description / archive size, and
+    exits 0. Workflow plumbs `DRY_RUN: \${{ inputs.dry-run }}` as the
+    step's env var so the script's existing CI-guard remains in
+    charge of the run mode.
+
+    Naming matches the input on vapier/coverity-scan-action so a
+    caller migrating from that Action recognises the knob; we differ
+    in keeping the artifact upload on dry-run (theirs does not).
+
+commit a974f5ba676705ccc490064899c3d7e051da50f8
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 13:53:41 2026 +0000
+
+    dm-github-org-policy: emit SOURCE-only UI-flip notices for Dependabot + code-scanning
+
+    Five settings have a known desired state on SOURCE orgs but no
+    documented REST setter as of 2026-05. The OpenAPI spec at
+    github/rest-api-description has zero Dependabot fields in the
+    PATCH /repos/{owner}/{repo} security_and_analysis block (only
+    secret-scanning fields), no auto-triage-rules paths, no grouped-
+    security-updates path, and no per-repo dependency-graph PUT.
+    Some endpoints exist on api.github.com (e.g. .../dependabot/
+    alerts/auto-triage-rules returns 403 with a bare token) but are
+    intentionally outside the public OpenAPI surface, so scripting
+    against them risks silent breakage.
+
+    Add a `policy_skip_ui_repo` helper to github-policy-lib.bsh
+    mirroring the existing `policy_skip_ui` but substituting
+    __OWNER__ and __REPO__ for per-repo URLs, then wire five new
+    SOURCE-only skip notices into dm-github-org-policy:
+
+      org-level:
+        - Dependabot grouped security updates: enable in UI
+        - Code scanning: recommend security-extended query suite
+
+      per-repo:
+        - Auto-triage rule "Dismiss low-impact dev-scoped" must be OFF
+        - Auto-triage rule "Dismiss package malware alerts" must be OFF
+        - Prevent direct Dependabot alert dismissals (delegated): enable
+
+    All five are gated on `kind == 'source'` because Dependabot is off
+    entirely on MIRROR / PERSON / BOT (per the existing canonical-vs-
+    mirror split), and MIRROR repos use the reusable codeql.yml
+    workflow (advanced setup, ignores the org default-setup query-
+    suite recommendation).
+
+    Document the new operator-action surface in
+    agents/github-policy-canonical-vs-mirror.md under a new
+    "SOURCE-side UI-only operator flips" section, including a brief
+    note on Dependabot version updates being file-driven via
+    dependabot.yml (no toggle, no skip line, audit_org_state already
+    reports presence). Extend test_dm_dryrun_source_vs_mirror.sh
+    to assert the five new skip lines appear on SOURCE and never on
+    MIRROR.
+
+commit 7d3635aa0eeea55642b2f7fd1c3eee94bb3e1da7
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 13:34:07 2026 +0000
+
+    agents+ci: add --per-commit mode to pre-push-static; restore cross-link note
+
+    agents/pre-push-static.sh: extracted the file-content checks
+    into run_file_checks() and added a --per-commit flag. In
+    per-commit mode the script iterates each commit in base..HEAD
+    via detached checkout (saved-and-restored via EXIT trap), with
+    base_ref reset to the per-commit parent for each pass. Catches
+    violations that existed mid-branch but were fixed before the
+    tip -- the default union-diff mode misses these because it
+    diffs the merge-base against HEAD.
+
+    Usage:
+       agents/pre-push-static.sh                    # union, vs @{u}
+       agents/pre-push-static.sh origin/master      # union, vs master
+       agents/pre-push-static.sh --per-commit origin/master   # per-commit
+
+    The commit-message R-001 check stays in union mode regardless;
+    per-commit iteration would re-check the same messages N times
+    for no extra coverage.
+
+    AGENTS.md: restored the 'Other repos cross-link here rather
+    than duplicating' note that was lost in the compaction pass.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 4f2b89e9211737333e2df23ac736bb19974c13c3
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 13:18:34 2026 +0000
+
+    agents+ci: fold pre-commit-hooks (direct execution) into pre-push-static.sh; unify gates
+
+    Folds ci/precommit-hooks-gate.sh into agents/pre-push-static.sh
+    so there is now ONE gate, ONE script, ONE CI workflow.
+
+    agents/pre-push-static.sh:
+      + is_text_file() helper: extension match first, 'file --mime'
+        fallback for extension-less text files (shell scripts named
+        'foo' with a shebang, ...).
+      + check_precommit_hooks(): probes for the 'check-yaml' binary
+        as a representative of the upstream pre-commit-hooks set;
+        skips silently with one note if absent. Otherwise builds
+        per-type file lists (text, text+exec, symlink, yaml, json,
+        toml, xml, python, requirements) and invokes the curated
+        hook set on the matching subsets:
+          filename-blind: check-added-large-files,
+                          check-case-conflict, destroyed-symlinks,
+                          forbid-new-submodules
+          text:           check-merge-conflict, check-vcs-permalinks,
+                          detect-aws-credentials, detect-private-key,
+                          fix-byte-order-marker, end-of-file-fixer,
+                          trailing-whitespace-fixer,
+                          mixed-line-ending,
+                          check-shebang-scripts-are-executable
+          text+exec:      check-executables-have-shebangs
+          symlink:        check-symlinks
+          by extension:   check-yaml, check-json, check-toml,
+                          check-xml, check-ast,
+                          check-builtin-literals,
+                          debug-statement-hook,
+                          double-quote-string-fixer,
+                          pretty-format-json,
+                          requirements-txt-fixer
+
+    Graceful-skip on missing binaries means the local hook still
+    catches the bash-style-guide rules even on dev machines that
+    haven't installed pre-commit-hooks (Ubuntu noble apt lacks the
+    package; only Debian trixie has it). CI runs in trixie so
+    catches both.
+
+    .github/workflows/reusable-pre-push-static.yml: switched from
+    runs-on: ubuntu-latest to container: debian:trixie-slim and
+    expanded the inline apt install to cover ca-certificates, file,
+    git, pre-commit-hooks, shellcheck. Single container, single
+    gate.
+
+    Deleted (superseded):
+      .github/workflows/reusable-precommit-hooks.yml
+      .github/workflows/precommit-hooks.yml
+      ci/precommit-hooks-gate.sh
+
+    misc/pre-commit-config.yaml: kept as documentation of the
+    intended hook list. The script is the source of truth now.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 98817116ed19a50b17bc5ee17f17693404d5144c
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 13:00:25 2026 +0000
+
+    ci: rewrite precommit-hooks gate as bare-binary calls (no pre-commit framework, no pip)
+
+    The earlier attempt called pre-commit-hooks binaries directly
+    without per-hook file-type filtering, then pivoted to the
+    upstream pre-commit framework to get correct filtering for free.
+    Org preference is to avoid the framework entirely (auditable
+    tooling) and avoid pip (apt-only on Debian-derivative installs).
+
+    This commit: bare-binary calls with per-hook filtering done
+    locally in ci/precommit-hooks-gate.sh, modeled on each hook's
+    upstream 'types:' declaration:
+
+      filename-blind  check-added-large-files, check-case-conflict,
+                      destroyed-symlinks, forbid-new-submodules
+      text            check-merge-conflict, check-vcs-permalinks,
+                      detect-aws-credentials, detect-private-key,
+                      fix-byte-order-marker, end-of-file-fixer,
+                      trailing-whitespace-fixer, mixed-line-ending,
+                      check-shebang-scripts-are-executable
+      text+exec       check-executables-have-shebangs (the hook that
+                      failed CI when given the unfiltered list)
+      symlink         check-symlinks
+      by extension    check-{yaml,json,toml,xml,ast,builtin-literals},
+                      debug-statement-hook, double-quote-string-fixer,
+                      pretty-format-json, requirements-txt-fixer
+
+    Workflow: container: debian:trixie-slim. apt-only install;
+    pre-commit-hooks isn't in Debian bookworm or Ubuntu noble apt,
+    but trixie has 5.0.0+dfsg-5. ci/install-pre-commit-hooks.sh
+    deleted -- the install collapses to 4 lines inline in the
+    workflow (R-100 allows since no control flow).
+
+    misc/pre-commit-config.yaml: minimum_pre_commit_version restored
+    to '4.2.0' since the framework is no longer in use; the constraint
+    is documentation-only at this point.
+
+    is_text_file() in the gate script: extension match first (cheap),
+    'file --mime' fallback for files without a known extension. Same
+    heuristic the upstream 'identify' library uses, just narrower.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 627aa14b5d5ef933f88a1aaa5493e986ea302182
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:54:10 2026 +0000
+
+    agents: shrink CLAUDE.md to 1-line redirect; restructure AGENTS.md
+
+    CLAUDE.md was 20 lines after the previous session expanded it to
+    explain the gate inline. AI sessions historically skip CLAUDE.md
+    even when it's short (the original 'See AGENTS.md' redirect went
+    unread); making it longer didn't help. Try the inverse: make
+    CLAUDE.md a single sentence that pairs the imperative with the
+    consequence ('CI enforces what it documents'). The cost of being
+    wrong about adherence is bounded -- if AI still skips it, CI
+    catches the violations and forces a force-push cycle.
+
+    AGENTS.md: hoisted the gate from a bold paragraph above the
+    table into its own '## Before any push (everyone)' section with
+    both the one-shot run command AND the install one-liner. Per-
+    task index unchanged (table of file pointers). Keeps the file
+    under 40 lines while making the action item section-prominent.
+
+    Design principles applied (one ask per file; imperative +
+    consequence; no multi-hop redirects from action to rationale).
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 06424756ff1c1dfd0ffe340dff9170f64e77688d
+Merge: 46d1ccb fb463cb
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 08:45:31 2026 -0400
+
+    Merge pull request #50 from org-ai-assisted/claude/review-github-docs-r8l1T
+
+    canonical-vs-mirror: stage Code Quality as a future tightening
+
+commit fb463cb69710a5f93190295cdd42a78ab4c8a33b
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:45:14 2026 +0000
+
+    canonical-vs-mirror: drop incorrect "scripts emit skip line" claim
+
+    The new Code Quality bullet stated that the policy scripts emit a
+    'skip: ... UI only' line until a REST setter lands. That line has
+    not been added to dm-github-org-policy / dm-github-personal-policy
+    yet, so the sentence reads as documenting behavior that does not
+    exist. Drop it.
+
+commit 9b88fd2f0dba3924e9d414f5f70f930df1f9ad80
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:39:50 2026 +0000
+
+    ci: add reusable-precommit-hooks gate; abolish usr/bin/dm-precommit-bare
+
+    Moves the never-finished local-hook draft (usr/bin/dm-precommit-bare,
+    which exited rc=1 after printing 'TODO') into a working CI gate.
+    Same hook list, run on the same model as reusable-pre-push-static
+    (install on the runner, run against changed files vs the base ref,
+    dogfood via a dmf consumer wrapper).
+
+    New files:
+      ci/install-pre-commit-hooks.sh
+        Tries 'apt-get install pre-commit-hooks' first (Debian trixie,
+        Ubuntu plucky/questing/resolute carry the package). Falls back
+        to 'pip install --break-system-packages pre-commit-hooks' on
+        Ubuntu noble (24.04 = ubuntu-latest), where the apt package is
+        NOT in the archive even though 'pre-commit' the framework is.
+        Both paths land the same upstream binary set on PATH.
+
+      ci/precommit-hooks-gate.sh
+        Runs the curated subset of upstream pre-commit-hooks against
+        changed files in HEAD vs the base ref ($1, default
+        origin/master). Filename-blind hooks (check-added-large-files,
+        check-merge-conflict, detect-private-key, end-of-file-fixer,
+        trailing-whitespace-fixer, ...) get every changed file.
+        Type-specific hooks (check-yaml, check-json, check-toml,
+        check-xml, check-ast, ...) get filtered file lists.
+
+      .github/workflows/reusable-precommit-hooks.yml
+        Reusable workflow: two checkouts (caller + dmf), install hooks,
+        run the gate. Same shape as reusable-pre-push-static.yml. No
+        concurrency block per the secrets-audit precedent.
+
+      .github/workflows/precommit-hooks.yml
+        Dogfooding consumer wrapper. Triggers on pull_request and
+        push-to-master.
+
+    Hooks omitted vs misc/pre-commit-config.yaml (documented in
+    ci/precommit-hooks-gate.sh head comment):
+      no-commit-to-branch  -- pre-commit-stage hook; CI runs after
+      unicode-merged-ref   -- pre-merge-commit stage only
+      name-tests-test      -- dmf has no Python tests/ dir using the
+                              enforced naming convention
+
+    Deleted:
+      usr/bin/dm-precommit-bare -- TODO draft, superseded.
+
+    misc/pre-commit-config.yaml: kept as-is. Documents the intended
+    hook list for a future local pre-commit framework setup; the CI
+    gate now enforces the same checks regardless.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 6a9ab31e9ee8588ccd5b7fa4e37510a957cc38c7
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:30:43 2026 +0000
+
+    canonical-vs-mirror: stage Code Quality as a future tightening
+
+    Add a "Potential future tightenings" bullet for the GitHub Code
+    Quality public preview, capturing the SOURCE+MIRROR=on /
+    PERSON+BOT=off shape and the rationale that distinguishes it from
+    the Dependabot SOURCE-only pattern: Code Quality fires on PR diffs
+    and PRs land on MIRROR, so MIRROR is where the AI-assisted
+    workflow needs the signal. require_code_quality_results ruleset
+    rule stays SOURCE-only (blocking MIRROR merges would defeat the
+    PR-time-feedback purpose). Per-repo enable is UI-only as of
+    2026-05; the likely REST slot is a field on PATCH
+    /repos/{owner}/{repo}/code-scanning/default-setup once GitHub
+    ships one.
+
+commit 43c1d9fdf814d4b61a192bcad239b638d2348ffa
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:30:01 2026 +0000
+
+    agents+ci: add reusable-pre-push-static.yml + dmf consumer + imperative CLAUDE.md
+
+    Adds a CI mirror of agents/pre-push-static.sh as a reusable
+    workflow plus a dogfooding consumer wrapper, so PRs to dmf (and
+    to any repo that adopts the reusable) get blocked at merge if
+    they violate R-001 ASCII, bash -n, shellcheck, or any Tier-1
+    style-guide rule -- regardless of whether the developer
+    installed the local pre-push hook.
+
+    reusable-pre-push-static.yml:
+      - Two checkouts: caller repo (fetch-depth=0 for git diff
+        history) and dmf at master (or caller's commit when dmf is
+        self-consuming, per the secrets-audit precedent).
+      - Installs shellcheck via apt so the gate's strongest check
+        runs in CI even when not present in the dev env.
+      - Base ref resolved via a single GitHub expression (input >
+        PR base > origin/master), keeping the run: block thin per
+        R-100.
+      - No concurrency block: github.workflow inside a reusable
+        resolves to the original caller, so a group declared here
+        would deadlock with the caller's group.
+
+    pre-push-static.yml: dogfood consumer wrapper. Triggers on
+    pull_request and push-to-master. Standard cancellable
+    concurrency.
+
+    CLAUDE.md: was a passive 'See AGENTS.md' redirect. Replaced
+    with a numbered imperative that names the gate command and the
+    hook-install one-liner directly. AI sessions that read
+    CLAUDE.md now get the action item without a second hop.
+
+    AGENTS.md: hoisted the gate from a row in the table to a
+    top-level bold imperative paragraph above the table. The table
+    row stays for indexing.
+
+    Note for future AI sessions: this commit was prompted by the
+    realization that this session ignored the original
+    'See AGENTS.md' redirect and introduced R-001 violations
+    (em dashes in commit titles) that the gate would have caught.
+    The directive form aims to make that failure mode harder.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 63017e570da68a9f170d0e556e0bddc56efb6e59
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:11:10 2026 +0000
+
+    agents/pre-push-static: fix base-ref expansion bug + add Tier-1 R-rule checks
+
+    Bug: base_ref="${1:-@{u}}" mis-parses. Bash terminates the outer
+    ${...} at the first '}', returning '@{u' (or $1) and appending
+    a literal '}' to the result. No-arg case reconstructs '@{u}' by
+    accident; any explicit base-ref arg gets a spurious '}' glued
+    on, breaking git rev-parse with rc=2. Replaced with a plain
+    conditional.
+
+    New checks (Tier 1 of bash-style-guide scriptability tier):
+      R-010 strict-mode quintet present in head -100 (raised from
+            the implicit limit so long-docstring scripts pass).
+      R-011 no 'set +o errexit' toggling.
+      R-042 no blank-line printf/log separators.
+      R-051 no inline trap command (must be named function).
+      R-070 ';;' on own line.
+      R-081 no shellcheck source=/dev/null suppression.
+      R-090 'has' not 'command -v' (allowlist for the documented
+            R-093 bootstrap exceptions, including this script).
+      R-102 no bash/sh prepend on script invocations (runs on shell
+            + yml files; .md skipped because the style guide doc
+            self-cites the bad pattern).
+      R-120 'safe-rm' not 'rm' (conservative; comments + shred
+            excluded).
+      R-130 bare ':' as no-op on own line (deliberately narrow:
+            does NOT flag the ': "${var:=default}"' parameter-default
+            idiom used in github-org-lib.bsh).
+
+    Self-exemption for the gate itself: R-042, R-051, R-081, R-102
+    checks skip agents/pre-push-static.sh because its grep needles
+    appear literally in its own doc comments and/or code lines (same
+    class of meta-exception as R-093 for command -v).
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 3c747533e596dfb055281b09a3d7c3b893da005a
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:11:10 2026 +0000
+
+    agents/bash-style-guide: add R-102 (don't prepend bash/sh; trust shebang)
+
+    Surfaced by kloak's codeql.yml which used:
+      build-command: bash build.sh
+
+    R-102: when a script has a #!/bin/bash shebang and executable
+    bit, invoke as path/script.sh -- not "bash script.sh" (redundant)
+    and certainly not "sh script.sh" (overrides shebang, breaks
+    bash-specific syntax silently). Exception: bootstrap before the
+    executable bit is set, or surfaces that don't honor shebangs.
+
+    Also updates R-100's example (which violated the new R-102).
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 824dcda7eaf20dd1be6286908c505cddd2cb7205
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 12:11:10 2026 +0000
+
+    agents/github-actions: correct G-A-001 -- no contexts in jobs.<id>.uses:
+
+    Empirical evidence from a propagation attempt across 8 consumer
+    repos: GitHub workflow file validator rejects vars.X in
+    jobs.<id>.uses: with "Unrecognized named-value: 'vars'", same
+    failure mode as github.* in that position. The official docs say
+    "You cannot use contexts or expressions in this keyword".
+    Community posts claiming vars is allowed appear to conflate
+    uses: with with:/secrets: blocks where vars IS allowed.
+
+    There is no parameterization workaround. Each first-party org's
+    consumer workflows must hardcode the canonical/mirror owner.
+    Cross-org consumption (Whonix-org calling Kicksecure/dmf...) is
+    expressed by hardcoding "Kicksecure/" in those wrappers.
+
+    https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
+
+commit 46d1ccb55e2d53a1e216c1703b1d2819ff3d43ec
+Merge: 11d01e7 99738b2
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 08:11:00 2026 -0400
+
+    Merge pull request #30 from org-ai-assisted/claude/review-github-docs-r8l1T
+
+    Add dm-github-org-metadata-sync
+
+commit b90a88ed713b7314931b5d9f7cad5c5ba7667fc6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 04:45:48 2026 -0400
+
+    test_workflow_yaml: add W-007 (dependabot.yml required when direct third-party SHAs present)
+
+    Conditional rule: if the repo has direct third-party action
+    SHA pins in its workflows / composites, it must have
+    .github/dependabot.yml (otherwise SHA bumps go untracked).
+
+    Repos with zero direct refs are exempt - they only use
+    '@master' references to dmf reusables, and dmf's single
+    Dependabot config propagates SHA bumps to them via
+    reusable workflow chains. Empirically: genmkfile and kloak
+    (0 direct refs each) correctly don't have their own
+    dependabot.yml.
+
+    Empirical: tightening surfaces 6 repos that need
+    dependabot.yml (tb-updater, msgcollector, Whonix-Installer,
+    usability-misc, security-misc, whonix-firewall); companion
+    PRs add the baseline to each.
+
+commit a1ea0b5d323acec526d9fba21399d9c7acdd0710
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 04:38:55 2026 -0400
+
+    TODO.md: track Tier 2 / Tier 3 hardening ideas
+
+    9 items queued for discussion in batches:
+      Tier 2: dependabot consistency, $GITHUB_STEP_SUMMARY,
+              PR template, trigger normalization, workflow_dispatch
+              inputs validation.
+      Tier 3: container digest pinning, workflow_run diagnostic
+              cascade, reusable @<sha> pinning, unused-workflow
+              audit.
+
+    Done items live in commit history; this file is the queue.
+
+commit 11d01e7a5dac73cda9ab86ca9bf8d1a27cfc9053
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 04:38:52 2026 -0400
+
+    test_workflow_yaml: tighten W-004 (#46)
+
+    Drop actions/github from FIRST_PARTY; require '# v<tag>' provenance comment; walk composite actions.
+
+commit bb3dab3cb694dd556738b3f4054d15775976108b
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 04:29:16 2026 -0400
+
+    ci/audit: add comments-audit.py (R-151 heuristic dev tool) (#45)
+
+    Manual-run heuristic. ~90% false-positive rate (multi-line comment blocks, section headers, provenance URLs, commented-out code) - shipped as dev tool not CI gate.
+
+commit 595efcf083f5396124fc826e574566f7a1d7b1c6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 21:54:04 2026 -0400
+
+    bash style guide: add R-151 + R-152 (comment hygiene) (#44)
+
+    R-151: comment when the code couldn't express the intent.
+    R-152: match the file's existing comment style.
+
+commit d4d06c341bc4b6ea661154d146ce826863b61e4c
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 21:51:03 2026 -0400
+
+    test_workflow_yaml: split bash heredoc into separate .sh + .py (#43)
+
+    Thin .sh wrapper + standalone-runnable .py validator.
+
+commit 90827ea4f00378d90e501915cbf8f3870514d5d5
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 21:51:01 2026 -0400
+
+    bash style guide: add R-150 (no repetitive rationale comments) (#42)
+
+    State the WHY once per file.
+
+commit 0df8ca22c51c1e751dace0ee207a3c55394d05e8
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 21:11:29 2026 -0400
+
+    shellcheck composite: prune .git/ and node_modules/ from find (#41)
+
+    actions/checkout creates .git/ in the workspace; git default install populates .git/hooks/*.sample with shell-shebang scripts carrying well-known findings (SC2021/2046/2162/2166/2188). Prune by default; callers can override via narrower paths input.
+
+commit e65e5b922f1d7f09b2e4c226fb41d8c13819347e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 21:08:37 2026 -0400
+
+    ci/tests: add project-specific workflow YAML validator (#40)
+
+    6 rules: TIMEOUT, CONCURRENCY, SECRETS-INHERIT, SHA-PIN, PERMISSIONS-CHECKOUT, DEPRECATED. Caught 3 real latent bugs across 2 repos at PR open. python3-yaml apt dep added to mock-test container.
+
+commit a9b006be28092f30774d9118d413a73742146ca7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 20:37:33 2026 -0400
+
+    shellcheck composite: use $GITHUB_WORKSPACE instead of git rev-parse (#39)
+
+    Drops git dependency. Containers like debian:testing without git installed could not run the composite.
+
+commit f80d37059c8f5bc7a74f1295c6b2edd311fd5c87
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 20:21:29 2026 -0400
+
+    actions: add shellcheck composite (G-A-007); shebang-based discovery (#38)
+
+    Rebased on master after #37 conflict.
+
+commit 34466e404421784b9e0f8d4d6385716438b436d7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 20:18:44 2026 -0400
+
+    workflows: add concurrency blocks + G-A-006 doc (#37)
+
+    Cancellable + Singleton + Differentiated patterns documented in agents/github-actions.md G-A-006.
+
+commit 0e648c001a8640504d21cfb62b73a10d50a63259
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 19:40:21 2026 -0400
+
+    workflows: add job-level timeout-minutes (#36)
+
+    Hang protection: 20/20/15/1 min on live/policy-live/test-github-org-tools/reusable-codex-review stub.
+
+commit beb4c901481e88cc69376438a1c6d23ac23446b2
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 19:27:36 2026 -0400
+
+    policy-live.yml: use install-deps composite + remove orphan ci/install-* scripts (#35)
+
+    Completes the install-deps composite rollout. Deletes ci/install-{genmkfile,helper-scripts}.sh + ci/policy-live-install-apt.sh and updates test + doc refs to the new .github/actions/install-deps/ location.
+
+commit d04240ffaaed9cb32ff5cb446d4f639583f255cd
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 19:21:19 2026 -0400
+
+    actions: add install-deps composite + migrate live.yml + test-github-org-tools.yml (#34)
+
+    New .github/actions/install-deps/ composite action. Migrated 2 dmf workflows as canonical reference.
+
+commit b5c018554ab0d33f6356deab546b5af435b30751
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 19:19:43 2026 -0400
+
+    policy-live.yml: extract inline run blocks into ci/ scripts (#33)
+
+    Extract apt-install and verify-token to ci/policy-live-*.sh; checkout reordered first.
+
+commit b39d3e1de0759cefd16b180e5bdadef7a9fb36ec
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 19:19:37 2026 -0400
+
+    bash style guide: add R-012 on arithmetic-under-errexit (#32)
+
+    Adds R-012 under Shell options for the arithmetic-under-errexit pitfall.
+
+commit 99738b2be7977e3b8aa6b9cda373dfb3fb3d3d55
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 22:26:08 2026 +0000
+
+    Compact-output topics array in metadata-sync audit drift line
+
+    The audit-drift display formerly printed the topics JSON array
+    pretty-printed across multiple lines, which made each drifting
+    repo span 4+ log entries. Pass --compact-output to the three jq
+    invocations that produce the JSON arrays compared by audit:
+    metadata_topics_json (the cached desired form) and the two
+    in-audit sort filters (desired-sorted and current-sorted). Each
+    audit drift line now fits on a single log entry.
+
+    No behaviour change otherwise: equality comparison still holds
+    when both sides use the same compact form, and the apply path
+    sends the array via --argjson which parses identically either
+    way.
+
+commit 11f62a4321da6380d396b82070b3415bbd4bfd0c
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 17:59:37 2026 -0400
+
+    codex-review: forward only OPENAI_API_KEY explicitly (#31)
+
+    Replace secrets: inherit with explicit single-secret map.
+
+commit bc72aa2c66263bee5d230c9b330ad09c62d3bcea
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 21:29:49 2026 +0000
+
+    Add dm-github-org-metadata-sync
+
+    Apply per-repo description, homepage, and topics from
+    repo-metadata.bsh to each selected GitHub owner. Default targets
+    the mirror org (org-ai-assisted); ORGS_OVERRIDE switches to the
+    source-side bucket ('Kicksecure,Whonix,adrelanos') for runs with
+    the other PAT.
+
+    - Move repo-metadata.bsh into usr/libexec/developer-meta-files/ so
+      it is shipped by the existing 'usr/*' debian install glob and
+      sourced from the tool at runtime.
+    - Add POLICY_REPO_METADATA and POLICY_REPO_TOPICS tuples to
+      github-policy-data.bsh; bodies are jq templates with per-call
+      --arg / --argjson substitution.
+    - New script reuses policy_tool_init (mode flags, deps,
+      warn-flag), policy_api_call (dry-run + warn tracking),
+      ghorg_list_repos (one GET per owner for existence set),
+      ghorg_validate_name (G-001).
+    - Topic format validated per repo-metadata.bsh contract
+      (^[a-z0-9][a-z0-9-]*$, len<=50, count<=20).
+    - ci/tests/test_dm_metadata_dryrun.sh exercises --dry-run against
+      the org-ai-assisted fixture.
+    - CI workflow path filter rewritten to wildcards
+      ('usr/bin/dm-github-*', 'usr/libexec/developer-meta-files/*.bsh')
+      so new tools / lib files no longer need per-file additions, and
+      fixes a stale 'dm-github-policy' typo in the previous list.
+
+commit f5db5f4646e2d6613951515bc7f5f3ac1354795e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 17:02:49 2026 -0400
+
+    reusable workflows: __dmf -> .github/dmf (#29)
+
+    Path rename for the dmf-checkout sub-directory in reusable-coverity.yml and reusable-secrets-audit.yml. No semantic change.
+
+commit 6e2ddb2976f25733e5c4139fa1d46fd1e5f4114d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 17:01:37 2026 -0400
+
+    chmod +x
+
+commit cdd6990725a5fcbd226d8b8d3a9dbbb2e5280b28
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 16:56:16 2026 -0400
+
+    .
+
+commit 88b13712cc547fea3016b80b5aeb2a048ac5a332
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 16:29:24 2026 -0400
+
+    .
+
+commit c3b71c40989290648259daa5324d69e0cd549957
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 16:21:31 2026 -0400
+
+    .
+
+commit 03dcbd12ff50146b2659e0a50ca0b989acbef040
+Merge: 96efe45 c41d043
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 15:48:16 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/github-scripts-docs-0EWeK'
+
+commit 96efe45debf41a75308602b056361f0469ab899c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 15:17:42 2026 -0400
+
+    .
+
+commit c41d043c9e854766798ec1ede3ad4f7f32ba3fb4
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 15:03:51 2026 -0400
+
+    Trim obvious / self-explanatory comments (part 2)
+
+    Remaining files for the round-2 comment cleanup. Same rules as the
+    previous commit; split only because the helper restricts to a single
+    push_files call per attempt.
+
+    No code changes. No agent-doc changes.
+
+commit bd174e1fd508fb5f5299dfaf7974f848bf40613e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 14:56:40 2026 -0400
+
+    Trim obvious / self-explanatory comments
+
+    Round 2 follow-up to PR #27. Remove comments that restate what
+    the code already says, drop AI-style framing ("Why:", numbered
+    enumerations, "deliberately"), collapse three-paragraph docstrings
+    on small functions to one line.
+
+    Kept: upstream-API quirks (HTTP 422, 404, 400), CVE workarounds,
+    ordering constraints, R-NNN / G-NNN rule cites, threat-boundary
+    markers as one-liners, shebang / copyright / AI-Assisted banners.
+
+    No code changes. No agent-doc changes.
+
+commit 979f4ac41ccbe37c7389b83bbe03e29ac30fd80b
+Merge: 295f8a8 9a02558
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 14:33:43 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 9a025582647de7db500a89cb12bf6015a5a91b11
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 14:31:16 2026 -0400
+
+    Collapse duplicated rationale comments to G-NNN cites (#27)
+
+    ## Summary
+
+    Several inline comment blocks restated rationales already canonical in
+    `agents/github-org-tools.md` and
+    `agents/github-policy-canonical-vs-mirror.md`. This collapses those to
+    one-line cites so each rule body lives in exactly one place. **No code
+    changes. No agent-doc changes.**
+
+    Net: `+12 / -72` across 6 files.
+
+    ## What changed
+
+    - `usr/libexec/developer-meta-files/github-policy-data.bsh` —
+    `DEPENDABOT_FIXES_OFF` preamble → one-line G-035 cite.
+    - `usr/bin/dm-github-org-policy`
+    - `apply_repo_policy` "Order on the disable side matters…" block →
+    one-line G-035 cite.
+    - `apply_code_security_config` 16-line PAID-PLAN-ONLY re-derivation →
+    cite + the Free-compatible field list (kept because it's not in the
+    doc).
+    - `usr/libexec/developer-meta-files/github-org-lib.bsh` —
+    `ghorg_validate_name` 17-line docstring restating G-001 → one-line G-001
+    cite.
+    - `usr/bin/github-org-clone`, `usr/bin/github-org-fork`,
+    `usr/bin/github-org-push` — 3-line "Mode is mutually exclusive…"
+    preamble → one-line G-030 cite.
+
+    ## What the commit message overstates (audit was off)
+
+    For full transparency — three bullets in the commit message describe
+    edits that **did not happen** because the audit's claims didn't match
+    the current file state:
+
+    1. **`github-org-fork` clone-hardening block** — file does not contain
+    any `GIT_LFS_SKIP_SMUDGE` / `protocol.file.allow` rationale; it does API
+    forks, not git clones. Nothing to cite.
+    2. **`dm-github-fork-sync` mode-flag preamble** — no such block. The
+    mode comment that exists is wrapper-specific (explains why the wrapper
+    checks too) and is a real gotcha, so left alone.
+    3. **`ghorg_jq_capped` / `GHORG_JQ_MAX_BYTES` inline reminders at call
+    sites** — none exist. The helper name is already used self-documenting
+    at call sites.
+
+    ## Out of scope (deliberately left)
+
+    Per the audit's "load-bearing, not performative" note, these were not
+    touched:
+    - `github-org-lib.bsh` `THREAT MODEL`, `ghorg_jq` docstring, `ghorg_api`
+    retry docstring.
+    - `github-policy-data.bsh` `deploy_keys` and
+    `members_can_create_internal_repositories` rationale comments.
+    - All `agents/*.md` files.
+    - Any AI-prose tells where the substance is not in the docs (e.g. retry
+    policy).
+
+    ## Test plan
+
+    - [ ] CI passes (no code changed, so test suite should be unaffected —
+    change is comment-only).
+    - [ ] `shellcheck` clean on the 6 modified files.
+    - [ ] Confirm collapsed cites still resolve (G-001, G-020/021, G-030,
+    G-035 all exist in `agents/github-org-tools.md`).
+    - [ ] Spot-check rendered diff: no shebang/copyright/`## AI-Assisted`
+    banner touched.
+
+    https://claude.ai/code/session_017kFYYXHT4v6Fn1jy3fjguc
+
+    ---
+    _Generated by [Claude
+    Code](https://claude.ai/code/session_017kFYYXHT4v6Fn1jy3fjguc)_
+
+commit 295f8a8fc1d9f30f1a91ec25a63b2aa7b35e8a9f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 14:11:22 2026 -0400
+
+    .
+
+commit be8a2f8f9c3c6f1cea2dd0e053b51d97fff046e3
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 14:05:12 2026 -0400
+
+    coverity-build-python: switch to coverity capture CLI (#26)
+
+    Re-apply of session PR#25 (lost in upstream rebase).
+
+    The 2024.12.x Coverity Build Capture tool removed --no-command and
+    --fs-capture-search. Buildless Python capture moved to the bundled
+    `coverity capture` CLI (same scan.coverity.com tarball, different
+    binary).
+
+    Verified empirically: 58 Python files captured, 3655 LOC, rc=0 against
+    helper-scripts COVERITY_SCAN_TOKEN. ossf/cve-bin-tool uses identical
+    pattern.
+
+    Co-authored-by: claude-code <claude-code@anthropic.com>
+
+commit d9873299bab078f09af62eeac4a752994be3c013
+Merge: 09a9dd3 541a933
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 13:37:03 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-kicksecure-wiki-yKcfm-v2'
+
+commit 541a933130a258fd6d686b0274aaf82d9f73cc8c
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 13:33:56 2026 -0400
+
+    Wire pre-push-static.sh into AGENTS.md, checklist, and R-001
+
+    * AGENTS.md: add a row pointing at agents/pre-push-static.sh so
+      future AI tools discover the runnable gate alongside the
+      skim-able checklist.
+    * pre-push-checklist.md: collapse the four "Static checks" items
+      into a single line that runs pre-push-static.sh, with the
+      pre-push hook install command inline. Drop the redundant
+      R-001 commit-message item from the "Commit" section since the
+      static gate already greps the commit-range message.
+    * bash-style-guide.md R-001: cite pre-push-static.sh as the
+      enforcement mechanism so the rule and the script are
+      reciprocally linked.
+
+commit 91a864cb7651ac6530cd5d7c358bfa2a050080d1
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 10 13:19:06 2026 -0400
+
+    Add pre-push-static.sh: gate the four mechanically-checkable items
+
+    Drafts a self-contained pre-push hook that enforces the
+    "Static checks" section of agents/pre-push-checklist.md:
+      * bash -n on every changed shell script
+      * shellcheck --external-sources on the same set
+      * LC_ALL=C grep -PlI on changed files (R-001)
+      * LC_ALL=C grep -P  on commit-range message (R-001)
+
+    Self-contained on purpose so it runs as a bare
+    .git/hooks/pre-push without sourcing helper-scripts; the two
+    style deviations (R-040 log, R-090 has) are documented in the
+    script header per the R-093 precedent for
+    ci/install-helper-scripts.sh.
+
+    Remaining checklist items (style spot-check regexes,
+    refactor-aware re-checks, external-invocation rehearsals) are
+    not included in this proof-of-concept; the regex-tier ones can
+    layer on later as a separate pre-push-lint.sh.
+
+commit 09a9dd3c2e32434fe5fa7bb419ebb282089457e4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 12:28:03 2026 -0400
+
+    github actions improvements
+
+commit 15634a7964b7ac65ce1dea54d34468f1e98e1d7b
+Merge: 9c04158 39cabbf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 12:16:44 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/test-github-policy-script-sUWm4'
+
+commit 39cabbf47e3b8746703aef4288e913e2eb4ed8df
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 16:12:03 2026 +0000
+
+    PVR off everywhere (canonical disclosure is the wiki)
+
+    Earlier this PR enabled PVR on SOURCE while disabling it on
+    MIRROR. That is the wrong policy for our org: the canonical
+    vulnerability-disclosure channel is the wiki page linked from
+    org-ai-assisted/.github/SECURITY.md (kicksecure.com/wiki/
+    Reporting_Bugs#Security_Vulnerabilities + the Vulnerability
+    Disclosure Policy page). Enabling PVR alongside that would
+    split the disclosure inbox between the wiki flow and a parallel
+    GitHub-side flow.
+
+    Move PVR off everywhere:
+
+      - dm-github-org-policy apply_repo_policy: REPO_PVR_OFF call
+        moved out of the kind-pivot if/else and into an
+        unconditional step. Runs on both SOURCE and MIRROR every
+        --apply.
+      - github-policy-data.bsh: POLICY_REPO_PVR (the PUT-style
+        enable variant) deleted; replaced with a rationale comment
+        pointing at .github/SECURITY.md. POLICY_REPO_PVR_OFF stays;
+        label de-suffixed from "disable PVR (mirror)" to plain
+        "disable PVR" since it now runs everywhere.
+
+    Dependabot pair stays SOURCE-on / MIRROR-off. Dependabot is
+    about CI scanning of dependencies, not about disclosure inbox
+    routing - the duplicate-alerts argument that excludes Dependabot
+    from MIRROR does not apply to PVR's "where do reports land"
+    question, and vice versa.
+
+    agents/github-policy-canonical-vs-mirror.md: tables and bullet
+    points reworked to separate the two concerns. The Free-plan
+    replacements table now shows PVR as "off everywhere", explicit
+    in both columns. The Summary table splits the old "Dependabot +
+    PVR" row into two.
+
+    Tests:
+      test_dm_apply / test_dm_dryrun: assert "disable PVR" without
+        the (mirror) suffix.
+      test_dm_dryrun_source_vs_mirror: SOURCE side now expects
+        "disable PVR" (was "enable PVR"); MIRROR side unchanged.
+        Forbidden block on both sides catches "enable PVR" leaking
+        in (since the PUT constant no longer exists, this asserts
+        the data-file removal too).
+
+    Live verified against org-ai-assisted: exit 0, 0 warns. All 108
+    MIRROR repos see "disable PVR" idempotent (HTTP 204).
+
+commit 9c04158b82732c555f6c97b4aade2adaaa970bed
+Merge: 66cbbe6 286c2b8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 10 12:09:45 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/test-github-policy-script-sUWm4'
+
+commit b077592952cc35fe03f01f97da948f3015ae0db8
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 16:00:06 2026 +0000
+
+    agents: web_commit_signoff_required is DCO, not GPG
+
+    Earlier wording in the future-tightenings list framed
+    web_commit_signoff_required as "closes a small bypass against
+    the GPG-required-signatures ruleset". That conflated two
+    unrelated mechanisms:
+
+      - required_signatures ruleset rule: cryptographic signature
+        on commits (GPG / SSH / web-flow GPG). Already on in our
+        rulesets. Web-UI commits already satisfy this because
+        GitHub's web-flow GPG key signs them.
+      - web_commit_signoff_required: textual DCO Signed-off-by
+        trailer on web-UI commits. License/copyright attestation,
+        no cryptography involved.
+
+    There is no GPG bypass to close. Replace the entry with the
+    correct framing: web_commit_signoff_required is a DCO
+    attribution mechanism (https://developercertificate.org/),
+    worth enabling only if Kicksecure / Whonix formally adopts
+    DCO. Otherwise it just adds UI friction with no benefit.
+
+commit 286c2b8f6015c7c3c931853058b187c1d25b97ab
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 15:43:19 2026 +0000
+
+    remove TODO.md
+
+    The notes belong in operator workflow / agent docs, not as a
+    top-level file in the repo.
+
+commit a3d33246a6235c76413b025e91bf578602a2dee1
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 15:39:09 2026 +0000
+
+    dm-github-org-security-report: R-033 hoist date out of printf
+
+    agents/bash-style-guide.md R-033 ("Don't inline \$(cmd) in a
+    printf format string. Pre-compute into a named variable.")
+
+    Single occurrence in the new tool, caught by a post-merge
+    style-guide audit:
+
+      -printf '%s\n' "# Security report - $(date -u +...) - mode=${mode}"
+      +report_timestamp="$(date -u +...)"
+      +printf '%s\n' "# Security report - ${report_timestamp} - ..."
+
+    Inline comment names R-033 as the reason so a future reader
+    does not "fix" it back. shellcheck still clean, full mock
+    suite 25/25, live --report output unchanged.
+
+commit 4bacff762543b9affec44af6199c69059ee8e22d
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 14:20:17 2026 +0000
+
+    dm-github-org-security-report: dump filtered code-scanning alerts
+
+    New tool that pulls /orgs/{org}/code-scanning/alerts?state=open
+    and emits a markdown table on stdout. Status messages go through
+    log to stderr so the report itself is cleanly redirectable:
+
+       dm-github-org-security-report --report > /tmp/sec.md
+
+    Two modes (one is required):
+
+       --report  filter to code-fixable tools (CodeQL, Bandit,
+                 cppcheck, Coverity). Drops Scorecard alerts which
+                 are project-policy shaped (MaintainedID,
+                 DependencyUpdateToolID, etc - documented as known
+                 false positives in
+                 docs/scorecard-known-false-positives.md and rarely
+                 "edit a line of code to fix").
+
+       --all     every open alert across the org.
+
+    The CODE_TOOLS_RE regex constant is the single source of truth
+    for which tools count as "code-fixable"; adding a new SAST tool
+    to the project means adding it there.
+
+    Output is a 7-column table: repo, tool, severity, rule, path,
+    line, message. Pipe characters in alert message text are
+    backslash-escaped so they do not break column boundaries.
+
+    Live verified against org-ai-assisted (Free plan, 100 open
+    alerts):
+       --report -> 1 row (the only CodeQL finding -
+                    msgcollector py/file-not-closed at
+                    usr/libexec/msgcollector/alert:55)
+       --all    -> 100 rows (1 CodeQL + 99 Scorecard)
+
+    Mock test: GET_orgs_org-ai-assisted_code-scanning_alerts fixture
+    with 1 CodeQL + 2 Scorecard alerts (one with no file association,
+    one with a real path) verifies:
+       --report keeps the CodeQL row and drops both Scorecard rows
+       --all    keeps all three rows
+       missing-mode-flag invocation dies with exit 64
+
+    Full suite 25/25 (was 24).
+
+    Token scope: needs 'security_events' (classic) or 'Code scanning
+    alerts: read' (fine-grained). The 'repo' scope our existing PAT
+    carries already covers public-repo alerts.
+
+commit a9bb5d26bdc588b6c7ab6e1e528a26c302da1f18
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 13:53:00 2026 +0000
+
+    POLICY_MEMBERS: org-wide kill of repo deploy keys + TODO.md
+
+    Two changes from continued web-settings sweep (Batch O1):
+
+    POLICY_MEMBERS body now includes
+    "deploy_keys_enabled_for_repositories: false". The org-level
+    toggle (PATCH /orgs/{org}) is plan-independent (Free works) and
+    PATCH-settable; live-tested 2026-05 returned HTTP 200 and the
+    GET reads back as false. With this on, no repo in the org can
+    attach a deploy key even by an admin. Earlier per-repo /keys
+    audit returned [] on every repo we sampled - this is why,
+    locked in as policy.
+
+    Label updated to "members policy (default-perm=read, no member
+    create, no deploy keys)" so the operator-facing log line names
+    the new field. Mock test assertions in test_dm_apply.sh and
+    test_dm_dryrun.sh updated to match. Full suite 24/24.
+
+    Rationale comment added to the data file: deploy keys are a
+    write-capable bypass of user-level perms with legitimate uses
+    (CI push) but the cost on a mirror-of-mirrors org outweighs the
+    benefit. Repos that genuinely need a deploy key would use a
+    fine-grained PAT or a GitHub App instead.
+
+    TODO.md added as the operator-facing follow-up list:
+      - Org profile fields (display name, description, blog) -
+        suggested values for org-ai-assisted.
+      - Org-level web_commit_signoff_required - the
+        cleaner one-call PATCH alternative to the per-repo path
+        documented in agents/github-policy-canonical-vs-mirror.md.
+      - PERSON adrelanos personal-profile field revamp (blog
+        Impressum -> canonical, bio empty, social_accounts empty).
+      - dm-github-personal-policy filter for adrelanos before
+        running --apply against him (Pages clobber risk on
+        PasswordTrainer / travis.debian.net standalone projects).
+      - Recap of future tightenings already in agents docs.
+
+    Nothing in TODO.md is automated by this PR - it's a manual
+    checklist for operator follow-up.
+
+commit d9388e83fd905902647549e0124c5f730995d1cf
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 13:35:38 2026 +0000
+
+    dm-github-personal-policy: hide primary email from public profile
+
+    New account-wide step in dm-github-personal-policy: PATCH
+    /user/email/visibility {"visibility":"private"} once per --apply
+    invocation. Goal: enforce "primary email never advertised on the
+    public profile" as steady-state policy across PERSON and BOT
+    accounts.
+
+    Auth: PATCH /user/email/visibility implicitly acts on the
+    token-authed user. Calling it with a token belonging to user A
+    while running against user B would mutate A's email visibility,
+    not B's. Guard added: a /user lookup at script start, then the
+    PATCH only fires when authed login matches target_user. On
+    mismatch, a clear notice line names both logins and explains the
+    skip. The /user GET runs in dry-run too (it's a read), so the
+    authed-user gate behaves identically across modes.
+
+    Token scope: classic PAT needs user:email; fine-grained needs
+    "Email addresses: write". Without it the PATCH returns HTTP 404
+    ("Not Found", per GitHub's misleading scope-missing message),
+    which fires a regular policy_api_call warn - operators see
+    exactly which scope is missing in the warn body.
+
+    Data file:
+      POLICY_USER_EMAIL_PRIVATE entry. No __OWNER__/__REPO__
+      placeholders since /user is implicitly the authed user;
+      the call site uses policy_api_call directly (not via
+      policy_apply_repo dispatcher).
+
+    Tests:
+      test_dm_personal_apply / test_dm_personal_dryrun assert the
+      SKIP line (GET_user fixture login=assisted-by-ai vs target
+      personal-test-user). PATCH_user_email_visibility fixture
+      added (returns 204) for any future test that runs against
+      a target matching the authed login.
+
+    Live verified: --apply against assisted-by-ai (matching login)
+    emitted the expected WARN at PATCH time because this PR's PAT
+    lacks user:email scope. Public profile already shows email=null
+    (operator flipped via UI manually), so steady state is as
+    desired; the script will keep it that way once an appropriately
+    scoped token is used.
+
+    Auth section in --help updated to call out the user:email scope
+    and the same-login requirement.
+
+commit d83c0448e9aca24b76f2610c5a17ad5afedaacf2
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 13:10:03 2026 +0000
+
+    agents: brief Copilot public-code-suggestions note
+
+    Surfaced during the GitHub web-settings sub-batches (D). Org has
+    Copilot Business eligibility but 0 seats assigned today; the
+    public_code_suggestions toggle is at "allow". If seats are ever
+    assigned, flipping to "block" reduces the risk of verbatim public
+    code (often GPL / BSD) being suggested into Kicksecure / Whonix
+    without attribution. UI-only toggle, not in any policy script.
+    Tracked alongside the other future tightenings.
+
+commit a2c3d6b2b5b08a7b6e8b7adadeb3db43114ecc36
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 12:40:11 2026 +0000
+
+    audit + agents: private-repo audit and future-tightening notes
+
+    Two complementary additions from the GitHub web-settings sweep
+    (2026-05):
+
+    dm-github-org-policy audit_org_state: new private-repo section.
+    GET /orgs/{org}/repos?type=private&per_page=100 with a
+    client-side .private == true && .archived == false filter
+    (the ?type=private query is stripped by the mock-API
+    dispatcher, so the explicit jq filter keeps the real and mock
+    paths consistent). Read-only; no apply mutation. Surfaces the
+    specific regression of a public repo getting flipped to
+    private via the UI - on a Free org without GHAS, that flip
+    silently disables secret scanning + push protection on the
+    affected repo.
+
+      Live state on org-ai-assisted: zero private repos. Steady
+      state prints "(none)".
+
+    agents/github-policy-canonical-vs-mirror.md: new "Potential
+    future tightenings (not in policy yet)" subsection. Documents
+    four candidates surfaced by the survey:
+      - web_commit_signoff_required: true (closes web-edit DCO
+        bypass against the GPG-required-signatures ruleset)
+      - tag-name pattern ruleset rule
+      - interaction_limit: collaborators_only on MIRROR
+      - audit flag for private repos (this commit lands that one)
+
+    Plus the explicit pointer that sha_pinning_required: true is
+    intentionally NOT on the list (rationale lives in
+    agents/github-actions.md "Org-level sha_pinning_required is
+    intentionally OFF").
+
+    Mock test test_dm_audit.sh asserts the new lines on the
+    private-thing fixture; full suite 24/24.
+
+commit 0814558273eb7e211c2853ffc29fe3375387b8f8
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 11:42:54 2026 +0000
+
+    agents: document G-035 + active-disable on MIRROR
+
+    Two doc updates following the disable-trio commit:
+
+    agents/github-org-tools.md: new G-035 names the declarative
+    POLICY_<NAME>_EXTRA_OK_STATUS knob now honored by
+    policy_apply_org / policy_apply_repo. G-034 (the older direct-
+    call form for Pages DELETE 404) stays valid for cases that need
+    the 5th arg without going through the dispatcher.
+
+    agents/github-policy-canonical-vs-mirror.md: expand the
+    Free-plan replacements table cells from a passive "off" to
+    "actively disabled" on MIRROR, and add a paragraph in the
+    Notes block explaining the order-matters detail
+    (FIXES_OFF before ALERTS_OFF) plus the 422 steady-state
+    captured by the new knob. PERSON/BOT remain documented as
+    "never enabled, no active-disable pass needed".
+
+commit de3e1404bd8f56396b5bbf1e1bb886a3d4f77934
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 10:58:35 2026 +0000
+
+    dm-github-org-policy: actively disable Dependabot + PVR on MIRROR
+
+    Previous SOURCE-only commit gated the enable side but left the
+    mirror in a stuck state if the older un-gated apply had ever run
+    (or if a UI flip ever turned them on). Switch the mirror branch
+    of apply_repo_policy from a single skip line to an active disable
+    trio so every --apply reconciles. No new mode flag.
+
+    Three new POLICY_REPO_*_OFF entries (DELETE on the same paths):
+      POLICY_REPO_DEPENDABOT_ALERTS_OFF
+      POLICY_REPO_DEPENDABOT_FIXES_OFF (carries EXTRA_OK_STATUS=422)
+      POLICY_REPO_PVR_OFF
+
+    Order at the call site: FIXES_OFF BEFORE ALERTS_OFF. The DELETE
+    /automated-security-fixes endpoint returns HTTP 422 once
+    Dependabot alerts are off ("alerts are off" - security updates
+    cannot exist without alerts). Doing FIXES first on the cold path
+    avoids the 422 entirely; on subsequent idempotent runs it returns
+    422 which the new EXTRA_OK_STATUS knob captures as success.
+
+    Library change: policy_apply_org / policy_apply_repo dispatchers
+    now look up an optional POLICY_<NAME>_EXTRA_OK_STATUS constant
+    and forward it as the 5th arg to policy_api_call. Used here for
+    FIXES_OFF; precedent existed for direct calls in
+    dm-github-personal-policy (POLICY_PAGES_DELETE) but the
+    dispatcher did not expose the knob until now.
+
+    Tests:
+      test_dm_apply / test_dm_dryrun / test_dm_dryrun_source_vs_mirror
+      updated to assert the disable trio on MIRROR side, with
+      forbidden-block guards to catch SOURCE-only enable lines
+      leaking onto MIRROR (and vice versa).
+
+    Fixtures: 9 new DELETE_repos_org-ai-assisted_*_{vulnerability-
+    alerts,automated-security-fixes,private-vulnerability-reporting}
+    files for derivative-maker, helper-scripts, some-fork. The
+    automated-security-fixes fixture returns HTTP 422 to exercise the
+    EXTRA_OK_STATUS=422 path on every run.
+
+    Verified live against org-ai-assisted (108 repos, Free plan):
+      first run:   869 ok / 5 skip / 0 warn / exit 0
+                    (each MIRROR repo: 3x 204 disables)
+      second run:  869 ok / 5 skip / 0 warn / exit 0
+                    (each MIRROR repo: FIXES_OFF [422], ALERTS_OFF
+                    [204] idempotent, PVR_OFF [204] idempotent)
+      state on org-ai-assisted/developer-meta-files:
+        vulnerability-alerts:           HTTP 404 (off)
+        automated-security-fixes:       enabled=false
+        private-vulnerability-reporting: enabled=false
+        secret_scanning + push_prot:    still enabled (kept)
+
+commit 88cc2e56e8391ac65f1ed377c87a2558c4e5132a
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 10:33:04 2026 +0000
+
+    agents + metadata: PVR expansion + custom-properties future-use note
+
+    agents/github-policy-canonical-vs-mirror.md: spell out PVR as
+    "PVR (Private Vulnerability Reporting)" on each occurrence; the
+    acronym is not self-explanatory and a reader who lands on this
+    file without context should not need to grep elsewhere.
+
+    metadata/repo-metadata.bsh: add a brief comment naming GitHub
+    custom properties (PUT /orgs/{org}/properties/schema and PATCH
+    /repos/{owner}/{repo}/properties/values) as a potential future
+    field this file's data could publish to. Not implemented today
+    - the apply tool only writes description / homepage / topics -
+    but the link from the metadata-file design back to that GitHub
+    feature is now in source-of-truth comments where a future
+    implementer will see it.
+
+commit ea80da60a1917f9a3eef0c4ca4ce06472e2ab00d
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 09:41:44 2026 +0000
+
+    agents/github-actions.md: document sha_pinning_required intentionally off
+
+    GitHub's org / repo Actions setting sha_pinning_required, when true,
+    rejects any uses: ref that is not a 40-char commit SHA (no floating
+    tags like @v4 or @master). Useful in threat models that distrust
+    github.com ref-resolution; we do not currently model that.
+
+    Add a short subsection under "Action SHA pinning" explaining why
+    the toggle stays off:
+
+      - First-party reusable workflows reference each other by
+        @master on purpose for single-source-of-truth update
+        propagation (G-A-004 above).
+      - Threat-model-A in agents/security.md explicitly trusts
+        github.com and the org's own repos as transport. SHA-pin
+        ceremony on internal refs is over-engineering for threats
+        the CI surface does not model.
+      - Third-party action refs are already SHA-pinned individually
+        per the existing discipline; the org toggle adds nothing.
+
+    Found while surveying the repo's GitHub web settings (Actions ->
+    General -> "Require approval for all outside collaborators" plus
+    "Require commit SHA pinning" sibling toggle); flagging the
+    deliberate "off" state in docs so a future audit does not flip it
+    without understanding the rationale.
+
+commit 0d692748d0a60d247d3fb1bb3022237412841d18
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 09:05:38 2026 +0000
+
+    metadata/repo-metadata.bsh: complete with all 108 repos
+
+    Authoritative home assignment via live API probe of Kicksecure and
+    Whonix orgs (not heuristic naming): each repo classified by which
+    canonical org actually has it.
+
+    Distribution:
+      k = 82 repos canonical in Kicksecure org
+      w = 25 repos canonical in Whonix org
+      d =  1 repo (.github - org-wide community files)
+
+    Wiki website populated for the 29 repos that have a discoverable
+    canonical wiki page (probed live, all return HTTP 200). The other
+    79 entries have empty website rather than a misleading link; the
+    apply tool will clear stale Impressum URLs.
+
+    Descriptions: 36 entries had no upstream description and were
+    written from project name + GitHub README context. Others were
+    imported from the existing GitHub description with trailing-URL
+    cleanup. Three entries with URL-only descriptions (binaries-freedom,
+    canary, derivative-maker) got hand-written replacements.
+
+    The 3 repos that exist in BOTH Kicksecure and Whonix orgs (.github,
+    canary, derivative-maker) are tagged by their primary documentation
+    home: .github=d, canary=k, derivative-maker=k.
+
+    This is an initial pass. Descriptions and topics will be refined
+    over time; the file is the source of truth and individual entries
+    can be edited in isolation without touching others.
+
+commit 54e65290299443369669802455d067687f7c90b7
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 08:41:17 2026 +0000
+
+    metadata/repo-metadata.bsh: introduce per-project metadata file
+
+    Source of truth for description, website, and topics applied across
+    every clone of each project (Kicksecure / Whonix / org-ai-assisted /
+    adrelanos). Format is one add_repo call per project, named-arg style.
+    Apply tool dm-github-org-metadata-sync is a separate follow-up; this
+    commit lands the data file only so entries can be reviewed and
+    expanded in isolation.
+
+    Org layout encoded:
+      Most projects live in EXACTLY ONE canonical org (Kicksecure OR
+      Whonix - never both). REPO_HOME field names which one ('k' or 'w').
+      org-ai-assisted and adrelanos are mirror-of-everything; the apply
+      tool will fan each entry to the canonical org plus both mirrors,
+      skipping silently when a repo does not exist in a particular owner.
+
+    The apply tool will NEVER create or fork repositories. Missing repos
+    in any owner are reported and skipped. Repo creation / forking stays
+    a deliberate one-time human action via github-org-fork or the GitHub
+    UI - not something a metadata-sync run should ever trigger.
+
+    Initial entries (10): security-misc, hardened-kernel, tirdad,
+    sdwdate, helper-scripts, derivative-maker, kloak, corridor,
+    onion-grater, developer-meta-files. Wiki URLs probed live and all
+    return HTTP 200; helper-scripts and developer-meta-files have no
+    canonical wiki page so website is left empty rather than misleading.
+
+commit 049a04a05cf66b0fefbd3063b2214bd902b551aa
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 01:52:39 2026 +0000
+
+    dm-github-org-policy: gate Dependabot + PVR to SOURCE-only
+
+    The Dependabot alerts / Dependabot security updates / PVR PUTs
+    added in the previous commit are SOURCE-only on the org side.
+    Running them on MIRROR (a fork org of SOURCE) would duplicate
+    every alert the canonical SOURCE repo already raises - the same
+    anti-duplication logic that keeps these off in
+    dm-github-personal-policy on the personal mirror.
+
+    apply_repo_policy in dm-github-org-policy now gates the three
+    PUTs on kind=='source'. On MIRROR a single skip line stands in:
+      skip: <owner>/<repo>: Dependabot alerts + security updates +
+      PVR - mirror would duplicate upstream SOURCE notifications
+
+    This affects only the active MIRROR run today (the active orgs
+    list is MIRROR_ORGS only). When SOURCE_ORGS is enabled, those
+    orgs get the full per-repo Dependabot/PVR fan-out as before.
+
+    Branch + tag rulesets and secret scanning + push protection are
+    applied on both kinds (the bypass-actor list is the only ruleset
+    diff). Same on the personal-policy side: PERSON and BOT both
+    keep secret scanning + rulesets, both skip Dependabot.
+
+    Tests:
+      test_dm_apply, test_dm_dryrun: assert the skip line, plus a
+      forbidden block to catch SOURCE-only lines leaking to MIRROR.
+      test_dm_dryrun_source_vs_mirror: pin the per-side fan-out -
+      Dependabot/PVR DRY-RUN lines on SOURCE (Whonix), the skip line
+      on MIRROR (org-ai-assisted), neither side sees the other's
+      fragments.
+
+    Fixtures:
+      Removed nine MIRROR-side PUT fixtures (vulnerability-alerts,
+      automated-security-fixes, private-vulnerability-reporting for
+      derivative-maker / helper-scripts / some-fork) that the gating
+      change makes unreachable.
+
+    Documentation:
+      Added agents/github-policy-canonical-vs-mirror.md with the
+      Free-plan code-security replacements table and the canonical-
+      vs-mirror summary table from the design discussion. Linked
+      from AGENTS.md. ASCII only per R-001.
+
+commit 35e3a65f98dc6b47dae02e441b2817a2d8a4940f
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 00:29:12 2026 +0000
+
+    github-policy-data: PERSON repo body adds has_issues=false
+
+    Match BOT and MIRROR. The personal account is a backup mirror;
+    issues, like wikis / project boards / discussions, belong on the
+    upstream org repo where reports route to maintainers and tooling
+    expects to find them. Splitting an inbox between the upstream
+    issue tracker and the personal mirror is the same anti-pattern
+    that motivated has_issues=false on the org-side MIRROR body.
+
+    PERSON and BOT bodies are now identical on the touched fields.
+    The split is preserved so a future PERSON-only divergence does
+    not need the dispatcher reworked.
+
+    Tests updated:
+      test_dm_personal_apply, test_dm_personal_dryrun,
+      test_dm_personal_dryrun_person_vs_bot - new PERSON label
+      'wiki/issues/projects/discussions off, secret-scan on'.
+
+commit 92ddd742f3e5451028fff66a91bfc7449c9452ae
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 10 00:18:20 2026 +0000
+
+    dm-github-org-policy: per-repo Free-plan equivalents for paid features
+
+    The previous commit commented out the org-level code-security
+    configuration POST and the org-level branch+tag rulesets because
+    both fail on a Free org (HTTP 400 GHAS / HTTP 403 Team+).
+
+    This commit restores the dropped coverage by fanning out the same
+    intent across per-repo endpoints that work on Free for public
+    repos. Empirically tested 2026-05 against org-ai-assisted (Free,
+    108 repos): --apply now exits 0 with 869 ok lines and zero warns
+    (was 114 ok + 3 skip + 3 warn / exit 1 two commits ago, then
+    113 ok + 5 skip + 0 warn / exit 0 in the previous commit).
+
+    Per repo, apply_repo_policy now also calls:
+
+      PATCH /repos/{o}/{r}                       (was already there)
+        body now includes security_and_analysis.{secret_scanning,
+        secret_scanning_push_protection}.status = enabled
+
+      PUT /repos/{o}/{r}/vulnerability-alerts         (NEW)
+      PUT /repos/{o}/{r}/automated-security-fixes     (NEW)
+      PUT /repos/{o}/{r}/private-vulnerability-reporting   (NEW)
+
+      POST/PUT /repos/{o}/{r}/rulesets   x2           (NEW)
+        branch ruleset (deletion, non_fast_forward, required_signatures)
+        tag    ruleset (same three rules)
+        bypass actor list pivots on org_kind via
+        POLICY_RULESET_BYPASS_{SOURCE,MIRROR} (un-commented from
+        previous commit; plan-independent at repo scope).
+
+    Data file:
+      POLICY_REPO_SOURCE / POLICY_REPO_MIRROR bodies now include
+      security_and_analysis.
+      Three new POLICY_REPO_DEPENDABOT_ALERTS / _DEPENDABOT_FIXES /
+      _PVR entries with empty {} bodies (the PUTs accept a body and
+      this avoids a no-body special case in policy_apply_repo).
+
+    Tests:
+      test_dm_apply / test_dm_dryrun / test_dm_dryrun_source_vs_mirror
+      updated to assert on the new ok / DRY-RUN lines and the new
+      MIRROR/SOURCE label format.
+
+    Fixtures:
+      Added 5 per repo for the 3 fixture repos (15 total): three PUTs
+      for the security toggles plus GET + POST for the per-repo
+      rulesets list-then-create dance.
+
+    dm-github-personal-policy is left alone in this PR. Its existing
+    exceptions (Dependabot deliberately off; "duplicate notifications
+    for findings already raised on the upstream org-side repo") are
+    intentional design - the personal account is a backup mirror and
+    disclosure should flow upstream. Same logic applies to PVR there.
+    The comment in dm-github-personal-policy already documents the
+    "if this becomes the canonical home, uncomment" toggle.
+
+commit 11d028ea982b2d4ff00227e21e31282c191d01f0
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 21:43:05 2026 +0000
+
+    dm-github-org-policy: comment out paid-plan-only steps
+
+    Apply on a Free org currently emits 3 warns (exit 1) for the
+    code-security configuration POST (HTTP 400 "GitHub advanced
+    security must be enabled when any GHAS feature is set to
+    enabled") and the org-level branch + tag ruleset list-then-upsert
+    (HTTP 403 "Upgrade to GitHub Team to enable this feature").
+    Empirically tested: all three are plan-tier gates, not script bugs.
+
+    Comment out (don't delete) the four affected blocks together so a
+    future plan upgrade can re-enable them as a unit:
+
+      github-policy-data.bsh
+        - POLICY_CODE_SECURITY              (GHAS body)
+        - POLICY_CODE_SECURITY_ATTACH       (configuration attach)
+        - POLICY_CODE_SECURITY_DEFAULTS     (default-for-new-repos)
+        - POLICY_RULESET_BYPASS_SOURCE/MIRROR (org-scope only)
+        - POLICY_BRANCH_RULESET_BODY_ORG    (Team+ ~ALL repository_name)
+        - POLICY_TAG_RULESET_BODY_ORG       (Team+ ~ALL repository_name)
+
+      github-policy-lib.bsh
+        - policy_branch_ruleset_body / policy_tag_ruleset_body:
+          scope=org branch errors out with a clear message
+
+      dm-github-org-policy
+        - apply_code_security_config (entire function)
+        - CODE_SEC_CONFIG_NAME constant
+        - apply_org_policy step 5+6 (code security)
+        - apply_org_policy step 7+8 (org rulesets)
+        Replaced with two operator-facing skip lines so --dry-run /
+        --apply make the elision visible.
+
+    Mock-API tests updated (test_dm_apply, test_dm_dryrun,
+    test_dm_dryrun_source_vs_mirror) to assert on the new skip lines
+    and drop the now-elided DRY-RUN/ok assertions.
+
+    Verified live against org-ai-assisted (Free): --dry-run + --apply
+    both exit 0 with zero warns, full suite (24/24) passes including
+    shellcheck.
+
+    POLICY_BRANCH_RULESET_BODY_REPO / POLICY_TAG_RULESET_BODY_REPO
+    remain enabled - per-repo rulesets work on Free for public repos
+    and a future per-repo fan-out can pick them up unchanged.
+
+commit 66cbbe613796f66d22b32c20e9f26ba7ac778dd6
+Merge: d1a00c4 056000b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 16:46:11 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/test-github-token-access-HVDXY'
+
+commit 056000ba320958fa8ab81242045b7060bfbab6a9
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 20:40:21 2026 +0000
+
+    github-policy-data: drop members_can_create_internal_repositories from POLICY_MEMBERS
+
+    Same bug class as PR #11 (allow_forking): the body included a
+    field that GitHub validates against the org plan tier before
+    applying anything. On Free/Team/Pro orgs the field is locked
+    server-side at false, and GitHub rejects the entire PATCH with
+    HTTP 422 'Validation Failed: This organization does not support
+    internal repositories.' Unlike allow_forking, this rejection
+    does NOT silently apply the other body fields - the validation
+    is hard, so default_repository_permission, members_can_create_
+    repositories, members_can_create_{public,private}_repositories
+    all roll back along with the bad field.
+
+    Verified against org-ai-assisted (free plan): pre-fix --apply
+    left members_can_create_repositories=true,
+    members_can_create_public_repositories=true,
+    members_can_create_private_repositories=true (drift) because
+    every PATCH on POLICY_MEMBERS rolled back due to the internal-
+    repos field.
+
+    Drop the field from the body. Effect by plan tier:
+      Free/Team/Pro: feature unavailable, server-side locked at
+                     false, omission is a no-op.
+      Enterprise:    feature available; explicit setter belongs in
+                     a separate plan-tier-specific policy block
+                     (the script's ORGS array does not yet
+                     distinguish plan tier).
+
+commit d1a00c4f012f7cd7f5839a7e7776946aa0e6be4a
+Merge: 511e4dc f0d7cae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 16:26:48 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/test-github-token-access-HVDXY'
+
+commit f0d7cae6b046f903fc194aff64885566a59964fe
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 19:40:38 2026 +0000
+
+    github-policy-data: drop allow_forking from POLICY_REPO_MIRROR
+
+    Same bug class as the recent POLICY_PERSONAL_REPO_BOT fix. The
+    per-repo PATCH against MIRROR-org repos was sending allow_forking:
+    false in its body; GitHub rejects it with HTTP 422 ('This
+    organization does not allow private repository forking') because
+    the org-level forking_allowed_for_private_repositories setting is
+    the actual gate, and the per-repo PATCH cannot diverge from it.
+    The 422 invalidates the entire request - GitHub then silently
+    applies the other body fields anyway, leaving allow_forking
+    unchanged and the apply step reporting failure across all 108
+    mirror repos in org-ai-assisted.
+
+    Discovered via dm-github-org-policy --apply rc=1 with 108 x 422
+    WARNs, all carrying the same 'private repository forking' message.
+    Spot-checked org-ai-assisted/derivative-maker and helper-scripts:
+    has_wiki/has_issues/has_projects/has_discussions all flipped to
+    false (silent partial apply); allow_forking stayed true.
+
+    Drop allow_forking from POLICY_REPO_MIRROR body + label, update
+    the SOURCE-vs-MIRROR diff comment to reflect that allow_forking
+    is org-level only, and prune the now-vacuous 'allow_forking=off'
+    entries from the test forbidden-string lists.
+
+commit 511e4dc6f7bb027a3240acd8b0ebf10076d00f54
+Merge: f8cc858 7e7650e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 15:16:05 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/test-github-token-access-HVDXY'
+
+commit 7e7650e6203c92d0da384987fdb9f47038c380e1
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 19:13:04 2026 +0000
+
+    Remove ci/tests/test_die_if_not_has.sh
+
+    The test pinned a defensive 'die_if_not_has github-org-fork'
+    startup check in dm-github-org-policy via PATH manipulation.
+    Two reasons to drop both the test and (eventually) its target:
+
+    1. The defensive check guards a state the package manager does
+       not allow: dm-github-org-policy and github-org-fork ship in
+       the same .deb. After 'apt install developer-meta-files' you
+       cannot have one without the other.
+
+    2. The test was fragile-by-design - 'genmkfile install' in CI
+       puts github-org-fork on /usr/bin, so PATH-based hiding has
+       to evict /usr/bin entirely (env -i + minimal PATH), which
+       does not match how the script ever runs in practice.
+
+    The behavioral half - 'die_if_not_has actually exits non-zero
+    and names the missing command' - is helper-scripts behavior and
+    belongs upstream in that repo's test suite, not here.
+
+commit f8cc85830845ace8f68187f82d955583db0ddac7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 14:59:07 2026 -0400
+
+    agents
+
+commit 7eb3a7a65735a6e19349ca45d4fa6c1c4ce04b93
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 18:58:31 2026 +0000
+
+    test_die_if_not_has: only pass HELPER_SCRIPTS_PATH if set
+
+    Previous attempt defaulted to /usr when unset, which then resolves
+    the source paths in the script to /usr/usr/libexec/helper-scripts/..
+    - the script dies with a 'source: No such file' error before ever
+    reaching die_if_not_has, so the fragment assertions fail.
+
+    CI installs helper-scripts to system paths so HELPER_SCRIPTS_PATH
+    stays unset there. The script's '${HELPER_SCRIPTS_PATH:-}/usr/...'
+    expansion correctly resolves to /usr/libexec/helper-scripts/...
+    when the var is empty, which is the install location.
+
+    Local dev workflows can still export HELPER_SCRIPTS_PATH and it
+    will be honored.
+
+commit 10ccb228d82b1be67a489b1020fb1c551533373a
+Merge: bc5df1d cef850c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 14:55:40 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 503885a876890136dd372b819fff6d468d1e304c
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 18:55:19 2026 +0000
+
+    test_die_if_not_has: env -i PATH=minpath only
+
+    Pre-existing failure on master since the workflow added 'genmkfile
+    install' before the test runs: that step installs github-org-fork
+    into /usr/bin, so the old PATH=minpath:/usr/bin:/bin spec exposed
+    the system-installed binary and die_if_not_has never fired.
+
+    Switch to 'env -i PATH=minpath' (no /usr/bin, no /bin). On Debian
+    trixie's merged-/usr layout /bin is a symlink to /usr/bin, so
+    dropping /usr/bin alone would not have been enough. env -i also
+    strips the inherited environment for hermeticity; HELPER_SCRIPTS_PATH
+    is re-injected because the script sources lib files from there.
+
+commit 8733c5a291f4feb5d7ce2137eb428f9d28c2fa79
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 18:47:00 2026 +0000
+
+    test_dm_personal_dryrun_person_vs_bot: update label assertion + header
+
+    The BOT settings dry-run label dropped 'forking off' because the
+    underlying policy body no longer sends allow_forking (GitHub
+    returns 422 for that field on user-owned repos). Update the
+    fixed-string assertion and the header comment to match.
+
+    Found by Codex review on PR #10 (P1).
+
+commit 4b56b2a00155bf234deceb20b66b53c7871b9173
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 17:52:26 2026 +0000
+
+    github-policy-data: drop allow_forking from POLICY_PERSONAL_REPO_BOT
+
+    GitHub rejects the entire PATCH with HTTP 422 ('Allow forks can
+    only be changed on org-owned repositories') when allow_forking
+    appears in a user-owned repo body. Discovered via dm-github-personal-policy
+    --apply rc=1 across all 29 assisted-by-ai repos; the other body
+    fields (wiki/issues/projects/discussions/secret-scan) had been
+    silently applied by GitHub but the request itself failed.
+
+    Forks-of-forks risk on personal mirrors is already mitigated by
+    the org-level MIRROR policy where it can be enforced.
+
+commit bc5df1d420de05c3d2d6f4373094a047e750bf1e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 12:38:29 2026 -0400
+
+    .
+
+commit 654c0faebc5362c488a379823a04a0ddc520c11c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 12:25:46 2026 -0400
+
+    .
+
+commit 79c11732e88966d89207d7effb49b8b715160961
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 9 12:15:47 2026 -0400
+
+    .
+
+commit cef850cb6c06ab06f3649b6db65e1d49ec720cad
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 15:36:12 2026 +0000
+
+    docs: replace em-dash with hyphen in scorecard-known-false-positives.md
+
+    dm-check-unicode flags non-ASCII bytes (security: malicious-unicode
+    detection). The em-dash (U+2014) at line 194 was tripping the
+    non-ASCII regex during builds. Plain hyphen for portability.
+
+commit c2e05cd9f682671798f88a0453ba39a06e05ade5
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 10:40:58 2026 +0000
+
+    ci/tests: random-input fuzz for validator + ghorg_jq_capped
+
+    Two property-style fuzz tests covering the highest-value attack
+    surfaces in the github-org-* / dm-github-* tooling that didn't
+    fit Hypothesis (which lives in helper-scripts on the Python
+    helpers; the bash dispatch surface here doesn't justify a Python
+    harness).
+
+      test_fuzz_validate_name.sh         500 random inputs from 5
+                                         distributions (urandom bytes,
+                                         ASCII printable, charset-
+                                         restricted, edge cases,
+                                         single-char). Each input is
+                                         run through ghorg_validate_name
+                                         AND a pure-bash oracle that
+                                         mirrors the documented rule
+                                         set; any divergence fails.
+                                         Catches accidentally-permissive
+                                         regex changes, off-by-one
+                                         length-cap breakage, missing
+                                         reserved-name checks.
+                                         ~20s. Iterations boost-able
+                                         via TEST_FUZZ_VALIDATE_NAME_ITERS.
+
+      test_fuzz_ghorg_jq_capped.sh       Stress test of the byte-cap +
+                                         timeout wrapper against
+                                         pathological stdin inputs:
+                                           100 KB /dev/urandom + tiny cap
+                                           deeply-nested array (parser
+                                                       stack-depth probe)
+                                           10 MB string token (tokenadd-
+                                                       class CVE probe)
+                                           UTF-8 surrogate halves (jv
+                                                       unicode probe)
+                                           valid-JSON positive control
+                                         Asserts: termination within
+                                         timeout+slack, no segfault, no
+                                         hang, cap fires when expected.
+                                         <1s. Stress, not coverage-
+                                         guided fuzzing - that lives
+                                         upstream at jqlang/jq.
+
+    Implementation note in-source: under R-010 pipefail, 'tr ... |
+    head -c N' SIGPIPEs the producer when head closes early
+    (rc=141 propagates to the calling shell). Both tests use the
+    'read fixed blob then bash-slice' pattern (${var:0:N}) instead
+    to avoid the SIGPIPE class.
+
+    Local timings: validate_name 18-21s, jq_capped <1s. The
+    validator fuzz is the slow one because each reject calls
+    sanitize-string (Python) via the log helper - 500 iters at
+    ~40 ms each. Lowered the default iteration count from a
+    draft 2000 to 500 so the test fits comfortably in the rest of
+    the suite without a thorough-mode boost knob.
+
+commit 483e85b9cf1df22ca66c7ad990ba3edcd3a4fa13
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 10:32:06 2026 +0000
+
+    ci/tests: pin SOURCE/MIRROR + PERSON/BOT pivots, jq wrappers, --policy-dump
+
+    Seven new tests covering this session's architectural additions
+    (all verified locally to PASS in the existing mock-API harness;
+    added to the suite the GitHub workflow already runs):
+
+      test_dm_dryrun_source_vs_mirror.sh    org_kind pivot:
+                                              ORGS_OVERRIDE=Whonix ->
+                                                'SOURCE: wiki=off, issues=on'
+                                              ORGS_OVERRIDE=org-ai-assisted ->
+                                                'MIRROR: ..., allow_forking=off'
+      test_dm_personal_dryrun_person_vs_bot user_kind pivot:
+                                              personal-test-user (PERSON)
+                                                -> 'PERSON: settings ...'
+                                              bot-test-user (BOT)
+                                                -> 'BOT: settings ...'
+      test_dm_personal_unknown_user.sh      die_64 when User account
+                                            not in PERSON_USERS or
+                                            BOT_USERS; message names
+                                            both arrays.
+      test_policy_dump.sh                   --policy-dump cats data file
+                                            verbatim, no apply lines
+                                            leak through.
+      test_die_if_not_has.sh                missing prerequisite (no
+                                            github-org-fork on PATH)
+                                            fails closed with the
+                                            command name in the error
+                                            message.
+      test_ghorg_jq_timeout.sh              infinite jq program is
+                                            killed by GHORG_JQ_TIMEOUT_*;
+                                            elapsed wall-clock < soft +
+                                            hard + 2s slack.
+      test_ghorg_jq_capped.sh               GHORG_JQ_MAX_BYTES bounds
+                                            what jq sees on stdin;
+                                            cap-fires + cap-doesn't-fire
+                                            cases both pinned.
+
+    Also tightened defaults from 10s/2s to 2s/1s based on empirical
+    benchmark: jq processes a 10 MB JSON list (100x larger than any
+    realistic GitHub '?per_page=100' response) in ~100 ms; cold-start
+    ~3 ms. 2s soft is 20x the heaviest realistic load, 666x the
+    typical, generous enough to not false-positive on runner GC.
+
+    Test-supporting changes:
+      - dm-github-org-policy: add ORGS_OVERRIDE env var (comma-sep
+        string; bash arrays cannot cross a process boundary as env
+        vars). Test sets ORGS_OVERRIDE='Whonix' / 'org-ai-assisted'.
+      - dm-github-personal-policy: PERSON_USERS / BOT_USERS arrays
+        now also list the fixture users (personal-test-user,
+        bot-test-user) with an explicit comment. Production lookup is
+        'is this user in the list?'; extra entries don't change real
+        behaviour.
+
+    Existing tests updated for label-prefix changes:
+      - test_dm_apply.sh: expects 'MIRROR: ...' on per-repo PATCH
+        output (org-ai-assisted is in MIRROR_ORGS), and includes the
+        fork repo (some-fork) which is now in scope after
+        inc_forks=1.
+      - test_dm_audit.sh: dependabot.yml audit now sees 3 repos
+        (have=1, missing=2 instead of missing=1).
+      - test_dm_personal_apply.sh, test_dm_personal_dryrun.sh:
+        expect 'PERSON: settings ...' label.
+
+    New fixtures:
+      GET_users_bot-test-user
+      GET_users_bot-test-user_repos
+      GET_users_unknown-test-user
+      PATCH_repos_org-ai-assisted_some-fork
+
+commit e4055de61240947a26a565bec1410bf4c4f0a5a2
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 10:11:41 2026 +0000
+
+    github-org-lib: ghorg_jq + ghorg_jq_capped wrappers (parser-CVE depth)
+
+    Two wrappers for jq, used at every jq call site in the
+    github-org-* / dm-github-* tool family:
+
+      ghorg_jq          wall-clock timeout via 'timeout
+                        --kill-after=${HARD} ${SOFT}'. For hardcoded
+                        bodies (POLICY_* constants etc.).
+      ghorg_jq_capped   same timeout + 'head -c ${GHORG_JQ_MAX_BYTES}'
+                        stdin cap (default 4 MiB). For paths where the
+                        bytes piped to jq came from an external API.
+
+    Defaults are GHORG_JQ_TIMEOUT_SOFT=10s, _HARD=2s, _MAX_BYTES=4 MiB
+    ($((4*1024*1024))) - all overridable from the caller's environment.
+
+    Why both: --kill-after is mandatory because if a parser bug leaves
+    jq's signal handler blocked or in an uninterruptible state, the
+    SIGTERM at the soft deadline is silently ignored. --kill-after
+    schedules a follow-up SIGKILL the kernel delivers regardless of
+    process state.
+
+    Footgun caught: 'timeout' does NOT support '--' as end-of-options
+    between DURATION and COMMAND - it interprets the literal '--' as
+    the command name (yields 'timeout: failed to run command --').
+    R-062 already excludes timeout from the verified list; commit
+    documents this in-source so a future maintainer doesn't re-add.
+
+    Converted every jq call site:
+      github-org-lib.bsh             pipes from API responses ->
+                                     ghorg_jq_capped
+      github-policy-lib.bsh          ruleset-list parse -> _capped;
+                                     hardcoded body factories ->
+                                     ghorg_jq
+      dm-github-org-policy           hardcoded jq programs ->
+                                     ghorg_jq; API-body parse paths
+                                     (audit_org_state, code-security
+                                     list, ruleset list) ->
+                                     ghorg_jq_capped
+      dm-github-personal-policy      audit body parses -> _capped
+      dm-github-token-test           rate-limit body parses -> _capped
+
+    Documented in agents/security.md under new 'Parser-level trust
+    assumptions' section: explicit list of trusted parsers, what we
+    deliberately don't sandbox, the wrappers' purpose, and the
+    gojq / bubblewrap escalation path if a future CVE makes the
+    trade-off shift.
+
+    Behavior verified by --dry-run on dm-github-org-policy: 118
+    DRY-RUN log lines on org-ai-assisted, unchanged from pre-
+    refactor. All jq operations succeed within the 10s timeout.
+
+commit f7d15bc28db15b6f7ac049ff0f9baf2132a21bfb
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 9 00:12:31 2026 +0000
+
+    dm-github-personal-policy: PERSON vs BOT user-kind distinction
+
+    Apply the same SOURCE/MIRROR-style pivot to user accounts.
+    Vocabulary: PERSON_USERS / BOT_USERS arrays at the top of the
+    script, user_kind() helper resolves a username to 'person' or
+    'bot' by lookup; resolved once at script init into target_kind.
+
+    Two body constants in github-policy-data.bsh:
+
+      POLICY_PERSONAL_REPO_PERSON  has_issues stays on (real
+                                    maintainer can triage incoming
+                                    reports filed against the
+                                    personal mirror).
+      POLICY_PERSONAL_REPO_BOT     identical lockdown to a MIRROR
+                                    org repo: has_issues=false,
+                                    allow_forking=false. Bot doesn't
+                                    triage; everything routes
+                                    upstream.
+
+    Each kind carries its own ENDPOINT_REPO / METHOD / LABEL per the
+    per-NAME convention.
+
+    apply_repo_policy now calls
+    'policy_apply_repo "${target_user}" "${repo}"
+    PERSONAL_REPO_${target_kind^^}' - one line, fully driven by the
+    top-of-script user-kind decision and the data file.
+
+    Verified by dry-run:
+      adrelanos        -> PERSON body (issues left on)
+      assisted-by-ai   -> BOT body    (issues + forking off)
+      unknown user     -> dies with explicit message asking to add
+                          to PERSON_USERS / BOT_USERS.
+
+commit 7fde8a713b45ec2425597fa22305dd802e7c81e6
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:47:31 2026 +0000
+
+    scorecard FP doc: link upstream issues + caveat for Signed-Releases
+
+    The 'inconclusive is the goal' status for Signed-Releases is
+    built on undocumented behavior. The inconclusive branch in
+    checks/evaluation/signed_releases.go carries a maintainer
+    comment: 'This should not happen in production, but it is useful
+    to have for testing.' A future Scorecard change could flip
+    projects-with-no-releases from inconclusive to 0/10 without
+    breaking any documented contract.
+
+    Add the caveat plus upstream tracking:
+
+      ossf/scorecard#3679   most relevant - asks Scorecard to handle
+                            projects that release outside GitHub
+                            (signed tags + external packaging
+                            detection). Active issue to +1.
+      ossf/scorecard#4528   Maven Central as release channel.
+      ossf/scorecard#4713   PyPI trusted publishing case; same
+                            external-channel class.
+      ossf/scorecard#4823   GitHub immutable release process as an
+                            alternative to SLSA.
+      ossf/scorecard#2763   confirms '?' = inconclusive outcome.
+      ossf/scorecard#382    long-standing 'actually verify
+                            signatures' ask; current check is
+                            filename-pattern only.
+
+    Note no analogue to #1903 (org-level Dependabot recognition)
+    yet exists for Signed-Releases.
+
+commit 70a9a570d41ae06fdc281c3a1b48d78aee3dac5d
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:42:05 2026 +0000
+
+    scorecard FP doc: link upstream issues for reusable-workflow @master FP
+
+    Document the upstream tracking for the PinnedDependenciesID FP on
+    intra-org reusable workflow @master refs. The history is more
+    interesting than 'check is too dumb to know' - it's the result of
+    a deliberate prior change:
+
+      ossf/scorecard#2174       closed completed Jun 2025; ASKED for
+                                reusable workflows to be flagged like
+                                Marketplace actions. The change that
+                                landed there produced the FP we now
+                                live with.
+      ossf/scorecard#4735       open, stale; the active 'walk it back
+                                partially' ask, with Apache Maven's
+                                identical scenario as the reference
+                                case. The issue to follow / +1.
+      slsa-github-generator#722 the live contention - SLSA generators
+                                argue reusables MUST be tag-pinned for
+                                generator-self-security; direct
+                                conflict with Scorecard's expectation.
+      ossf/scorecard#2518       tangential dev-only-deps FP in the
+                                same trust-boundary class.
+
+    Source-inferred (repo-wide code search): checks/raw/
+    pinned_dependencies.go has no mention of 'reusable' - Scorecard
+    treats every uses: line uniformly, no same-org exemption shipped.
+
+commit 0a89da795466983c7720e30ab011ab2c1ceea7b0
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:39:11 2026 +0000
+
+    scorecard FP doc: drop resolved Dockerfile multi-stage entry
+
+    Verified against a live Scorecard run on derivative-maker
+    (workflow run 25584823542, completed clean): the upstream fixes
+    in Scorecard #2906 + #3684 (closed Sep 2025) and PR#4643 (merged
+    May 2025) resolved the multi-stage FROM <stage-name> false
+    positive. derivative-maker/docker/Dockerfile no longer triggers
+    a PinnedDependenciesID finding.
+
+    Three PinnedDependenciesID alerts remain on derivative-maker but
+    all are on consumer-wrapper .github/workflows/*.yml files
+    referencing reusables via @master - the separate, deliberate FP
+    documented under 'PinnedDependenciesID firing on @master reusable
+    refs'.
+
+commit 1d15084790b2d46ba5136b7cba47a519ed8acb45
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:35:55 2026 +0000
+
+    scorecard FP doc: upstream Dockerfile multi-stage fix landed Sep 2025
+
+    Replace the 'no fix; dismiss the alert' status on the multi-stage
+    Dockerfile entry with concrete upstream tracking. The named-stage
+    and build-arg false positives were fixed in Scorecard versions
+    released after late September 2025:
+
+      ossf/scorecard#1572   open, broader tracker
+      ossf/scorecard#2906   named build stages (closed Sep 2025)
+      ossf/scorecard#3684   build-args + multi-stage (closed Sep 2025)
+      ossf/scorecard#4220   poutine duplicate FP (closed not-planned)
+      ossf/scorecard PR#4643  FROM scratch named stages (merged May 2025)
+
+    Action item: re-check the next Scorecard run on derivative-maker;
+    if the alert no longer fires, drop this doc entry entirely.
+
+commit 2174b7a942c166ac3d752510d38fd0fe26820ef5
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:33:45 2026 +0000
+
+    scorecard FP doc: prune resolved items from 'What we DO act on'
+
+    Three of the five entries had been resolved or were stale:
+
+      - BranchProtectionID: covered by dm-github-org-policy's
+        org-level branch + tag rulesets (block force-push, block
+        deletion, require signed commits). Removed.
+      - CodeReviewID: deliberately not enforced - the direct-to-
+        master pattern is documented elsewhere as the operational
+        model. This was never a 'we act on' item, just hadn't been
+        crossed off. Removed.
+      - pipCommand / containerImage PinnedDependenciesID: handled in
+        derivative-maker (apt > pip swap; Dockerfile FROM digest pin).
+        A new pip / Dockerfile surface in some other repo would be a
+        fresh decision, not a doc-pinned task. Removed.
+
+    Two remain:
+
+      - SecurityPolicyID for Kicksecure / Whonix: still open, pending
+        an admin token scoped to those orgs.
+      - FuzzingID for kloak: C parser libFuzzer harness still
+        deferred; tracked in kloak/TODO.md.
+
+commit bd5cf0839fbae6b15b6a83560efceafce2c6621c
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:31:22 2026 +0000
+
+    scorecard FP doc: scope Signed-Releases entry to Kicksecure + Whonix
+
+    org-ai-assisted is the AI-work mirror and adrelanos is a personal
+    account; neither is the canonical project surface the doc speaks
+    to. Trim the 'Affects' line accordingly.
+
+commit b81434ee66923a2e7a6f29ca43075a021fd79c7a
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:30:48 2026 +0000
+
+    scorecard FP doc: move AI-Assisted marker into H1 (R-002)
+
+    Match the convention used by every other .md file under agents/
+    (bash-style-guide.md, github-actions.md, github-org-tools.md,
+    pre-push-checklist.md, security.md): the AI-Assisted marker
+    lives in the H1 heading parenthetical, not in an HTML comment.
+    Visible to readers, not buried in source.
+
+commit 20cb8134c25d9ecdd559a9907c13d5578e069997
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 23:18:43 2026 +0000
+
+    scorecard FP doc: document Signed-Releases as deliberate inconclusive
+
+    Verified across 500+ repos in the four namespaces (org-ai-assisted,
+    Kicksecure, Whonix, adrelanos): zero GitHub Release objects have
+    ever been created. Tags only.
+
+    Scorecard's Signed-Releases therefore returns -1 / inconclusive on
+    every repo and is excluded from the aggregate score - this is the
+    desired state given the offline-key threat model.
+
+    Document so a future maintainer does not 'fix' the check by
+    creating Release objects: source-only Release objects are NOT
+    skipped by Scorecard, they count as unsigned and would flip the
+    score from inconclusive to 0/10.
+
+commit b85828f9499465f15f03aaf6845c6cd976b38807
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:54:40 2026 +0000
+
+    scorecard FP doc: link upstream issues for Dependency-Update-Tool
+
+    The Dependency-Update-Tool entry previously documented only the
+    consumer-wrapper case. Two gaps:
+
+    1. The shell-only / config-only repos in the org
+       (whonix-firewall, Whonix-Installer, usability-misc, tb-updater,
+       genmkfile, Whonix-Starter, msgcollector) also score 0/10 and
+       have nothing for Dependabot/Renovate to bump - no language-
+       level dependency manifests at all.
+
+    2. The detection-logic-gap section attributed the FP to our
+       architecture choice but didn't link to upstream Scorecard
+       issues that recognize the same problem class.
+
+    Add both. Upstream issues cited:
+      ossf/scorecard#1903  org-level Dependabot enablement should
+                           count as evidence
+      ossf/scorecard#2190  no penalty for repos with no dependencies
+      ossf/scorecard#3746  return inconclusive (-1) when no relevant
+                           deps - on the active 'Policy per Ecosystem'
+                           milestone
+      ossf/scorecard#1726  ecosystems Dependabot/Renovate doesn't
+                           support (C/C++) shouldn't score 0/10
+      ossf/scorecard#2483  cURL feedback on C projects
+      ossf/scorecard#1014  libraries-vs-applications framing
+      ossf/scorecard#4795  filter incompatible checks (closed,
+                           completed Sept 2025; broader fix vehicle)
+
+    Recommendation noted: a +1 on #3746 with our shell-only repos as
+    concrete examples beats opening yet another duplicate.
+
+commit 3f279cf6c4f6a7eff9ee36ac601b4b5b2789f603
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:29:24 2026 +0000
+
+    policy: move signed-commits UI-merge note out of --help
+
+    The note about which GitHub UI merge button works after the
+    required_signatures ruleset lands is a consequence of that rule,
+    not an operator instruction for running this tool. Move it to the
+    POLICY_BRANCH_RULESET_BODY_* / TAG_RULESET_BODY_* shared docblock
+    in github-policy-data.bsh as 'Operator note on required_signatures
+    + GitHub's UI merge buttons'. Visible via --policy-dump.
+
+    dm-github-org-policy --help drops to 21 lines (purpose, modes,
+    policy-dump pointer, auth).
+
+commit 6cf9dbfce7d9cd5edef026b091c33219f5283a9e
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:27:24 2026 +0000
+
+    policy tools: drop redundant outline + Scorecard mapping from --help
+
+    The 'Brief outline' bullets and the 'OSSF Scorecard mapping' block
+    in show_help duplicated content already addressed by:
+      - --policy-dump for the full bodies/endpoints/methods/labels
+        (the bullets were just hand-summarising what's in the data
+        file - drift-prone)
+      - github-policy-data.bsh docblocks for per-policy rationale
+      - docs/scorecard-known-false-positives.md for the Scorecard
+        coverage notes that aren't a 1:1 'we apply X for check Y'
+        mapping
+
+    The trimmed --help now answers just 'what does this tool do, how
+    do I run it, what auth do I need'. Anyone who wants the policy
+    table runs --policy-dump.
+
+    Line counts:
+      dm-github-org-policy --help       130 -> 27
+      dm-github-personal-policy --help   50 -> 25
+
+commit 5aaf417b9d72ca4e4305283409665432f0d4291c
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:23:54 2026 +0000
+
+    policy tools: trim --help, add --policy-dump
+
+    The --help docstrings on dm-github-org-policy (~130 lines) and
+    dm-github-personal-policy (~50 lines) had grown into mini policy
+    specs - duplicating content that now lives definitively in
+    github-policy-data.bsh. That duplication drifts: the previous
+    'always bypass=[]' help text was wrong after the SOURCE/MIRROR
+    bypass split, and several lines pointed at 'the Policies section
+    near the top of the script' after the data moved to a separate
+    lib.
+
+    Two changes:
+
+    1. Trim --help to ~47 lines: tool purpose, the four modes, auth,
+       and a brief outline that points at github-policy-data.bsh for
+       the full table. No more re-stating each policy decision.
+
+    2. Add --policy-dump as a new info-only mode. It cats
+       github-policy-data.bsh verbatim - no formatter to maintain or
+       to drift out of sync. The data file's own docblocks and
+       constant names are the table.
+
+    The --policy-dump handler lives in policy_parse_mode_args (lib),
+    so both consumer tools pick it up automatically. Path resolution
+    uses BASH_SOURCE[0] so dev-tree runs find the file alongside the
+    sourced lib, not just /usr/libexec/... installs.
+
+    Verified:
+      --help line count: dm-github-org-policy 130 -> 47
+                         dm-github-personal-policy 50 -> 38
+      --policy-dump prints 380 lines (the data file verbatim)
+      --dry-run still emits 118 DRY-RUN log lines on org-ai-assisted
+      shellcheck clean across all three files.
+
+commit 60fc2bb0165d0f2c74fafe3383aa8a789389a77e
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:19:24 2026 +0000
+
+    dm-github-org-policy: resolve org_kind once, drop case statement
+
+    apply_org_policy used to call org_kind inside a case statement at
+    step 7:
+       case "$(org_kind "${org}")" in
+          source) bypass_branch="${POLICY_RULESET_BYPASS_SOURCE}" ;;
+          mirror) bypass_branch="${POLICY_RULESET_BYPASS_MIRROR}" ;;
+       esac
+
+    Two issues:
+      - org_kind is buried mid-function; if it returned 1 (unknown
+        org name), the case fell through silently and bypass_branch
+        stayed unset, blowing up later under nounset.
+      - apply_repo_policy already resolves kind once at the top into
+        a local; apply_org_policy was inconsistent with itself.
+
+    Resolve kind once at the top with explicit '|| return 1', then
+    use the constant naming convention to look up the right bypass
+    list via bash indirect expansion (POLICY_RULESET_BYPASS_${kind^^}).
+    The case statement is gone; one less branch in the apply sequence.
+
+    Same convention then collapses apply_repo_policy's two-line
+    'name=...; policy_apply_repo ... "${name}"' into a single
+    inline 'REPO_${kind^^}' arg.
+
+    Behavior verified via dry-run.
+
+commit 3e51810c45446b68ac4fe7376220df048299b124
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:14:02 2026 +0000
+
+    policy: lift labels, endpoints, methods, UI URLs to data file
+
+    The previous round moved policy bodies to github-policy-data.bsh
+    but left labels, endpoint paths, HTTP methods, and UI URLs as
+    string literals in the apply_* functions. They were policy data
+    hiding inside dispatch code.
+
+    Each simple PUT/PATCH/POST/DELETE policy is now a 4-tuple of
+    constants in the data file:
+      POLICY_X            body  (jq program)
+      POLICY_X_ENDPOINT_*   API path with __ORG__ / __OWNER__ / __REPO__
+                            / __ID__ placeholders
+      POLICY_X_METHOD       HTTP verb
+      POLICY_X_LABEL        operator-facing description for log lines
+
+    UI-only policies (2FA, PAT toggles, Apps) carry POLICY_X_UI_URL
+    constants instead of endpoints; URLs use __ORG__ placeholders.
+
+    New dispatcher helpers in github-policy-lib.bsh resolve a NAME to
+    the right 4-tuple via indirect bash expansion ('${!var}'):
+
+      policy_apply_org   <org> <NAME> [<endpoint_suffix>]
+      policy_apply_repo  <owner> <repo> <NAME> [<endpoint_suffix>]
+      policy_skip_ui     <org> <NAME> [<url_suffix>]
+
+    apply_org_policy is now a flat dispatch table:
+       policy_apply_org "${org}" FORK_PR_APPROVAL
+       policy_apply_org "${org}" WORKFLOW_PERMS
+       policy_apply_org "${org}" ACTIONS_SCOPE
+       policy_apply_org "${org}" ACTIONS_ALLOWLIST ENDPOINT
+       policy_apply_org "${org}" MEMBERS
+       policy_skip_ui   "${org}" 2FA
+       apply_code_security_config "${org}"
+       ## ruleset upserts (different machinery)
+       policy_skip_ui   "${org}" PAT
+       ## App URL skip (uses two URLs)
+
+    apply_repo_policy in dm-github-org-policy reduces to:
+       kind="$(org_kind "${owner}")"
+       policy_apply_repo "${owner}" "${repo}" "REPO_${kind^^}" ENDPOINT
+
+    apply_repo_policy in dm-github-personal-policy is similarly flat
+    (dispatcher for steps 1-4, custom call for the Pages DELETE step
+    which needs the extra-ok-status arg the dispatcher does not
+    handle).
+
+    Renames:
+      POLICY_REPO -> POLICY_PERSONAL_REPO  to disambiguate from
+                                            org-side POLICY_REPO_SOURCE
+                                            / POLICY_REPO_MIRROR.
+
+    Verified: 'jq -n .* '\''{' grep across the three files returns
+    zero matches; dry-runs against org-ai-assisted and adrelanos
+    produce identical log lines pre/post-refactor.
+
+commit bfcd9f2b96508f223bb72101ba1485c8c91730ed
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 20:00:37 2026 +0000
+
+    policy: lift the last two inline 1-line bodies
+
+    Two attach-/default-for-new-repos bodies in
+    apply_code_security_config were the last places where literal JSON
+    sat inline in dm-github-org-policy. I'd earlier called them
+    'trivial; lifting adds noise', but the agreed principle is 'all
+    policy data lives in github-policy-data.bsh, no exceptions'.
+
+    Lifted as POLICY_CODE_SECURITY_ATTACH and
+    POLICY_CODE_SECURITY_DEFAULTS. Behavior unchanged - dry-run emits
+    the same 'attach code-security configuration scope=all' and 'set
+    code-security configuration default_for_new_repos=all' lines as
+    before.
+
+    After this commit a 'jq -n' grep across all three files
+    (dm-github-org-policy, dm-github-personal-policy,
+    github-policy-lib.bsh) shows zero inline policy bodies; every body
+    flows from a named POLICY_* constant in the data file.
+
+commit 602ec661d0218b19d8631ef2dadadb29d661dd20
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:57:46 2026 +0000
+
+    policy: relocate WHY/rationale comments to data file
+
+    Per-step comments inside the apply_* functions had grown into
+    mini policy memos: 'CAUTION: workflows pinned to unverified third-
+    party actions...', 'bypass_actors=[] - canonical history is
+    sacred...', 'Without this, push rights would let anyone move a
+    release tag...', etc.
+
+    That rationale belongs once, in the data file's POLICY_*
+    docblocks - alongside the body it describes. The script's apply
+    functions become genuine plumbing: a numbered step name and the
+    endpoint, no policy editorializing.
+
+    Moved to github-policy-data.bsh:
+      - CAUTION rollout note   -> POLICY_ACTIONS_ALLOWLIST docblock
+      - 'tags are immutable    -> POLICY_TAG_RULESET_BODY_* docblock
+        anchors' rationale
+      - branch-ruleset SOURCE  -> POLICY_RULESET_BYPASS_SOURCE/MIRROR
+        vs MIRROR detail          docblocks
+      - branch-ruleset
+        deliberately-omitted     -> same docblock
+        fields list
+
+    Trimmed in dm-github-org-policy:
+      - apply_org_policy step comments now 1 line each (was 3-12)
+      - apply_code_security_config function docblock dropped duplicate
+        rationale; kept 3-step API outline + pointer to data file
+      - apply_repo_policy SOURCE/MIRROR pivot docblock simplified
+
+    Trimmed in dm-github-personal-policy:
+      - apply_repo_policy step comments now 1-2 lines each (was 3-9)
+      - kept the step 8 commented-out Dependabot block + its rationale
+        untouched (the rationale is for the dead-code block; removing
+        it would orphan the disabled-feature reminder)
+
+    Behavior unchanged - only comments touched.
+
+commit 6ad5d9bd20352fcb403c0ea0a82270c5933b90ae
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:51:13 2026 +0000
+
+    policy data: lift ruleset bodies + fix comment placement
+
+    After the previous commit moved the static POLICY_* constants to
+    github-policy-data.bsh, the parameterized ruleset body factories
+    in github-policy-lib.bsh still embedded their full JSON
+    expressions inline. Lift those too so the lib carries no policy
+    data of its own:
+
+      github-policy-data.bsh:
+        + POLICY_BRANCH_RULESET_BODY_ORG  / _REPO
+        + POLICY_TAG_RULESET_BODY_ORG     / _REPO
+
+      github-policy-lib.bsh:
+        policy_branch_ruleset_body / policy_tag_ruleset_body now
+        just pick the right body constant based on scope and inject
+        $name / $bypass via jq --arg / --argjson. Each function
+        drops from ~25 to ~12 lines.
+
+    Also sweep stale comment placement left over from the (a)/(b)
+    refactor steps:
+
+      - Five 'Body shape lives at top of file (POLICY_X)' comments
+        repointed to 'github-policy-data.bsh'. The data isn't 'at the
+        top of the file' anymore.
+      - Help docblock 'Settings applied per-repo' section now points
+        to /usr/libexec/developer-meta-files/github-policy-data.bsh
+        instead of 'the Policies section near the top of the script'.
+      - Help docblock branch-ruleset bypass description corrected:
+        bypass_actors is no longer always [] - it pivots on org_kind
+        (SOURCE: [], MIRROR: OrganizationAdmin). Tag ruleset bypass
+        remains [] on both kinds; that wording stays.
+      - org_kind() docblock no longer claims 'the per-repo policy
+        block below pivots on this' (the data block is in another
+        file now).
+
+    Behavior verified via dry-run: ruleset upserts still emit the
+    same DRY-RUN log lines on both org and personal tools.
+
+commit 71edb6a904b5296a633c2e0cc9046dd8f09f9bde
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:42:18 2026 +0000
+
+    policy data: extract to github-policy-data.bsh (single source of truth)
+
+    Final step of the policy-readability refactor. All POLICY_*
+    constants - both shared and consumer-specific - now live in a new
+    github-policy-data.bsh, sourced by both dm-github-org-policy and
+    dm-github-personal-policy.
+
+      github-policy-data.bsh        NEW: pure data, no functions, no
+                                    API calls. Three sections:
+                                      - Shared (FORK_PR_APPROVAL,
+                                        WORKFLOW_PERMS,
+                                        ACTIONS_ALLOWLIST)
+                                      - Org-policy (CODE_SECURITY,
+                                        ACTIONS_SCOPE, MEMBERS,
+                                        REPO_SOURCE/MIRROR,
+                                        RULESET_BYPASS_SOURCE/MIRROR
+                                        + the SOURCE-vs-MIRROR diff
+                                        table)
+                                      - Personal-policy
+                                        (ACTIONS_DISABLED, REPO)
+
+      github-policy-lib.bsh         No data; only API helpers
+                                    (policy_api_call, policy_upsert_*_
+                                    ruleset, parameterized ruleset
+                                    body factories) and the shared
+                                    arg-parser.
+
+      dm-github-org-policy          Sources the data file; the local
+                                    'Policies' block at top is gone
+                                    (data lives one file over now).
+                                    SOURCE_ORGS / MIRROR_ORGS arrays
+                                    stay (they are the WHO, not the
+                                    WHAT).
+
+      dm-github-personal-policy     Same - sources the data file,
+                                    local POLICY_* block removed.
+
+    Why a separate file: a maintainer who wants to know 'what GitHub
+    settings does this tooling touch?' opens one file, sees every
+    POLICY_* in one place. Adding a new policy is a one-file edit;
+    which consumer references it is a separate decision in the apply_*
+    function.
+
+    Bonus: 'show_help' is invoked dynamically by policy_parse_mode_args
+    through bash dynamic scoping; shellcheck cannot prove the call
+    graph statically. Suppress SC2317 inline on the function with a
+    note explaining why.
+
+    Behavior-verified via dry-run: both scripts produce identical
+    DRY-RUN log lines pre/post-refactor (org tool against
+    org-ai-assisted, personal tool against adrelanos).
+
+commit 3728eba32e93bf09bfb1617982597e772dd8689d
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:33:17 2026 +0000
+
+    policy scripts: lift static body data to top-of-file constants
+
+    Continuation of the earlier dm-github-org-policy refactor, applied
+    symmetrically to dm-github-personal-policy and the shared lib.
+
+    github-policy-lib.bsh:
+      - Add a 'Shared policy bodies' section near the top with three
+        readonly constants for the static jq-expression bodies that
+        were previously returned by zero-arg builder functions:
+          POLICY_FORK_PR_APPROVAL    (fork-PR contributor approval)
+          POLICY_WORKFLOW_PERMS      (workflow GITHUB_TOKEN policy)
+          POLICY_ACTIONS_ALLOWLIST   (org-level allowed-actions list)
+      - Drop the zero-arg builders policy_fork_pr_approval_body,
+        policy_workflow_perms_body, policy_actions_selected_allowlist_body.
+        They were one-line jq wrappers; consumers now render via
+        'jq -n -- "${POLICY_X}"' inline.
+      - Keep the parameterized factories (policy_branch_ruleset_body,
+        policy_tag_ruleset_body) - they take name/scope/bypass args
+        and are not pure data.
+
+    dm-github-personal-policy:
+      - Lift two inline multi-line jq programs to top-of-file constants:
+          POLICY_ACTIONS_DISABLED   (${enabled: false} body)
+          POLICY_REPO               (settings + secret_scanning + push
+                                     protection patch body)
+      - Replace 4 call sites with inline jq -n rendering against the
+        new constants and the shared lib bodies.
+
+    dm-github-org-policy:
+      - Replace remaining 3 call sites that referenced the removed
+        builder functions with inline rendering against the lib's
+        shared constants.
+
+    Behavior-verified via dry-run: both scripts produce the same
+    DRY-RUN log lines pre/post-refactor.
+
+commit 19e4aa29ca7dbba95ff726259357345995768ff7
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:18:28 2026 +0000
+
+    dm-github-org-policy: lift policy bodies to top + MIRROR allow_forking=off
+
+    A reader scanning the script previously had to scroll through five
+    separate apply_* functions to learn what GitHub settings the script
+    actually flips. Lift each multi-line policy body to a 'Policies'
+    section near the top of the file as readonly POLICY_* constants,
+    with the SOURCE-vs-MIRROR diff laid out as a single comment table.
+    The apply_* functions become pure plumbing - pick a body, hit an
+    endpoint.
+
+      - POLICY_CODE_SECURITY        org-level code-security configuration
+                                    (one body shared by SOURCE + MIRROR)
+      - POLICY_ACTIONS_SCOPE        Actions allowed_actions=selected
+      - POLICY_MEMBERS              org members policy
+      - POLICY_REPO_SOURCE,         per-repo PATCH bodies (only place
+        POLICY_REPO_MIRROR          SOURCE and MIRROR diverge)
+      - POLICY_RULESET_BYPASS_*     branch/tag ruleset bypass actor list
+
+    Trivial one-line bodies ('{scope: "all"}' etc.) stay inline at
+    their use site - lifting them adds noise without value.
+
+    Also includes the previously-discussed but missing
+    'allow_forking: false' bit in POLICY_REPO_MIRROR so MIRROR repos
+    disallow further forking (MIRROR holds forks of upstream; another
+    fork-of-fork is rare and adds confusion).
+
+    Behavior verified via dry-run against org-ai-assisted: every per-
+    repo PATCH now reports 'MIRROR: wiki=off, issues=off, projects=off,
+    discussions=off, allow_forking=off'.
+
+commit b3cd5badeb129be8444aa1a30a90089f213cff28
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 19:02:34 2026 +0000
+
+    github scripts: use die_if_not_has from log_run_die.sh
+
+    Replace the 'has X || die 1 "X not on PATH"' pattern with the
+    single-call helper die_if_not_has X added in log_run_die.sh.
+    Three call sites converted (dm-github-fork-sync,
+    dm-github-org-policy, github-org-fork --sync-branches gate).
+
+    Also add direct source lines for log_run_die.sh + has.sh in
+    dm-github-org-policy and github-org-fork (R-082: every consumer
+    sources every helper-scripts file it uses directly; do not rely
+    on transitive sourcing through github-org-lib.bsh).
+
+commit 8c8600650f4d5de6f7228918e6d3cc0568410946
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 18:51:56 2026 +0000
+
+    coverity: document non-default concurrency choice
+
+    Brief note on why this reusable uses cancel-in-progress=false +
+    workflow-only group, against the cancel-in-progress=true +
+    workflow+ref pattern used by the other reusables: Coverity Scan
+    has a 1-build/day rate limit on the free public service.
+
+commit 9398b00f8b2e87299bc9187a7c74019dc601edb4
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 18:48:05 2026 +0000
+
+    codeql: drop packages: read
+
+    None of our CodeQL builds pull from ghcr.io (kloak runs
+    'bash build.sh', security-misc runs 'bash ci/codeql-build.sh',
+    helper-scripts and msgcollector are pure-Python). Drop the
+    defensive 'packages: read' grant in favor of least-privilege.
+
+    A future consumer that genuinely authenticates to GitHub
+    Packages from a CodeQL build step can re-add it locally.
+
+    Reusable docblock notes the rationale so a future maintainer
+    doesn't reflexively re-add it.
+
+commit 9010cffead440dd73e7cce8e49654ad6907718db
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 16:20:32 2026 +0000
+
+    dm-github-org-policy: SOURCE/MIRROR org distinction + mirror-side issues=off
+
+    Two kinds of org are touched by this script. Make the distinction
+    obvious at the top of the file (where future readers look first)
+    and pivot per-repo policy on org name:
+
+      SOURCE = canonical upstream (Kicksecure, Whonix)
+        has_issues=true    file bugs here
+        has_wiki=false
+
+      MIRROR = fork org (org-ai-assisted) for AI-assisted dev work
+        has_issues=false       file everything upstream
+        has_projects=false     project boards belong upstream
+        has_discussions=false  Discussions belong upstream
+        has_wiki=false
+
+    Vocabulary (SOURCE_ORGS / MIRROR_ORGS) aligns with what
+    dm-github-fork-sync already uses internally so a reader can move
+    between the two scripts without re-mapping.
+
+    The MIRROR-side trackers were previously left at GitHub's defaults
+    (issues on, projects on, discussions on); contributors would
+    either get split inboxes (issue filed on the mirror, never seen by
+    upstream maintainers) or not file at all. Forcing them off makes
+    'file upstream' the only path.
+
+commit 01598ab1b8127db3f6ef04619ae22ae8a46bfe39
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 16:14:57 2026 +0000
+
+    dm-github-org-policy: include forks in per-repo loop
+
+    The per-repo phase (apply_repo_policy + the dependabot.yml audit
+    in audit_org_state) called ghorg_list_repos with inc_forks=0,
+    silently skipping every repo in any fork-management org. The
+    org-ai-assisted mirror holds 100% forks of upstream Kicksecure /
+    Whonix; the per-repo loop was a dead code path against it (it
+    silently no-op'd has_wiki=off / has_issues=on on all 99 repos).
+
+    Flip both call sites to inc_forks=1. Upstream Kicksecure / Whonix
+    orgs hold fork=false repos so the change is a no-op there.
+
+    Verified via --dry-run against org-ai-assisted: previously 0 repos
+    matched, now 99 repos are queued for the wiki=off / issues=on
+    PATCH and dependabot.yml presence audit.
+
+commit 931195fbc4c6b3621e41b648c4fbe759d8bdae1f
+Merge: 99a166f b147a56
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 8 12:09:41 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/fix-git-push-detection-rMDe2'
+
+commit b147a561c554567af302f710e3dec52d2233ccbd
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 16:04:02 2026 +0000
+
+    add ls-remote-aware push gate, share between dm-push and packaging helper
+
+    New shared library so dm-push and dm-packaging-helper-script can
+    both decide "does this branch need to be pushed" via the same code:
+
+      usr/libexec/developer-meta-files/git-helpers.bsh
+        internal_git_diff_local
+          Compares refs/heads/<branch> vs refs/remotes/<remote>/<branch>.
+          No network round-trip; only as fresh as the last fetch. A
+          concurrent pusher who advanced the remote since our last fetch
+          will not be seen by this gate; the eventual push is rejected
+          non-fast-forward and the caller must re-fetch and retry.
+        internal_git_diff_remote
+          Queries the remote via 'git ls-remote'. One metadata-only
+          network round-trip per call. Sees concurrent pushes.
+        internal_git_diff
+          Dispatcher. Default is _local; set DM_GATE_LS_REMOTE=1 to opt
+          in to _remote.
+
+    Both compare commit SHAs rather than tree contents: amend, rebased
+    message, or cherry-pick of an already-applied change all produce a
+    new commit SHA with an unchanged tree, and all need to be pushed.
+    Tree-level 'git diff' would falsely report "no diff" in those cases.
+
+    dm-push:
+      - Source git-helpers.bsh (with in-tree fallback for dev runs).
+      - queue_branch_refspec calls the dispatcher; default behavior is
+        _local, change with DM_GATE_LS_REMOTE=1.
+      - Push uses 'git push --atomic --porcelain' so multi-ref pushes to
+        the same remote either all-succeed or all-fail, and per-ref
+        status is machine-readable for diagnostics.
+
+    dm-packaging-helper-script:
+      - Source git-helpers.bsh; remove the inline duplicate gate.
+      - pkg_git_push_remotes takes a mode argument: 'local' (default,
+        no network) or 'remote' (ls-remote, authoritative). The single
+        existing caller (pkg_git_changelog_bump_inner_inner) calls
+        'pkg_git_push_remotes local'.
+      - Push uses --atomic --porcelain (same rationale as dm-push).
+
+    Style:
+      - ASCII only (R-001).
+      - AI-Assisted marker on the new library (R-002).
+      - Errors via 'die', warnings via 'log warn' from log_run_die.sh
+        (R-040, R-110); both callers source log_run_die.sh before
+        git-helpers.bsh.
+      - Locals declared at top of function with assignments separated
+        (R-021).
+      - Library has no top-level set / shopt; entry-point scripts
+        already set the strict-mode quintet.
+
+commit fb7cd10788ce23b0fa80f786c06b52bc77b0d9e0
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 15:50:21 2026 +0000
+
+    claude-code-review: document allowed_users drop + OIDC requirement
+
+    Two gotchas worth documenting in the reusable's docblock so a
+    future maintainer doesn't re-introduce the same mistakes:
+
+    1. The upstream action no longer accepts 'allowed_users' (it
+       silently warns 'Unexpected input(s)' and drops the value). We
+       gate at the workflow 'if:' instead, which runs before the
+       runner spins up.
+
+    2. The action uses OIDC federation to mint an elevated
+       GITHUB_TOKEN; 'id-token: write' is mandatory on the calling
+       job's permissions block.
+
+commit e1934877169ededeba6810863dc1e0e3c5c7e2f8
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 15:49:18 2026 +0000
+
+    claude-code-review: restore id-token, drop unrecognized allowed_users
+
+    Reverts a misdiagnosis. Verified against a live workflow log:
+
+      ##[warning]Unexpected input(s) 'allowed_users', valid inputs are
+        [..., 'allowed_bots', 'allowed_non_write_users', ...]
+
+      Requesting OIDC token...
+      OIDC token successfully obtained
+      Exchanging OIDC token for app token...
+      Using GITHUB_TOKEN from OIDC
+
+    Two corrections to the reusable:
+
+    1. Restore 'id-token: write' on the job-level permissions block.
+       The action federates the runner's id-token to an Anthropic-
+       controlled GitHub App which mints a higher-privilege GITHUB_TOKEN
+       used to post review comments. Without the permission the next
+       run would fail with 'Could not fetch an OIDC token'.
+
+    2. Stop passing 'allowed_users:' to the action - it has been removed
+       upstream (the action emits 'Unexpected input(s)' and silently
+       drops the value). The valid replacements are 'allowed_non_write_users'
+       and 'allowed_bots'; for our roster (org members with write access)
+       neither applies. The job-level 'if:' gate added in the previous
+       reusable commit already enforces the roster check at the workflow
+       layer, so the action-internal gate is no longer needed.
+
+    Also restore id-token: write in the dev-meta-files self-consumer.
+
+commit 6c200c1ab3eaacf23b2fdfbb53af8efcf06dce91
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 15:24:20 2026 +0000
+
+    scorecard: own the org-wide cron allocation table
+
+    Lift the allocation table into the reusable's caller-responsibilities
+    docblock so it's the single source of truth. Consumer wrappers carry
+    only their own cron line with no commentary.
+
+commit 16659a92e11439ec6969e46cec7f54856ce93c79
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 15:21:18 2026 +0000
+
+    claude-code: drop id-token: write
+
+    The reusable workflow no longer needs id-token: write (the action
+    authenticates to api.anthropic.com via a static ANTHROPIC_API_KEY;
+    OIDC federation is unused). Drop the permission to honor
+    least-privilege - an OIDC token, if forged or leaked, can
+    authenticate to cloud-provider integrations.
+
+commit 2d12db0f340d610d201da65b688cc36b5663194d
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 15:20:59 2026 +0000
+
+    claude-code-review: drop id-token, gate on @claude + allowed-users
+
+    Two changes to the reusable workflow:
+
+    1. Drop 'id-token: write' from the job-level permissions block.
+       The action authenticates to api.anthropic.com via a static
+       ANTHROPIC_API_KEY; OIDC federation is unused. Removing the
+       permission honors least-privilege (an OIDC token, if forged or
+       leaked, can authenticate to cloud-provider integrations).
+
+    2. Add a job-level 'if:' gate. On comment-triggered events
+       ('issue_comment' / 'pull_request_review_comment') the runner
+       used to spin up on EVERY comment - the action would then no-op
+       internally if the body lacked '@claude', burning runner minutes
+       for nothing. The new gate also enforces the allowed-users
+       roster at the workflow level (defense in depth - the same check
+       already runs inside the action). Net effect: random external
+       commenters cannot drain the org's ANTHROPIC_API_KEY budget by
+       spam-mentioning @claude, and unauthorized actors cannot spin
+       up a runner at all.
+
+commit fcdf63bc343f84ccc579aa5c13bcd2f1de0bdeb9
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 13:47:06 2026 +0000
+
+    reusable-cppcheck: drop 'style' from default enable; fix exit-code comment
+
+    Two fixes after the first real PR run (kloak#5) exercised the
+    reusable end-to-end and revealed a wrong mental model in the
+    exit-code comment.
+
+    (1) cppcheck's --error-exitcode=N triggers on ANY finding at
+        ANY enabled severity, NOT only the 'error' severity (despite
+        what the flag's name suggests). Comment in the reusable
+        claimed otherwise; corrected.
+
+    (2) Consequence of (1): with the previous default
+        'warning,style,performance,portability' enable list, every
+        'style' finding (variableScope, constVariablePointer,
+        constParameterCallback, ...) triggers CI failure. kloak#5
+        surfaced ~10 such findings on src/kloak.c, all pre-existing
+        and none bug-class.
+
+        New default: 'warning,performance,portability'. 'style' is
+        available as an opt-in via the 'enable' input when a repo
+        has been pre-audited and wants the broader scan. Repos
+        starting from a non-style-clean baseline can adopt the
+        reusable without first having to clean up every style nit.
+
+    The kloak#5 findings remain printed (they're at the 'style'
+    severity which the default no longer enables, so they aren't
+    even scanned anymore - the next pass with style enabled will
+    re-surface them). Action on those is a separate cleanup PR
+    deciding whether each style finding is a real refactor target
+    or a false positive worth a #cppcheck-suppress comment.
+
+commit 7055e1b750fe568e07718bb60be676ab705af7d1
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 13:44:48 2026 +0000
+
+    reusable-cppcheck: drop unsupported '--' separator
+
+    cppcheck does NOT accept '--' as end-of-options separator -
+    it rejects with 'unrecognized command line option: "--"' and
+    exits 1 before scanning anything. Verified locally against
+    cppcheck 2.13.0 (Ubuntu 24.04 archive).
+
+    Per R-062, '--' should only be added to tool invocations
+    where the actual binary supports it. This was missed during
+    the reusable's introduction; caught by the first real PR run
+    (kloak#5).
+
+    Removing '--' is safe here because the only positional we pass
+    is 'inputs.paths' which is a workflow input under our control;
+    no risk of an attacker-controlled string starting with '-'.
+
+    Added a note in the comment block so the next person tempted
+    to re-add it has a pointer to why.
+
+commit f069717bcd9cfd0eb5738be964ea4ed6d15cb511
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 13:34:03 2026 +0000
+
+    github-actions: rename reusables to 'reusable-<name>.yml'
+
+    File-naming convention codified in agents/github-actions.md as
+    G-A-005: reusable workflows in this repo carry a 'reusable-'
+    prefix; consumer-wrapper filenames don't. Trade-off survey
+    landed on this over '_<name>.yml' or 'reusable_<name>.yml'
+    because (a) it sorts together visually, (b) GitHub renders the
+    file list with explicit prefix grouping, (c) it removes the
+    need for '-self' / 'codex.yml' suffix workarounds in this repo
+    which holds both kinds.
+
+    Rename:
+      codeql.yml              -> reusable-codeql.yml
+      scorecard.yml           -> reusable-scorecard.yml
+      claude-code-review.yml  -> reusable-claude-code-review.yml
+      codex-review.yml        -> reusable-codex-review.yml
+      coverity.yml            -> reusable-coverity.yml
+      cppcheck.yml            -> reusable-cppcheck.yml
+      bandit.yml              -> reusable-bandit.yml
+
+    Self-consumer wrappers in this repo simplify accordingly:
+      scorecard-self.yml      -> scorecard.yml         (no longer
+                                                        conflicts)
+      codex.yml               -> codex-review.yml      (no longer
+                                                        conflicts)
+      claude-code.yml         -> unchanged              (was already
+                                                        consumer-style)
+
+    Self-consumer 'uses:' lines updated to point at './.github/
+    workflows/reusable-<name>.yml' (path remains relative for
+    dogfooding - see G-A-004 / earlier comments).
+
+    Cross-repo consumers in helper-scripts, kloak, security-misc,
+    derivative-maker get a parallel 'developer-meta-files/.github/
+    workflows/X.yml@master' -> 'reusable-X.yml@master' update on
+    their respective master branches in the same change cycle.
+    The PR-execution window where 'X.yml@master' no longer resolves
+    is bounded by the cross-repo push gap (~minutes) and is
+    consciously accepted.
+
+    docs/scorecard-known-false-positives.md path references
+    refreshed to the new reusable filenames.
+
+commit 4f457091efe44f493cb187149d5288e18ef7171f
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 13:05:50 2026 +0000
+
+    docs: catalogue Scorecard known false positives + agents pointer
+
+    New file docs/scorecard-known-false-positives.md collects the
+    signals Scorecard reports that are intentional architectural
+    choices in this org rather than findings to act on:
+
+      DependencyUpdateToolID  consumer repos with no dependabot.yml
+                              because action SHAs live in this repo.
+      PinnedDependenciesID    '@master' reusable refs per G-A-004.
+      MaintainedID            freshly created repos (auto-resolves
+                              after 90 days).
+      SASTID transient        partial score for ~30 days after
+                              CodeQL adoption while the commit-
+                              history-with-coverage window rolls
+                              forward.
+      Dockerfile FROM stage   multi-stage local stage references
+                              flagged as unpinned.
+
+    Plus a section listing what we DO act on so reviewers know which
+    Scorecard signals are real (SecurityPolicyID, BranchProtectionID,
+    CodeReviewID, FuzzingID, real pip/Dockerfile pins).
+
+    agents/github-actions.md gains a brief 'See also' pointer at the
+    new doc so AI agents working on workflow changes find it
+    naturally.
+
+    The 'don't drop CodeQL path filters' guidance is captured in the
+    SASTID-transient section as an explicit cost-vs-coverage trade-
+    off, per the 'CI cost is an issue' direction.
+
+commit c7ce7385b1f55ba6f1e838ac68362005995a4f34
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 12:58:31 2026 +0000
+
+    github-actions: dogfood reusables on this repo
+
+    Add self-consumer wrappers that call the locally-hosted reusable
+    workflows so PRs to this repo run them too:
+
+      scorecard-self.yml -> ./.github/workflows/scorecard.yml
+      claude-code.yml    -> ./.github/workflows/claude-code-review.yml
+      codex.yml          -> ./.github/workflows/codex-review.yml
+
+    Local-path './...' references rather than cross-repo '@master':
+    a PR modifying a reusable then exercises its own changes during
+    the PR's CI run, instead of running the master version of the
+    reusable that the PR is changing. Self-test by construction.
+
+    Filename suffixes ('-self', shortened 'codex.yml') exist because
+    GitHub Actions cannot have two workflow files with the same name
+    in one repo; the reusables already occupy 'scorecard.yml' and
+    'codex-review.yml'.
+
+    Skipped (no relevant source code in this repo):
+      codeql.yml      - no Python / no C / no JS; CodeQL has no
+                        bash extractor
+      coverity.yml    - same languages-supported gap
+      cppcheck.yml    - no C / no C++
+      bandit.yml      - no Python
+
+commit d4a5506ff8ada488666025236f9b99f7fc35137c
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 12:38:21 2026 +0000
+
+    github-actions: add reusable cppcheck + bandit workflows
+
+    Free open-source local-runnable static analyzers for the C and
+    Python halves of the org's source. Complement Coverity Scan -
+    different rule sets, no third-party-service dependency, can
+    run on a developer machine via plain 'cppcheck' / 'bandit'.
+
+    cppcheck.yml (reusable):
+      inputs: paths, enable, extra-args, prepare-command,
+              timeout-minutes
+      apt-installs cppcheck, runs '--enable=warning,style,
+      performance,portability --inline-suppr --error-exitcode=2
+      --quiet'. Exits non-zero only on cppcheck 'error' severity;
+      warnings/style print but do not fail CI (per the typical
+      cppcheck-in-CI shape).
+
+    bandit.yml (reusable):
+      inputs: paths, severity-level, confidence-level, skips,
+              prepare-command, timeout-minutes
+      apt-installs bandit, runs '-r' with the requested severity
+      / confidence floors. Per-line '# nosec' comments are the
+      preferred suppression vs the global skips input.
+
+    Both reusables expose the same prepare-command pattern as the
+    codeql reusable so consumers with genmkfile-tagged source files
+    ('*.c#tag', '*.py#tag') can re-use ci/codeql-prepare.sh-style
+    symlinks before the linter runs.
+
+    Bandit is preferred over a Python static-checker for security
+    patterns specifically (hardcoded passwords, shell=True
+    subprocess, weak crypto, eval). It complements pyflakes /
+    pylint which focus on correctness / style.
+
+commit 160fd35daee753818c717c1d055e4c0977271855
+Merge: 99a166f 447f18a
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Fri May 8 08:01:34 2026 -0400
+
+    Merge pull request #7 from org-ai-assisted/claude/test-github-token-access-HVDXY
+
+    github-actions: add reusable CodeQL workflow
+
+commit 447f18ab724a9397b1a6e124787f4017b30bb056
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:54:14 2026 +0000
+
+    github: add dependabot.yml for github-actions ecosystem
+
+    This repo holds the org-wide reusable workflows (codeql.yml,
+    scorecard.yml, coverity.yml, claude-code-review.yml,
+    codex-review.yml). Each carries SHA-pinned 'uses:' lines for
+    actions/checkout, anthropic/claude-code-action, openai/codex-
+    action, ossf/scorecard-action, github/codeql-action, and
+    actions/upload-artifact. Dependabot watches them here.
+
+    Consumer wrappers in kloak/security-misc reference the reusables
+    via '@master', so a SHA bump here propagates to every consumer's
+    next workflow run automatically. No per-consumer dependabot.yml
+    is needed for those repos (kloak/security-misc currently have
+    zero direct action SHAs; helper-scripts and derivative-maker
+    keep their own configs because they still have repo-specific
+    non-reusable workflows with direct SHAs).
+
+    Single grouped PR per cycle (no spam).
+
+commit ee8784b2a99e0cdc8d134db1a07b344ad7597e69
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:53:25 2026 +0000
+
+    coverity reusable: clarify token vs email secret scope
+
+    COVERITY_SCAN_TOKEN must be set as a repo-level secret per consumer
+    because tokens are scoped per Coverity project on
+    scan.coverity.com. Document this explicitly in the reusable's
+    header so operators do not waste time trying to set it org-wide
+    and getting opaque 'project=X token mismatch' errors from
+    scan.coverity.com on submission.
+
+    COVERITY_SCAN_EMAIL can be org-wide if every project shares one
+    notification address.
+
+commit 967c40935ac91d3fde236e12619bf6505cd1682d
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:46:03 2026 +0000
+
+    github-actions: add reusable Coverity Scan workflow
+
+    Replaces vapier/coverity-scan-action and the per-repo inline
+    curl+tar+cov-build flow with one centralized reusable. Three
+    consumers (helper-scripts, kloak, security-misc) call this with
+    their repo-specific build deps and project name.
+
+    The orchestration scripts (check-secrets, download with md5+sha256
+    verify, python default cov-build, submit) live under ci/ in this
+    repo and are checked out into the runner alongside the consumer's
+    repo. Refactored from helper-scripts/ci/coverity-*.sh; the only
+    change is dropping the implicit 'cd $(dirname ...)/..' so each
+    script trusts its cwd, which the reusable workflow controls.
+
+    Reusable inputs:
+      apt-packages     space-separated build deps to apt-install
+      build-command    bash invoked under cwd=consumer-repo-root, with
+                       ./cov-analysis/bin/cov-build available; empty
+                       defaults to the Python cov-build flow
+      project-name     scan.coverity.com project; falls back to
+                       vars.COVERITY_PROJECT, then to the repo basename
+      timeout-minutes  job timeout (default 30)
+      canonical-repos  comma-separated owner/repo allow-list for the
+                       push/schedule events; forks must use
+                       workflow_dispatch since they lack the secrets
+
+    Secrets read from caller's namespace via 'secrets: inherit':
+      COVERITY_SCAN_TOKEN, COVERITY_SCAN_EMAIL.
+
+    No third-party Action footprint - the only external trust roots
+    are scan.coverity.com (the cov-analysis tarball, gated by the
+    project token + md5 verified, optionally sha256 hard-pinned via
+    .coverity-tool-sha256.expected in the consumer repo) and
+    actions/checkout / actions/upload-artifact (already in use across
+    the org).
+
+commit 2b24f6075c22a2ea1b6974cb45d93d69117b3c07
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:35:06 2026 +0000
+
+    ai-reviews: secrets:inherit + unify codex bot list
+
+    Two changes - both align with the "secrets are org-wide, not per-
+    repo" policy.
+
+    1. Drop the workflow_call.secrets schema from both reusables. The
+       action steps now read 'secrets.ANTHROPIC_API_KEY' /
+       'secrets.OPENAI_API_KEY' directly from the caller's namespace.
+       Consumer wrappers pair this with 'secrets: inherit' instead of
+       the 5-line explicit secret-mapping block. Less per-repo
+       boilerplate; aligns with org-level secret storage where the
+       secret name is fixed across consumers anyway.
+
+    2. Set codex-review.yml inputs.allow-bot-users default to the same
+       "adrelanos,ArrayBolt3,assisted-by-ai" canonical list used by
+       claude-code-review.yml inputs.allowed-users. Single roster
+       string everywhere. The codex-action treats this list as a
+       "bot-bypass for actor-write-access" gate; including humans is a
+       no-op for them (humans are gated separately by GitHub-side
+       write access) and keeps the list shape uniform across both AI
+       review reusables.
+
+commit abb886d1f279b864d213e1275e5fb8a4a7af8425
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:27:26 2026 +0000
+
+    ai-reviews: hardcode org-canonical reviewer rosters in reusables
+
+    Unify the allow-lists that were previously duplicated by every
+    consumer wrapper. Move them into the reusable workflows as input
+    defaults:
+
+      claude-code-review.yml:
+        inputs.allowed-users default = "adrelanos,ArrayBolt3,assisted-by-ai"
+      codex-review.yml:
+        inputs.allow-bot-users default = "assisted-by-ai"
+
+    Single source of truth: update the roster here, every consumer
+    wrapper picks it up on the next workflow run. No org-level Actions
+    variables needed (would have been a cleaner mechanism but requires
+    admin:org / fine-grained 'actions_variables' permission, which the
+    test PAT lacks).
+
+    Inputs remain optional - a per-repo override (e.g. an external
+    OSS contributor that needs @claude trigger access on one repo
+    only) can still pass an explicit value via 'with: allowed-users:'.
+
+commit 965554b7887d0d293ecb5246e968ea9688a87735
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 8 11:20:47 2026 +0000
+
+    github-actions: add reusable Claude/Codex AI review workflows
+
+    Centralizes the AI-review boilerplate that was previously duplicated
+    in kloak's .github/workflows/{claude-code,codex-review}.yml. Two
+    'workflow_call' reusables, parameterized via inputs:
+
+      claude-code-review.yml:
+        inputs:  allowed-users, timeout-minutes
+        secrets: anthropic-api-key
+        triggers (caller decides):  pull_request +
+                                    issue_comment + review-comment
+
+      codex-review.yml:
+        inputs:  allow-bot-users, pr-ref, sandbox, prompt,
+                 timeout-minutes
+        secrets: openai-api-key
+        triggers (caller decides):  pull_request + workflow_dispatch
+
+    Both reusables retain the safety properties of the original kloak
+    inline workflows:
+
+      * Workflow-level 'permissions: contents: read' default; jobs
+        upgrade only what they need.
+      * Concurrency keys account for issue_comment / pr-ref so reviews
+        on different PRs don't cancel each other.
+      * codex-review fork-PR skip is preserved (paid OPENAI_API_KEY
+        must not run on attacker-controlled fork code on the
+        pull_request trigger; workflow_dispatch is the manual override
+        path for fork-PR review).
+      * SHA-pinned action versions with verifiable tag comments.
+
+    Schedule cannot live in workflow_call (G-A-002), so caller wrappers
+    own their own triggers. The kloak wrappers shrink from ~57/95 lines
+    inline to ~30 lines each (header + triggers + 1 'uses:' job each).
+
+commit ab6d401811b5377693f9fa91ab4980f973ec5883
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 22:55:47 2026 +0000
+
+    codeql reusable: add AI-Assisted header marker
+
+    Per agents/bash-style-guide.md R-002. Other recently-added reusables
+    (live.yml, policy-live.yml, test-github-org-tools.yml) carry the
+    marker; this one was missed.
+
+commit 4c5c67da874e993641c564246e2eeb7b2f8042ea
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 22:46:43 2026 +0000
+
+    github-actions: codeql reusable - add prepare-command input
+
+    Some repos (Kicksecure-style packages with #package-tag suffixes on
+    filenames) need source-tree manipulation before the CodeQL extractor
+    crawls files - in particular, the python/javascript extractors
+    discover sources by file extension, so a 'foo.py#tag' source has to
+    be symlinked to 'foo.py' before init.
+
+    Adds an optional 'prepare-command' bash hook between checkout and
+    init. Empty default means existing callers (helper-scripts, kloak)
+    keep their current zero-step prelude.
+
+commit c5085accbfb256cf22257321c5e396a6d2df1d39
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 22:37:53 2026 +0000
+
+    github-actions: add reusable CodeQL workflow
+
+    Centralizes the CodeQL boilerplate that was being duplicated across
+    repos (helper-scripts python-only, kloak c-cpp+python). One job per
+    (language, build-mode) tuple, parameterized via workflow_call inputs:
+    language, build-mode, build-command, queries, timeout-minutes.
+
+    Hardened defaults match what helper-scripts already had: workflow-
+    level 'contents: read', fork-PR guard, explicit timeout (default
+    30 min), 'security-and-quality' query pack, and an explicit
+    'category:' on analyze for clean multi-language SARIF separation.
+
+    Schedule is intentionally NOT defined here (workflow_call cannot
+    own a 'schedule:'); the caller wrapper supplies its own cron slot.
+
+commit 99a166faaf899d94f389fd4dee6705b2f61322d7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:59:27 2026 -0400
+
+    .
+
+commit 1599a87985a6b4aaf8acc9b2f477b77509ffc6d9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:41:43 2026 -0400
+
+    .
+
+commit 38a8eaf38f404322827d3347eadc4795bb3b3c5d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:38:03 2026 -0400
+
+    .
+
+commit b144d89912818046944a40b5f8a1e19ff7e44b0b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:36:51 2026 -0400
+
+    .
+
+commit 63d01572155d0475906f48ef8f522bdbd0a4aca8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:35:15 2026 -0400
+
+    .
+
+commit a8678d38a30473f93bef5d8d6253bfa8f18f117f
+Merge: 3d1b99d 7bb1a45
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:31:26 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 3d1b99d6022e32031da928b4edc8647f27a7ae1e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:28:27 2026 -0400
+
+    .
+
+commit da33686053fafbb4dae8b58b4008d718bf3904f9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 17:26:49 2026 -0400
+
+    .
+
+commit 7bb1a45e1c304ff1db86c0b93c7d7a1423cc97e2
+Merge: 913899f 6a9a46c
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Thu May 7 16:54:18 2026 -0400
+
+    Merge pull request #6 from org-ai-assisted/claude/reusable-scorecard-enrich-doc
+
+    scorecard reusable: enrich header to absorb consumer commentary
+
+commit 913899f7de05bae29e7aa2526dc812638564a2a6
+Merge: d792d6f 8b8110d
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Thu May 7 16:54:12 2026 -0400
+
+    Merge pull request #5 from org-ai-assisted/claude/agents-github-actions-doc
+
+    agents: add github-actions.md (reusable workflows + context constraints)
+
+commit 6a9a46c496b358a358e6694a8c9086b1da7ada95
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 20:51:19 2026 +0000
+
+    scorecard: enrich reusable header to absorb consumer commentary
+
+    Centralizes commentary that was previously duplicated in each
+    consumer's wrapper:
+
+    * trust footprint
+    * caller responsibilities + cron-slot allocation
+    * push-trigger trade-off (some repos opt out)
+    * publish_results commitment
+    * hardcoded-owner constraint (G-A-001 - github.* not allowed in
+      jobs.<id>.uses)
+    * full caller example
+
+    After this lands, each consumer's wrapper trims down to just the
+    trigger config + the uses: line + a one-line pointer to this
+    file. Single source of truth for the design rationale.
+
+commit 8b8110dd36bb31004bf5a3c2b61e007c4ce7dbaf
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 20:33:16 2026 +0000
+
+    agents: add github-actions.md (reusable workflows + context constraints)
+
+    Cross-repo GitHub Actions guidance for the org. Split off from each
+    repo's existing agents/github-actions-security.md (which keeps
+    repo-specific gating literals + threat-model details) so the
+    generic cross-repo conventions live in one place.
+
+    Includes G-A-001 through G-A-004:
+    * github.* not allowed in jobs.<id>.uses (real constraint that
+      bit us when the dynamic-org expression broke
+      helper-scripts master and required a fix-forward)
+    * schedule cannot live under workflow_call
+    * pull_request triggers in PR head don't fire on the PR
+    * cross-repo uses ref pinning trade-off
+
+    Indexes from AGENTS.md under 'AI instructions for ALL repositories'
+    since the conventions apply org-wide.
+
+commit d792d6fbb8a67d06c9244322aa655b61e40da799
+Merge: f9a4764 abd7353
+Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
+Date:   Thu May 7 16:03:12 2026 -0400
+
+    Merge pull request #4 from org-ai-assisted/claude/reusable-scorecard-workflow
+
+    Add reusable Scorecard workflow (first reusable in developer-meta-files)
+
+commit abd7353124fe9be431b1f4cbf468c2d09d1adce8
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 7 20:00:13 2026 +0000
+
+    Add reusable Scorecard workflow
+
+    First reusable workflow in developer-meta-files. Eliminates the
+    ~70-line scorecard.yml duplication currently maintained in
+    derivative-maker and helper-scripts. Other repos that adopt
+    Scorecard can consume this one too.
+
+    Caller invokes via:
+
+      jobs:
+        scorecard:
+          uses: Kicksecure/developer-meta-files/.github/workflows/scorecard.yml@master
+          permissions:
+            security-events: write
+            contents: read
+            actions: read
+
+    Schedule and branch_protection_rule triggers MUST stay at the
+    caller level - GitHub Actions does not allow schedule under
+    workflow_call. Each caller picks a cron slot that doesn't collide
+    with the other repos in the org.
+
+    Carries forward the pinned action SHAs (checkout v6.0.2, scorecard-
+    action v2.4.3, upload-artifact v7.0.1, codeql-action upload-sarif
+    v4.35.3 - the newer of the two SHAs the existing copies use), the
+    fork-PR guard (no-op unless the caller routes pull_request events
+    in), and the 'publish_results: false' default (off the OpenSSF
+    public transparency log unless the project opts in).
+
+commit f9a476433d6170bc02622f0d5e4ac18ba4ec400e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 7 19:23:44 2026 +0000
+
+    bumped changelog version
+
 commit 595dd3bc1890f1854c28248e9de5b2911945f398
 Merge: e92d370 9fbe616
 Author: Patrick Schleizer <adrelanos@whonix.org>
