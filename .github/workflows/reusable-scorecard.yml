@@ -36,6 +36,15 @@
 ##   ${{ github.repository_owner }}/... fails workflow load with
 ##   'Unrecognized named-value: github'. See
 ##   agents/github-actions.md G-A-001.
+## - Do NOT add a wrapper-level 'concurrency:' block. This reusable
+##   declares the cancellable group below; inside a called reusable
+##   'github.workflow' and 'github.ref' resolve to the caller's
+##   values, so a wrapper that mirrors the same group key produces an
+##   identical lock name. Actions detects that as a deadlock and
+##   cancels the run. Unlike reusable-codeql.yml, this reusable has
+##   no per-call differentiator (no inputs.language equivalent), so
+##   the wrapper must omit its concurrency block and let the reusable
+##   own the policy. See agents/github-actions.md G-A-006.
 ##
 ## ## Push trigger trade-off
 ##

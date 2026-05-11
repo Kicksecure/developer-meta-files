@@ -32,9 +32,14 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+## No wrapper-level concurrency: block here. The reusable
+## (reusable-scorecard.yml) declares the cancellable group; mirroring
+## it at the wrapper would produce an identical group name
+## (github.workflow / github.ref resolve to the caller's values inside
+## a reusable), which Actions detects as a deadlock and cancels the
+## run. The codeql reusable sidesteps this by including inputs.language
+## in its group; scorecard has no analogous differentiator, so the
+## wrapper omits its block and lets the reusable own the policy.
 
 jobs:
   scorecard:
