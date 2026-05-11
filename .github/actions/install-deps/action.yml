@@ -62,7 +62,6 @@ runs:
     - name: Install genmkfile
       shell: bash
       env:
-        CI: "true"
         GENMKFILE_OWNER: ${{ inputs.genmkfile-owner != '' && inputs.genmkfile-owner || github.repository_owner }}
       ## $GITHUB_ACTION_PATH (shell env, runtime-resolved) instead of
       ## ${{ github.action_path }} (template, expanded before the
@@ -76,7 +75,6 @@ runs:
       if: ${{ inputs.install-helper-scripts == 'true' }}
       shell: bash
       env:
-        CI: "true"
         HELPER_SCRIPTS_OWNER: ${{ inputs.helper-scripts-owner != '' && inputs.helper-scripts-owner || github.repository_owner }}
       run: "$GITHUB_ACTION_PATH/install-helper-scripts.sh"
 
