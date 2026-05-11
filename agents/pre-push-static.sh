@@ -30,6 +30,16 @@
 ##  14. R-130 ':' as bare no-op placeholder on its own line
 ##      (does NOT flag the ': "${var:=default}"' parameter-default
 ##      idiom widely used in the codebase)
+##  15. pre-commit-hooks (direct binary execution, no framework)
+##      against the right file-type subsets: check-yaml,
+##      check-json, check-toml, check-xml, check-ast,
+##      check-added-large-files, check-merge-conflict,
+##      detect-aws-credentials, detect-private-key,
+##      end-of-file-fixer, trailing-whitespace-fixer, ...
+##      Skipped with a note if the 'pre-commit-hooks' binaries
+##      aren't on PATH (developer machines that haven't installed
+##      them still get the bash-style-guide gate; CI runs in
+##      debian:trixie-slim with them apt-installed).
 ##
 ## Scope: files changed in HEAD vs upstream tracking branch
 ## (@{u}). Pass an explicit base ref as $1 to override
@@ -360,6 +370,156 @@ is_yaml_file() {
    return 1
 }
 
+is_text_file() {
+   ## Cheap extension match first; fall back to file --mime for
+   ## files lacking a known extension (e.g. shell scripts named
+   ## 'foo' with a shebang).
+   local f mime
+   f="${1}"
+   case "${f}" in
+      *.md|*.sh|*.bsh|*.bash|*.py|*.yml|*.yaml|*.json|*.toml \
+      |*.xml|*.txt|*.csv|*.cfg|*.conf|*.ini|*.rst|*.html|*.css \
+      |*.js|*.ts|*.c|*.h|*.cpp|*.hpp|*.go|*.rs|*.tex|*.dockerfile \
+      |Dockerfile|Makefile|COPYING|README|LICENSE)
+         return 0
+         ;;
+   esac
+   if ! command -v file >/dev/null 2>&1; then
+      return 1
+   fi
+   mime="$(file --brief --mime --dereference -- "${f}" 2>/dev/null || true)"
+   case "${mime}" in
+      text/* \
+      |*x-shellscript* \
+      |*x-python* \
+      |*json* \
+      |*xml* \
+      |*yaml* \
+      |*toml* \
+      |*charset=us-ascii* \
+      |*charset=utf-8*)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
+## --- pre-commit-hooks integration (direct binary execution, no framework) ---
+##
+## Runs the curated upstream pre-commit-hooks binary set against
+## the right file-type subsets, modeled on each hook's upstream
+## 'types:' declaration. Probes for one representative
+## (check-yaml); if absent, the whole set is skipped silently
+## (developer machines without pre-commit-hooks installed still
+## get the bash-style-guide gate).
+##
+## Hooks NOT run vs misc/pre-commit-config.yaml (with reasons):
+##   no-commit-to-branch     pre-commit-stage hook; the gate
+##                           runs at push (or in CI on PR/push),
+##                           past the point this would matter.
+##   unicode-merged-ref      stages: [pre-merge-commit, manual] only.
+##   name-tests-test         dmf has no Python tests/ dir using
+##                           the enforced naming convention.
+##   file-contents-sorter    files: '^$' in the config (opt-in).
+##   sort-simple-yaml        same.
+##   fix-encoding-pragma     deprecated upstream.
+
+run_precommit_hook() {
+   local hook
+   hook="${1}"
+   shift
+   if [ "$#" -eq 0 ]; then
+      return 0
+   fi
+   "${hook}" "${@}" || fail "${hook}"
+}
+
+check_precommit_hooks() {
+   if ! command -v check-yaml >/dev/null 2>&1; then
+      note "pre-commit-hooks not on PATH; skipping (apt-get install pre-commit-hooks)"
+      return 0
+   fi
+
+   local f
+   local -a text_files exec_text_files symlink_files \
+            yaml_files json_files toml_files xml_files \
+            python_files req_files
+
+   text_files=()
+   exec_text_files=()
+   symlink_files=()
+   yaml_files=()
+   json_files=()
+   toml_files=()
+   xml_files=()
+   python_files=()
+   req_files=()
+
+   for f in "${@}"; do
+      if [ ! -e "${f}" ]; then
+         continue
+      fi
+      if [ -L "${f}" ]; then
+         symlink_files+=("${f}")
+         continue
+      fi
+      if is_text_file "${f}"; then
+         text_files+=("${f}")
+         if [ -x "${f}" ] && [ -f "${f}" ]; then
+            exec_text_files+=("${f}")
+         fi
+      fi
+      case "${f}" in
+         *.yml|*.yaml) yaml_files+=("${f}") ;;
+         *.json)       json_files+=("${f}") ;;
+         *.toml)       toml_files+=("${f}") ;;
+         *.xml)        xml_files+=("${f}") ;;
+         *.py)         python_files+=("${f}") ;;
+      esac
+      case "${f}" in
+         requirements*.txt|constraints*.txt \
+         |*/requirements*.txt|*/constraints*.txt)
+            req_files+=("${f}")
+            ;;
+      esac
+   done
+
+   ## filename-blind:
+   run_precommit_hook check-added-large-files                            "${@}"
+   run_precommit_hook check-case-conflict                                "${@}"
+   run_precommit_hook destroyed-symlinks                                 "${@}"
+   run_precommit_hook forbid-new-submodules                              "${@}"
+
+   ## text-only:
+   run_precommit_hook check-merge-conflict                               "${text_files[@]}"
+   run_precommit_hook check-vcs-permalinks                               "${text_files[@]}"
+   run_precommit_hook detect-aws-credentials --allow-missing-credentials "${text_files[@]}"
+   run_precommit_hook detect-private-key                                 "${text_files[@]}"
+   run_precommit_hook fix-byte-order-marker                              "${text_files[@]}"
+   run_precommit_hook end-of-file-fixer                                  "${text_files[@]}"
+   run_precommit_hook trailing-whitespace-fixer                          "${text_files[@]}"
+   run_precommit_hook mixed-line-ending --fix=no                         "${text_files[@]}"
+   run_precommit_hook check-shebang-scripts-are-executable               "${text_files[@]}"
+
+   ## text AND executable:
+   run_precommit_hook check-executables-have-shebangs                    "${exec_text_files[@]}"
+
+   ## symlinks:
+   run_precommit_hook check-symlinks                                     "${symlink_files[@]}"
+
+   ## type by extension:
+   run_precommit_hook check-yaml                "${yaml_files[@]}"
+   run_precommit_hook check-json                "${json_files[@]}"
+   run_precommit_hook check-toml                "${toml_files[@]}"
+   run_precommit_hook check-xml                 "${xml_files[@]}"
+   run_precommit_hook check-ast                 "${python_files[@]}"
+   run_precommit_hook check-builtin-literals    "${python_files[@]}"
+   run_precommit_hook debug-statement-hook      "${python_files[@]}"
+   run_precommit_hook double-quote-string-fixer "${python_files[@]}"
+   run_precommit_hook pretty-format-json        "${json_files[@]}"
+   run_precommit_hook requirements-txt-fixer    "${req_files[@]}"
+}
+
 main() {
    local line
    local -a shell_files yaml_files shell_or_yaml file_list
@@ -406,6 +566,7 @@ main() {
 
    if [ "${#file_list[@]}" -gt 0 ]; then
       check_ascii_files "${file_list[@]}"
+      check_precommit_hooks "${file_list[@]}"
    fi
 
    check_ascii_commit_msg
