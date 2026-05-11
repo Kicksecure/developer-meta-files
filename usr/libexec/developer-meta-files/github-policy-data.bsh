@@ -496,3 +496,37 @@ readonly POLICY_REPO_TOPICS='{
 readonly POLICY_REPO_TOPICS_ENDPOINT_REPO='/repos/__OWNER__/__REPO__/topics'
 readonly POLICY_REPO_TOPICS_METHOD='PUT'
 readonly POLICY_REPO_TOPICS_LABEL='topics'
+
+## ============================================================================
+## SOURCE-side UI-only operator flips
+## ============================================================================
+##
+## Dependabot + Code-scanning settings whose desired state is known
+## but has no documented REST setter as of 2026-05. The scripts emit
+## a `skip: ... see <URL>` line on every --apply so the operator can
+## flip each manually. All apply to SOURCE only - Dependabot is off
+## entirely on MIRROR / PERSON / BOT, so the org-level grouping and
+## per-repo auto-triage / delegated-dismissal toggles are moot
+## there. Code-scanning query-suite recommendation is harmless on
+## MIRROR but never matters there because MIRROR repos use the
+## reusable `codeql.yml` workflow (advanced setup), which carries
+## its own `queries:` value and ignores the org default-setup
+## recommendation.
+##
+## See agents/github-policy-canonical-vs-mirror.md "SOURCE-side
+## UI-only operator flips" for the per-setting rationale.
+
+readonly POLICY_GROUPED_SECURITY_UPDATES_LABEL='Dependabot grouped security updates: enable in UI (one PR per ecosystem instead of one per dep)'
+readonly POLICY_GROUPED_SECURITY_UPDATES_UI_URL='https://github.com/organizations/__ORG__/settings/security_analysis'
+
+readonly POLICY_CODE_SCANNING_QUERY_SUITE_LABEL='Code scanning: recommend security-extended query suite (default-setup repos only)'
+readonly POLICY_CODE_SCANNING_QUERY_SUITE_UI_URL='https://github.com/organizations/__ORG__/settings/security_analysis'
+
+readonly POLICY_AUTO_TRIAGE_DISMISS_DEV_LABEL='Auto-triage rule "Dismiss low-impact dev-scoped" must be OFF (security project: see every alert)'
+readonly POLICY_AUTO_TRIAGE_DISMISS_DEV_UI_URL_REPO='https://github.com/__OWNER__/__REPO__/settings/dependabot_rules'
+
+readonly POLICY_AUTO_TRIAGE_DISMISS_MALWARE_LABEL='Auto-triage rule "Dismiss package malware alerts" must be OFF (never auto-dismiss malware)'
+readonly POLICY_AUTO_TRIAGE_DISMISS_MALWARE_UI_URL_REPO='https://github.com/__OWNER__/__REPO__/settings/dependabot_rules'
+
+readonly POLICY_DELEGATED_DISMISSAL_LABEL='Prevent direct Dependabot alert dismissals (delegated dismissal): enable in UI'
+readonly POLICY_DELEGATED_DISMISSAL_UI_URL_REPO='https://github.com/__OWNER__/__REPO__/settings/security_analysis'

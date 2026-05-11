@@ -284,6 +284,27 @@ policy_skip_ui() {
    log notice "skip: ${context}: ${!label_v} - see ${url}"
 }
 
+## Per-repo variant of policy_skip_ui. Substitutes __OWNER__ and
+## __REPO__ in the URL constant; default suffix UI_URL_REPO to mirror
+## the existing ENDPOINT_REPO naming on per-repo API constants.
+policy_skip_ui_repo() {
+   local owner repo name suffix label_v url_v url
+
+   owner="$1"
+   repo="$2"
+   name="$3"
+   suffix="${4:-UI_URL_REPO}"
+
+   label_v="POLICY_${name}_LABEL"
+   url_v="POLICY_${name}_${suffix}"
+
+   url="${!url_v}"
+   url="${url//__OWNER__/${owner}}"
+   url="${url//__REPO__/${repo}}"
+
+   log notice "skip: ${owner}/${repo}: ${!label_v} - see ${url}"
+}
+
 ## ============================================================================
 ## JSON body factories
 ## ============================================================================

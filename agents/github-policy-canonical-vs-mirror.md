@@ -97,6 +97,70 @@ Everything else (fork-PR approval policy, workflow GITHUB_TOKEN
 permissions, secret scanning, rulesets) is identical content with
 only the API scope (org-level vs per-repo) differing.
 
+## SOURCE-side UI-only operator flips
+
+Dependabot and Code-scanning settings whose desired state is known
+to the policy but which have **no documented REST setter** as of
+2026-05. `dm-github-org-policy --apply` (and `--dry-run`) emits a
+`skip: ... see <URL>` log line on every SOURCE org / repo so the
+operator can complete each flip via the UI. Each setting applies
+to SOURCE only - the same toggle would be moot on MIRROR / PERSON
+/ BOT for the reasons in the right column.
+
+| Setting | Scope | Desired (SOURCE) | Why moot on MIRROR / PERSON / BOT |
+| --- | --- | --- | --- |
+| Dependabot grouped security updates | org | **on** | Dependabot off entirely; no security PRs to group |
+| Code scanning: recommend security-extended query suite | org | **on** | MIRROR repos use the reusable `codeql.yml` workflow (advanced setup), which carries its own `queries:` value and ignores the default-setup recommendation |
+| Auto-triage rule "Dismiss low-impact dev-scoped" preset | repo | **off** | Dependabot off; no alerts to triage |
+| Auto-triage rule "Dismiss package malware alerts" preset | repo | **off** | Dependabot off; no malware alerts to (not-)dismiss |
+| Delegated Dependabot alert dismissal ("Prevent direct alert dismissals") | repo | **on** | Dependabot off; no dismissals to delegate |
+
+Rationale per setting:
+
+- **Grouped security updates**: one PR per ecosystem + directory
+  bundling all available security fixes instead of one PR per
+  vulnerable dep. Org-wide UI flip applies to every SOURCE repo;
+  per-repo `dependabot.yml` `groups:` blocks override the org
+  default for finer control (see "Dependabot version updates"
+  below). One source of truth - prefer the org-level UI flip.
+
+- **Code scanning extended query suite recommendation**: nudges
+  new opt-ins toward broader coverage (default suite + lower
+  precision/severity queries). Security-focused project family
+  trades extra triage for visibility. No effect on repos using
+  advanced setup with a `queries:` value in their workflow.
+
+- **Auto-triage "Dismiss low-impact dev-scoped"**: npm-only
+  preset that auto-dismisses low-impact alerts on dev
+  dependencies. Our repo family is mostly Debian-shaped (not
+  npm) so the practical effect is small, but on principle a
+  security project sees every alert.
+
+- **Auto-triage "Dismiss package malware alerts"**: hard rule.
+  Malware alerts are the highest-signal class; never silently
+  dismiss. Cheap insurance against an accidental UI flip or an
+  inherited security configuration that turns this on.
+
+- **Delegated alert dismissal**: contributors with write access
+  must request dismissal; org owners and security managers
+  approve. Institutional gate against a single maintainer
+  silently dismissing alerts that should reach human review.
+
+## Dependabot version updates (file-driven, not a toggle)
+
+Separately, **Dependabot version updates** are off everywhere by
+default and become active only when `.github/dependabot.yml`
+exists in a repo. Recommendation: opt in per-repo, on the
+canonical SOURCE repo, where the repo has a non-trivial
+npm/pip/cargo/etc manifest worth tracking. `audit_org_state`
+already reports `dependabot.yml` have/missing counts under the
+"Dependency-Update-Tool" Scorecard heading.
+
+The same `dependabot.yml` `groups:` block (with
+`applies-to: security-updates`) is the durable, source-controlled
+form for per-repo custom grouping when the org-wide grouping
+default needs finer control.
+
 ## Potential future tightenings (not in policy yet)
 
 Surfaced during the 2026-05 GitHub web-settings sweep. Each is a
