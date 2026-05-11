@@ -14,6 +14,12 @@
 ##   GITHUB_SHA          - identifies the snapshot in Coverity
 ##   GITHUB_RUN_NUMBER   - human-readable run identifier
 ##   GITHUB_REF_NAME     - branch / tag name
+##   DRY_RUN             - optional. When 'true', pack cov-int.tgz
+##                         but skip the scan.coverity.com submission.
+##                         Useful for exercising the full pipeline
+##                         (download, verify, build, archive) without
+##                         consuming the daily submission slot. The
+##                         cov-int.tgz artifact still uploads.
 ##
 ## Cwd contract: caller runs this with the consumer repo checkout as
 ## cwd; ./cov-int/ is the build output created by the build step.
@@ -31,6 +37,16 @@ if [ "${CI:-}" != "true" ] && [ "${ALLOW_LOCAL:-}" != "true" ]; then
 fi
 
 tar -czf cov-int.tgz -- cov-int
+
+if [ "${DRY_RUN:-false}" = 'true' ]; then
+  printf '%s\n' "DRY RUN: skipping scan.coverity.com submission."
+  printf '%s\n' "  project: ${COVERITY_PROJECT}"
+  printf '%s\n' "  version: ${GITHUB_SHA:-unknown}"
+  printf '%s\n' "  description: GHA run ${GITHUB_RUN_NUMBER:-unknown} on ${GITHUB_REF_NAME:-unknown}"
+  printf '%s\n' "  archive: $(stat -c '%s' -- cov-int.tgz) bytes"
+  printf '%s\n' "cov-int.tgz still uploads via the always-upload artifact step."
+  exit 0
+fi
 
 curl \
   --silent \
