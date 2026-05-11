@@ -45,35 +45,40 @@ details_url=''
 extra=''
 declare -a rows=()
 
+die_usage() {
+   printf '%s\n' "$1" >&2
+   exit 64
+}
+
 while [ "$#" -gt 0 ]; do
    case "$1" in
       --tool)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --tool' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --tool'
          tool="$2"
          shift 2
          ;;
       --column-header)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --column-header' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --column-header'
          column_header="$2"
          shift 2
          ;;
       --row)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --row' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --row'
          rows+=( "$2" )
          shift 2
          ;;
       --total)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --total' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --total'
          total="$2"
          shift 2
          ;;
       --details-url)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --details-url' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --details-url'
          details_url="$2"
          shift 2
          ;;
       --extra)
-         [ "$#" -ge 2 ] || { printf '%s\n' 'missing value for --extra' >&2; exit 64; }
+         [ "$#" -ge 2 ] || die_usage 'missing value for --extra'
          extra="$2"
          shift 2
          ;;
@@ -82,20 +87,16 @@ while [ "$#" -gt 0 ]; do
          break
          ;;
       -h|--help)
-         sed -n -- 's/^## \{0,1\}//p' "${BASH_SOURCE[0]}"
+         sed --quiet -- 's/^## \{0,1\}//p' "${BASH_SOURCE[0]}"
          exit 0
          ;;
       *)
-         printf "unknown flag: '%s'\\n" "$1" >&2
-         exit 64
+         die_usage "unknown flag: '$1'"
          ;;
    esac
 done
 
-if [ -z "${tool}" ]; then
-   printf '%s\n' 'missing --tool' >&2
-   exit 64
-fi
+[ -n "${tool}" ] || die_usage 'missing --tool'
 
 if [ -z "${GITHUB_STEP_SUMMARY:-}" ]; then
    exit 0

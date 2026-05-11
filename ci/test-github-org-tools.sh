@@ -104,7 +104,7 @@ if [ "${fail}" -gt 0 ]; then
   done
   summary_args+=( --extra "${extra}" )
 fi
-bash -- "${SCRIPT_DIR}/step-summary-emit.sh" "${summary_args[@]}"
+"${SCRIPT_DIR}/step-summary-emit.sh" "${summary_args[@]}"
 
 if [ "${fail}" -gt 0 ]; then
   exit 1

@@ -28,15 +28,17 @@ HELPER="$(cd -- "${SCRIPT_DIR}/.." && pwd)/step-summary-emit.sh"
 
 fail=0
 tmp_summary="$(mktemp)"
+
 # shellcheck disable=SC2317  ## invoked indirectly via trap
 trap_cleanup() {
    safe-rm --force -- "${tmp_summary}"
 }
+
 trap trap_cleanup RETURN
 
 ## 1. No-op when GITHUB_STEP_SUMMARY is unset.
 true > "${tmp_summary}"
-unset_run_output="$(unset GITHUB_STEP_SUMMARY; bash -- "${HELPER}" --tool 'noop-check' --row 'a=1' 2>&1 || true)"
+unset_run_output="$(unset GITHUB_STEP_SUMMARY; "${HELPER}" --tool 'noop-check' --row 'a=1' 2>&1 || true)"
 if [ -n "${unset_run_output}" ]; then
    printf '%s\n' "FAIL[unset]: helper produced output when GITHUB_STEP_SUMMARY was unset: '${unset_run_output}'" >&2
    fail=1
@@ -48,7 +50,7 @@ fi
 
 ## 2. Happy path: emits a heading, table, total, details link, extra block.
 true > "${tmp_summary}"
-GITHUB_STEP_SUMMARY="${tmp_summary}" bash -- "${HELPER}" \
+GITHUB_STEP_SUMMARY="${tmp_summary}" "${HELPER}" \
    --tool 'sample (CI context)' \
    --column-header 'outcome' \
    --row 'passed=27' \
@@ -79,9 +81,9 @@ done
 ## 3. Multiple invocations append rather than overwrite. The second
 ## call's panel heading must coexist with the first call's heading.
 true > "${tmp_summary}"
-GITHUB_STEP_SUMMARY="${tmp_summary}" bash -- "${HELPER}" \
+GITHUB_STEP_SUMMARY="${tmp_summary}" "${HELPER}" \
    --tool 'panel-one' --row 'k=1' --total 1
-GITHUB_STEP_SUMMARY="${tmp_summary}" bash -- "${HELPER}" \
+GITHUB_STEP_SUMMARY="${tmp_summary}" "${HELPER}" \
    --tool 'panel-two' --row 'k=2' --total 2
 
 if ! grep --quiet --fixed-strings -- '## panel-one' "${tmp_summary}"; then
@@ -95,7 +97,7 @@ fi
 
 ## 4. Missing --tool exits 64.
 rc=0
-GITHUB_STEP_SUMMARY="${tmp_summary}" bash -- "${HELPER}" --row 'k=1' 2>/dev/null || rc=$?
+GITHUB_STEP_SUMMARY="${tmp_summary}" "${HELPER}" --row 'k=1' 2>/dev/null || rc=$?
 if [ "${rc}" -ne 64 ]; then
    printf '%s\n' "FAIL[no-tool]: expected exit 64 for missing --tool, got '${rc}'" >&2
    fail=1
@@ -103,7 +105,7 @@ fi
 
 ## 5. Unknown flag exits 64.
 rc=0
-GITHUB_STEP_SUMMARY="${tmp_summary}" bash -- "${HELPER}" --tool 't' --bogus 'x' 2>/dev/null || rc=$?
+GITHUB_STEP_SUMMARY="${tmp_summary}" "${HELPER}" --tool 't' --bogus 'x' 2>/dev/null || rc=$?
 if [ "${rc}" -ne 64 ]; then
    printf '%s\n' "FAIL[unknown-flag]: expected exit 64 for unknown flag, got '${rc}'" >&2
    fail=1
