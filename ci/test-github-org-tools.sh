@@ -87,5 +87,26 @@ if [ "${fail}" -gt 0 ]; then
   for fname in "${fail_names[@]}"; do
     printf '%s\n' "  - ${fname}"
   done
+fi
+
+## Emit a GitHub Actions step summary panel. step-summary-emit.sh
+## no-ops when GITHUB_STEP_SUMMARY is unset (local runs).
+summary_args=(
+  --tool 'github-org tools (mock-API tests)'
+  --column-header 'outcome'
+  --row "passed=${pass}"
+  --row "failed=${fail}"
+  --total "$(( pass + fail ))"
+)
+if [ "${fail}" -gt 0 ]; then
+  extra='Failures:'
+  for fname in "${fail_names[@]}"; do
+    extra="${extra}|- ${fname}"
+  done
+  summary_args+=( --extra "${extra}" )
+fi
+bash -- "${SCRIPT_DIR}/step-summary-emit.sh" "${summary_args[@]}"
+
+if [ "${fail}" -gt 0 ]; then
   exit 1
 fi
