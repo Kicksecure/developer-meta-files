@@ -5,17 +5,11 @@
 
 ## AI-Assisted
 
-## Append a uniform markdown panel to GitHub Actions' step summary
-## (${GITHUB_STEP_SUMMARY}). Generic across tools; one panel per
-## invocation. When GITHUB_STEP_SUMMARY is unset (local developer
-## runs), the script defaults it to /dev/null and continues - no
-## output is observable, callers can invoke unconditionally.
+## Append a markdown panel to ${GITHUB_STEP_SUMMARY}. Defaults to
+## /dev/null when unset so callers can invoke unconditionally.
 ##
-## Helper is intentionally self-contained: no helper-scripts source,
-## no R-040 log dependency. Same R-093 carve-out as agents/
-## pre-push-static.sh, since this script can be called from any
-## workflow context including ones that have not yet installed
-## helper-scripts.
+## R-093: self-contained (no helper-scripts source) so the script
+## runs from workflow steps that haven't installed helper-scripts.
 ##
 ## Usage:
 ##   ci/step-summary-emit.sh \
@@ -27,9 +21,8 @@
 ##      [--details-url 'https://...'] \
 ##      [--extra 'Failures:|- foo|- bar']
 ##
-## --row repeats; first column header defaults to 'item'. --extra is
-## a single string with '|'-separated lines (shell-flag-friendly
-## multi-line escape). Newlines inside cells are not supported.
+## --row repeats; column header defaults to 'item'. --extra is one
+## string with '|'-separated lines.
 
 set -o errexit
 set -o nounset
@@ -98,9 +91,7 @@ done
 
 [ -n "${tool}" ] || die_usage 'missing --tool'
 
-## Default to /dev/null when GITHUB_STEP_SUMMARY is unset (local
-## developer runs). Matches the project's [[ -v ]] || default
-## pattern from github-org-lib.bsh.
+## Default to /dev/null so callers invoke unconditionally.
 [[ -v GITHUB_STEP_SUMMARY ]] || GITHUB_STEP_SUMMARY='/dev/null'
 
 emit() {

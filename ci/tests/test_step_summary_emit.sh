@@ -5,8 +5,7 @@
 
 ## AI-Assisted
 
-## Test: ci/step-summary-emit.sh emits the expected markdown shape
-## when GITHUB_STEP_SUMMARY is set, and is a no-op when unset.
+## Test: step-summary-emit.sh markdown shape + flag parsing.
 
 set -o errexit
 set -o nounset

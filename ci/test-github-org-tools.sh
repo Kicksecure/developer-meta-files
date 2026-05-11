@@ -88,8 +88,7 @@ if [ "${fail}" -gt 0 ]; then
   done
 fi
 
-## Emit a GitHub Actions step summary panel. step-summary-emit.sh
-## no-ops when GITHUB_STEP_SUMMARY is unset (local runs).
+## Helper no-ops when GITHUB_STEP_SUMMARY is unset; call always.
 summary_args=(
   --tool 'github-org tools (mock-API tests)'
   --column-header 'outcome'

@@ -93,7 +93,7 @@
 ##       with:
 ##         language: c-cpp
 ##         build-mode: manual
-##         build-command: bash build.sh
+##         build-command: ./build.sh
 ##       permissions:
 ##         security-events: write
 ##         contents: read
@@ -153,8 +153,8 @@ jobs:
       contents: read
       ## Note: 'packages: read' was previously listed as a defensive
       ## default for CodeQL builds that pull from ghcr.io. None of
-      ## our consumers do (verified: kloak runs 'bash build.sh',
-      ## security-misc runs 'bash ci/codeql-build.sh' - neither
+      ## our consumers do (verified: kloak runs build.sh under bash,
+      ## security-misc runs ci/codeql-build.sh under bash - neither
       ## authenticates to ghcr.io). Add it back per-consumer if a
       ## future build step needs it.
 
