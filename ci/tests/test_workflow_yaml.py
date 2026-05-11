@@ -17,9 +17,14 @@ six rules:
   W-003 SECRETS-INHERIT      'secrets: inherit' only in the
                              documented allowlist.
   W-004 SHA-PIN              Third-party 'uses: <owner>/<repo>@
-                             <ref>' must pin to a 40-char SHA.
-                             First-party orgs and local refs are
-                             exempt.
+                             <ref>' must pin to a 40-char SHA AND
+                             carry a '# v<tag>' provenance comment.
+                             First-party orgs (org-ai-assisted,
+                             Kicksecure, Whonix) and local refs are
+                             exempt. Note: 'actions/*' (GitHub-
+                             owned) is NOT first-party; supply-chain
+                             hygiene applies to GitHub's marketplace
+                             actions too.
   W-005 PERMISSIONS-CHECKOUT If a job has a non-empty permissions
                              block AND uses actions/checkout on the
                              current repo, that block must include
@@ -59,13 +64,13 @@ SECRETS_INHERIT_ALLOWLIST = {
 
 ## First-party owners are exempt from SHA-pin (G-A-004 in
 ## agents/github-actions.md: branch-name refs are an accepted
-## single-source-of-truth pattern for our own repos).
+## single-source-of-truth pattern for our own repos). 'actions' and
+## 'github' (GitHub-owned) are NOT in this set: even GitHub's own
+## marketplace actions must be SHA-pinned per supply-chain hygiene.
 FIRST_PARTY_OWNERS = {
     "org-ai-assisted",
     "Kicksecure",
     "Whonix",
-    "actions",
-    "github",
 }
 
 ## Deprecated action refs and syntax. Map of substring -> reason.
@@ -107,13 +112,25 @@ def is_workflow_call(parsed):
     return "workflow_call" in on
 
 
+def is_composite_action(parsed):
+    runs = parsed.get("runs")
+    if not isinstance(runs, dict):
+        return False
+    return runs.get("using") == "composite"
+
+
 def find_uses_lines(text):
-    """Return [(line_no, uses_value)] for every 'uses:' line."""
+    """Return [(line_no, uses_value, tag_comment)] for every 'uses:' line.
+
+    tag_comment is the inline comment text after '#' on the same
+    line (None if no inline comment present).
+    """
     out = []
     for i, line in enumerate(text.splitlines(), 1):
-        m = re.match(r"^\s*-?\s*uses:\s*([^\s#]+)", line)
+        m = re.match(r"^\s*-?\s*uses:\s*([^\s#]+)(\s*#\s*(.+))?", line)
         if m:
-            out.append((i, m.group(1)))
+            tag = m.group(3).strip() if m.group(3) else None
+            out.append((i, m.group(1), tag))
     return out
 
 
@@ -129,21 +146,26 @@ def check_workflow(path, repo_root, findings):
         emit(findings, path, repo_root, "W-YAML", "top-level is not a mapping")
         return
 
-    is_reusable = is_workflow_call(parsed)
-    jobs = parsed.get("jobs") or {}
+    ## Composite action files (.github/actions/*/action.yml) only
+    ## have W-004 / W-006 applicable - no jobs:, no concurrency:,
+    ## no secrets. Skip workflow-only rules for them but still walk
+    ## uses: lines below.
+    if not is_composite_action(parsed):
+        is_reusable = is_workflow_call(parsed)
+        jobs = parsed.get("jobs") or {}
 
-    ## W-002 CONCURRENCY (reusables exempt)
-    if not is_reusable and "concurrency" not in parsed:
-        emit(findings, path, repo_root, "W-002", "missing top-level concurrency: block")
+        ## W-002 CONCURRENCY (reusables exempt)
+        if not is_reusable and "concurrency" not in parsed:
+            emit(findings, path, repo_root, "W-002", "missing top-level concurrency: block")
 
-    if isinstance(jobs, dict):
-        for job_id, job in jobs.items():
-            if not isinstance(job, dict):
-                continue
-            check_job(path, repo_root, findings, job_id, job)
+        if isinstance(jobs, dict):
+            for job_id, job in jobs.items():
+                if not isinstance(job, dict):
+                    continue
+                check_job(path, repo_root, findings, job_id, job)
 
     ## W-004 SHA-PIN, W-006 DEPRECATED: walk uses: lines.
-    for line_no, uses in find_uses_lines(text):
+    for line_no, uses, tag_comment in find_uses_lines(text):
         for marker, reason in DEPRECATED_MARKERS.items():
             if marker in uses:
                 emit(findings, path, repo_root, "W-006",
@@ -161,6 +183,12 @@ def check_workflow(path, repo_root, findings):
         if not SHA40.match(ref):
             emit(findings, path, repo_root, "W-004",
                  f"line {line_no}: '{uses}' - third-party action must pin to 40-char SHA, not '@{ref}'")
+            continue
+        ## SHA pinned. Now require a '# v<digit>...' provenance comment.
+        if not tag_comment or not re.match(r"^v?\d", tag_comment):
+            emit(findings, path, repo_root, "W-004",
+                 f"line {line_no}: '{uses}' - SHA pinned but missing '# v<tag>' provenance comment "
+                 f"(found: {tag_comment!r})")
 
 
 def check_job(path, repo_root, findings, job_id, job):
@@ -209,22 +237,37 @@ def check_job(path, repo_root, findings, job_id, job):
              f"REPLACE top-level (not merge), so checkout has no contents access.")
 
 
-def main(repo_root):
+def collect_target_files(repo_root):
+    """Workflows + composite-action definitions."""
+    targets = []
     workflows_dir = os.path.join(repo_root, ".github", "workflows")
-    if not os.path.isdir(workflows_dir):
-        print(f"workflow yaml validator: no .github/workflows/ directory; nothing to validate")
+    if os.path.isdir(workflows_dir):
+        for entry in sorted(os.listdir(workflows_dir)):
+            if entry.endswith(".yml") or entry.endswith(".yaml"):
+                targets.append(os.path.join(workflows_dir, entry))
+    actions_dir = os.path.join(repo_root, ".github", "actions")
+    if os.path.isdir(actions_dir):
+        for action_name in sorted(os.listdir(actions_dir)):
+            for filename in ("action.yml", "action.yaml"):
+                p = os.path.join(actions_dir, action_name, filename)
+                if os.path.isfile(p):
+                    targets.append(p)
+    return targets
+
+
+def main(repo_root):
+    targets = collect_target_files(repo_root)
+    if not targets:
+        print(f"workflow yaml validator: no workflow / composite-action files; nothing to validate")
         return 0
 
     findings = []
-    n_files = 0
-    for entry in sorted(os.listdir(workflows_dir)):
-        if not (entry.endswith(".yml") or entry.endswith(".yaml")):
-            continue
-        n_files += 1
-        check_workflow(os.path.join(workflows_dir, entry), repo_root, findings)
+    for p in targets:
+        check_workflow(p, repo_root, findings)
+    n_files = len(targets)
 
     if not findings:
-        print(f"workflow yaml validator: 0 findings across {n_files} workflow files")
+        print(f"workflow yaml validator: 0 findings across {n_files} files")
         return 0
 
     print(f"workflow yaml validator: {len(findings)} finding(s):")
