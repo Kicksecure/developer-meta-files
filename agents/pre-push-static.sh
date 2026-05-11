@@ -5,13 +5,31 @@
 
 ## AI-Assisted
 
-## Pre-push static-checks gate. Mechanically enforces the four
-## items in agents/pre-push-checklist.md "Static checks":
+## Pre-push static-checks gate. Mechanically enforces the items
+## in agents/pre-push-checklist.md "Static checks" plus a tier of
+## one-line-grep style-guide rules (Tier 1 in bash-style-guide
+## scriptability terms):
 ##   1. bash -n on every changed shell script
-##   2. shellcheck --external-sources on the same set
+##   2. shellcheck --external-sources on the same set (R-020,
+##      R-022, R-073, R-080 et al. via shellcheck's own codes)
 ##   3. LC_ALL=C grep -PlI '[^\x00-\x7F]' on changed files (R-001)
 ##   4. LC_ALL=C grep -P  '[^\x00-\x7F]' on the commit-range
 ##      message (R-001)
+##   5. R-010 strict-mode quintet present in top 30 lines
+##   6. R-011 no 'set +o errexit' toggling
+##   7. R-042 no blank-line printf/log separators
+##   8. R-051 no inline trap command strings (use named function)
+##   9. R-070 no ';;' trailing other statements on the same line
+##  10. R-081 no 'shellcheck source=/dev/null'
+##  11. R-090 'has' not 'command -v' (allowlist for documented
+##      bootstrap exceptions per R-093)
+##  12. R-102 no 'bash' / 'sh' prepend on script invocations
+##      (applies to shell + yml files)
+##  13. R-120 'safe-rm' not 'rm' (with conservative carve-outs
+##      for comments and known safe constructs)
+##  14. R-130 ':' as bare no-op placeholder on its own line
+##      (does NOT flag the ': "${var:=default}"' parameter-default
+##      idiom widely used in the codebase)
 ##
 ## Scope: files changed in HEAD vs upstream tracking branch
 ## (@{u}). Pass an explicit base ref as $1 to override
@@ -37,7 +55,27 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-base_ref="${1:-@{u}}"
+## Nested-brace expansion `${1:-@{u}}` mis-parses: bash terminates
+## the outer expansion at the first `}`, leaving a literal `}`
+## appended to the result. The no-arg case happens to reconstruct
+## `@{u}` by accident; any explicit arg gets a spurious `}` glued
+## on. Guard with a plain conditional instead.
+##
+## Hook-invocation note: when this script is wired as
+## .git/hooks/pre-push, git invokes it with `$1=<remote-name>` (e.g.
+## `origin`) and `$2=<remote-url>`. A bare remote name is NOT a
+## resolvable base ref, so we detect that case by checking against
+## `git remote` and fall back to `@{u}` (the upstream tracking
+## branch, which is the right base for "what am I about to push").
+if [ "$#" -ge 1 ] && [ -n "${1}" ]; then
+   if git remote 2>/dev/null | grep --quiet --line-regexp --fixed-strings -- "${1}"; then
+      base_ref='@{u}'
+   else
+      base_ref="${1}"
+   fi
+else
+   base_ref='@{u}'
+fi
 fail_count=0
 
 note() {
@@ -145,13 +183,192 @@ check_ascii_commit_msg() {
    printf '%s\n' "${hits}" >&2
 }
 
+## --- Tier 1 style-guide checks (single-grep, near-zero false-positive) ---
+
+emit_hits() {
+   local rule_tag hits line
+
+   rule_tag="${1}"
+   hits="${2}"
+   if [ -z "${hits}" ]; then
+      return 0
+   fi
+   while IFS= read -r line; do
+      fail "${rule_tag}" "${line}"
+   done <<< "${hits}"
+}
+
+## Some scripts (including this one) carry long-form header
+## docstrings before the strict-mode block; head -100 is generous
+## enough to accommodate them without missing the rule's intent.
+is_self_referential() {
+   case "${1}" in
+      agents/pre-push-static.sh) return 0 ;;
+   esac
+   return 1
+}
+
+check_R010_strict_quintet() {
+   local script count
+
+   for script in "${@}"; do
+      count="$(head --lines=100 -- "${script}" \
+         | grep --count --extended-regexp \
+            '^(set -o (errexit|nounset|pipefail|errtrace)|shopt -s (inherit_errexit|shift_verbose))$' \
+         || true)"
+      if [ "${count}" -lt 6 ]; then
+         fail "R-010 strict-mode quintet" "'${script}' has only ${count}/6 strict-mode lines in head -100"
+      fi
+   done
+}
+
+check_R011_errexit_toggle() {
+   local hits
+
+   hits="$(grep --line-number --extended-regexp '^[[:space:]]*set[[:space:]]+\+o[[:space:]]+errexit' -- "${@}" 2>/dev/null || true)"
+   emit_hits "R-011 errexit toggle" "${hits}"
+}
+
+## Drops self-referential files (e.g., this script) from the list
+## passed in; needed for R-042/R-051/R-081/R-102 whose grep
+## needles appear literally in this script's own doc comments
+## and/or code lines.
+filter_self() {
+   local f
+   for f in "${@}"; do
+      is_self_referential "${f}" && continue
+      printf '%s\n' "${f}"
+   done
+}
+
+check_R042_blank_logline() {
+   local hits files
+   local -a fs
+
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   ## Bad pattern: a printf or log call that produces a blank line.
+   hits="$(grep --line-number --extended-regexp \
+      "printf[[:space:]]+'%s\\\\n'[[:space:]]+\"\"[[:space:]]*\$|log[[:space:]]+notice[[:space:]]+\"\"[[:space:]]*\$" \
+      -- "${fs[@]}" 2>/dev/null || true)"
+   emit_hits "R-042 blank-line separator" "${hits}"
+}
+
+check_R051_trap_inline() {
+   local hits
+   local -a fs
+
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   ## Bad pattern: trap followed by a single-quoted inline command.
+   ## Named-function form is: trap NAME SIG (no leading quote).
+   hits="$(grep --line-number --extended-regexp "\btrap[[:space:]]+'" -- "${fs[@]}" 2>/dev/null || true)"
+   emit_hits "R-051 trap inline command" "${hits}"
+}
+
+check_R070_double_semi() {
+   local hits
+
+   ## ';;' preceded by a non-whitespace character on the same line.
+   hits="$(grep --line-number --extended-regexp '[^[:space:]];;[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
+   emit_hits "R-070 ';;' on own line" "${hits}"
+}
+
+check_R081_source_devnull() {
+   local hits
+   local -a fs
+
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   hits="$(grep --line-number 'shellcheck source=/dev/null' -- "${fs[@]}" 2>/dev/null || true)"
+   emit_hits "R-081 source=/dev/null" "${hits}"
+}
+
+check_R090_command_v() {
+   local script hits line
+
+   for script in "${@}"; do
+      ## R-093 documented bootstrap exceptions: scripts that must
+      ## run before helper-scripts/has.sh is reachable.
+      case "${script}" in
+         .github/actions/install-deps/install-helper-scripts.sh \
+         |agents/pre-push-static.sh)
+            continue
+            ;;
+      esac
+      hits="$(grep --line-number 'command -v' -- "${script}" 2>/dev/null || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-090 command -v" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
+}
+
+check_R102_interpreter_prepend() {
+   local hits
+   local -a fs
+
+   ## Run on shell + yml/yaml files; .md is excluded by caller (the
+   ## style guide itself self-cites the bad pattern as an example).
+   ## Self-filter strips this script (whose docs cite the pattern).
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   hits="$(grep --line-number --extended-regexp \
+      '\b(bash|sh)[[:space:]]+[^[:space:]]+\.(sh|bsh|bash)\b' \
+      -- "${fs[@]}" 2>/dev/null || true)"
+   emit_hits "R-102 interpreter prepend (use shebang)" "${hits}"
+}
+
+check_R120_rm() {
+   local script hits line
+
+   for script in "${@}"; do
+      ## Conservative: 'rm' as a word at start-of-line or after
+      ## whitespace, NOT preceded by 'safe-'. Excludes comments
+      ## (lines starting with optional whitespace then '#').
+      hits="$(grep --line-number --extended-regexp \
+         '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
+         -- "${script}" 2>/dev/null \
+         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]' \
+         || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-120 rm not safe-rm" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
+}
+
+check_R130_null_command() {
+   local hits
+
+   ## Bare `:` on its own line. Deliberately narrow: does NOT
+   ## catch `: "${var:=default}"` (legit parameter-default idiom
+   ## used in usr/libexec/.../github-org-lib.bsh) nor `: > file`
+   ## (truncate) -- those have trailing content past the colon.
+   hits="$(grep --line-number --extended-regexp '^[[:space:]]*:[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
+   emit_hits "R-130 bare ':' no-op" "${hits}"
+}
+
+is_yaml_file() {
+   case "${1}" in
+      *.yml|*.yaml) return 0 ;;
+   esac
+   return 1
+}
+
 main() {
    local line
-   local -a shell_files file_list
+   local -a shell_files yaml_files shell_or_yaml file_list
 
    resolve_base
 
    shell_files=()
+   yaml_files=()
+   shell_or_yaml=()
    file_list=()
    while IFS= read -r line; do
       if [ -z "${line}" ]; then
@@ -160,14 +377,31 @@ main() {
       file_list+=("${line}")
       if is_shell_file "${line}"; then
          shell_files+=("${line}")
+         shell_or_yaml+=("${line}")
+      elif is_yaml_file "${line}"; then
+         yaml_files+=("${line}")
+         shell_or_yaml+=("${line}")
       fi
    done < <(list_changed_files)
 
    if [ "${#shell_files[@]}" -gt 0 ]; then
       check_bash_n "${shell_files[@]}"
       check_shellcheck "${shell_files[@]}"
+      check_R010_strict_quintet "${shell_files[@]}"
+      check_R011_errexit_toggle "${shell_files[@]}"
+      check_R042_blank_logline "${shell_files[@]}"
+      check_R051_trap_inline "${shell_files[@]}"
+      check_R070_double_semi "${shell_files[@]}"
+      check_R081_source_devnull "${shell_files[@]}"
+      check_R090_command_v "${shell_files[@]}"
+      check_R120_rm "${shell_files[@]}"
+      check_R130_null_command "${shell_files[@]}"
    else
       note "no changed shell files"
+   fi
+
+   if [ "${#shell_or_yaml[@]}" -gt 0 ]; then
+      check_R102_interpreter_prepend "${shell_or_yaml[@]}"
    fi
 
    if [ "${#file_list[@]}" -gt 0 ]; then
