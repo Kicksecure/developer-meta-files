@@ -36,6 +36,13 @@ six rules:
   W-006 DEPRECATED           ::set-output, ::save-state, node12,
                              node16, actions/upload-artifact@v3,
                              etc.
+  W-007 DEPENDABOT-MISSING   Repo has direct third-party action SHA
+                             pins in its workflows but no
+                             .github/dependabot.yml to track bumps.
+                             Repos with zero direct refs (pure
+                             '@master'-to-dmf-reusable wrappers) are
+                             exempt - dmf's single Dependabot config
+                             propagates SHA bumps to them.
 
 Usage: python3 test_workflow_yaml.py <repo_root>
 
@@ -93,6 +100,7 @@ RULE_LEGEND = [
     ("W-004 SHA-PIN",              "third-party uses: not pinned to 40-char SHA"),
     ("W-005 PERMISSIONS-CHECKOUT", "job-level permissions drop contents: read while using actions/checkout"),
     ("W-006 DEPRECATED",           "deprecated GitHub Actions syntax / action version"),
+    ("W-007 DEPENDABOT-MISSING",   "direct third-party SHAs but no .github/dependabot.yml"),
     ("W-YAML",                     "YAML parse error"),
 ]
 
@@ -255,6 +263,40 @@ def collect_target_files(repo_root):
     return targets
 
 
+def check_dependabot(repo_root, targets, findings):
+    """W-007: if the repo has any direct third-party 'uses:' (non-
+    first-party, non-local), it must have .github/dependabot.yml.
+    Pure '@master'-to-dmf-reusable wrappers (zero direct refs)
+    are exempt - dmf's single Dependabot covers them.
+    """
+    dependabot_path = os.path.join(repo_root, ".github", "dependabot.yml")
+    if os.path.isfile(dependabot_path):
+        return
+    if os.path.isfile(os.path.join(repo_root, ".github", "dependabot.yaml")):
+        return
+
+    has_direct = False
+    for t in targets:
+        with open(t) as f:
+            for _, uses, _ in find_uses_lines(f.read()):
+                if uses.startswith("./") or uses.startswith("docker://"):
+                    continue
+                m = re.match(r"^([^/@]+)/[^@]+@(.+)$", uses)
+                if not m:
+                    continue
+                if m.group(1) not in FIRST_PARTY_OWNERS:
+                    has_direct = True
+                    break
+        if has_direct:
+            break
+
+    if has_direct:
+        findings.append(
+            f".github/dependabot.yml:W-007:repo has direct third-party action SHA pins "
+            f"but no .github/dependabot.yml; SHA bumps won't be tracked"
+        )
+
+
 def main(repo_root):
     targets = collect_target_files(repo_root)
     if not targets:
@@ -264,6 +306,7 @@ def main(repo_root):
     findings = []
     for p in targets:
         check_workflow(p, repo_root, findings)
+    check_dependabot(repo_root, targets, findings)
     n_files = len(targets)
 
     if not findings:
