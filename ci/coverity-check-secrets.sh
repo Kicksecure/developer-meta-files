@@ -19,6 +19,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
 
 ## CI guard. The Coverity workflow expects to find token/email/project
 ## in env. There is no sensible local invocation. Refuse outside CI
