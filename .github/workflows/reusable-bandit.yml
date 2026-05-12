@@ -130,8 +130,6 @@ jobs:
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-bandit-
 
       - name: Install bandit
         run: |
