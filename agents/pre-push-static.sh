@@ -385,7 +385,7 @@ check_R102_interpreter_prepend() {
    mapfile -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    hits="$(grep --line-number --extended-regexp \
-      '\\b(bash|sh)[[:space:]]+[^[:space:]]+\\.(sh|bsh|bash)\\b' \
+      '\b(bash|sh)[[:space:]]+[^[:space:]]+\.(sh|bsh|bash)\b' \
       -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-102 interpreter prepend (use shebang)" "${hits}"
 }
