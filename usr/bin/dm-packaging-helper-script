@@ -707,7 +707,8 @@ pkg_update_if_exists() {
       return 0
    fi
 
-   cp --verbose -- "${source_path}" "${destination_path}"
+   ## TODO: test
+   printf '%s\n' cp --verbose -- "${source_path}" "${destination_path}"
    ## TODO: test
    printf '%s\n' git add -- "${destination_path}"
 
@@ -1375,10 +1376,7 @@ pkg_update_consumer_workflows() {
 
    for workflow_name in "${workflow_list[@]}"; do
       source_path="${canonical_workflows_dir}/${workflow_name}"
-      if ! [ -f "${source_path}" ]; then
-         true "INFO: canonical '${source_path}' absent; skipping."
-         continue
-      fi
+      test -f "${source_path}"
       destination_path="${batch_current_package_path}/.github/workflows/${workflow_name}"
       pkg_update_if_exists \
          "${source_path}" \
