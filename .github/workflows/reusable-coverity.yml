@@ -165,80 +165,24 @@ jobs:
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
-        ## yml keys are hyphenated; $GITHUB_OUTPUT names below are
-        ## underscored, because GitHub Actions expression syntax
-        ## parses `outputs.foo-bar` as subtraction, not as a
-        ## hyphenated property reference.
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          cfg_file=".github/dm-consumer.yml"
-          if [ ! -f "${cfg_file}" ]; then
-            printf '%s\n' "error: ${cfg_file} not found; reusable-coverity requires per-repo config" >&2
-            exit 1
-          fi
-
-          ## Required keys: missing or empty -> hard error.
-          for key in project-name canonical-repos; do
-            value="$(yq -r ".coverity[\"${key}\"]" "${cfg_file}")"
-            if [ "${value}" = 'null' ] || [ -z "${value}" ]; then
-              printf '%s\n' "error: ${cfg_file} missing coverity.${key}" >&2
-              exit 1
-            fi
-            case "${value}" in
-              *$'\n'*|*$'\r'*)
-                printf '%s\n' "error: coverity.${key} contains newline; not allowed" >&2
-                exit 1
-                ;;
-            esac
-            out_name="${key//-/_}"
-            printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
-          done
-
-          ## Optional keys: missing -> empty string. Downstream
-          ## steps interpret empty as "use the reusable's
-          ## built-in default behavior" (no apt-install step,
-          ## Python-only build).
-          for key in apt-packages build-command; do
-            value="$(yq -r ".coverity[\"${key}\"] // \"\"" "${cfg_file}")"
-            case "${value}" in
-              *$'\n'*|*$'\r'*)
-                printf '%s\n' "error: coverity.${key} contains newline; not allowed" >&2
-                exit 1
-                ;;
-            esac
-            out_name="${key//-/_}"
-            printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
-          done
+        ## See ci/dm-consumer-load.sh for the schema rules
+        ## (required hard-fail, optional empty-default, newline
+        ## rejection, hyphen->underscore output naming).
+        run: .github/dmf/ci/dm-consumer-load.sh
+          coverity
+          project-name,canonical-repos
+          apt-packages,build-command
 
       - name: Canonical-repos gate
         id: gate
-        ## Step-level gate replaces the previous job-level if:
-        ## block (which referenced inputs.canonical-repos, now a
-        ## step output not visible to the job-level if:). Step
-        ## outputs are visible to subsequent steps' if: clauses.
-        ##
-        ## Strict by design: workflow_dispatch no longer bypasses
-        ## the canonical-repos check (the old reusable allowed
-        ## that bypass). A fork-side manual dispatch would burn
-        ## runner time for nothing - the org's COVERITY_SCAN_TOKEN
-        ## is not available to forks - and the upstream's quota is
-        ## now never at risk from cross-fork manual triggers.
+        ## See ci/canonical-repos-gate.sh. Step-level gate replaces
+        ## the old job-level if: (which referenced
+        ## inputs.canonical-repos, now read from dm-consumer.yml).
+        ## Strict by design: workflow_dispatch does NOT bypass.
         env:
           CANONICAL_REPOS: ${{ steps.cfg.outputs.canonical_repos }}
           THIS_REPO: ${{ github.repository }}
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          if printf ',%s,' "${CANONICAL_REPOS}" | grep -F -q ",${THIS_REPO},"; then
-            printf '%s\n' "gate: ${THIS_REPO} is canonical (in '${CANONICAL_REPOS}'); allowing" >&2
-            printf 'allowed=true\n' >> "${GITHUB_OUTPUT}"
-          else
-            printf '%s\n' "gate: ${THIS_REPO} is not canonical (canonical list: '${CANONICAL_REPOS}'); skipping expensive steps" >&2
-            printf 'allowed=false\n' >> "${GITHUB_OUTPUT}"
-          fi
+        run: .github/dmf/ci/canonical-repos-gate.sh
 
       - name: Sanity check secrets
         if: steps.gate.outputs.allowed == 'true'
