@@ -123,6 +123,38 @@ already answered authoritatively by the consumer's filesystem.
 PARAMETER values for parameterized templates, never opt-in or
 opt-out flags.
 
+## Scheduling in byte-identical templates
+
+Byte-identical propagation forbids per-repo cron-slot rewriting
+at propagation time, which collides with the per-repo cron-slot
+guidance in [`github-actions.md`](github-actions.md) G-A-002.
+Resolution: every byte-identical consumer template with
+`schedule:` - universal or parameterized - uses a uniform
+org-wide cron slot baked into the template. GitHub's cron queue
+will serialize the org-wide simultaneous fires; that contention
+is accepted.
+
+Three current examples:
+
+- `consumer-codeql-actions.yml` is cronless on purpose - push /
+  pull_request / workflow_dispatch cover the scan-on-change
+  cases, and rule-refresh re-scans are kicked manually.
+- `consumer-scorecard.yml` carries a single org-wide cron slot.
+  Scorecard's value-to-noise ratio is low (many false positives,
+  non-actionable signals); concentrating the runs at one time
+  is not worth the per-repo-rewrite complexity it would take to
+  spread them.
+- `consumer-coverity.yml` (parameterized) carries a single
+  org-wide cron slot plus tag-push triggers. Coverity's free
+  public tier rate-limits to one build per day per project, so
+  serialized fires within the queue are harmless - each project
+  is bounded by its own quota, not by the cron concentration.
+
+If a future template has stronger scheduling needs, the right
+answer is to either (a) eliminate the cron (move to
+event-triggered only), or (b) accept the uniform slot. Per-repo
+rewriting at propagation time is not a path back into scope.
+
 ## Per-repo parameters: `.github/dm-consumer.yml`
 
 Some templates need per-repo values that genuinely cannot be
@@ -136,8 +168,8 @@ Those values live in `.github/dm-consumer.yml` in each consuming
 repo. Schema:
 
     ## .github/dm-consumer.yml
-    ## Top-level keys mirror the reusable basename without
-    ## the 'reusable-' prefix.
+    ## Top-level keys mirror the consumer-template basename
+    ## without the 'consumer-' prefix.
     ## Sub-keys mirror the values the reusable consumes.
 
     coverity:
@@ -168,7 +200,176 @@ this codebase ships without `.py` extensions (genmkfile
 package-tag naming, executables with shebang lines only): the
 reusable discovers Python via shebang scan (`#!.*python` over the
 tree), not by file-extension matching, so no per-repo paths
-config is needed.
+config is needed. Note: shebang-based discovery is target
+behavior. The current `reusable-bandit.yml` matches by `.py`
+extension; the discovery rewrite is part of the same
+implementation pass as the rename, not a separate decision.
+
+## Parameter ownership across reusable inputs
+
+For every existing `workflow_call.input` touched by this
+architecture, this table classifies the input as one of:
+
+- **dm-consumer.yml**: per-repo value, read from
+  `.github/dm-consumer.yml` at workflow runtime.
+- **hardcoded in reusable**: same value org-wide; lives as the
+  reusable's `default:`. The wrapper does not override.
+- **hardcoded in wrapper**: same value across all consumers of
+  a given template, baked into the byte-identical wrapper's
+  `with:` block. Different templates calling the same reusable
+  may bake different values (e.g. `language: c-cpp` vs
+  `language: actions`).
+- **removed**: input is deleted from the reusable's
+  `workflow_call.inputs:`.
+
+Wrappers are byte-identical across their consumers, so no input
+can be "passed by the consumer wrapper to a per-repo value" -
+the only per-repo channel is `.github/dm-consumer.yml`.
+
+These categorizations describe the **byte-identical wrapper
+contract**: what consumer-template wrappers are allowed to do.
+Direct callers of a reusable from outside that contract - a
+hand-written `local-*.yml` in some repo that calls
+`reusable-coverity.yml` directly, for example - can still pass
+any inputs that remain exposed by the reusable. Values moved
+to dm-consumer.yml (the "dm-consumer.yml" category) are removed
+from `workflow_call.inputs:` entirely, so they are not
+direct-call inputs either; only the surviving
+`workflow_call.inputs` are. Categories labelled "hardcoded in
+reusable" and "hardcoded in wrapper" describe what the
+byte-identical wrapper does, not whether the reusable's input
+surface is technically overridable.
+
+### `reusable-bandit.yml` (consumer-bandit.yml is universal)
+
+- `paths`: **removed**. Discovery moves to shebang scan; no
+  per-repo path list is needed.
+- `severity-level`: **hardcoded in reusable** at the current
+  default ("medium").
+- `confidence-level`: **hardcoded in reusable** at the current
+  default ("medium").
+- `skips`: **removed**. Per-repo suppressions move to `# nosec`
+  comments in source. Open implementation question: if a real
+  use case for per-repo skip lists appears during migration,
+  promote to dm-consumer.yml at that point.
+- `prepare-command`: **removed**. Bandit does not need build
+  setup; the input is unused in practice.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (10).
+
+### `reusable-coverity.yml` (consumer-coverity.yml is parameterized)
+
+- `apt-packages`: **dm-consumer.yml** (optional; empty = no
+  apt-installs, e.g. Python-only Coverity repos).
+- `build-command`: **dm-consumer.yml** (optional; empty defers
+  to the reusable's Python helper).
+- `project-name`: **dm-consumer.yml** (required).
+- `canonical-repos`: **dm-consumer.yml** (required). The move
+  from reusable input to runtime read changes where the gate
+  runs; see "Coverity canonical-repos gate placement" below.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (30).
+- `dry-run`: **hardcoded in reusable** at `false`. No wrapper
+  override. Manual dry-runs happen in a development branch by
+  editing the wrapper temporarily; the production path never
+  submits in dry-run mode.
+
+### `reusable-cppcheck.yml` (consumer-cppcheck.yml is parameterized)
+
+- `paths`: **dm-consumer.yml** (required).
+- `enable`: **hardcoded in reusable** at the current default
+  ("warning,performance,portability"). Repos that want broader
+  scope ("style", etc.) contribute the default change; per-repo
+  override is not supported.
+- `extra-args`: **removed**. Promote to dm-consumer.yml if a
+  real need appears during migration.
+- `prepare-command`: **dm-consumer.yml** (optional). Source-tree
+  prep (generating headers, running `./configure`, copying files
+  into place) before cppcheck runs. Not the place for apt
+  installs - those would be uncached. If a real apt-deps need
+  appears, promote `cppcheck.apt-packages` to dm-consumer.yml at
+  that point with its own cache key.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (15).
+
+### `reusable-codeql.yml` (consumer-codeql-cpp.yml and consumer-codeql-actions.yml)
+
+- `language`: **hardcoded in wrapper**.
+  `consumer-codeql-cpp.yml` passes `"c-cpp"`;
+  `consumer-codeql-actions.yml` passes `"actions"`. Each template
+  is byte-identical across its consumers; the two templates
+  differ from each other by exactly this value.
+- `prepare-command`: **dm-consumer.yml** (optional), only for
+  c-cpp. `consumer-codeql-actions.yml` does not pass it.
+- `build-mode`: **hardcoded in wrapper**. `"manual"` for c-cpp;
+  `"none"` for actions.
+- `build-command`: **dm-consumer.yml** (required), only for
+  c-cpp.
+- `queries`: **hardcoded in reusable** at the current default
+  (`"security-and-quality"`).
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (30).
+
+### Coverity canonical-repos gate placement
+
+The current `reusable-coverity.yml` uses
+`inputs.canonical-repos` in `jobs.<id>.if:`, evaluated before
+any step runs. Moving `canonical-repos` into `.github/dm-consumer.yml`
+means the value becomes a step output
+(`steps.cfg.outputs.canonical_repos` - underscored, per the
+output-naming convention below), which is not available to the
+same job's `if:` - step outputs only exist after the step
+completes.
+
+Resolution: a step-level gate replaces the job-level gate. After
+the config-load step, a "canonical-repos gate" step compares
+`github.repository` against the loaded list and emits a step
+output. All expensive subsequent steps (Coverity download,
+build, submit) carry
+`if: steps.gate.outputs.allowed == 'true'`. A non-canonical run
+completes with overall status `success` (the gate step itself
+succeeds; the expensive steps are skipped). There is no
+first-class "neutral" job result for a shell-driven gate; the
+expensive-steps-skipped success state is operationally
+equivalent.
+
+This is security-relevant: the current gate prevents a fork's
+Coverity workflow from burning the upstream project's daily
+free-tier slot. The replacement preserves that property - the
+gate runs before any download or submission step, and the
+submit step's secrets path is never reached on a non-canonical
+run.
+
+Behavior change worth flagging: today's reusable's `if:`
+expression treats `workflow_dispatch` as an unconditional bypass
+of `canonical-repos` (`github.event_name == 'workflow_dispatch'
+|| inputs.canonical-repos == '' || contains(...)`). The step-
+level gate is intentionally stricter: a manual
+`workflow_dispatch` on a non-canonical repo no longer bypasses
+the gate. The forked-side maintainer doing a manual dispatch
+would have burned runner time for nothing anyway (the org's
+COVERITY_SCAN_TOKEN is not available to forks), and the
+upstream's quota is now never at risk from cross-fork manual
+triggers.
+
+Implementation detail: today's `reusable-coverity.yml` sets
+`COVERITY_TOKEN` and `COVERITY_EMAIL` in `jobs.<id>.env:` at
+job level (lines 196-199 on master at time of writing). With a
+job-level `if:` gate, this is fine - the whole job is skipped on
+a non-canonical run, env included. With a step-level gate, the
+job DOES run, so job-level env would leak the secret values into
+every step including the gate itself and any non-gated step
+before it. The rewrite must move `COVERITY_TOKEN` /
+`COVERITY_EMAIL` out of `jobs.<id>.env:` and onto the individual
+steps that need them (Coverity download / build / submit), each
+gated by `if: steps.gate.outputs.allowed == 'true'`. Otherwise
+the spec's "secrets path is never reached on a non-canonical
+run" claim is not actually true.
+
+The cost vs. the job-level gate is ~30 seconds of runner time
+per non-canonical attempt (runner spin-up + checkout +
+config-load + gate eval), which is negligible against the
+multi-hour cost of an actual Coverity build.
 
 ## Reusable-side runtime read pattern
 
@@ -177,8 +378,28 @@ The parameterized reusables (`reusable-coverity.yml`,
 include a config-load step shortly after the consumer-repo
 checkout. Reference shape:
 
+    - name: Install yq
+      ## The implementation installs Ubuntu/Debian's apt-packaged
+      ## `yq` (kislyuk's python-yq jq wrapper) and uses that
+      ## interface explicitly. The `// ""` defaults and `-r` raw
+      ## output below are written for that implementation. The
+      ## parameterized reusables should pin `runs-on: ubuntu-24.04`
+      ## (rather than `ubuntu-latest`) so this contract is not
+      ## silently broken if a future Ubuntu LTS swaps in
+      ## mikefarah/yq via the apt package.
+      run: |
+        sudo --non-interactive apt-get update --error-on=any
+        sudo --non-interactive apt-get install --yes --no-install-recommends yq
+
     - name: Load per-repo config from .github/dm-consumer.yml
       id: cfg
+      ## yml keys are hyphenated; $GITHUB_OUTPUT names below are
+      ## underscored, because GitHub Actions expression syntax
+      ## parses `outputs.foo-bar` as subtraction, not as a
+      ## hyphenated property reference. Underscored output names
+      ## let downstream steps use plain dot syntax
+      ## (`${{ steps.cfg.outputs.project_name }}`) rather than
+      ## the bracket form (`steps.cfg.outputs['project-name']`).
       run: |
         set -o errexit
         set -o nounset
@@ -188,8 +409,10 @@ checkout. Reference shape:
           printf '%s\n' "error: ${cfg_file} not found; reusable-coverity requires per-repo config" >&2
           exit 1
         fi
-        for key in apt-packages build-command project-name canonical-repos; do
-          value="$(yq ".coverity[\"${key}\"]" "${cfg_file}")"
+
+        ## Required keys: missing or empty -> hard error.
+        for key in project-name canonical-repos; do
+          value="$(yq -r ".coverity[\"${key}\"]" "${cfg_file}")"
           if [ "${value}" = 'null' ] || [ -z "${value}" ]; then
             printf '%s\n' "error: ${cfg_file} missing coverity.${key}" >&2
             exit 1
@@ -200,13 +423,37 @@ checkout. Reference shape:
               exit 1
               ;;
           esac
-          printf '%s=%s\n' "${key}" "${value}" >> "${GITHUB_OUTPUT}"
+          out_name="${key//-/_}"
+          printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
         done
 
-Subsequent steps in the reusable reference
-`${{ steps.cfg.outputs.<key> }}`. The reusable's
-`workflow_call.inputs:` block for those values goes away - they
-are discovered, not passed.
+        ## Optional keys: missing -> empty string, which downstream
+        ## steps interpret as "use the reusable's built-in default
+        ## behavior" (no apt-install step, no custom build command).
+        for key in apt-packages build-command; do
+          value="$(yq -r ".coverity[\"${key}\"] // \"\"" "${cfg_file}")"
+          case "${value}" in
+            *$'\n'*|*$'\r'*)
+              printf '%s\n' "error: coverity.${key} contains newline; not allowed" >&2
+              exit 1
+              ;;
+          esac
+          out_name="${key//-/_}"
+          printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
+        done
+
+Subsequent steps in the reusable reference the underscored
+output names, e.g. `${{ steps.cfg.outputs.project_name }}` and
+`${{ steps.cfg.outputs.canonical_repos }}`. Only the
+**dm-consumer.yml-owned** values disappear from the reusable's
+`workflow_call.inputs:` - they are discovered, not passed.
+Values classified as **hardcoded in wrapper** (e.g. codeql's
+`language`, `build-mode`) stay as `workflow_call.inputs` and ARE
+passed via `with:` from the byte-identical wrapper; values
+classified as **hardcoded in reusable** (e.g. coverity's
+`timeout-minutes`, `dry-run`) stay as `workflow_call.inputs`
+with the reusable's `default:` and are never passed by the
+wrapper.
 
 ### `$GITHUB_OUTPUT` is not a secret-masking surface
 
@@ -225,18 +472,31 @@ against `$GITHUB_OUTPUT` format injection - a value containing
 
 ## Hard-fail validation
 
-Three error classes the reusable's config-load step distinguishes:
+Each `dm-consumer.yml` key is annotated **(required)** or
+**(optional)** in the parameter-ownership table above. The
+reusable's config-load step uses those annotations to distinguish
+four error / non-error classes:
 
 1. `.github/dm-consumer.yml` not present at all - hard error,
    exit 1. The wrapper is installed but per-repo values are not
    configured.
-2. dm-consumer.yml present but missing the template's section, or
-   missing a required key within that section - hard error, exit
-   1. Print the missing path (e.g. `coverity.project-name`).
-3. dm-consumer.yml has a section for a template that is not
-   currently installed - not detected here (the reusable for an
-   uninstalled template never runs). This is the orphan-config
-   case; it does no harm.
+2. dm-consumer.yml present but missing the template's section
+   entirely - hard error, exit 1. The wrapper is installed but
+   the section that drives it is absent.
+3. Section present but missing a key annotated **(required)** -
+   hard error, exit 1. Print the missing path (e.g.
+   `coverity.project-name`).
+4. Section present but missing a key annotated **(optional)** -
+   not an error. The reusable treats the value as empty and
+   falls through to its built-in default behavior (e.g. empty
+   `coverity.apt-packages` skips the apt-install step;
+   empty `cppcheck.prepare-command` skips the source-tree prep
+   step).
+
+A dm-consumer.yml section for a template that is not currently
+installed is not detected here (the reusable for an uninstalled
+template never runs). This is the orphan-config case; it does no
+harm.
 
 Hard-fail at workflow runtime is the runtime mirror of the
 pre-`cp` validation approach we explicitly rejected (which would
@@ -246,7 +506,12 @@ workflow start beats silent drift.
 ## Wrapper shape (byte-identical example)
 
 The full `consumer-coverity.yml` template, byte-identical across
-every consumer including `developer-meta-files` itself:
+every opted-in consumer (every repo that has
+`consumer-coverity.yml` installed in its `.github/workflows/`).
+`developer-meta-files` itself does not install this template -
+the hub has no C/C++ to scan - so `consumer-coverity.yml` only
+lives in `consumer-templates/.github/workflows/` on the hub,
+never in `.github/workflows/`:
 
     ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
     ## See the file COPYING for copying conditions.
@@ -290,8 +555,14 @@ every consumer including `developer-meta-files` itself:
         permissions:
           contents: read
 
-No `with:` block on the reusable call - the reusable reads its
-own per-repo config at workflow runtime.
+No `with:` block on the reusable call in this template:
+coverity has no hardcoded-in-wrapper inputs (no language /
+build-mode analog) and every per-repo value is read by the
+reusable from `.github/dm-consumer.yml` at workflow runtime.
+Other templates may have a `with:` block - `consumer-codeql-cpp.yml`
+passes `language: c-cpp` and `build-mode: manual` because those
+are classified hardcoded-in-wrapper - and that block is itself
+byte-identical across the template's consumers.
 
 ## What this design buys
 
@@ -305,9 +576,11 @@ own per-repo config at workflow runtime.
   centralized manifest that ages out of sync.
 - Opt-in is filesystem-driven and self-documenting
   (`ls .github/workflows/` answers "what is installed here?").
-- The same propagation tool that maintains the consumer copies
-  also maintains the hub's own copies, because the hub is a
-  consumer of itself. No special-case logic for the hub.
+- The same propagation tool also maintains the hub's own
+  installed `consumer-*` copies. The hub opts into only the
+  templates that make sense for it (the universal set, no C/C++
+  templates), using the same file-presence rule as every other
+  consumer. No special-case logic for the hub.
 
 ## See also
 
