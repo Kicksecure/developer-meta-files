@@ -176,6 +176,19 @@ and [`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml
 for the live example.
 
 
+**G-A-007: Cache poisoning - no broad `restore-keys:`, no
+`pull_request_target` + cache.** `actions/cache` extracts archives
+without integrity checks; an attacker with code-exec on a workflow
+that holds `ACTIONS_RUNTIME_TOKEN` can replace cache entries
+visible to the default branch for ~6h after the run. Mitigations
+in this repo: (1) no `pull_request_target` triggers anywhere,
+(2) fork-PR guard on every PR-triggered reusable, (3) cache keys
+pinned to `hashFiles(<this workflow>)` with no catch-all
+`restore-keys:` fallback, (4) cached payloads are apt `.deb`s
+re-verified by `apt-get install` against fresh `Packages`
+metadata. See
+<https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/>.
+
 ## See also
 
 - [`docs/scorecard-known-false-positives.md`](../docs/scorecard-known-false-positives.md)

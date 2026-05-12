@@ -238,8 +238,6 @@ jobs:
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-coverity-${{ github.repository }}-
 
       - name: Install build dependencies
         if: inputs.apt-packages != ''
