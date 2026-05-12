@@ -65,13 +65,13 @@ assert_rules() {
    }
 
    actual_types="$(printf '%s' "${body}" \
-      | jq --raw-output '.rules[].type' \
+      | jq --raw-output -- '.rules[].type' \
       | sort \
-      | tr '\n' ',')"
+      | tr -- '\n' ',')"
    expected_types="$(printf '%s' "${expected_types}" \
-      | tr ',' '\n' \
+      | tr -- ',' '\n' \
       | sort \
-      | tr '\n' ',')"
+      | tr -- '\n' ',')"
 
    if [ "${actual_types}" != "${expected_types}" ]; then
       printf '%s\n' "FAIL[${label}]: rule types mismatch" >&2
@@ -115,9 +115,9 @@ assert_rules 'tag BOT' policy_tag_ruleset_body \
 ## on the safest default.
 default_body="$(policy_branch_ruleset_body "test-name" repo '[]')"
 default_types="$(printf '%s' "${default_body}" \
-   | jq --raw-output '.rules[].type' \
+   | jq --raw-output -- '.rules[].type' \
    | sort \
-   | tr '\n' ',')"
+   | tr -- '\n' ',')"
 if [ "${default_types}" != 'deletion,non_fast_forward,required_signatures,' ]; then
    printf '%s\n' 'FAIL[default]: 3-arg call did not default to SOURCE rules' >&2
    printf '%s\n' "  actual: ${default_types}" >&2
