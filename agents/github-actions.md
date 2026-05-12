@@ -132,6 +132,14 @@ queue; a new push on the same ref cancels the in-flight run.
 Right for lint, test, codeql, cppcheck, bandit, scorecard,
 claude-code-review, codex-review, build matrices.
 
+`github.ref` is unique per PR (`refs/pull/N/merge`) and per tag
+(`refs/tags/<tag>`), so a workflow file that handles both
+`pull_request:` and `push: tags: [...]` triggers gets the right
+isolation for free: different PRs do not cross-cancel, tag
+pushes do not cancel PRs, and new commits on the same PR cancel
+that PR's prior in-flight run. No event-type discriminator in
+the group key is needed for this case.
+
 **Reusable-side concurrency.** `github.workflow` inside a reusable
 resolves to the *caller's* workflow name, so a reusable that
 declares the same `${{ github.workflow }}-${{ github.ref }}` group
@@ -172,22 +180,6 @@ wrapper cancels its called workflow run, defeating the
 reusable's no-cancel guarantee. Either omit `concurrency:` at
 the wrapper level (the reusable's controls), or mirror the
 reusable's `group + cancel=false` policy explicitly.
-
-**Differentiated by event type** (cancel within event-type,
-isolate across event-types):
-
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'push' && 'tag' || 'pr' }}
-      cancel-in-progress: true
-
-Right when one workflow file serves both PR validation AND
-release-tag builds in the same file. PR pushes all share the
-`<workflow>-pr` group (latest PR push cancels older, regardless
-of which PR); tag pushes all share `<workflow>-tag` (newer tag
-supersedes); cross-event runs are isolated. So a tag push
-cannot cancel an in-flight third-party PR validation, and a PR
-push cannot cancel an in-flight 3-hour release build. Live
-example: [`derivative-maker/run_automated_builder.yml`](https://github.com/org-ai-assisted/derivative-maker/blob/master/.github/workflows/run_automated_builder.yml).
 
 **Issue-comment & PR-review-comment events** fire on the
 default branch ref, not the PR head ref - so grouping by
