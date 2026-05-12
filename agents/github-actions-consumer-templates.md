@@ -123,17 +123,18 @@ already answered authoritatively by the consumer's filesystem.
 PARAMETER values for parameterized templates, never opt-in or
 opt-out flags.
 
-## Scheduling in universal templates
+## Scheduling in byte-identical templates
 
 Byte-identical propagation forbids per-repo cron-slot rewriting
 at propagation time, which collides with the per-repo cron-slot
 guidance in [`github-actions.md`](github-actions.md) G-A-002.
-Resolution: universal templates with `schedule:` use a uniform
+Resolution: every byte-identical consumer template with
+`schedule:` - universal or parameterized - uses a uniform
 org-wide cron slot baked into the template. GitHub's cron queue
 will serialize the org-wide simultaneous fires; that contention
 is accepted.
 
-Two examples already follow this pattern:
+Three current examples:
 
 - `consumer-codeql-actions.yml` is cronless on purpose - push /
   pull_request / workflow_dispatch cover the scan-on-change
@@ -143,9 +144,14 @@ Two examples already follow this pattern:
   non-actionable signals); concentrating the runs at one time
   is not worth the per-repo-rewrite complexity it would take to
   spread them.
+- `consumer-coverity.yml` (parameterized) carries a single
+  org-wide cron slot plus tag-push triggers. Coverity's free
+  public tier rate-limits to one build per day per project, so
+  serialized fires within the queue are harmless - each project
+  is bounded by its own quota, not by the cron concentration.
 
-If a future universal template has stronger scheduling needs,
-the right answer is to either (a) eliminate the cron (move to
+If a future template has stronger scheduling needs, the right
+answer is to either (a) eliminate the cron (move to
 event-triggered only), or (b) accept the uniform slot. Per-repo
 rewriting at propagation time is not a path back into scope.
 
@@ -219,6 +225,16 @@ reusable, this table classifies the input as one of:
 Wrappers are byte-identical across their consumers, so no input
 can be "passed by the consumer wrapper to a per-repo value" -
 the only per-repo channel is `.github/dm-consumer.yml`.
+
+These categorizations describe the **byte-identical wrapper
+contract**: what consumer-template wrappers are allowed to do.
+Direct callers of a reusable from outside that contract - a
+hand-written `local-*.yml` in some repo that calls
+`reusable-coverity.yml` directly, for example - can still pass
+any `workflow_call.input` the reusable exposes. Categories
+labelled "hardcoded in reusable" and "hardcoded in wrapper"
+describe what the byte-identical wrapper does, not whether the
+reusable's input surface is technically overridable.
 
 ### `reusable-bandit.yml` (consumer-bandit.yml is universal)
 
@@ -319,6 +335,20 @@ gate runs before any download or submission step, and the
 submit step's secrets path is never reached on a non-canonical
 run.
 
+Implementation detail: today's `reusable-coverity.yml` sets
+`COVERITY_TOKEN` and `COVERITY_EMAIL` in `jobs.<id>.env:` at
+job level (lines 196-199 on master at time of writing). With a
+job-level `if:` gate, this is fine - the whole job is skipped on
+a non-canonical run, env included. With a step-level gate, the
+job DOES run, so job-level env would leak the secret values into
+every step including the gate itself and any non-gated step
+before it. The rewrite must move `COVERITY_TOKEN` /
+`COVERITY_EMAIL` out of `jobs.<id>.env:` and onto the individual
+steps that need them (Coverity download / build / submit), each
+gated by `if: steps.gate.outputs.allowed == 'true'`. Otherwise
+the spec's "secrets path is never reached on a non-canonical
+run" claim is not actually true.
+
 The cost vs. the job-level gate is ~30 seconds of runner time
 per non-canonical attempt (runner spin-up + checkout +
 config-load + gate eval), which is negligible against the
@@ -332,13 +362,12 @@ include a config-load step shortly after the consumer-repo
 checkout. Reference shape:
 
     - name: Install yq
-      ## ubuntu-latest does not ship yq. apt-get install is the
-      ## simplest path; no fallbacks (PyYAML, vendored parser) -
-      ## the reusable runs in a known-good Ubuntu environment.
-      ## Note: Debian ships Mike Farah's Go yq (since bookworm),
-      ## which differs from python-yq in flag set and default
-      ## output mode. The implementation must verify the exact
-      ## invocation against the installed package.
+      ## ubuntu-latest is currently Ubuntu 24.04, whose `yq` apt
+      ## package is kislyuk's python-yq (a jq wrapper) - not
+      ## mikefarah's Go yq. The `// ""` defaults and `-r` raw
+      ## output below are written for that implementation. If a
+      ## future runner image transitions to mikefarah/yq, the
+      ## invocation needs re-verification.
       run: |
         sudo --non-interactive apt-get update --error-on=any
         sudo --non-interactive apt-get install --yes --no-install-recommends yq
@@ -354,12 +383,28 @@ checkout. Reference shape:
           printf '%s\n' "error: ${cfg_file} not found; reusable-coverity requires per-repo config" >&2
           exit 1
         fi
-        for key in apt-packages build-command project-name canonical-repos; do
+
+        ## Required keys: missing or empty -> hard error.
+        for key in project-name canonical-repos; do
           value="$(yq -r ".coverity[\"${key}\"]" "${cfg_file}")"
           if [ "${value}" = 'null' ] || [ -z "${value}" ]; then
             printf '%s\n' "error: ${cfg_file} missing coverity.${key}" >&2
             exit 1
           fi
+          case "${value}" in
+            *$'\n'*|*$'\r'*)
+              printf '%s\n' "error: coverity.${key} contains newline; not allowed" >&2
+              exit 1
+              ;;
+          esac
+          printf '%s=%s\n' "${key}" "${value}" >> "${GITHUB_OUTPUT}"
+        done
+
+        ## Optional keys: missing -> empty string, which downstream
+        ## steps interpret as "use the reusable's built-in default
+        ## behavior" (no apt-install step, no custom build command).
+        for key in apt-packages build-command; do
+          value="$(yq -r ".coverity[\"${key}\"] // \"\"" "${cfg_file}")"
           case "${value}" in
             *$'\n'*|*$'\r'*)
               printf '%s\n' "error: coverity.${key} contains newline; not allowed" >&2
@@ -502,9 +547,11 @@ byte-identical across the template's consumers.
   centralized manifest that ages out of sync.
 - Opt-in is filesystem-driven and self-documenting
   (`ls .github/workflows/` answers "what is installed here?").
-- The same propagation tool that maintains the consumer copies
-  also maintains the hub's own copies, because the hub is a
-  consumer of itself. No special-case logic for the hub.
+- The same propagation tool also maintains the hub's own
+  installed `consumer-*` copies. The hub opts into only the
+  templates that make sense for it (the universal set, no C/C++
+  templates), using the same file-presence rule as every other
+  consumer. No special-case logic for the hub.
 
 ## See also
 
