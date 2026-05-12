@@ -513,11 +513,18 @@ audit_org_state() {
 ##       org-ai-assisted/.github/SECURITY.md; PVR would split the
 ##       inbox. DELETE /private-vulnerability-reporting runs on both
 ##       SOURCE and MIRROR every --apply.
-##   3. Per-repo branch + tag rulesets (bypass actor list pivots on
-##      org_kind): SOURCE -> POLICY_RULESET_BYPASS_SOURCE ([], no
-##      bypass); MIRROR -> POLICY_RULESET_BYPASS_MIRROR ([OrgAdmin]).
+##   3. Per-repo branch + tag rulesets (bypass actor list AND rules
+##      pivot on org_kind):
+##        SOURCE -> POLICY_RULESET_BYPASS_SOURCE ([], no bypass),
+##                  POLICY_RULESET_RULES_SOURCE (with
+##                  required_signatures).
+##        MIRROR -> POLICY_RULESET_BYPASS_MIRROR ([OrgAdmin]),
+##                  POLICY_RULESET_RULES_MIRROR (without
+##                  required_signatures - the mirror org pushes via
+##                  AI-assisted automation without a verifiable GPG
+##                  key for the bot identity).
 apply_repo_policy() {
-   local owner repo kind bypass_var
+   local owner repo kind bypass_var rules_var
 
    owner="$1"
    repo="$2"
@@ -540,11 +547,12 @@ apply_repo_policy() {
    policy_apply_repo "${owner}" "${repo}" REPO_PVR_OFF ENDPOINT
 
    bypass_var="POLICY_RULESET_BYPASS_${kind^^}"
+   rules_var="POLICY_RULESET_RULES_${kind^^}"
    policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo "${!bypass_var}")" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo "${!bypass_var}" "${!rules_var}")" \
       || true
    policy_upsert_repo_ruleset "${owner}" "${repo}" "${RULESET_NAME_TAG}" \
-      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo "${!bypass_var}")" \
+      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo "${!bypass_var}" "${!rules_var}")" \
       || true
 
    ## SOURCE-only UI-flip notices for per-repo Dependabot settings
