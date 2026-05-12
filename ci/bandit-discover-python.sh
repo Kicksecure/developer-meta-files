@@ -30,8 +30,11 @@
 ## errors. An empty Python tree is success with zero output.
 
 set -o errexit
+set -o errtrace
 set -o nounset
 set -o pipefail
+shopt -s inherit_errexit
+shopt -s shift_verbose
 
 ## Base find excludes.
 exclude_args=(

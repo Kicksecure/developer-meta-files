@@ -66,7 +66,7 @@ except ImportError:
 ## 'secrets: inherit' is permitted only on these specific
 ## workflows. Path is relative to repo_root.
 SECRETS_INHERIT_ALLOWLIST = {
-    ".github/workflows/secrets-audit.yml",
+    ".github/workflows/consumer-secrets-audit.yml",
 }
 
 ## First-party owners are exempt from SHA-pin (G-A-004 in
