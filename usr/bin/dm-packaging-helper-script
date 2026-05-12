@@ -1364,14 +1364,14 @@ pkg_update_consumer_workflows() {
 
    workflow_list=(
       bandit.yml
-      claude-code.yml
+      consumer-claude-code.yml
       consumer-codeql-actions.yml
       consumer-codeql-python.yml
       consumer-codex-review.yml
+      consumer-coverity.yml
       consumer-pre-push-static.yml
       consumer-scorecard.yml
       consumer-secrets-audit.yml
-      coverity.yml
       cppcheck.yml
    )
 
