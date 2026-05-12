@@ -1395,6 +1395,46 @@ pkg_update_consumer_workflows() {
    true
 }
 
+## Installs the canonical codeql-actions.yml consumer wrapper into
+## every repo that uses GitHub Actions (has .github/workflows/) and
+## doesn't already carry the file. INSTALL semantic, in contrast to
+## pkg_update_consumer_workflows's UPDATE-if-exists. Idempotent:
+## a re-run after rollout no-ops everywhere.
+pkg_install_codeql_actions_scan() {
+   local source_path destination_dir destination_path
+
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/codeql-actions.yml"
+   destination_dir="${batch_current_package_path}/.github/workflows"
+   destination_path="${destination_dir}/codeql-actions.yml"
+
+   if ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+      exit 1
+   fi
+
+   if ! [ -d "${destination_dir}" ]; then
+      true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if [ -f "${destination_path}" ]; then
+      true "INFO: ${batch_current_package_reponame}: codeql-actions.yml already present; skipping."
+      return 0
+   fi
+
+   cp -- "${source_path}" "${destination_path}"
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: ${FUNCNAME[0]}: nothing to commit"
+      return 0
+   fi
+
+   git commit -m "add .github/workflows/codeql-actions.yml"
+
+   true
+}
+
 ## Gets rid of all 'debian/compat' files in all repos.
 pkg_compat_delete() {
    ## `|| true` so re-runs in repos where the file was already
