@@ -1367,6 +1367,7 @@ pkg_update_consumer_workflows() {
       claude-code.yml
       codeql-actions.yml
       codex-review.yml
+      consumer-codeql-python.yml
       consumer-pre-push-static.yml
       consumer-scorecard.yml
       consumer-secrets-audit.yml
