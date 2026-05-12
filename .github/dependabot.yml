@@ -4,28 +4,27 @@
 
 ## AI-Assisted
 
-## Dependabot configuration for the org's reusable-workflow hub.
+## Managed by pkg_update_consumer_workflows / pkg_install_dependabot_yml.
+## Byte-identical across consumers; this file is `cp`-ed from
+## developer-meta-files/consumer-templates/.github/dependabot.yml.
+## DO NOT hand-edit this file in the consumer repo - changes
+## will be overwritten on the next propagation pass.
 ##
-## ## Why this is the only Dependabot config most consumer repos
-## ## need
+## Architecture docs:
+## https://github.com/org-ai-assisted/developer-meta-files/blob/master/agents/github-actions-consumer-templates.md
 ##
-## After centralizing CodeQL, Scorecard, Coverity, Claude review,
-## and Codex review into reusable workflows under
-## .github/workflows/, the action SHA pins for the whole org are
-## concentrated in this one repo. Consumer wrappers in
-## kloak/security-misc/etc. reference those reusables via
-## '@master', so a single Dependabot bump here propagates to every
-## consumer's next workflow run automatically. Consumer repos that
-## have no remaining direct action SHAs do not need their own
-## Dependabot config.
+## Carries BOTH github-actions and docker package-ecosystems even
+## in repos without Dockerfiles. The docker ecosystem only watches
+## Dockerfiles in well-known locations; in repos that have none
+## the block is a harmless no-op (no PRs opened). The uniform
+## shape across the org keeps propagation byte-identical with no
+## per-repo divergence.
 ##
-## Repos that DO still need their own dependabot.yml:
-##   helper-scripts   (lint.yml + fuzz.yml are repo-specific
-##                     workflows with direct actions/checkout SHAs)
-##   derivative-maker (dry-run.yml + run_automated_builder.yml +
-##                     lint.yml have direct SHAs; also has docker
-##                     image pins covered by package-ecosystem
-##                     'docker')
+## Note: Dependabot does NOT auto-bump container digests inside
+## workflow 'image:' lines, only Dockerfile 'FROM' lines. Workflow
+## container pins (debian:trixie@sha256:... in lint.yml etc.) need
+## manual re-pinning; see agents/github-actions-security.md for
+## the procedure.
 
 version: 2
 updates:
@@ -42,5 +41,18 @@ updates:
     ## 'open-pull-requests-limit: 1' silently drops the rest.
     groups:
       github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "ci(deps)"
+      include: scope
+    groups:
+      docker:
         patterns:
           - "*"
