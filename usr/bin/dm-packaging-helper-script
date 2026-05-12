@@ -1365,8 +1365,8 @@ pkg_update_consumer_workflows() {
    workflow_list=(
       bandit.yml
       claude-code.yml
-      codeql-actions.yml
       codex-review.yml
+      consumer-codeql-actions.yml
       consumer-codeql-python.yml
       consumer-pre-push-static.yml
       consumer-scorecard.yml
@@ -1388,7 +1388,7 @@ pkg_update_consumer_workflows() {
    true
 }
 
-## Installs the canonical codeql-actions.yml consumer wrapper into
+## Installs the canonical consumer-codeql-actions.yml consumer wrapper into
 ## every repo that uses GitHub Actions (has .github/workflows/) and
 ## doesn't already carry the file. INSTALL semantic, in contrast to
 ## pkg_update_consumer_workflows's UPDATE-if-exists. Idempotent:
@@ -1396,9 +1396,9 @@ pkg_update_consumer_workflows() {
 pkg_install_codeql_actions_scan() {
    local source_path destination_dir destination_path
 
-   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/codeql-actions.yml"
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/consumer-codeql-actions.yml"
    destination_dir="${batch_current_package_path}/.github/workflows"
-   destination_path="${destination_dir}/codeql-actions.yml"
+   destination_path="${destination_dir}/consumer-codeql-actions.yml"
 
    if ! [ -f "${source_path}" ]; then
       printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
@@ -1411,7 +1411,7 @@ pkg_install_codeql_actions_scan() {
    fi
 
    if [ -f "${destination_path}" ]; then
-      true "INFO: ${batch_current_package_reponame}: codeql-actions.yml already present; skipping."
+      true "INFO: ${batch_current_package_reponame}: consumer-codeql-actions.yml already present; skipping."
       return 0
    fi
 
@@ -1423,7 +1423,7 @@ pkg_install_codeql_actions_scan() {
       return 0
    fi
 
-   git commit -m "add .github/workflows/codeql-actions.yml"
+   git commit -m "add .github/workflows/consumer-codeql-actions.yml"
 
    true
 }
