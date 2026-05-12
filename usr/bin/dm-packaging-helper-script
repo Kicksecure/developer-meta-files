@@ -1370,7 +1370,7 @@ pkg_update_consumer_workflows() {
    workflow_list=(
       bandit.yml
       claude-code.yml
-      codeql.yml
+      codeql-actions.yml
       codex-review.yml
       coverity.yml
       cppcheck.yml
