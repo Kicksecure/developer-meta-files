@@ -1369,10 +1369,10 @@ pkg_update_consumer_workflows() {
       consumer-codeql-python.yml
       consumer-codex-review.yml
       consumer-coverity.yml
+      consumer-cppcheck.yml
       consumer-pre-push-static.yml
       consumer-scorecard.yml
       consumer-secrets-audit.yml
-      cppcheck.yml
    )
 
    for workflow_name in "${workflow_list[@]}"; do

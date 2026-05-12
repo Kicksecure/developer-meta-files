@@ -122,14 +122,14 @@ on:
 permissions:
   contents: read
 
-## Coverity Scan has a 1-build/day rate limit on the free public
-## service. cancel-in-progress=false because cancelling mid-flight
-## wastes the daily slot; parallel submissions queue server-side
-## anyway. Group is workflow-only (not workflow+ref) so only one
-## run per repo is in flight at any time across all branches/PRs.
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
+## No 'concurrency:' block - the caller's wrapper enforces the
+## singleton (`group: ${{ github.workflow }}`, `cancel-in-progress:
+## false`); declaring the same group here would cause Actions'
+## deadlock detector to fire ("Canceling since a deadlock was
+## detected for concurrency group: ..." between the top-level
+## workflow and this reusable, because `github.workflow` inside a
+## reusable resolves to the CALLER's workflow name). See
+## agents/github-actions.md G-A-006 "Reusable-side concurrency".
 
 jobs:
   coverity:
