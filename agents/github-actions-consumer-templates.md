@@ -231,10 +231,14 @@ contract**: what consumer-template wrappers are allowed to do.
 Direct callers of a reusable from outside that contract - a
 hand-written `local-*.yml` in some repo that calls
 `reusable-coverity.yml` directly, for example - can still pass
-any `workflow_call.input` the reusable exposes. Categories
-labelled "hardcoded in reusable" and "hardcoded in wrapper"
-describe what the byte-identical wrapper does, not whether the
-reusable's input surface is technically overridable.
+any inputs that remain exposed by the reusable. Values moved
+to dm-consumer.yml (the "dm-consumer.yml" category) are removed
+from `workflow_call.inputs:` entirely, so they are not
+direct-call inputs either; only the surviving
+`workflow_call.inputs` are. Categories labelled "hardcoded in
+reusable" and "hardcoded in wrapper" describe what the
+byte-identical wrapper does, not whether the reusable's input
+surface is technically overridable.
 
 ### `reusable-bandit.yml` (consumer-bandit.yml is universal)
 
@@ -312,9 +316,10 @@ The current `reusable-coverity.yml` uses
 `inputs.canonical-repos` in `jobs.<id>.if:`, evaluated before
 any step runs. Moving `canonical-repos` into `.github/dm-consumer.yml`
 means the value becomes a step output
-(`steps.cfg.outputs.canonical-repos`), which is not available
-to the same job's `if:` - step outputs only exist after the
-step completes.
+(`steps.cfg.outputs.canonical_repos` - underscored, per the
+output-naming convention below), which is not available to the
+same job's `if:` - step outputs only exist after the step
+completes.
 
 Resolution: a step-level gate replaces the job-level gate. After
 the config-load step, a "canonical-repos gate" step compares
@@ -334,6 +339,18 @@ free-tier slot. The replacement preserves that property - the
 gate runs before any download or submission step, and the
 submit step's secrets path is never reached on a non-canonical
 run.
+
+Behavior change worth flagging: today's reusable's `if:`
+expression treats `workflow_dispatch` as an unconditional bypass
+of `canonical-repos` (`github.event_name == 'workflow_dispatch'
+|| inputs.canonical-repos == '' || contains(...)`). The step-
+level gate is intentionally stricter: a manual
+`workflow_dispatch` on a non-canonical repo no longer bypasses
+the gate. The forked-side maintainer doing a manual dispatch
+would have burned runner time for nothing anyway (the org's
+COVERITY_SCAN_TOKEN is not available to forks), and the
+upstream's quota is now never at risk from cross-fork manual
+triggers.
 
 Implementation detail: today's `reusable-coverity.yml` sets
 `COVERITY_TOKEN` and `COVERITY_EMAIL` in `jobs.<id>.env:` at
@@ -362,18 +379,27 @@ include a config-load step shortly after the consumer-repo
 checkout. Reference shape:
 
     - name: Install yq
-      ## ubuntu-latest is currently Ubuntu 24.04, whose `yq` apt
-      ## package is kislyuk's python-yq (a jq wrapper) - not
-      ## mikefarah's Go yq. The `// ""` defaults and `-r` raw
-      ## output below are written for that implementation. If a
-      ## future runner image transitions to mikefarah/yq, the
-      ## invocation needs re-verification.
+      ## The implementation installs Ubuntu/Debian's apt-packaged
+      ## `yq` (kislyuk's python-yq jq wrapper) and uses that
+      ## interface explicitly. The `// ""` defaults and `-r` raw
+      ## output below are written for that implementation. The
+      ## parameterized reusables should pin `runs-on: ubuntu-24.04`
+      ## (rather than `ubuntu-latest`) so this contract is not
+      ## silently broken if a future Ubuntu LTS swaps in
+      ## mikefarah/yq via the apt package.
       run: |
         sudo --non-interactive apt-get update --error-on=any
         sudo --non-interactive apt-get install --yes --no-install-recommends yq
 
     - name: Load per-repo config from .github/dm-consumer.yml
       id: cfg
+      ## yml keys are hyphenated; $GITHUB_OUTPUT names below are
+      ## underscored, because GitHub Actions expression syntax
+      ## parses `outputs.foo-bar` as subtraction, not as a
+      ## hyphenated property reference. Underscored output names
+      ## let downstream steps use plain dot syntax
+      ## (`${{ steps.cfg.outputs.project_name }}`) rather than
+      ## the bracket form (`steps.cfg.outputs['project-name']`).
       run: |
         set -o errexit
         set -o nounset
@@ -397,7 +423,8 @@ checkout. Reference shape:
               exit 1
               ;;
           esac
-          printf '%s=%s\n' "${key}" "${value}" >> "${GITHUB_OUTPUT}"
+          out_name="${key//-/_}"
+          printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
         done
 
         ## Optional keys: missing -> empty string, which downstream
@@ -411,7 +438,8 @@ checkout. Reference shape:
               exit 1
               ;;
           esac
-          printf '%s=%s\n' "${key}" "${value}" >> "${GITHUB_OUTPUT}"
+          out_name="${key//-/_}"
+          printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
         done
 
 Subsequent steps in the reusable reference
