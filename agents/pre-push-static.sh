@@ -353,11 +353,13 @@ check_R120_rm() {
    for script in "${@}"; do
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
-      ## (lines starting with optional whitespace then '#').
+      ## (lines starting with optional whitespace then '#') and the
+      ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
+      ## remote rm).
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
-         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]' \
+         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]|git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]' \
          || true)"
       if [ -z "${hits}" ]; then
          continue

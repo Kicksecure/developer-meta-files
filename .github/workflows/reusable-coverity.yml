@@ -213,7 +213,7 @@ jobs:
           persist-credentials: false
 
       - name: Sanity check secrets
-        run: bash .github/dmf/ci/coverity-check-secrets.sh
+        run: .github/dmf/ci/coverity-check-secrets.sh
 
       ## actions/cache runs as the unprivileged runner user; the
       ## default /var/cache/apt/archives is root-owned. Take
@@ -238,8 +238,6 @@ jobs:
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-coverity-${{ github.repository }}-
 
       - name: Install build dependencies
         if: inputs.apt-packages != ''
@@ -249,11 +247,11 @@ jobs:
             ${{ inputs.apt-packages }}
 
       - name: Download Coverity Build Tool
-        run: bash .github/dmf/ci/coverity-download.sh
+        run: .github/dmf/ci/coverity-download.sh
 
       - name: Run Coverity build (Python default)
         if: inputs.build-command == ''
-        run: bash .github/dmf/ci/coverity-build-python.sh
+        run: .github/dmf/ci/coverity-build-python.sh
 
       - name: Run Coverity build (caller-supplied)
         if: inputs.build-command != ''
@@ -266,7 +264,7 @@ jobs:
       - name: Submit to Coverity Scan
         env:
           DRY_RUN: ${{ inputs.dry-run }}
-        run: bash .github/dmf/ci/coverity-submit.sh
+        run: .github/dmf/ci/coverity-submit.sh
 
       - name: Upload cov-int artifact (always)
         if: always()

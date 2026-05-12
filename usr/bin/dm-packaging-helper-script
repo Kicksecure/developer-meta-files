@@ -9,6 +9,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
@@ -677,6 +678,50 @@ set_batch_current_package_remote_list() {
    fi
 }
 
+## Replaces the destination file with the source file only if the
+## destination already exists. Skips silently when absent. Stages
+## and commits with "update <basename>" as the default message; the
+## optional third arg overrides it.
+pkg_update_if_exists() {
+   local source_path destination_path commit_msg destination_basename
+
+   source_path="${1:-}"
+   destination_path="${2:-}"
+   commit_msg="${3:-}"
+
+   if [ -z "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty source_path parameter provided!${reset}"
+      exit 1
+   elif [ -z "${destination_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty destination_path parameter provided!${reset}"
+      exit 1
+   elif ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: source_path '${source_path}' does not exist!${reset}"
+      exit 1
+   fi
+
+   if ! [ -f "${destination_path}" ]; then
+      true "INFO: '${destination_path}' does not exist; skipping update."
+      return 0
+   fi
+
+   cp -- "${source_path}" "${destination_path}"
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: '${destination_path}' already up to date; nothing to commit."
+      return 0
+   fi
+
+   if [ -z "${commit_msg}" ]; then
+      destination_basename="${destination_path##*/}"
+      commit_msg="update ${destination_basename}"
+   fi
+   git commit -m "${commit_msg}"
+
+   true
+}
+
 ## internal_git_diff_local and internal_git_diff_remote are defined
 ## in /usr/libexec/developer-meta-files/git-helpers.bsh (sourced
 ## above). pkg_git_push_remotes selects between them via its
@@ -1299,6 +1344,93 @@ pkg_copy_contributing_file() {
    cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
    git add -- "${batch_current_package_path}/CONTRIBUTING.md"
    git commit -m "update"
+
+   true
+}
+
+## Bulk variant of pkg_update_if_exists: iterates a fixed set of
+## consumer-wrapper filenames against canonical_workflows_dir
+## (passed as the first batch-command argument). Source absence
+## logs and skips; destination absence is silently skipped by
+## pkg_update_if_exists.
+pkg_update_consumer_workflows() {
+   local canonical_workflows_dir workflow_name source_path destination_path
+   local -a workflow_list
+
+   canonical_workflows_dir="${1:-}"
+
+   if [ -z "${canonical_workflows_dir}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty canonical_workflows_dir parameter provided!${reset}"
+      exit 1
+   elif ! [ -d "${canonical_workflows_dir}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical_workflows_dir '${canonical_workflows_dir}' is not a directory!${reset}"
+      exit 1
+   fi
+
+   workflow_list=(
+      bandit.yml
+      claude-code.yml
+      codeql-actions.yml
+      codex-review.yml
+      coverity.yml
+      cppcheck.yml
+      pre-push-static.yml
+      scorecard.yml
+      secrets-audit.yml
+   )
+
+   for workflow_name in "${workflow_list[@]}"; do
+      source_path="${canonical_workflows_dir}/${workflow_name}"
+      if ! [ -f "${source_path}" ]; then
+         true "INFO: canonical '${source_path}' absent; skipping."
+         continue
+      fi
+      destination_path="${batch_current_package_path}/.github/workflows/${workflow_name}"
+      pkg_update_if_exists \
+         "${source_path}" \
+         "${destination_path}" \
+         "update .github/workflows/${workflow_name}"
+   done
+
+   true
+}
+
+## Installs the canonical codeql-actions.yml consumer wrapper into
+## every repo that uses GitHub Actions (has .github/workflows/) and
+## doesn't already carry the file. INSTALL semantic, in contrast to
+## pkg_update_consumer_workflows's UPDATE-if-exists. Idempotent:
+## a re-run after rollout no-ops everywhere.
+pkg_install_codeql_actions_scan() {
+   local source_path destination_dir destination_path
+
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/codeql-actions.yml"
+   destination_dir="${batch_current_package_path}/.github/workflows"
+   destination_path="${destination_dir}/codeql-actions.yml"
+
+   if ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+      exit 1
+   fi
+
+   if ! [ -d "${destination_dir}" ]; then
+      true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if [ -f "${destination_path}" ]; then
+      true "INFO: ${batch_current_package_reponame}: codeql-actions.yml already present; skipping."
+      return 0
+   fi
+
+   cp -- "${source_path}" "${destination_path}"
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: ${FUNCNAME[0]}: nothing to commit"
+      return 0
+   fi
+
+   git commit -m "add .github/workflows/codeql-actions.yml"
 
    true
 }

@@ -4,14 +4,9 @@
 
 ## AI-Assisted
 
-## Self-consumer wrapper. Calls the Scorecard reusable defined in
-## this same repo via local-path './...' rather than the cross-repo
-## '@master' form used by other consumers - so a PR modifying the
-## reusable exercises its own changes during the PR's CI run
-## (dogfooding) instead of running the master version.
-##
-## Docs (caller responsibilities, inputs, secrets) live in the
-## reusable: .github/workflows/reusable-scorecard.yml
+## Consumer wrapper. Docs (caller responsibilities, inputs,
+## secrets) live in the reusable:
+## https://github.com/org-ai-assisted/developer-meta-files/blob/master/.github/workflows/reusable-scorecard.yml
 
 name: Scorecard
 
@@ -38,7 +33,7 @@ concurrency:
 
 jobs:
   scorecard:
-    uses: ./.github/workflows/reusable-scorecard.yml
+    uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-scorecard.yml@master
     permissions:
       security-events: write
       contents: read

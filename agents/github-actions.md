@@ -90,8 +90,10 @@ per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
 
 **G-A-006: Concurrency policy - cancellable by default, singleton
-for quota-limited / release-pipeline.** Every workflow declares a
-top-level `concurrency:` block. Two patterns:
+for quota-limited / release-pipeline.** Every top-level workflow
+declares a top-level `concurrency:` block (reusables follow
+different rules - see "Reusable-side concurrency" below). Two
+patterns:
 
 **Cancellable** (default for CI):
 
@@ -103,6 +105,23 @@ Group includes `github.ref` so each branch / PR has its own
 queue; a new push on the same ref cancels the in-flight run.
 Right for lint, test, codeql, cppcheck, bandit, scorecard,
 claude-code-review, codex-review, build matrices.
+
+**Reusable-side concurrency.** `github.workflow` inside a reusable
+resolves to the *caller's* workflow name, so a reusable that
+declares the same `${{ github.workflow }}-${{ github.ref }}` group
+as its caller produces an identical lock name; Actions surfaces
+this as `Canceling since a deadlock was detected for concurrency
+group: ...` and cancels the run. Reusables therefore either omit
+`concurrency:` entirely (the caller's cancellable group covers it
+- see [`reusable-pre-push-static.yml`](../.github/workflows/reusable-pre-push-static.yml),
+[`reusable-secrets-audit.yml`](../.github/workflows/reusable-secrets-audit.yml),
+[`reusable-scorecard.yml`](../.github/workflows/reusable-scorecard.yml),
+[`reusable-bandit.yml`](../.github/workflows/reusable-bandit.yml),
+[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml))
+or differentiate the group key with a per-call input the caller
+doesn't replicate ([`reusable-codeql.yml`](../.github/workflows/reusable-codeql.yml)
+adds `${{ inputs.language }}`; the AI-review reusables add a
+PR/issue-number disambiguator - see Issue-comment paragraph below).
 
 **Singleton** (cancel=false, workflow-only group):
 
@@ -156,6 +175,19 @@ See [`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-cod
 and [`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml)
 for the live example.
 
+
+**G-A-007: Cache poisoning - no broad `restore-keys:`, no
+`pull_request_target` + cache.** `actions/cache` extracts archives
+without integrity checks; an attacker with code-exec on a workflow
+that holds `ACTIONS_RUNTIME_TOKEN` can replace cache entries
+visible to the default branch for ~6h after the run. Mitigations
+in this repo: (1) no `pull_request_target` triggers anywhere,
+(2) fork-PR guard on every PR-triggered reusable, (3) cache keys
+pinned to `hashFiles(<this workflow>)` with no catch-all
+`restore-keys:` fallback, (4) cached payloads are apt `.deb`s
+re-verified by `apt-get install` against fresh `Packages`
+metadata. See
+<https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/>.
 
 ## See also
 

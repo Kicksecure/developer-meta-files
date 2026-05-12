@@ -3,10 +3,9 @@
 
 ## AI-Assisted
 
-## Consumer wrapper for reusable-pre-push-static.yml. Dogfoods the
-## reusable on developer-meta-files itself: every PR (and every
-## push to master) runs the same Tier-1 style-guide + ASCII gate
-## that the local hook (when installed) runs pre-push.
+## Consumer wrapper for reusable-pre-push-static.yml. Every PR
+## (and every push to master) runs the same Tier-1 style-guide +
+## ASCII gate that the local hook (when installed) runs pre-push.
 
 name: pre-push static gate
 
@@ -25,4 +24,4 @@ concurrency:
 
 jobs:
   gate:
-    uses: ./.github/workflows/reusable-pre-push-static.yml
+    uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-pre-push-static.yml@master
