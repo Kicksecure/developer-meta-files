@@ -164,11 +164,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Checkout developer-meta-files (ci/ helpers + step-summary)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
       - name: Install yq
         if: inputs.dm-consumer-section != ''
-        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
-        ## `// ""` defaults and `-r` raw output below are written
-        ## for that implementation.
+        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper, which
+        ## ci/dm-consumer-load.sh (via codeql-load-config.sh)
+        ## expects.
         run: |
           sudo --non-interactive apt-get update --error-on=any
           sudo --non-interactive apt-get install --yes --no-install-recommends yq
@@ -179,60 +187,9 @@ jobs:
         env:
           DM_SECTION: ${{ inputs.dm-consumer-section }}
           BUILD_MODE: ${{ inputs.build-mode }}
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          cfg_file=".github/dm-consumer.yml"
-
-          ## Soft-skip when the file is absent or the section is
-          ## missing - unless build-mode=manual (which strictly
-          ## requires build-command from the named section).
-          if [ ! -f "${cfg_file}" ]; then
-            if [ "${BUILD_MODE}" = 'manual' ]; then
-              printf '%s\n' "error: ${cfg_file} not found; build-mode=manual requires ${DM_SECTION}.build-command" >&2
-              exit 1
-            fi
-            printf 'prepare_command=\n' >> "${GITHUB_OUTPUT}"
-            printf 'build_command=\n' >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-
-          section_present=$(yq -r ".\"${DM_SECTION}\" // \"\"" "${cfg_file}")
-          if [ -z "${section_present}" ] || [ "${section_present}" = 'null' ]; then
-            if [ "${BUILD_MODE}" = 'manual' ]; then
-              printf '%s\n' "error: ${cfg_file} missing section ${DM_SECTION}; build-mode=manual requires ${DM_SECTION}.build-command" >&2
-              exit 1
-            fi
-            printf 'prepare_command=\n' >> "${GITHUB_OUTPUT}"
-            printf 'build_command=\n' >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-
-          ## build-command: required iff build-mode=manual.
-          bc=$(yq -r ".\"${DM_SECTION}\".\"build-command\" // \"\"" "${cfg_file}")
-          case "${bc}" in
-            *$'\n'*|*$'\r'*)
-              printf '%s\n' "error: ${DM_SECTION}.build-command contains newline; not allowed" >&2
-              exit 1
-              ;;
-          esac
-          if [ "${BUILD_MODE}" = 'manual' ] && [ -z "${bc}" ]; then
-            printf '%s\n' "error: ${cfg_file} missing ${DM_SECTION}.build-command (required when build-mode=manual)" >&2
-            exit 1
-          fi
-          printf 'build_command=%s\n' "${bc}" >> "${GITHUB_OUTPUT}"
-
-          ## prepare-command: always optional. Empty -> Prepare
-          ## source tree step skipped.
-          pc=$(yq -r ".\"${DM_SECTION}\".\"prepare-command\" // \"\"" "${cfg_file}")
-          case "${pc}" in
-            *$'\n'*|*$'\r'*)
-              printf '%s\n' "error: ${DM_SECTION}.prepare-command contains newline; not allowed" >&2
-              exit 1
-              ;;
-          esac
-          printf 'prepare_command=%s\n' "${pc}" >> "${GITHUB_OUTPUT}"
+        ## See ci/codeql-load-config.sh (build-mode=manual makes
+        ## build-command required; otherwise optional).
+        run: .github/dmf/ci/codeql-load-config.sh
 
       ## Pre-init hook - source-tree prep that the extractor must
       ## see. Skipped when dm-consumer.yml.<section>.prepare-command
@@ -262,15 +219,6 @@ jobs:
         uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
         with:
           category: "/language:${{ inputs.language }}"
-
-      - name: Checkout developer-meta-files (step-summary helper)
-        if: always()
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
-          path: .github/dmf
-          persist-credentials: false
 
       - name: Emit step summary
         if: always()

@@ -87,6 +87,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Checkout developer-meta-files (ci/ helpers + step-summary)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          path: .github/dmf
+          persist-credentials: false
+
       - name: Prepare apt cache directory
         run: |
           sudo mkdir -p /var/cache/apt/archives
@@ -99,9 +107,8 @@ jobs:
           key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles('.github/workflows/reusable-cppcheck.yml') }}
 
       - name: Install cppcheck + yq
-        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
-        ## `// ""` defaults and `-r` raw output in the next step
-        ## are written for that implementation.
+        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper, which
+        ## ci/dm-consumer-load.sh expects.
         run: |
           sudo --non-interactive apt-get update --error-on=any
           sudo --non-interactive apt-get install --yes --no-install-recommends \
@@ -109,48 +116,11 @@ jobs:
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
-        ## yml keys are hyphenated; $GITHUB_OUTPUT names below are
-        ## underscored (GitHub Actions expression syntax parses
-        ## `outputs.foo-bar` as subtraction).
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          cfg_file=".github/dm-consumer.yml"
-          if [ ! -f "${cfg_file}" ]; then
-            printf '%s\n' "error: ${cfg_file} not found; reusable-cppcheck requires per-repo config" >&2
-            exit 1
-          fi
-
-          ## Required keys.
-          for key in paths; do
-            value="$(yq -r ".cppcheck[\"${key}\"]" "${cfg_file}")"
-            if [ "${value}" = 'null' ] || [ -z "${value}" ]; then
-              printf '%s\n' "error: ${cfg_file} missing cppcheck.${key}" >&2
-              exit 1
-            fi
-            case "${value}" in
-              *$'\n'*|*$'\r'*)
-                printf '%s\n' "error: cppcheck.${key} contains newline; not allowed" >&2
-                exit 1
-                ;;
-            esac
-            out_name="${key//-/_}"
-            printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
-          done
-
-          ## Optional keys: missing -> empty string.
-          for key in prepare-command; do
-            value="$(yq -r ".cppcheck[\"${key}\"] // \"\"" "${cfg_file}")"
-            case "${value}" in
-              *$'\n'*|*$'\r'*)
-                printf '%s\n' "error: cppcheck.${key} contains newline; not allowed" >&2
-                exit 1
-                ;;
-            esac
-            out_name="${key//-/_}"
-            printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
-          done
+        ## See ci/dm-consumer-load.sh for schema rules.
+        run: .github/dmf/ci/dm-consumer-load.sh
+          cppcheck
+          paths
+          prepare-command
 
       - name: Prepare source tree
         if: steps.cfg.outputs.prepare_command != ''
@@ -189,15 +159,6 @@ jobs:
             --error-exitcode=2 \
             --quiet \
             ${CPPCHECK_PATHS}
-
-      - name: Checkout developer-meta-files (step-summary helper)
-        if: always()
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
-        with:
-          repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
-          path: .github/dmf
-          persist-credentials: false
 
       - name: Emit step summary
         if: always()
