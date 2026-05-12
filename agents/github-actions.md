@@ -12,30 +12,56 @@ the trigger schedule + cron slot + a tiny `jobs.<id>.uses:` line.
 
 ### File-naming convention (G-A-005)
 
-**Reusable filenames carry a `reusable-` prefix; consumer-wrapper
-filenames don't.** Examples:
+**Three filename prefixes mark workflow role: `reusable-`,
+`consumer-`, `local-`.** Examples:
 
-    .github/workflows/reusable-codeql.yml         (reusable)
-    .github/workflows/codeql.yml                  (consumer wrapper)
+    .github/workflows/reusable-codeql.yml           (library)
+    .github/workflows/consumer-codeql-actions.yml   (consumer wrapper)
+    .github/workflows/local-test-build.yml          (repo-private)
 
-This:
+- `reusable-X.yml`: library code called via `uses:`. Lives only in
+  `developer-meta-files/.github/workflows/`. Never propagated. The
+  path is fixed by GitHub Actions' cross-repo `uses:` resolution;
+  the prefix is what disambiguates library from wrapper inside
+  this single directory.
+- `consumer-X.yml`: thin wrapper around a reusable. Single source
+  of truth lives at
+  `developer-meta-files/consumer-templates/.github/workflows/consumer-X.yml`.
+  Propagated byte-identical to every opted-in consumer (including
+  `developer-meta-files` itself, which is a consumer of itself).
+  Hand-editing on the consumer side is wrong - changes get
+  overwritten on the next propagation pass. See
+  [`github-actions-consumer-templates.md`](github-actions-consumer-templates.md)
+  for the architecture spec, including the `cp`-only propagation
+  contract and the runtime-read mechanism for per-repo parameters.
+- `local-X.yml`: workflow that lives only in the repo it is
+  authored for; never propagated. Use this for repo-specific
+  build/test workflows (e.g. `local-firewall-tests.yml` in
+  whonix-firewall, `local-test-build.yml` in derivative-maker)
+  and for hub-private workflows in `developer-meta-files`
+  (`local-org-policy-live-probe.yml`,
+  `local-org-tools-mock-tests.yml`).
 
-- Lets developer-meta-files self-consume its own reusables under
-  the bare consumer name (`scorecard.yml` callers `./.github/
-  workflows/reusable-scorecard.yml`) without inventing per-file
-  workaround suffixes (`-self`, etc.).
-- Makes the consumer / reusable distinction visible in the file
-  list at a glance - critical when a single repo holds both kinds
-  (developer-meta-files does; helper-scripts/kloak/etc. only hold
-  consumers).
-- Matches the convention several large orgs use internally
-  (`reusable-*` is more searched-for than `_*` underscore prefix
-  alternatives, per the survey logged with the rename PR).
+The prefix is a filesystem signal only. GitHub's Actions UI
+sidebar sorts by the workflow's in-file `name:` field, so a file
+named `consumer-codeql-actions.yml` carrying `name: CodeQL Actions`
+shows up in the UI as "CodeQL Actions" with no prefix visible.
 
-This eliminates per-repo duplication of action SHA pins and step
-bodies. Updating an action SHA on the reusable propagates to all
-consumers automatically (when consumers `@master`-track) or via one
-sha-bump PR per consumer (when consumers `@<sha>`-pin).
+The scheme buys two properties:
+
+- One glance at `ls .github/workflows/` tells a contributor which
+  files they can hand-edit (`local-*`) and which are auto-managed
+  by propagation (`consumer-*`) and which are library code called
+  by `uses:` (`reusable-*`).
+- A repo that holds a mix (`developer-meta-files` holds all three;
+  most consumer repos hold `consumer-*` and `local-*` only)
+  presents that mix legibly.
+
+Eliminating per-repo duplication of action SHA pins and step
+bodies is the underlying win. Updating an action SHA on the
+reusable propagates to all consumers automatically (when consumers
+`@master`-track) or via one sha-bump PR per consumer (when
+consumers `@<sha>`-pin).
 
 ### Constraints to remember
 
