@@ -1,4 +1,3 @@
----
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
@@ -15,85 +14,96 @@
 ## github/codeql-action - first-party. Same trust scope as
 ## actions/checkout, which we already use across the org.
 ##
+## ## Per-repo configuration: .github/dm-consumer.yml (optional)
+##
+## When a caller passes `dm-consumer-section: <section>`, the
+## reusable reads the named section from .github/dm-consumer.yml
+## at workflow runtime. Schema per language:
+##
+##   codeql-python:
+##     prepare-command: "<bash invocation>"   # optional
+##
+##   codeql-cpp:
+##     prepare-command: "<bash invocation>"   # optional
+##     build-command:   "<bash invocation>"   # required (build-mode=manual)
+##
+## When `dm-consumer-section` is empty (the universal case for
+## consumer-codeql-actions.yml), the reusable does NOT read
+## dm-consumer.yml and does not run the prepare / manual-build
+## steps. Same applies when the file or named section is absent
+## and build-mode is not 'manual' - the steps soft-skip. The
+## reusable only HARD-FAILs when build-mode=manual and
+## build-command is missing.
+##
 ## ## Caller responsibilities
 ##
-## - Define the trigger (push/pull_request/schedule). Schedule cannot
-##   live in a reusable workflow per GitHub Actions; pick a cron slot
-##   that does not collide with other repos in the org. (Current CodeQL
-##   slot allocation: helper-scripts '17 4 * * 0', kloak '25 3 * * 5'.)
-## - Call this reusable once per language. Multi-language repos add
-##   one job per language - GitHub Actions does not let a reusable
-##   workflow expose its own matrix to the caller in a way the caller
-##   can iterate cleanly.
-## - Hardcode the owner in 'jobs.<id>.uses:'. GitHub Actions does NOT
-##   allow the github.* context there (only inputs/vars/needs/matrix);
-##   ${{ github.repository_owner }}/... fails workflow load with
-##   'Unrecognized named-value: github'. See
-##   agents/github-actions.md G-A-001.
+## - Define the trigger (push/pull_request/schedule/workflow_dispatch).
+##   Schedule cannot live in a reusable workflow per G-A-002.
+## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+## - For c-cpp consumers: author `.github/dm-consumer.yml` with the
+##   `codeql-cpp.build-command` (required when build-mode=manual).
+## - For python consumers needing pre-CodeQL source-tree prep (e.g.
+##   symlinks for genmkfile-tagged '*.py#tag' files): author
+##   `.github/dm-consumer.yml` with `codeql-python.prepare-command`.
 ##
 ## ## Inputs
 ##
-## - language         (required)  CodeQL language id: python, c-cpp,
-##                                java-kotlin, javascript-typescript,
-##                                go, ruby, swift, csharp, actions, ...
-## - prepare-command  (optional)  Bash run AFTER checkout but BEFORE
-##                                CodeQL init. Use for source-tree
-##                                manipulation that the init step
-##                                must see (file renames/symlinks for
-##                                the python/javascript extractors,
-##                                codegen, vendoring). Default: empty.
-## - build-mode       (optional)  none | autobuild | manual.
-##                                Default: 'none' (analysis only -
-##                                works for interpreted languages and
-##                                for compiled languages where CodeQL
-##                                can extract from the source tree
-##                                without a compile pass).
-## - build-command    (optional)  Bash invoked when build-mode ==
-##                                manual. Default: empty (caller must
-##                                supply if build-mode is manual).
-## - queries          (optional)  CodeQL query suite. Default
-##                                'security-and-quality' for broader
-##                                coverage; pass 'security-extended'
-##                                or leave to switch to security-only.
-## - timeout-minutes  (optional)  Job timeout. Default 30.
+## - language              (required)  CodeQL language id: actions,
+##                                     c-cpp, python, ...
+## - build-mode            (optional)  none | autobuild | manual.
+##                                     Default 'none'. Use 'manual'
+##                                     for c-cpp; pair with
+##                                     codeql-cpp.build-command in
+##                                     dm-consumer.yml.
+## - queries               (optional)  CodeQL query suite. Default
+##                                     'security-and-quality'.
+## - dm-consumer-section   (optional)  Name of the section in
+##                                     .github/dm-consumer.yml to
+##                                     read per-repo prepare-command /
+##                                     build-command from. Empty
+##                                     disables the runtime read.
+##                                     Hardcoded in each consumer
+##                                     wrapper:
+##                                       consumer-codeql-actions.yml: ''
+##                                       consumer-codeql-python.yml: 'codeql-python'
+##                                       consumer-codeql-cpp.yml:     'codeql-cpp'
 ##
-## ## Caller example (single language)
+## ## Caller examples - byte-identical consumer wrappers
 ##
-##   name: CodeQL
-##   on:
-##     push:
-##       branches: [master]
-##     pull_request:
-##       branches: [master]
-##     schedule:
-##       - cron: '17 4 * * 0'
-##   permissions:
-##     contents: read
+## (1) consumer-codeql-actions.yml (universal):
+##
 ##   jobs:
-##     python:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##     actions:
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codeql.yml@master
 ##       with:
-##         language: python
+##         language: actions
 ##       permissions:
 ##         security-events: write
 ##         contents: read
 ##
-## ## Caller example (multi-language, one job per language)
+## (2) consumer-codeql-python.yml (optional prepare-command via
+##     dm-consumer.yml.codeql-python.prepare-command):
 ##
 ##   jobs:
 ##     python:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codeql.yml@master
 ##       with:
 ##         language: python
+##         dm-consumer-section: codeql-python
 ##       permissions:
 ##         security-events: write
 ##         contents: read
+##
+## (3) consumer-codeql-cpp.yml (required build-command +
+##     optional prepare-command via dm-consumer.yml.codeql-cpp.*):
+##
+##   jobs:
 ##     c-cpp:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/codeql.yml@master
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codeql.yml@master
 ##       with:
 ##         language: c-cpp
 ##         build-mode: manual
-##         build-command: ./build.sh
+##         dm-consumer-section: codeql-cpp
 ##       permissions:
 ##         security-events: write
 ##         contents: read
@@ -106,26 +116,18 @@ on:
       language:
         required: true
         type: string
-      prepare-command:
-        required: false
-        type: string
-        default: ""
       build-mode:
         required: false
         type: string
         default: none
-      build-command:
-        required: false
-        type: string
-        default: ""
       queries:
         required: false
         type: string
         default: security-and-quality
-      timeout-minutes:
+      dm-consumer-section:
         required: false
-        type: number
-        default: 30
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -137,26 +139,24 @@ concurrency:
 jobs:
   analyze:
     name: Analyze (${{ inputs.language }})
-    runs-on: ubuntu-latest
+    ## Pinned to ubuntu-24.04 so the apt-packaged yq (kislyuk's
+    ## python-yq jq wrapper) remains stable across runner-image
+    ## transitions; the config-load step's syntax depends on that
+    ## implementation.
+    runs-on: ubuntu-24.04
 
     ## Fork-PR guard: a no-op unless the caller routes pull_request
     ## events into us, in which case it blocks PRs from forks (those
     ## need maintainer review and a manual re-run from a trusted ref).
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
 
-    timeout-minutes: ${{ inputs.timeout-minutes }}
+    timeout-minutes: 30
 
     permissions:
       ## Required so the CodeQL action can upload SARIF results.
       security-events: write
       ## Checkout / source read.
       contents: read
-      ## Note: 'packages: read' was previously listed as a defensive
-      ## default for CodeQL builds that pull from ghcr.io. None of
-      ## our consumers do (verified: kloak runs build.sh,
-      ## security-misc runs ci/codeql-build.sh - neither
-      ## authenticates to ghcr.io). Add it back per-consumer if a
-      ## future build step needs it.
 
     steps:
       - name: Checkout repository
@@ -164,12 +164,84 @@ jobs:
         with:
           persist-credentials: false
 
-      ## Pre-init hook - source-tree prep that the extractor must see.
-      ## Skipped (no-op) unless caller supplies a prepare-command.
+      - name: Install yq
+        if: inputs.dm-consumer-section != ''
+        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
+        ## `// ""` defaults and `-r` raw output below are written
+        ## for that implementation.
+        run: |
+          sudo --non-interactive apt-get update --error-on=any
+          sudo --non-interactive apt-get install --yes --no-install-recommends yq
+
+      - name: Load per-repo config from .github/dm-consumer.yml
+        id: cfg
+        if: inputs.dm-consumer-section != ''
+        env:
+          DM_SECTION: ${{ inputs.dm-consumer-section }}
+          BUILD_MODE: ${{ inputs.build-mode }}
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          cfg_file=".github/dm-consumer.yml"
+
+          ## Soft-skip when the file is absent or the section is
+          ## missing - unless build-mode=manual (which strictly
+          ## requires build-command from the named section).
+          if [ ! -f "${cfg_file}" ]; then
+            if [ "${BUILD_MODE}" = 'manual' ]; then
+              printf '%s\n' "error: ${cfg_file} not found; build-mode=manual requires ${DM_SECTION}.build-command" >&2
+              exit 1
+            fi
+            printf 'prepare_command=\n' >> "${GITHUB_OUTPUT}"
+            printf 'build_command=\n' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          section_present=$(yq -r ".\"${DM_SECTION}\" // \"\"" "${cfg_file}")
+          if [ -z "${section_present}" ] || [ "${section_present}" = 'null' ]; then
+            if [ "${BUILD_MODE}" = 'manual' ]; then
+              printf '%s\n' "error: ${cfg_file} missing section ${DM_SECTION}; build-mode=manual requires ${DM_SECTION}.build-command" >&2
+              exit 1
+            fi
+            printf 'prepare_command=\n' >> "${GITHUB_OUTPUT}"
+            printf 'build_command=\n' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          ## build-command: required iff build-mode=manual.
+          bc=$(yq -r ".\"${DM_SECTION}\".\"build-command\" // \"\"" "${cfg_file}")
+          case "${bc}" in
+            *$'\n'*|*$'\r'*)
+              printf '%s\n' "error: ${DM_SECTION}.build-command contains newline; not allowed" >&2
+              exit 1
+              ;;
+          esac
+          if [ "${BUILD_MODE}" = 'manual' ] && [ -z "${bc}" ]; then
+            printf '%s\n' "error: ${cfg_file} missing ${DM_SECTION}.build-command (required when build-mode=manual)" >&2
+            exit 1
+          fi
+          printf 'build_command=%s\n' "${bc}" >> "${GITHUB_OUTPUT}"
+
+          ## prepare-command: always optional. Empty -> Prepare
+          ## source tree step skipped.
+          pc=$(yq -r ".\"${DM_SECTION}\".\"prepare-command\" // \"\"" "${cfg_file}")
+          case "${pc}" in
+            *$'\n'*|*$'\r'*)
+              printf '%s\n' "error: ${DM_SECTION}.prepare-command contains newline; not allowed" >&2
+              exit 1
+              ;;
+          esac
+          printf 'prepare_command=%s\n' "${pc}" >> "${GITHUB_OUTPUT}"
+
+      ## Pre-init hook - source-tree prep that the extractor must
+      ## see. Skipped when dm-consumer.yml.<section>.prepare-command
+      ## is absent or empty (the universal case).
       - name: Prepare source tree
-        if: inputs.prepare-command != ''
-        run: ${{ inputs.prepare-command }}
-        shell: bash
+        if: steps.cfg.outputs.prepare_command != ''
+        env:
+          PREPARE_COMMAND: ${{ steps.cfg.outputs.prepare_command }}
+        run: bash -c "${PREPARE_COMMAND}"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
@@ -178,14 +250,13 @@ jobs:
           build-mode: ${{ inputs.build-mode }}
           queries: ${{ inputs.queries }}
 
-      ## Manual build path - caller-supplied bash. Only runs when
-      ## build-mode is 'manual'. 'autobuild' is handled by the
-      ## codeql-action's own autobuild step (not invoked here, since
-      ## we want explicit knowledge of the build at the caller).
+      ## Manual build path - dm-consumer.yml.<section>.build-command.
+      ## Only runs when build-mode=manual.
       - name: Manual build
-        if: inputs.build-mode == 'manual' && inputs.build-command != ''
-        run: ${{ inputs.build-command }}
-        shell: bash
+        if: inputs.build-mode == 'manual'
+        env:
+          BUILD_COMMAND: ${{ steps.cfg.outputs.build_command }}
+        run: bash -c "${BUILD_COMMAND}"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
