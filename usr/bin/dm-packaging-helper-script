@@ -1369,9 +1369,9 @@ pkg_update_consumer_workflows() {
       codex-review.yml
       consumer-pre-push-static.yml
       consumer-scorecard.yml
+      consumer-secrets-audit.yml
       coverity.yml
       cppcheck.yml
-      secrets-audit.yml
    )
 
    for workflow_name in "${workflow_list[@]}"; do
