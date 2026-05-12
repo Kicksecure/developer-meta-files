@@ -10,7 +10,7 @@
 ## annotation rather than letting the cov-build download fail with
 ## an opaque server-side error message.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN    - project token from scan.coverity.com
 ##   COVERITY_EMAIL    - notification email registered on the project
 ##   COVERITY_PROJECT  - project name as it appears in the URL

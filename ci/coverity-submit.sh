@@ -7,7 +7,7 @@
 
 ## Submit cov-int output to Coverity Scan.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN
 ##   COVERITY_EMAIL
 ##   COVERITY_PROJECT

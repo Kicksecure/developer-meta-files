@@ -28,7 +28,7 @@
 ##      second host with a different token) before committing.
 ##   4. Commit it to .coverity-tool-sha256.expected.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN
 ##   COVERITY_PROJECT
 ##

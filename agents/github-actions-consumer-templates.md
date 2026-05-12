@@ -51,12 +51,18 @@ this repo plus the per-consumer PRs referenced from them.
     |   |   |-- local-org-tools-mock-tests.yml
     |   |   |   ## Auto-managed copies of the templates below.
     |   |   |   ## developer-meta-files is a consumer of itself.
+    |   |   |   ## Note: consumer-scorecard.yml NOT installed in
+    |   |   |   ## the hub - Scorecard is org-wide-opted-out of
+    |   |   |   ## every repo except derivative-maker (the
+    |   |   |   ## canonical baseline). consumer-coverity.yml,
+    |   |   |   ## consumer-cppcheck.yml, consumer-codeql-cpp.yml
+    |   |   |   ## NOT installed - the hub has no C/C++.
     |   |   |-- consumer-bandit.yml
     |   |   |-- consumer-claude-code.yml
     |   |   |-- consumer-codeql-actions.yml
+    |   |   |-- consumer-codeql-python.yml
     |   |   |-- consumer-codex-review.yml
     |   |   |-- consumer-pre-push-static.yml
-    |   |   |-- consumer-scorecard.yml
     |   |   `-- consumer-secrets-audit.yml
     |   `-- actions/
     |       |-- install-deps/
