@@ -311,6 +311,30 @@ expanding a `|`-separated string.
           ;;
     esac
 
+**R-074: No `; next-command` chaining.** Each statement gets its
+own line. Bash's syntactic `;` (case-arm `;;`, C-style for-loop
+`for ((i=0; i<N; i++))`) is the only exception; using `;` to
+glue two arbitrary commands onto one line is prohibited.
+
+Bad:
+
+    cd "${dir}"; ls --long
+    foo --quiet; bar --verbose
+
+Good:
+
+    cd "${dir}"
+    ls --long
+
+    foo --quiet
+    bar --verbose
+
+Why: each statement on its own line gets its own `set -x` trace,
+its own diff-review hunk, and its own pre-push-gate hit when it
+violates a rule. Multi-statement lines hide individual failures
+and tempt reviewers to skim. R-071 is the case-arm-specific
+application of this rule.
+
 
 ## Sourcing helper-scripts
 
