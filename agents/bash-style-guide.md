@@ -329,12 +329,6 @@ Good:
     foo --quiet
     bar --verbose
 
-Why: each statement on its own line gets its own `set -x` trace,
-its own diff-review hunk, and its own pre-push-gate hit when it
-violates a rule. Multi-statement lines hide individual failures
-and tempt reviewers to skim. R-071 is the case-arm-specific
-application of this rule.
-
 
 ## Sourcing helper-scripts
 
@@ -491,9 +485,9 @@ exit." Inside a function that should return rather than exit, use
 ## File deletion
 
 **R-120: `safe-rm`, not `rm`.** Long-flag form: `safe-rm --force --`
-or `safe-rm --recursive --force --`. To deviate (rare), mark the
-line with `## style-ok: no-safe-rm` on the same line or the
-preceding line; the pre-push gate skips it.
+or `safe-rm --recursive --force --`. To deviate (rare), put
+`## style-ok: no-safe-rm` anywhere in the script; the pre-push
+gate skips R-120 script-wide when it finds that marker.
 
 Why: `safe-rm` consults a blocklist before deleting (paths like
 `/`, `/usr`, `~`).

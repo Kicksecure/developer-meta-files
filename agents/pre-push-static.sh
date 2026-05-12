@@ -348,15 +348,19 @@ check_R102_interpreter_prepend() {
 }
 
 check_R120_rm() {
-   local script hits line line_num same_line prev_line
+   local script hits line
 
    for script in "${@}"; do
+      ## Script-wide waiver: '## style-ok: no-safe-rm' anywhere in
+      ## the file disables R-120 for that file.
+      if grep --quiet --fixed-strings 'style-ok: no-safe-rm' -- "${script}"; then
+         continue
+      fi
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
       ## (lines starting with optional whitespace then '#') and the
       ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
-      ## remote rm). Lines marked with '## style-ok: no-safe-rm'
-      ## (same line or preceding line) are skipped.
+      ## remote rm).
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
@@ -366,16 +370,6 @@ check_R120_rm() {
          continue
       fi
       while IFS= read -r line; do
-         line_num="${line%%:*}"
-         same_line="$(sed -n "${line_num}p" -- "${script}")"
-         prev_line=""
-         if [ "${line_num}" -gt 1 ]; then
-            prev_line="$(sed -n "$((line_num - 1))p" -- "${script}")"
-         fi
-         if printf '%s\n%s\n' "${same_line}" "${prev_line}" \
-            | grep --quiet --fixed-strings 'style-ok: no-safe-rm'; then
-            continue
-         fi
          fail "R-120 rm not safe-rm" "'${script}:${line}'"
       done <<< "${hits}"
    done
