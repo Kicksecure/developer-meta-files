@@ -106,4 +106,7 @@ else
 fi
 
 tar -xzf cov-analysis-linux64.tgz -C cov-analysis --strip-components=1 --
-safe-rm -f -- cov-analysis-linux64.tgz cov-analysis-linux64.md5
+## R-120 (safe-rm) waived: safe-rm is not pre-installed on GitHub-hosted
+## runners and adding an apt-install step solely for this two-file cleanup
+## is not worth it. The paths are script-local and not user-supplied.
+rm --force -- cov-analysis-linux64.tgz cov-analysis-linux64.md5
