@@ -1355,9 +1355,14 @@ pkg_copy_contributing_file() {
 }
 
 ## Bulk variant of pkg_update_if_exists: iterates a fixed set of
-## consumer-wrapper filenames against canonical_workflows_dir
+## consumer-wrapper filenames against canonical_workflows_dir, and
+## also refreshes .github/dependabot.yml from the canonical at
+## consumer-templates/.github/dependabot.yml (different source path
+## because dependabot.yml lives at .github/ root, not under
+## .github/workflows/).
 pkg_update_consumer_workflows() {
    local workflow_name source_path destination_path
+   local dependabot_source dependabot_destination
    local -a workflow_list
 
    test -d "${canonical_workflows_dir}"
@@ -1385,6 +1390,56 @@ pkg_update_consumer_workflows() {
          "${destination_path}" \
          "update .github/workflows/${workflow_name}"
    done
+
+   dependabot_source="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
+   dependabot_destination="${batch_current_package_path}/.github/dependabot.yml"
+   test -f "${dependabot_source}"
+   pkg_update_if_exists \
+      "${dependabot_source}" \
+      "${dependabot_destination}" \
+      "update .github/dependabot.yml"
+
+   true
+}
+
+## Installs the canonical .github/dependabot.yml into every repo
+## that uses GitHub Actions (has .github/workflows/) and doesn't
+## already carry the file. INSTALL semantic, parallel to
+## pkg_install_codeql_actions_scan. Idempotent: a re-run after
+## rollout no-ops everywhere. The canonical carries both
+## github-actions and docker package-ecosystem blocks; the docker
+## block is a harmless no-op in repos without Dockerfiles.
+pkg_install_dependabot_yml() {
+   local source_path destination_dir destination_path
+
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
+   destination_dir="${batch_current_package_path}/.github"
+   destination_path="${destination_dir}/dependabot.yml"
+
+   if ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+      exit 1
+   fi
+
+   if ! [ -d "${batch_current_package_path}/.github/workflows" ]; then
+      true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if [ -f "${destination_path}" ]; then
+      true "INFO: ${batch_current_package_reponame}: dependabot.yml already present; skipping."
+      return 0
+   fi
+
+   cp -- "${source_path}" "${destination_path}"
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: ${FUNCNAME[0]}: nothing to commit"
+      return 0
+   fi
+
+   git commit -m "add .github/dependabot.yml"
 
    true
 }

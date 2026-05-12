@@ -106,4 +106,5 @@ else
 fi
 
 tar -xzf cov-analysis-linux64.tgz -C cov-analysis --strip-components=1 --
-safe-rm -f -- cov-analysis-linux64.tgz cov-analysis-linux64.md5
+## style-ok: no-safe-rm (safe-rm not pre-installed on hosted runners)
+rm --force -- cov-analysis-linux64.tgz cov-analysis-linux64.md5

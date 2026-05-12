@@ -23,7 +23,8 @@ pattern are all live. Coverity / cppcheck / codeql / bandit
 all read per-repo overrides at workflow runtime; the propagation
 tool `pkg_update_consumer_workflows` does pure-`cp` byte-
 identical updates of every `consumer-*.yml` file already present
-on a consumer's `.github/workflows/`.
+on a consumer's `.github/workflows/`, and of `.github/dependabot.yml`
+sourced from `consumer-templates/.github/dependabot.yml`.
 
 Validated end-to-end on `kloak` (`workflow_dispatch` of
 `consumer-coverity.yml`, full pipeline through cov-build +
@@ -69,6 +70,10 @@ this repo plus the per-consumer PRs referenced from them.
     |       `-- shellcheck/
     `-- consumer-templates/
         `-- .github/
+            |   ## Single source of truth for .github/dependabot.yml.
+            |   ## Byte-identical across every consumer (including
+            |   ## the hub itself - dmf is a self-consumer).
+            |-- dependabot.yml
             `-- workflows/
                 |   ## Single source of truth for every
                 |   ## consumer-*.yml propagated across the org.
@@ -136,6 +141,59 @@ already answered authoritatively by the consumer's filesystem.
 `.github/dm-consumer.yml` (described below) carries only per-repo
 PARAMETER values for parameterized templates, never opt-in or
 opt-out flags.
+
+## `.github/dependabot.yml` propagation
+
+`dependabot.yml` is propagated alongside the `consumer-*.yml`
+workflow wrappers and sits at the same byte-identical canonical
+shape. It uses both semantics:
+
+- `pkg_update_consumer_workflows` refreshes
+  `.github/dependabot.yml` from
+  `consumer-templates/.github/dependabot.yml` whenever the file
+  is already present on the consumer (UPDATE-if-exists, parallel
+  to the consumer-`*.yml` loop above it).
+- `pkg_install_dependabot_yml` bootstraps the file when missing,
+  on the rule "if a consumer has `.github/workflows/`, give it a
+  `dependabot.yml`". Idempotent: a re-run after rollout no-ops.
+  Repos with no `.github/workflows/` directory have no GitHub
+  Actions for Dependabot to bump and are skipped.
+
+### Unified canonical (both github-actions and docker)
+
+The canonical at `consumer-templates/.github/dependabot.yml`
+carries **both** `github-actions` and `docker` package-ecosystem
+blocks. The `docker` block is included even in repos without
+Dockerfiles, because:
+
+- Dependabot's `docker` ecosystem only scans for Dockerfiles in
+  well-known locations. Repos without any get no PRs from the
+  block - it is a harmless no-op, not an error.
+- Carrying the docker block uniformly across the org keeps the
+  template byte-identical, removing what would otherwise be a
+  per-repo divergence (Dockerfile-bearing repos like
+  derivative-maker carrying a different shape than the rest).
+- A consumer adding its first Dockerfile post-rollout gets
+  Dependabot coverage automatically, no `dependabot.yml` edit
+  required.
+
+Note: Dependabot's `docker` ecosystem only watches Dockerfile
+`FROM` lines, NOT workflow `container:` image references
+(`debian:trixie@sha256:...` in `local-lint.yml` etc.). Those
+container pins need manual re-pinning; see
+[`github-actions.md`](github-actions.md) action SHA-pinning
+discipline and each repo's `agents/github-actions-security.md`
+for the procedure.
+
+### No repo exclusions
+
+Both functions are exclusion-free. Every consumer - including
+derivative-maker (which previously carried a hand-maintained
+docker-bearing variant) and developer-meta-files (which
+previously carried hub-specific commentary) - converges on the
+canonical on the next propagation pass. The hub-private
+rationale that used to live in dmf's own `dependabot.yml`
+header is now in this doc.
 
 ## Scheduling in byte-identical templates
 
