@@ -123,6 +123,32 @@ already answered authoritatively by the consumer's filesystem.
 PARAMETER values for parameterized templates, never opt-in or
 opt-out flags.
 
+## Scheduling in universal templates
+
+Byte-identical propagation forbids per-repo cron-slot rewriting
+at propagation time, which collides with the per-repo cron-slot
+guidance in [`github-actions.md`](github-actions.md) G-A-002.
+Resolution: universal templates with `schedule:` use a uniform
+org-wide cron slot baked into the template. GitHub's cron queue
+will serialize the org-wide simultaneous fires; that contention
+is accepted.
+
+Two examples already follow this pattern:
+
+- `consumer-codeql-actions.yml` is cronless on purpose - push /
+  pull_request / workflow_dispatch cover the scan-on-change
+  cases, and rule-refresh re-scans are kicked manually.
+- `consumer-scorecard.yml` carries a single org-wide cron slot.
+  Scorecard's value-to-noise ratio is low (many false positives,
+  non-actionable signals); concentrating the runs at one time
+  is not worth the per-repo-rewrite complexity it would take to
+  spread them.
+
+If a future universal template has stronger scheduling needs,
+the right answer is to either (a) eliminate the cron (move to
+event-triggered only), or (b) accept the uniform slot. Per-repo
+rewriting at propagation time is not a path back into scope.
+
 ## Per-repo parameters: `.github/dm-consumer.yml`
 
 Some templates need per-repo values that genuinely cannot be
@@ -136,8 +162,8 @@ Those values live in `.github/dm-consumer.yml` in each consuming
 repo. Schema:
 
     ## .github/dm-consumer.yml
-    ## Top-level keys mirror the reusable basename without
-    ## the 'reusable-' prefix.
+    ## Top-level keys mirror the consumer-template basename
+    ## without the 'consumer-' prefix.
     ## Sub-keys mirror the values the reusable consumes.
 
     coverity:
@@ -168,7 +194,125 @@ this codebase ships without `.py` extensions (genmkfile
 package-tag naming, executables with shebang lines only): the
 reusable discovers Python via shebang scan (`#!.*python` over the
 tree), not by file-extension matching, so no per-repo paths
-config is needed.
+config is needed. Note: shebang-based discovery is target
+behavior. The current `reusable-bandit.yml` matches by `.py`
+extension; the discovery rewrite is part of the same
+implementation pass as the rename, not a separate decision.
+
+## Parameter ownership across reusable inputs
+
+For every existing `workflow_call.input` on each parameterized
+reusable, this table classifies the input as one of:
+
+- **dm-consumer.yml**: per-repo value, read from
+  `.github/dm-consumer.yml` at workflow runtime.
+- **hardcoded in reusable**: same value org-wide; lives as the
+  reusable's `default:`. The wrapper does not override.
+- **hardcoded in wrapper**: same value across all consumers of
+  a given template, baked into the byte-identical wrapper's
+  `with:` block. Different templates calling the same reusable
+  may bake different values (e.g. `language: c-cpp` vs
+  `language: actions`).
+- **removed**: input is deleted from the reusable's
+  `workflow_call.inputs:`.
+
+Wrappers are byte-identical across their consumers, so no input
+can be "passed by the consumer wrapper to a per-repo value" -
+the only per-repo channel is `.github/dm-consumer.yml`.
+
+### `reusable-bandit.yml` (consumer-bandit.yml is universal)
+
+- `paths`: **removed**. Discovery moves to shebang scan; no
+  per-repo path list is needed.
+- `severity-level`: **hardcoded in reusable** at the current
+  default ("medium").
+- `confidence-level`: **hardcoded in reusable** at the current
+  default ("medium").
+- `skips`: **removed**. Per-repo suppressions move to `# nosec`
+  comments in source. Open implementation question: if a real
+  use case for per-repo skip lists appears during migration,
+  promote to dm-consumer.yml at that point.
+- `prepare-command`: **removed**. Bandit does not need build
+  setup; the input is unused in practice.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (10).
+
+### `reusable-coverity.yml` (consumer-coverity.yml is parameterized)
+
+- `apt-packages`: **dm-consumer.yml**.
+- `build-command`: **dm-consumer.yml**.
+- `project-name`: **dm-consumer.yml**.
+- `canonical-repos`: **dm-consumer.yml**. The move from
+  reusable input to runtime read changes where the gate runs;
+  see "Coverity canonical-repos gate placement" below.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (30).
+- `dry-run`: **kept as reusable input** with a default of
+  `false`. Manual `workflow_dispatch` runs can override to
+  `true` for a no-submit dry run; the byte-identical wrapper
+  does not pass it for scheduled / tag-push runs.
+
+### `reusable-cppcheck.yml` (consumer-cppcheck.yml is parameterized)
+
+- `paths`: **dm-consumer.yml**.
+- `enable`: **hardcoded in reusable** at the current default
+  ("warning,performance,portability"). Repos that want broader
+  scope ("style", etc.) contribute the default change; per-repo
+  override is not supported.
+- `extra-args`: **removed**. Promote to dm-consumer.yml if a
+  real need appears during migration.
+- `prepare-command`: **dm-consumer.yml**. Some repos need
+  apt-installed deps before cppcheck runs; keep per-repo.
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (15).
+
+### `reusable-codeql.yml` (consumer-codeql-cpp.yml and consumer-codeql-actions.yml)
+
+- `language`: **hardcoded in wrapper**.
+  `consumer-codeql-cpp.yml` passes `"c-cpp"`;
+  `consumer-codeql-actions.yml` passes `"actions"`. Each template
+  is byte-identical across its consumers; the two templates
+  differ from each other by exactly this value.
+- `prepare-command`: **dm-consumer.yml**, only for c-cpp.
+  `consumer-codeql-actions.yml` does not pass it.
+- `build-mode`: **hardcoded in wrapper**. `"manual"` for c-cpp;
+  `"none"` for actions.
+- `build-command`: **dm-consumer.yml**, only for c-cpp.
+- `queries`: **hardcoded in reusable** at the current default
+  (`"security-and-quality"`).
+- `timeout-minutes`: **hardcoded in reusable** at the current
+  default (30).
+
+### Coverity canonical-repos gate placement
+
+The current `reusable-coverity.yml` uses
+`inputs.canonical-repos` in `jobs.<id>.if:`, evaluated before
+any step runs. Moving `canonical-repos` into `.github/dm-consumer.yml`
+means the value becomes a step output
+(`steps.cfg.outputs.canonical-repos`), which is not available
+to the same job's `if:` - step outputs only exist after the
+step completes.
+
+Resolution: a step-level gate replaces the job-level gate. After
+the config-load step, a "canonical-repos gate" step compares
+`github.repository` against the loaded list and emits a step
+output. All expensive subsequent steps (Coverity download,
+build, submit) carry
+`if: steps.gate.outputs.allowed == 'true'`. A
+non-canonical run completes neutral (no expensive work, no
+submission).
+
+This is security-relevant: the current gate prevents a fork's
+Coverity workflow from burning the upstream project's daily
+free-tier slot. The replacement preserves that property - the
+gate runs before any download or submission step, and the
+submit step's secrets path is never reached on a non-canonical
+run.
+
+The cost vs. the job-level gate is ~30 seconds of runner time
+per non-canonical attempt (runner spin-up + checkout +
+config-load + gate eval), which is negligible against the
+multi-hour cost of an actual Coverity build.
 
 ## Reusable-side runtime read pattern
 
@@ -176,6 +320,14 @@ The parameterized reusables (`reusable-coverity.yml`,
 `reusable-cppcheck.yml`, `reusable-codeql.yml` in c-cpp mode)
 include a config-load step shortly after the consumer-repo
 checkout. Reference shape:
+
+    - name: Install yq
+      ## ubuntu-latest does not ship yq. apt-get install is the
+      ## simplest path; no fallbacks (PyYAML, vendored parser) -
+      ## the reusable runs in a known-good Ubuntu environment.
+      run: |
+        sudo --non-interactive apt-get update --error-on=any
+        sudo --non-interactive apt-get install --yes --no-install-recommends yq
 
     - name: Load per-repo config from .github/dm-consumer.yml
       id: cfg
