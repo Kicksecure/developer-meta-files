@@ -239,30 +239,36 @@ the only per-repo channel is `.github/dm-consumer.yml`.
 
 ### `reusable-coverity.yml` (consumer-coverity.yml is parameterized)
 
-- `apt-packages`: **dm-consumer.yml**.
-- `build-command`: **dm-consumer.yml**.
-- `project-name`: **dm-consumer.yml**.
-- `canonical-repos`: **dm-consumer.yml**. The move from
-  reusable input to runtime read changes where the gate runs;
-  see "Coverity canonical-repos gate placement" below.
+- `apt-packages`: **dm-consumer.yml** (optional; empty = no
+  apt-installs, e.g. Python-only Coverity repos).
+- `build-command`: **dm-consumer.yml** (optional; empty defers
+  to the reusable's Python helper).
+- `project-name`: **dm-consumer.yml** (required).
+- `canonical-repos`: **dm-consumer.yml** (required). The move
+  from reusable input to runtime read changes where the gate
+  runs; see "Coverity canonical-repos gate placement" below.
 - `timeout-minutes`: **hardcoded in reusable** at the current
   default (30).
-- `dry-run`: **kept as reusable input** with a default of
-  `false`. Manual `workflow_dispatch` runs can override to
-  `true` for a no-submit dry run; the byte-identical wrapper
-  does not pass it for scheduled / tag-push runs.
+- `dry-run`: **hardcoded in reusable** at `false`. No wrapper
+  override. Manual dry-runs happen in a development branch by
+  editing the wrapper temporarily; the production path never
+  submits in dry-run mode.
 
 ### `reusable-cppcheck.yml` (consumer-cppcheck.yml is parameterized)
 
-- `paths`: **dm-consumer.yml**.
+- `paths`: **dm-consumer.yml** (required).
 - `enable`: **hardcoded in reusable** at the current default
   ("warning,performance,portability"). Repos that want broader
   scope ("style", etc.) contribute the default change; per-repo
   override is not supported.
 - `extra-args`: **removed**. Promote to dm-consumer.yml if a
   real need appears during migration.
-- `prepare-command`: **dm-consumer.yml**. Some repos need
-  apt-installed deps before cppcheck runs; keep per-repo.
+- `prepare-command`: **dm-consumer.yml** (optional). Source-tree
+  prep (generating headers, running `./configure`, copying files
+  into place) before cppcheck runs. Not the place for apt
+  installs - those would be uncached. If a real apt-deps need
+  appears, promote `cppcheck.apt-packages` to dm-consumer.yml at
+  that point with its own cache key.
 - `timeout-minutes`: **hardcoded in reusable** at the current
   default (15).
 
@@ -273,11 +279,12 @@ the only per-repo channel is `.github/dm-consumer.yml`.
   `consumer-codeql-actions.yml` passes `"actions"`. Each template
   is byte-identical across its consumers; the two templates
   differ from each other by exactly this value.
-- `prepare-command`: **dm-consumer.yml**, only for c-cpp.
-  `consumer-codeql-actions.yml` does not pass it.
+- `prepare-command`: **dm-consumer.yml** (optional), only for
+  c-cpp. `consumer-codeql-actions.yml` does not pass it.
 - `build-mode`: **hardcoded in wrapper**. `"manual"` for c-cpp;
   `"none"` for actions.
-- `build-command`: **dm-consumer.yml**, only for c-cpp.
+- `build-command`: **dm-consumer.yml** (required), only for
+  c-cpp.
 - `queries`: **hardcoded in reusable** at the current default
   (`"security-and-quality"`).
 - `timeout-minutes`: **hardcoded in reusable** at the current
@@ -298,9 +305,12 @@ the config-load step, a "canonical-repos gate" step compares
 `github.repository` against the loaded list and emits a step
 output. All expensive subsequent steps (Coverity download,
 build, submit) carry
-`if: steps.gate.outputs.allowed == 'true'`. A
-non-canonical run completes neutral (no expensive work, no
-submission).
+`if: steps.gate.outputs.allowed == 'true'`. A non-canonical run
+completes with overall status `success` (the gate step itself
+succeeds; the expensive steps are skipped). There is no
+first-class "neutral" job result for a shell-driven gate; the
+expensive-steps-skipped success state is operationally
+equivalent.
 
 This is security-relevant: the current gate prevents a fork's
 Coverity workflow from burning the upstream project's daily
@@ -325,6 +335,10 @@ checkout. Reference shape:
       ## ubuntu-latest does not ship yq. apt-get install is the
       ## simplest path; no fallbacks (PyYAML, vendored parser) -
       ## the reusable runs in a known-good Ubuntu environment.
+      ## Note: Debian ships Mike Farah's Go yq (since bookworm),
+      ## which differs from python-yq in flag set and default
+      ## output mode. The implementation must verify the exact
+      ## invocation against the installed package.
       run: |
         sudo --non-interactive apt-get update --error-on=any
         sudo --non-interactive apt-get install --yes --no-install-recommends yq
@@ -341,7 +355,7 @@ checkout. Reference shape:
           exit 1
         fi
         for key in apt-packages build-command project-name canonical-repos; do
-          value="$(yq ".coverity[\"${key}\"]" "${cfg_file}")"
+          value="$(yq -r ".coverity[\"${key}\"]" "${cfg_file}")"
           if [ "${value}" = 'null' ] || [ -z "${value}" ]; then
             printf '%s\n' "error: ${cfg_file} missing coverity.${key}" >&2
             exit 1
@@ -356,9 +370,16 @@ checkout. Reference shape:
         done
 
 Subsequent steps in the reusable reference
-`${{ steps.cfg.outputs.<key> }}`. The reusable's
-`workflow_call.inputs:` block for those values goes away - they
-are discovered, not passed.
+`${{ steps.cfg.outputs.<key> }}`. Only the
+**dm-consumer.yml-owned** values disappear from the reusable's
+`workflow_call.inputs:` - they are discovered, not passed.
+Values classified as **hardcoded in wrapper** (e.g. codeql's
+`language`, `build-mode`) stay as `workflow_call.inputs` and ARE
+passed via `with:` from the byte-identical wrapper; values
+classified as **hardcoded in reusable** (e.g. coverity's
+`timeout-minutes`, `dry-run`) stay as `workflow_call.inputs`
+with the reusable's `default:` and are never passed by the
+wrapper.
 
 ### `$GITHUB_OUTPUT` is not a secret-masking surface
 
@@ -377,18 +398,31 @@ against `$GITHUB_OUTPUT` format injection - a value containing
 
 ## Hard-fail validation
 
-Three error classes the reusable's config-load step distinguishes:
+Each `dm-consumer.yml` key is annotated **(required)** or
+**(optional)** in the parameter-ownership table above. The
+reusable's config-load step uses those annotations to distinguish
+four error / non-error classes:
 
 1. `.github/dm-consumer.yml` not present at all - hard error,
    exit 1. The wrapper is installed but per-repo values are not
    configured.
-2. dm-consumer.yml present but missing the template's section, or
-   missing a required key within that section - hard error, exit
-   1. Print the missing path (e.g. `coverity.project-name`).
-3. dm-consumer.yml has a section for a template that is not
-   currently installed - not detected here (the reusable for an
-   uninstalled template never runs). This is the orphan-config
-   case; it does no harm.
+2. dm-consumer.yml present but missing the template's section
+   entirely - hard error, exit 1. The wrapper is installed but
+   the section that drives it is absent.
+3. Section present but missing a key annotated **(required)** -
+   hard error, exit 1. Print the missing path (e.g.
+   `coverity.project-name`).
+4. Section present but missing a key annotated **(optional)** -
+   not an error. The reusable treats the value as empty and
+   falls through to its built-in default behavior (e.g. empty
+   `coverity.apt-packages` skips the apt-install step;
+   empty `cppcheck.prepare-command` skips the source-tree prep
+   step).
+
+A dm-consumer.yml section for a template that is not currently
+installed is not detected here (the reusable for an uninstalled
+template never runs). This is the orphan-config case; it does no
+harm.
 
 Hard-fail at workflow runtime is the runtime mirror of the
 pre-`cp` validation approach we explicitly rejected (which would
@@ -398,7 +432,12 @@ workflow start beats silent drift.
 ## Wrapper shape (byte-identical example)
 
 The full `consumer-coverity.yml` template, byte-identical across
-every consumer including `developer-meta-files` itself:
+every opted-in consumer (every repo that has
+`consumer-coverity.yml` installed in its `.github/workflows/`).
+`developer-meta-files` itself does not install this template -
+the hub has no C/C++ to scan - so `consumer-coverity.yml` only
+lives in `consumer-templates/.github/workflows/` on the hub,
+never in `.github/workflows/`:
 
     ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
     ## See the file COPYING for copying conditions.
@@ -442,8 +481,14 @@ every consumer including `developer-meta-files` itself:
         permissions:
           contents: read
 
-No `with:` block on the reusable call - the reusable reads its
-own per-repo config at workflow runtime.
+No `with:` block on the reusable call in this template:
+coverity has no hardcoded-in-wrapper inputs (no language /
+build-mode analog) and every per-repo value is read by the
+reusable from `.github/dm-consumer.yml` at workflow runtime.
+Other templates may have a `with:` block - `consumer-codeql-cpp.yml`
+passes `language: c-cpp` and `build-mode: manual` because those
+are classified hardcoded-in-wrapper - and that block is itself
+byte-identical across the template's consumers.
 
 ## What this design buys
 
