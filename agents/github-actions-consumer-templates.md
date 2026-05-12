@@ -78,11 +78,12 @@ those workflows installed.
 
 The unprefixed wrappers from before the rename (`claude-code.yml`,
 `codex-review.yml`, `scorecard.yml`, `codeql-actions.yml`,
-`pre-push-static.yml`, `secrets-audit.yml`) all become
-`consumer-*.yml`. The unprefixed hub-private workflows
-(`live.yml`, `policy-live.yml`, `test-github-org-tools.yml`)
-become `local-*.yml` with names that describe what they actually
-do.
+`pre-push-static.yml`, `secrets-audit.yml`) are now `consumer-*.yml`.
+The unprefixed hub-private workflows (formerly `live.yml`,
+`policy-live.yml`, `test-github-org-tools.yml`) are now
+`local-org-policy-live-probe.yml`,
+`local-org-policy-live-audit.yml`, and
+`local-org-tools-mock-tests.yml` respectively.
 
 ## Propagation contract
 
