@@ -14,14 +14,21 @@ parameter mechanism in detail.
 
 ## Status
 
-Target architecture, agreed in design discussion. Some pieces are
-already in place (`reusable-*.yml` library, consumer wrappers in
-each repo's `.github/workflows/` under their pre-prefix names);
-the rename to `consumer-*` / `local-*`, the
-`consumer-templates/.github/workflows/` directory, and the
-`.github/dm-consumer.yml` overlay file are pending implementation.
-Treat this doc as the contract; the repo state is being brought
-into line with it.
+Implemented. The three-prefix file-naming convention
+(`reusable-` / `consumer-` / `local-`), the
+`consumer-templates/.github/workflows/` canonical-source
+directory, the `.github/dm-consumer.yml` overlay file in
+parameterized consumers, and the reusable-side runtime read
+pattern are all live. Coverity / cppcheck / codeql / bandit
+all read per-repo overrides at workflow runtime; the propagation
+tool `pkg_update_consumer_workflows` does pure-`cp` byte-
+identical updates of every `consumer-*.yml` file already present
+on a consumer's `.github/workflows/`.
+
+Validated end-to-end on `kloak` (`workflow_dispatch` of
+`consumer-coverity.yml`, full pipeline through cov-build +
+Coverity Scan submission accepted). See PRs #67 through #71 on
+this repo plus the per-consumer PRs referenced from them.
 
 ## Directory layout
 
@@ -200,11 +207,9 @@ does not need a `.github/dm-consumer.yml` file at all.
 this codebase ships without `.py` extensions (genmkfile
 package-tag naming, executables with shebang lines only): the
 reusable discovers Python via shebang scan (`#!.*python` over the
-tree), not by file-extension matching, so no per-repo paths
-config is needed. Note: shebang-based discovery is target
-behavior. The current `reusable-bandit.yml` matches by `.py`
-extension; the discovery rewrite is part of the same
-implementation pass as the rename, not a separate decision.
+tree) AND `.py` extension, so no per-repo paths config is needed.
+The discovery script lives at `ci/bandit-discover-python.sh` in
+this repo.
 
 ## Parameter ownership across reusable inputs
 
@@ -250,9 +255,9 @@ surface is technically overridable.
 - `confidence-level`: **hardcoded in reusable** at the current
   default ("medium").
 - `skips`: **removed**. Per-repo suppressions move to `# nosec`
-  comments in source. Open implementation question: if a real
-  use case for per-repo skip lists appears during migration,
-  promote to dm-consumer.yml at that point.
+  comments in source. Open follow-up: if a real use case for
+  per-repo skip lists appears post-rollout, promote
+  `bandit.skips` to dm-consumer.yml at that point.
 - `prepare-command`: **removed**. Bandit does not need build
   setup; the input is unused in practice.
 - `timeout-minutes`: **hardcoded in reusable** at the current
@@ -283,7 +288,7 @@ surface is technically overridable.
   scope ("style", etc.) contribute the default change; per-repo
   override is not supported.
 - `extra-args`: **removed**. Promote to dm-consumer.yml if a
-  real need appears during migration.
+  real need appears post-rollout.
 - `prepare-command`: **dm-consumer.yml** (optional). Source-tree
   prep (generating headers, running `./configure`, copying files
   into place) before cppcheck runs. Not the place for apt
