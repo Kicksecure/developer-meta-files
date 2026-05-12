@@ -106,9 +106,5 @@ else
 fi
 
 tar -xzf cov-analysis-linux64.tgz -C cov-analysis --strip-components=1 --
-## safe-rm is not pre-installed on GitHub-hosted runners and adding an
-## apt-install step solely for this two-file cleanup is not worth it.
-## Paths are script-local literals, not user-supplied. See agents/bash-
-## style-guide.md "Style-guide waivers" for the waiver syntax.
-## style-disable=R-120
+## style-ok: no-safe-rm (safe-rm not pre-installed on hosted runners)
 rm --force -- cov-analysis-linux64.tgz cov-analysis-linux64.md5

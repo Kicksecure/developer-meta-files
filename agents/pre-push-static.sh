@@ -211,44 +211,6 @@ check_ascii_commit_msg() {
 
 ## --- Tier 1 style-guide checks (single-grep, near-zero false-positive) ---
 
-## Returns 0 if the given file:line carries an inline or preceding-line
-## 'style-disable=R-NNN' waiver. The comment marker is '#' or '##'. The
-## value after '=' is a comma-separated list of rule IDs; the rule ID
-## must appear as a whole token (R-120 does NOT match R-1200).
-##
-## Inline form:
-##     rm --force -- foo  ## style-disable=R-120
-##
-## Preceding-line form:
-##     ## style-disable=R-120
-##     rm --force -- foo
-##
-## Multiple rules in one waiver:
-##     ## style-disable=R-070,R-120
-is_style_waived() {
-   local file line_num rule_id line prev_line waiver_re
-
-   file="${1}"
-   line_num="${2}"
-   rule_id="${3}"
-
-   waiver_re="#[[:space:]]*style-disable[[:space:]]*=[^[:space:]]*\\b${rule_id}\\b"
-
-   line="$(sed -n "${line_num}p" -- "${file}")"
-   if printf '%s' "${line}" | grep --quiet --extended-regexp -- "${waiver_re}"; then
-      return 0
-   fi
-
-   if [ "${line_num}" -gt 1 ]; then
-      prev_line="$(sed -n "$((line_num - 1))p" -- "${file}")"
-      if printf '%s' "${prev_line}" | grep --quiet --extended-regexp -- "${waiver_re}"; then
-         return 0
-      fi
-   fi
-
-   return 1
-}
-
 emit_hits() {
    local rule_tag hits line
 
@@ -349,7 +311,7 @@ check_R081_source_devnull() {
 }
 
 check_R090_command_v() {
-   local script hits line line_num
+   local script hits line
 
    for script in "${@}"; do
       ## R-093 documented bootstrap exceptions: scripts that must
@@ -365,11 +327,6 @@ check_R090_command_v() {
          continue
       fi
       while IFS= read -r line; do
-         line_num="${line%%:*}"
-         if is_style_waived "${script}" "${line_num}" "R-090"; then
-            note "WAIVED R-090 in '${script}:${line_num}' by style-disable comment"
-            continue
-         fi
          fail "R-090 command -v" "'${script}:${line}'"
       done <<< "${hits}"
    done
@@ -391,16 +348,15 @@ check_R102_interpreter_prepend() {
 }
 
 check_R120_rm() {
-   local script hits line line_num
+   local script hits line line_num same_line prev_line
 
    for script in "${@}"; do
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
       ## (lines starting with optional whitespace then '#') and the
       ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
-      ## remote rm). Lines or preceding-lines carrying a
-      ## 'style-disable=R-120' waiver comment are skipped (see
-      ## is_style_waived).
+      ## remote rm). Lines marked with '## style-ok: no-safe-rm'
+      ## (same line or preceding line) are skipped.
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
@@ -411,8 +367,13 @@ check_R120_rm() {
       fi
       while IFS= read -r line; do
          line_num="${line%%:*}"
-         if is_style_waived "${script}" "${line_num}" "R-120"; then
-            note "WAIVED R-120 in '${script}:${line_num}' by style-disable comment"
+         same_line="$(sed -n "${line_num}p" -- "${script}")"
+         prev_line=""
+         if [ "${line_num}" -gt 1 ]; then
+            prev_line="$(sed -n "$((line_num - 1))p" -- "${script}")"
+         fi
+         if printf '%s\n%s\n' "${same_line}" "${prev_line}" \
+            | grep --quiet --fixed-strings 'style-ok: no-safe-rm'; then
             continue
          fi
          fail "R-120 rm not safe-rm" "'${script}:${line}'"

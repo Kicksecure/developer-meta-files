@@ -491,7 +491,9 @@ exit." Inside a function that should return rather than exit, use
 ## File deletion
 
 **R-120: `safe-rm`, not `rm`.** Long-flag form: `safe-rm --force --`
-or `safe-rm --recursive --force --`.
+or `safe-rm --recursive --force --`. To deviate (rare), mark the
+line with `## style-ok: no-safe-rm` on the same line or the
+preceding line; the pre-push gate skips it.
 
 Why: `safe-rm` consults a blocklist before deleting (paths like
 `/`, `/usr`, `~`).
@@ -571,67 +573,3 @@ Why: file-local consistency keeps each file readable as a unified
 document; jarring shifts in voice signal copy-paste and undermine
 trust in the prose. Match locally; impose org-wide style only
 when it would otherwise conflict.
-
-
-## Style-guide waivers
-
-**R-160: Document each style-guide deviation with an inline or
-preceding-line `style-disable=R-NNN` waiver comment.** The marker
-is a comment (`#` or `##`) carrying `style-disable=<rule-id>`.
-Multiple rule IDs are comma-separated.
-
-Inline (same line):
-
-    rm --force -- "${file}"  ## style-disable=R-120
-
-Preceding line:
-
-    ## style-disable=R-120
-    rm --force -- "${file}"
-
-Multiple rules at once:
-
-    case "${kind}" in
-       cleanup)
-          ## style-disable=R-070,R-120
-          rm --force -- "${a}" "${b}" ;;
-    esac
-
-Why: a deliberate deviation needs to be auditable. A bare
-unexplained violation looks identical to an accidental one;
-reviewers can't tell whether to flag it. The waiver tag names the
-rule and (in the surrounding comment) gives the operator the
-"why" - the same shape as `# shellcheck disable=SCnnnn` for the
-shellcheck case.
-
-The runnable gate at
-[`agents/pre-push-static.sh`](pre-push-static.sh) (`is_style_waived`
-helper) recognises the waiver and skips the matching `fail` for
-that file:line. Not every check honors the waiver yet - the
-mechanism is wired into the R-090 and R-120 checks; other Tier 1
-checks fall through to fail unconditionally. Extend those checks
-to call `is_style_waived` when a new waiver use case appears.
-
-**R-161: Surround the waiver tag with a prose comment that names
-the reason.** The bare `## style-disable=R-NNN` line is the
-syntactic marker; the lines above it explain WHY the deviation
-is justified.
-
-    ## safe-rm is not pre-installed on GitHub-hosted runners and
-    ## adding an apt-install step for one cleanup is not worth it.
-    ## Paths are script-local literals, not user-supplied.
-    ## style-disable=R-120
-    rm --force -- "${a}" "${b}"
-
-Why: silent `style-disable` lines accumulate over time and rot
-into cargo-culted patterns. Pairing the tag with a why-comment
-keeps each deviation justified at the site of the deviation.
-
-**R-162: Don't waive a rule that has a cheap alternative.** If
-the deviation is `rm` not `safe-rm` because of a missing dep,
-first verify there's no cheap path to satisfying the rule
-(installing the dep, switching to `find -delete`, dropping the
-operation, ...). Only waive after that audit.
-
-Why: each waiver erodes the rule. Treat waivers as a last
-resort, not a first one.
