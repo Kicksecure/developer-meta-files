@@ -1363,9 +1363,10 @@ pkg_update_consumer_workflows() {
    test -d "${canonical_workflows_dir}"
 
    workflow_list=(
-      bandit.yml
+      consumer-bandit.yml
       consumer-claude-code.yml
       consumer-codeql-actions.yml
+      consumer-codeql-cpp.yml
       consumer-codeql-python.yml
       consumer-codex-review.yml
       consumer-coverity.yml

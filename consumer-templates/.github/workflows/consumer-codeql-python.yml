@@ -51,6 +51,11 @@ jobs:
     uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codeql.yml@master
     with:
       language: python
+      ## Read .github/dm-consumer.yml `codeql-python:` section for
+      ## optional prepare-command (e.g. ci/codeql-prepare.sh for
+      ## genmkfile-tagged source-tree symlinks). Soft-skip if the
+      ## file or section is absent.
+      dm-consumer-section: codeql-python
     permissions:
       security-events: write
       contents: read
