@@ -43,6 +43,18 @@
 ##
 ## github-org-lib.bsh must be sourced before this file.
 
+## R-010 strict-mode quintet. Sourced lib; the callers
+## (dm-github-org-policy, dm-github-personal-policy, and the
+## ci/tests/test_*.sh harness) already set these on themselves, so
+## these lines are a no-op there. They guarantee strict mode if
+## the lib is ever sourced from a non-strict context.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 ## ============================================================================
 ## API call wrapper
 ## ============================================================================

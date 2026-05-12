@@ -19,6 +19,18 @@
 ## Source via:
 ##   source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
+## R-010 strict-mode quintet. Pure-data file (sourced, no
+## execution), so these are a no-op at parse time; included to
+## satisfy the gate's textual check and so that anyone sourcing
+## this file from a non-strict context inherits the same
+## guarantees the callers set on themselves.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 ## ============================================================================
 ## Shared bodies - used by both org and personal policy
 ## ============================================================================
