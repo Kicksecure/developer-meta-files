@@ -449,7 +449,7 @@ run_precommit_hook() {
    if [ "$#" -eq 0 ]; then
       return 0
    fi
-   "${hook}" "${@}" || fail "${hook}"
+   "${hook}" "${@}" || fail "${hook}" "exited non-zero (hook output printed above)"
 }
 
 check_precommit_hooks() {
