@@ -567,8 +567,11 @@ Preceding line:
 
 Multiple rules at once:
 
-    ## style-disable=R-070,R-120
-    rm --force -- "${a}" "${b}"; rm --force -- "${c}" "${d}" ;;
+    case "${kind}" in
+       cleanup)
+          ## style-disable=R-070,R-120
+          rm --force -- "${a}" "${b}" ;;
+    esac
 
 Why: a deliberate deviation needs to be auditable. A bare
 unexplained violation looks identical to an accidental one;
