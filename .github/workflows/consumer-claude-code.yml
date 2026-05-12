@@ -3,7 +3,13 @@
 
 ## AI-Assisted
 
-## Consumer wrapper. Docs live in the reusable:
+## Managed by pkg_update_consumer_workflows. Byte-identical
+## across consumers; this file is `cp`-ed from
+## developer-meta-files/consumer-templates/.github/workflows/consumer-claude-code.yml.
+## DO NOT hand-edit this file in the consumer repo - changes
+## will be overwritten on the next propagation pass.
+##
+## Reusable docs:
 ## https://github.com/org-ai-assisted/developer-meta-files/blob/master/.github/workflows/reusable-claude-code-review.yml
 
 name: Claude Code Review
