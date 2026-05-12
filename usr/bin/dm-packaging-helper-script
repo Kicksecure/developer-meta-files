@@ -55,6 +55,8 @@ test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files
 # shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
 source "$git_helpers_lib"
 
+canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/"
+
 ## BEGIN Initialization functions {
 
 check_prerequisites() {
@@ -705,8 +707,9 @@ pkg_update_if_exists() {
       return 0
    fi
 
-   cp -- "${source_path}" "${destination_path}"
-   git add -- "${destination_path}"
+   cp --verbose -- "${source_path}" "${destination_path}"
+   ## TODO: test
+   printf '%s\n' git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: '${destination_path}' already up to date; nothing to commit."
@@ -717,7 +720,9 @@ pkg_update_if_exists() {
       destination_basename="${destination_path##*/}"
       commit_msg="update ${destination_basename}"
    fi
-   git commit -m "${commit_msg}"
+
+   ## TODO: test
+   printf '%s\n' git commit -m "${commit_msg}"
 
    true
 }
@@ -1350,22 +1355,11 @@ pkg_copy_contributing_file() {
 
 ## Bulk variant of pkg_update_if_exists: iterates a fixed set of
 ## consumer-wrapper filenames against canonical_workflows_dir
-## (passed as the first batch-command argument). Source absence
-## logs and skips; destination absence is silently skipped by
-## pkg_update_if_exists.
 pkg_update_consumer_workflows() {
-   local canonical_workflows_dir workflow_name source_path destination_path
+   local workflow_name source_path destination_path
    local -a workflow_list
 
-   canonical_workflows_dir="${1:-}"
-
-   if [ -z "${canonical_workflows_dir}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR: Empty canonical_workflows_dir parameter provided!${reset}"
-      exit 1
-   elif ! [ -d "${canonical_workflows_dir}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR: canonical_workflows_dir '${canonical_workflows_dir}' is not a directory!${reset}"
-      exit 1
-   fi
+   test -d "${canonical_workflows_dir}"
 
    workflow_list=(
       bandit.yml
