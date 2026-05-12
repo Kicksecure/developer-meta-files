@@ -207,8 +207,8 @@ implementation pass as the rename, not a separate decision.
 
 ## Parameter ownership across reusable inputs
 
-For every existing `workflow_call.input` on each parameterized
-reusable, this table classifies the input as one of:
+For every existing `workflow_call.input` touched by this
+architecture, this table classifies the input as one of:
 
 - **dm-consumer.yml**: per-repo value, read from
   `.github/dm-consumer.yml` at workflow runtime.
@@ -442,8 +442,9 @@ checkout. Reference shape:
           printf '%s=%s\n' "${out_name}" "${value}" >> "${GITHUB_OUTPUT}"
         done
 
-Subsequent steps in the reusable reference
-`${{ steps.cfg.outputs.<key> }}`. Only the
+Subsequent steps in the reusable reference the underscored
+output names, e.g. `${{ steps.cfg.outputs.project_name }}` and
+`${{ steps.cfg.outputs.canonical_repos }}`. Only the
 **dm-consumer.yml-owned** values disappear from the reusable's
 `workflow_call.inputs:` - they are discovered, not passed.
 Values classified as **hardcoded in wrapper** (e.g. codeql's
