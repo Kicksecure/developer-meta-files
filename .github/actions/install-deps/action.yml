@@ -47,6 +47,15 @@ runs:
     - name: Install apt pre-reqs
       if: ${{ inputs.apt-packages != '' }}
       shell: bash
+      env:
+        ## Route the caller input through env rather than inlining
+        ## ${{ inputs.apt-packages }} into the script. Template
+        ## substitution happens before bash parses the script, so an
+        ## inlined value would be reinterpreted as shell syntax
+        ## (';', '|', '$()' all parse-time-special). Routing through
+        ## env defers expansion to runtime where those characters are
+        ## just data.
+        APT_PACKAGES: ${{ inputs.apt-packages }}
       run: |
         ## Context-aware sudo: works both in a root container
         ## (debian:trixie etc., no sudo wrapper) and on a non-root
@@ -57,7 +66,17 @@ runs:
         fi
         export DEBIAN_FRONTEND=noninteractive
         "${sudo_prefix[@]}" apt-get update
-        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends -- ${{ inputs.apt-packages }}
+        ## Split the space-separated env-string into an array using
+        ## the default $IFS (space/tab/newline), then expand with
+        ## "${apt_packages[@]}" so each element is a separately
+        ## quoted argument. Avoids the unquoted-expansion footguns
+        ## (glob expansion against the cwd; one extra space becomes
+        ## one extra empty arg under some shells). Empty-input case
+        ## is guarded by the step-level 'if:' above, so the array is
+        ## always non-empty here.
+        apt_packages=()
+        read -r -a apt_packages <<< "$APT_PACKAGES"
+        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
 
     - name: Install genmkfile
       shell: bash
