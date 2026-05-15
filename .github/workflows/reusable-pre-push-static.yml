@@ -82,6 +82,13 @@ jobs:
           inputs.base-ref != '' && inputs.base-ref
           || (github.base_ref != '' && format('origin/{0}', github.base_ref) || 'origin/master')
         }}
+      ## Dogfood ref: caller's commit when developer-meta-files is its
+      ## own caller (so a PR that modifies the script under test gets
+      ## exercised); 'master' for every other caller. Routed through
+      ## env for the org-wide env-routing convention (same shape as
+      ## BASE_REF / JOB_STATUS). The job-level fork-PR guard above is
+      ## the actual mitigation for actions/untrusted-checkout.
+      DMF_REF: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
     steps:
       - name: Install dependencies (apt only)
         ## R-100: 4 lines, no control flow -- inline is acceptable.
@@ -103,7 +110,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
 
