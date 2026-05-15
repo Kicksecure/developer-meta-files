@@ -114,3 +114,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GHORG_AUDIT_TOKEN }}
         run: dm-github-policy --dry-run
+
+      - name: Emit step summary
+        if: always()
+        ## Minimal panel surfacing pass/fail. The unauth probe has
+        ## continue-on-error so a job-status=success here only means
+        ## the audit + dry-run steps succeeded - the probe outcome
+        ## is still in its own step log. Template values routed
+        ## through env: per #87 to avoid CodeQL flagging.
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          ./ci/step-summary-emit.sh \
+            --tool 'github-org tools (live)' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "modes=unauth-probe + audit + dry-run"
