@@ -182,12 +182,23 @@ real cost:
   [`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
   inline comment.
 
-Consumers of singleton reusables must NOT set
+Singleton reusables follow the same caller-name resolution rule
+as cancellable reusables (see "Reusable-side concurrency" above):
+`github.workflow` inside the reusable expands to the caller's
+workflow name. A reusable that declares `group: ${{ github.workflow }}`
+would resolve to the caller's group key, which the caller already
+holds; with `cancel-in-progress: false` the reusable would block-
+wait on its own caller's lock and deadlock the run. The singleton
+therefore lives on the **caller's** wrapper, and the reusable
+omits `concurrency:` entirely - see
+[`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
+which carries an explicit comment to that effect, and
+[`consumer-templates/.github/workflows/consumer-coverity.yml`](../consumer-templates/.github/workflows/consumer-coverity.yml)
+which owns the `group: ${{ github.workflow }}` + `cancel-in-progress: false`
+lock. Consumers of singleton reusables must NOT set
 `cancel-in-progress: true` at the wrapper level: a cancelled
-wrapper cancels its called workflow run, defeating the
-reusable's no-cancel guarantee. Either omit `concurrency:` at
-the wrapper level (the reusable's controls), or mirror the
-reusable's `group + cancel=false` policy explicitly.
+wrapper would cancel the in-flight call, defeating the no-cancel
+guarantee that protects the daily-quota-limited submit.
 
 **Issue-comment & PR-review-comment events** fire on the
 default branch ref, not the PR head ref - so grouping by
