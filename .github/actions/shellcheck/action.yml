@@ -49,12 +49,16 @@ runs:
         if command -v shellcheck >/dev/null 2>&1; then
           exit 0
         fi
+        ## Trailing '--' in the array terminates sudo's option
+        ## parsing; the second '--' before 'shellcheck' terminates
+        ## apt-get's option parsing. Defense in depth - 'shellcheck'
+        ## has no leading dash today but the boundary is explicit.
         sudo_prefix=()
         if [ "$(id -u)" -ne 0 ]; then
-          sudo_prefix=(sudo --non-interactive)
+          sudo_prefix=(sudo --non-interactive --)
         fi
         "${sudo_prefix[@]}" apt-get update
-        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends shellcheck
+        "${sudo_prefix[@]}" apt-get install --yes --no-install-recommends -- shellcheck
 
     - name: Run shellcheck
       shell: bash

@@ -59,10 +59,13 @@ runs:
       run: |
         ## Context-aware sudo: works both in a root container
         ## (debian:trixie etc., no sudo wrapper) and on a non-root
-        ## host runner (ubuntu-latest, sudo NOPASSWD).
+        ## host runner (ubuntu-latest, sudo NOPASSWD). The trailing
+        ## '--' inside the array terminates sudo's option parsing,
+        ## so a future edit that prepends an attacker-influenced
+        ## value before the command cannot smuggle a sudo flag.
         sudo_prefix=()
         if [ "$(id -u)" -ne 0 ]; then
-          sudo_prefix=(sudo --non-interactive)
+          sudo_prefix=(sudo --non-interactive --)
         fi
         export DEBIAN_FRONTEND=noninteractive
         "${sudo_prefix[@]}" apt-get update
@@ -101,8 +104,10 @@ runs:
       if: ${{ inputs.install-self == 'true' }}
       shell: bash
       run: |
+        ## Trailing '--' in the array terminates sudo's option parsing
+        ## (defense in depth - see "Install apt pre-reqs" step above).
         sudo_prefix=()
         if [ "$(id -u)" -ne 0 ]; then
-          sudo_prefix=(sudo --non-interactive)
+          sudo_prefix=(sudo --non-interactive --)
         fi
         "${sudo_prefix[@]}" genmkfile install
