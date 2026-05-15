@@ -196,28 +196,38 @@ jobs:
           COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
         run: .github/dmf/ci/coverity-check-secrets.sh
 
-      ## actions/cache runs as the unprivileged runner user; the
-      ## default /var/cache/apt/archives is root-owned. Take
-      ## ownership before restore/save so the cache action can
-      ## read+write the directory without sudo. apt-get (run via
-      ## sudo) can still write to a runner-owned directory because
-      ## root can write anywhere.
+      ## /var/cache/apt/archives is root:root mode 0755 by default;
+      ## actions/cache's post-step extracts the saved tarball as
+      ## the unprivileged runner user, so the directory needs to
+      ## be writable by 'other' for the restore to place .deb
+      ## files. 'chmod o+w' (not 'chown -R') keeps apt's normal
+      ## ownership intact - in particular, the archives/partial/
+      ## subdirectory stays _apt:root mode 0700, the security
+      ## posture apt ships with. The cached path below is globbed
+      ## to *.deb, so the cache never tries to walk into partial/.
       - name: Prepare apt cache directory
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         run: |
           sudo mkdir -p /var/cache/apt/archives
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+          sudo chmod o+w /var/cache/apt/archives
 
       ## First-party actions/cache. Caches downloaded .deb archives.
       ## Key includes github.repository so different Coverity consumers
       ## (helper-scripts, kloak, ...) get distinct caches; key
       ## includes the reusable workflow file's hash so a change to
       ## the apt-install logic invalidates the cache.
+      ##
+      ## Path is globbed to *.deb. Excludes archives/partial/ (owned
+      ## _apt:root mode 0700, unreadable by the runner) and
+      ## archives/lock; the .deb files are the only cache-valuable
+      ## content. Side effect: the cache-save post-step never
+      ## traverses partial/, so apt-get install recreating it as
+      ## _apt:root mode 0700 is harmless.
       - name: Cache apt packages
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
-          path: /var/cache/apt/archives
+          path: /var/cache/apt/archives/*.deb
           key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
 
       - name: Install build dependencies
@@ -231,21 +241,12 @@ jobs:
           ## '--' after sudo / before the array terminates sudo's
           ## and apt-get's option parsing respectively. Same pattern
           ## as install-deps; see agents/github-actions-security.md.
-          ##
-          ## Trailing chown: apt-get install recreates the
-          ## archives/partial/ subdirectory as _apt:root mode 0700
-          ## regardless of the parent's ownership. The cache action's
-          ## post-step tars the cached path as the unprivileged runner
-          ## user; without this re-chown, tar fails to open partial/
-          ## and emits 'Failed to save: tar ... exit code 2', so the
-          ## cache never persists across runs.
           APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
           sudo --non-interactive -- apt-get update --error-on=any
           apt_packages=()
           read -r -a apt_packages <<< "$APT_PACKAGES"
           sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'

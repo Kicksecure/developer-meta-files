@@ -106,29 +106,37 @@ jobs:
           persist-credentials: false
 
       - name: Prepare apt cache directory
+        ## /var/cache/apt/archives is root:root mode 0755 by default;
+        ## actions/cache's post-step extracts the saved tarball as
+        ## the unprivileged runner user, so the directory needs to
+        ## be writable by 'other' for the restore to place .deb
+        ## files. 'chmod o+w' (not 'chown -R') keeps apt's normal
+        ## ownership intact - in particular, the archives/partial/
+        ## subdirectory stays _apt:root mode 0700, the security
+        ## posture apt ships with. The cached path is globbed to
+        ## *.deb below, so the cache never tries to walk into
+        ## partial/.
         run: |
           sudo mkdir -p /var/cache/apt/archives
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+          sudo chmod o+w /var/cache/apt/archives
 
       - name: Cache apt packages
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
-          path: /var/cache/apt/archives
+          ## Glob to *.deb only. Excludes archives/partial/ (owned
+          ## _apt:root mode 0700, unreadable by the runner) and
+          ## archives/lock; the .deb files are the only
+          ## cache-valuable content. Side effect: the cache-save
+          ## post-step never traverses partial/, so apt-get install
+          ## recreating it as _apt:root mode 0700 is harmless.
+          path: /var/cache/apt/archives/*.deb
           key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
 
       - name: Install bandit
-        ## Trailing chown: apt-get install recreates the
-        ## archives/partial/ subdirectory as _apt:root mode 0700
-        ## regardless of the parent's ownership. The cache action's
-        ## post-step tars the cached path as the unprivileged runner
-        ## user; without this re-chown, tar fails to open partial/
-        ## and emits 'Failed to save: tar ... exit code 2', so the
-        ## cache never persists across runs.
         run: |
           sudo --non-interactive apt-get update --error-on=any
           sudo --non-interactive apt-get install --yes --no-install-recommends \
             bandit
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
       - name: Checkout developer-meta-files (discovery + step-summary helpers)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
