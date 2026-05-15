@@ -1,3 +1,183 @@
+commit 996af11dc73a329177cb6d9b6b7f82f1302e3d1b
+Merge: 70fc09f cd7e21d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:58:12 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit cd7e21d52b96eeb75dc887ac11177f0987e329a6
+Merge: 70fc09f aa11f96
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 15:27:41 2026 -0400
+
+    Merge pull request #91 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(security): fork-PR guard + DMF_REF env routing for dogfood checkout
+
+commit aa11f961652e979c728b24c1d7e6c0854782184b
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 19:21:25 2026 +0000
+
+    ci(security): route dogfood checkout ref through env (DMF_REF)
+
+    Follow-on to the fork-PR guard. Routes the dogfood-vs-master
+    checkout-ref expression through a job-level env var (DMF_REF) in
+    all six reusables that share the pattern, matching the org-wide
+    env-routing convention already used for JOB_STATUS / BASE_REF /
+    CPPCHECK_PATHS / etc.
+
+    Before:
+
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/...' && github.sha || 'master' }}
+
+    After:
+
+        env:
+          DMF_REF: ${{ github.repository == 'org-ai-assisted/...' && github.sha || 'master' }}
+        ...
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ env.DMF_REF }}
+
+    Files (single source of truth, propagated to consumers only via
+    reusable @master tracking - no consumer-side ref changes):
+
+    - reusable-bandit.yml
+    - reusable-codeql.yml
+    - reusable-cppcheck.yml
+    - reusable-pre-push-static.yml
+    - reusable-scorecard.yml
+    - reusable-secrets-audit.yml
+
+    The job-level fork-PR guard added in the previous commit remains
+    the actual mitigation for actions/untrusted-checkout/medium alert
+    #15 - CodeQL's dataflow tracker follows env-var references, so
+    indirection alone doesn't break the source-to-sink path. Env
+    routing is added here for convention consistency and to keep the
+    attacker-influenceable expression out of the with:/ref: site, not
+    because it independently closes the alert.
+
+    YAML still parses; agents/pre-push-static.sh passes; no expression-
+    injection sites regressed (find-expr-injection scan: 0 hits).
+
+commit cfe9646be2b0e4d1e9cf497d4905655a9b4258ac
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 19:11:24 2026 +0000
+
+    ci(security): add fork-PR guard to pre-push-static + secrets-audit
+
+    Closes CodeQL actions/untrusted-checkout/medium alert #15
+    ("Checkout of untrusted code in trusted context") and the same
+    latent pattern in reusable-secrets-audit.yml.
+
+    Both reusables share a dogfood checkout that resolves to
+    ${{ github.sha }} when the caller IS developer-meta-files, falling
+    back to 'master' otherwise. On a pull_request event from a fork
+    that path would run an attacker-controlled script in the runner.
+    Trigger is pull_request (not pull_request_target) and permissions
+    are contents: read only, so the blast radius is bounded - but the
+    guard is the standard org-wide mitigation and the four other
+    reusables that share this pattern (bandit, codeql, scorecard,
+    cppcheck) already carry it.
+
+    Adding:
+
+        if: github.event.pull_request.head.repo.full_name == github.repository
+            || github.event_name != 'pull_request'
+
+    at job level. Net effect:
+
+    - Fork PRs: job skipped (closes the alert path).
+    - Same-repo branch PRs: job runs (dogfooding preserved; org members
+      all have write, trusted by agents/security.md threat model A).
+    - push / workflow_dispatch: job runs (event_name discriminator).
+    - Cross-repo callers (derivative-maker, helper-scripts, ...): job
+      runs and the dogfood ref already resolves to 'master', so no
+      behavior change there.
+
+    YAML still parses; agents/pre-push-static.sh passes.
+
+commit 70fc09facaf4b7a1a08525e605b8291d740b42bc
+Merge: a436fbb 509f0dc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:07:57 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit a436fbb45b5765511a957d78ef563c403c82639d
+Merge: ff8bf9c 650de18
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:05:25 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-developer-meta-files-vHKKI'
+
+commit 509f0dcb0a4ae502abff987ae7ab02886ddcf347
+Merge: ff8bf9c 650de18
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 15:04:43 2026 -0400
+
+    Merge pull request #90 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(security): close remaining expression-injection sinks in run: blocks
+
+commit 650de18068bec320e32ccb60c20832d21db71e1b
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 18:59:23 2026 +0000
+
+    ci(security): close remaining expression-injection sinks in run: blocks
+
+    Follow-up to 3add64d2 ("Potential fix for code scanning alert no. 36:
+    Code injection"), which fixed reusable-codeql.yml. Sweep of the
+    remaining workflows turned up 10 more inline ${{ ... }} expressions
+    interpolated into shell args inside run: blocks - the same pattern
+    CodeQL's js/actions/command-injection (a.k.a. actions/expression-
+    injection) query flags regardless of whether the underlying value is
+    server-validated.
+
+    Fix shape mirrors the autofix: route every value through step-level
+    env: and consume with shell-native ${VAR} expansion in run:.
+
+    Files touched:
+    - reusable-bandit.yml         (1 sink: job.status)
+    - reusable-cppcheck.yml       (1 sink: job.status; CPPCHECK_PATHS
+                                   already routed via env)
+    - reusable-scorecard.yml      (3 sinks: job.status, github.server_url,
+                                   github.repository)
+    - reusable-secrets-audit.yml  (5 sinks: 4x conditional 'present'/
+                                   'absent' labels + job.status)
+
+    For reusable-secrets-audit.yml the conditional 'present'/'absent'
+    resolution is hoisted into the env: block - the expression engine
+    evaluates it server-side before the env var is assigned, so the
+    shell only sees a literal string.
+
+    Verified clean by scanning all .github/workflows/*.yml and
+    consumer-templates/.github/workflows/*.yml for the same pattern; 0
+    hits remaining. YAML still parses, agents/pre-push-static.sh passes.
+
+commit ff8bf9c51423d08c42340f2e1b55ad8db476a7be
+Merge: 32d9a4c 3add64d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:52:36 2026 -0400
+
+    Merge remote-tracking branch 'github-kicksecure/alert-autofix-36'
+
+commit 3add64d26fa039c17b71a9716d1bd9ff52e61646
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:51:48 2026 -0400
+
+    Potential fix for code scanning alert no. 36: Code injection
+
+    Co-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>
+
+commit 32d9a4c0d45fba0f6ea371b480be8df98d4152a8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 18:45:58 2026 +0000
+
+    bumped changelog version
+
 commit 26fd0415224658e8e0d01b257218d6dc3196f4aa
 Merge: 32932cc c901cc0
 Author: Patrick Schleizer <adrelanos@whonix.org>
