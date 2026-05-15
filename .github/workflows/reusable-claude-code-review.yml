@@ -199,7 +199,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@62238ddb33772a079b0a6d8665a1ff3043583067  # v1
+        uses: anthropics/claude-code-action@51ea8ea73a139f2a74ff649e3092c25a904aed7e  # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           ## Note: the action no longer accepts an 'allowed_users'
