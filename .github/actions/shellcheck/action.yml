@@ -71,4 +71,3 @@ runs:
       ## ${{ github.action_path }} (template, expanded before the
       ## shell runs). Same container-safety rationale as install-deps.
       run: "$GITHUB_ACTION_PATH/run-shellcheck.sh"
-
