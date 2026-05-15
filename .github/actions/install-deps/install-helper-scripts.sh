@@ -41,9 +41,12 @@ if ! command -v genmkfile >/dev/null 2>&1; then
    exit 1
 fi
 
+## Trailing '--' in the array terminates sudo's option parsing -
+## defense in depth so a future prepended argument cannot smuggle
+## a sudo flag.
 sudo_prefix=()
 if [ "$(id -u)" -ne 0 ]; then
-   sudo_prefix=(sudo --non-interactive)
+   sudo_prefix=(sudo --non-interactive --)
 fi
 
 readonly sudo_prefix
