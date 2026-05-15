@@ -57,6 +57,19 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: debian:trixie-slim
+
+    ## Fork-PR guard: a no-op unless the caller routes pull_request
+    ## events into us, in which case it blocks PRs from forks. The
+    ## dogfooding arm below checks out developer-meta-files at
+    ## github.sha when the caller IS developer-meta-files - a fork
+    ## PR there would mean attacker-controlled gate-script content
+    ## runs in the runner. Same-repo branch PRs still run; those go
+    ## through code review (members all have write) and are trusted
+    ## by the threat model in agents/security.md. Matches the guard
+    ## on reusable-bandit/codeql/scorecard/cppcheck. Closes CodeQL
+    ## actions/untrusted-checkout/medium alert #15.
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+
     timeout-minutes: 5
     permissions:
       contents: read
@@ -69,6 +82,13 @@ jobs:
           inputs.base-ref != '' && inputs.base-ref
           || (github.base_ref != '' && format('origin/{0}', github.base_ref) || 'origin/master')
         }}
+      ## Dogfood ref: caller's commit when developer-meta-files is its
+      ## own caller (so a PR that modifies the script under test gets
+      ## exercised); 'master' for every other caller. Routed through
+      ## env for the org-wide env-routing convention (same shape as
+      ## BASE_REF / JOB_STATUS). The job-level fork-PR guard above is
+      ## the actual mitigation for actions/untrusted-checkout.
+      DMF_REF: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
     steps:
       - name: Install dependencies (apt only)
         ## R-100: 4 lines, no control flow -- inline is acceptable.
@@ -90,7 +110,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
 
