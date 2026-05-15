@@ -81,6 +81,21 @@ jobs:
       - name: Run mock-API test suite
         run: ./ci/test-github-org-tools.sh
 
+      - name: Emit step summary
+        if: always()
+        ## Minimal panel surfacing pass/fail + which event triggered
+        ## the run. Template-substituted values routed through env:
+        ## per #87 (avoid CodeQL inline-${{...}}-in-run: flag).
+        env:
+          JOB_STATUS: ${{ job.status }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          ./ci/step-summary-emit.sh \
+            --tool 'github-org tools (mock-API tests)' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "trigger=${EVENT_NAME}"
+
       ## The live unauth smoke probe used to live here. It moved to
       ## .github/workflows/local-org-policy-live-probe.yml because
       ## it is a real-API call,
