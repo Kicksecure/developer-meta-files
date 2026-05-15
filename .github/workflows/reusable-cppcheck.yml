@@ -118,10 +118,19 @@ jobs:
       - name: Install cppcheck + yq
         ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper, which
         ## ci/dm-consumer-load.sh expects.
+        ##
+        ## Trailing chown: apt-get install recreates the
+        ## archives/partial/ subdirectory as _apt:root mode 0700
+        ## regardless of the parent's ownership. The cache action's
+        ## post-step tars the cached path as the unprivileged runner
+        ## user; without this re-chown, tar fails to open partial/
+        ## and emits 'Failed to save: tar ... exit code 2', so the
+        ## cache never persists across runs.
         run: |
           sudo --non-interactive apt-get update --error-on=any
           sudo --non-interactive apt-get install --yes --no-install-recommends \
             cppcheck yq
+          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg

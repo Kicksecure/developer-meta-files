@@ -231,12 +231,21 @@ jobs:
           ## '--' after sudo / before the array terminates sudo's
           ## and apt-get's option parsing respectively. Same pattern
           ## as install-deps; see agents/github-actions-security.md.
+          ##
+          ## Trailing chown: apt-get install recreates the
+          ## archives/partial/ subdirectory as _apt:root mode 0700
+          ## regardless of the parent's ownership. The cache action's
+          ## post-step tars the cached path as the unprivileged runner
+          ## user; without this re-chown, tar fails to open partial/
+          ## and emits 'Failed to save: tar ... exit code 2', so the
+          ## cache never persists across runs.
           APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
           sudo --non-interactive -- apt-get update --error-on=any
           apt_packages=()
           read -r -a apt_packages <<< "$APT_PACKAGES"
           sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
+          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'
