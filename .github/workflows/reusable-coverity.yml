@@ -25,8 +25,30 @@
 ## to forward exactly COVERITY_SCAN_TOKEN and COVERITY_SCAN_EMAIL.
 ## Callers must use an explicit 'secrets:' map - 'secrets: inherit'
 ## bypasses the schema (it forwards every caller-side secret
-## regardless). Run .github/workflows/secrets-audit.yml manually to
-## verify the secrets surface.
+## regardless). Run consumer-secrets-audit.yml manually to verify
+## the secrets surface.
+##
+## Secrets are scoped to the individual steps that need them
+## (Sanity check secrets / Download Coverity Build Tool / Submit
+## to Coverity Scan) - NOT to job-level env: - so the pre-gate
+## steps and any non-canonical run never see the token values.
+## See agents/github-actions-consumer-templates.md
+## "Coverity canonical-repos gate placement".
+##
+## ## Per-repo configuration: .github/dm-consumer.yml
+##
+## Per-repo values are read at workflow runtime from
+## .github/dm-consumer.yml in the consumer repo. Schema:
+##
+##   coverity:
+##     project-name:    "<scan.coverity.com project>"  # required
+##     canonical-repos: "<owner>/<repo>[,<owner>/<repo>...]"  # required
+##     apt-packages:    "<space-separated apt deps>"  # optional, default empty
+##     build-command:   "<bash invocation>"           # optional, default empty
+##
+## Missing required keys hard-fail at workflow start. Missing
+## optional keys treat as empty (no apt-install step, Python-only
+## build via ci/coverity-build-python.sh).
 ##
 ## ## Caller responsibilities
 ##
@@ -37,47 +59,8 @@
 ## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
 ## - Forward via explicit 'secrets:' map (see Caller example). Not
 ##   'inherit'.
-## - Set repo variable 'COVERITY_PROJECT' to the project name as it
-##   appears in the scan.coverity.com URL (or pass project-name
-##   input to override).
-##
-## ## Inputs
-##
-## - apt-packages    (optional)  Space-separated apt packages to
-##                               install before the build step.
-##                               Default empty.
-## - build-command   (optional)  Bash invocation that runs cov-build
-##                               under the runner's cwd (= consumer
-##                               repo root). cov-build is reachable
-##                               at ./cov-analysis/bin/cov-build
-##                               after the download step. If empty,
-##                               falls back to the Python-only
-##                               default in
-##                               developer-meta-files/ci/coverity-
-##                               build-python.sh.
-## - project-name    (optional)  Coverity project name. Falls back
-##                               to vars.COVERITY_PROJECT, then to
-##                               the GitHub repo's basename.
-## - timeout-minutes (optional)  Job timeout. Default 30.
-## - canonical-repos (optional)  Comma-separated 'owner/repo' list
-##                               where this workflow is allowed to
-##                               run on push/schedule. Forks must
-##                               use workflow_dispatch. Defaults to
-##                               only the canonical repo (the
-##                               'github.repository' the workflow is
-##                               called from); pass an explicit list
-##                               like
-##                               'Kicksecure/foo,org-ai-assisted/foo'
-##                               to allow both upstreams.
-## - dry-run         (optional)  When true, pack cov-int.tgz and
-##                               upload it as the workflow artifact
-##                               but skip the scan.coverity.com
-##                               submission. Useful for testing
-##                               changes to the workflow / build
-##                               command without consuming the
-##                               daily submission slot. Default
-##                               false. Naming matches the input
-##                               on vapier/coverity-scan-action.
+## - Author .github/dm-consumer.yml in the consumer repo with the
+##   required keys.
 ##
 ## ## Secrets
 ##
@@ -99,70 +82,37 @@
 ##                                    project shares one notification
 ##                                    address.
 ##
-## ## Caller example - Python-only repo
+## ## Caller example - byte-identical consumer wrapper
 ##
 ##   name: Coverity
 ##   on:
+##     push:
+##       tags:
+##         - '*'
 ##     schedule:
 ##       - cron: '0 6 * * 0'
 ##     workflow_dispatch:
 ##   permissions:
 ##     contents: read
+##   concurrency:
+##     group: ${{ github.workflow }}
+##     cancel-in-progress: false
 ##   jobs:
 ##     coverity:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-coverity.yml@master
-##       with:
-##         project-name: helper-scripts
 ##       secrets:
 ##         COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 ##         COVERITY_SCAN_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
 ##       permissions:
 ##         contents: read
 ##
-## ## Caller example - C/C++ repo
-##
-##   jobs:
-##     coverity:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-coverity.yml@master
-##       with:
-##         apt-packages: 'libevdev-dev libinput-dev libwayland-dev libxkbcommon-dev pkg-config'
-##         build-command: ./cov-analysis/bin/cov-build --dir cov-int make
-##         project-name: kloak
-##       secrets:
-##         COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-##         COVERITY_SCAN_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
-##       permissions:
-##         contents: read
+## Note: no 'with:' block on the reusable call. Per-repo values
+## live in the consumer's .github/dm-consumer.yml, read at runtime.
 
 name: Coverity Scan (reusable)
 
 on:
   workflow_call:
-    inputs:
-      apt-packages:
-        required: false
-        type: string
-        default: ""
-      build-command:
-        required: false
-        type: string
-        default: ""
-      project-name:
-        required: false
-        type: string
-        default: ""
-      timeout-minutes:
-        required: false
-        type: number
-        default: 30
-      canonical-repos:
-        required: false
-        type: string
-        default: ""
-      dry-run:
-        required: false
-        type: boolean
-        default: false
     secrets:
       COVERITY_SCAN_TOKEN:
         required: true
@@ -172,31 +122,24 @@ on:
 permissions:
   contents: read
 
-## Coverity Scan has a 1-build/day rate limit on the free public
-## service. cancel-in-progress=false because cancelling mid-flight
-## wastes the daily slot; parallel submissions queue server-side
-## anyway. Group is workflow-only (not workflow+ref) so only one
-## run per repo is in flight at any time across all branches/PRs.
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
+## No 'concurrency:' block - the caller's wrapper enforces the
+## singleton (`group: ${{ github.workflow }}`, `cancel-in-progress:
+## false`); declaring the same group here would cause Actions'
+## deadlock detector to fire ("Canceling since a deadlock was
+## detected for concurrency group: ..." between the top-level
+## workflow and this reusable, because `github.workflow` inside a
+## reusable resolves to the CALLER's workflow name). See
+## agents/github-actions.md G-A-006 "Reusable-side concurrency".
 
 jobs:
   coverity:
     name: Coverity Scan
-    runs-on: ubuntu-latest
-
-    if: >-
-      github.event_name == 'workflow_dispatch'
-      || inputs.canonical-repos == ''
-      || contains(format(',{0},', inputs.canonical-repos), format(',{0},', github.repository))
-
-    timeout-minutes: ${{ inputs.timeout-minutes }}
-
-    env:
-      COVERITY_PROJECT: ${{ inputs.project-name != '' && inputs.project-name || (vars.COVERITY_PROJECT != '' && vars.COVERITY_PROJECT || github.event.repository.name) }}
-      COVERITY_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-      COVERITY_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+    ## Pinned to ubuntu-24.04 so the apt-packaged yq (kislyuk's
+    ## python-yq jq wrapper) remains stable across runner-image
+    ## transitions; the config-load step's syntax depends on that
+    ## implementation.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     steps:
       - name: Checkout consumer repository
@@ -212,7 +155,41 @@ jobs:
           path: .github/dmf
           persist-credentials: false
 
+      - name: Install yq
+        ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
+        ## `// ""` defaults and `-r` raw output in the next step
+        ## are written for that implementation.
+        run: |
+          sudo --non-interactive apt-get update --error-on=any
+          sudo --non-interactive apt-get install --yes --no-install-recommends yq
+
+      - name: Load per-repo config from .github/dm-consumer.yml
+        id: cfg
+        ## See ci/dm-consumer-load.sh for the schema rules
+        ## (required hard-fail, optional empty-default, newline
+        ## rejection, hyphen->underscore output naming).
+        run: .github/dmf/ci/dm-consumer-load.sh
+          coverity
+          project-name,canonical-repos
+          apt-packages,build-command
+
+      - name: Canonical-repos gate
+        id: gate
+        ## See ci/canonical-repos-gate.sh. Step-level gate replaces
+        ## the old job-level if: (which referenced
+        ## inputs.canonical-repos, now read from dm-consumer.yml).
+        ## Strict by design: workflow_dispatch does NOT bypass.
+        env:
+          CANONICAL_REPOS: ${{ steps.cfg.outputs.canonical_repos }}
+          THIS_REPO: ${{ github.repository }}
+        run: .github/dmf/ci/canonical-repos-gate.sh
+
       - name: Sanity check secrets
+        if: steps.gate.outputs.allowed == 'true'
+        env:
+          COVERITY_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          COVERITY_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+          COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
         run: .github/dmf/ci/coverity-check-secrets.sh
 
       ## actions/cache runs as the unprivileged runner user; the
@@ -222,48 +199,62 @@ jobs:
       ## sudo) can still write to a runner-owned directory because
       ## root can write anywhere.
       - name: Prepare apt cache directory
-        if: inputs.apt-packages != ''
+        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         run: |
           sudo mkdir -p /var/cache/apt/archives
           sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
 
       ## First-party actions/cache. Caches downloaded .deb archives.
-          ## Key includes github.repository so different Coverity consumers
+      ## Key includes github.repository so different Coverity consumers
       ## (helper-scripts, kloak, ...) get distinct caches; key
       ## includes the reusable workflow file's hash so a change to
       ## the apt-install logic invalidates the cache.
       - name: Cache apt packages
-        if: inputs.apt-packages != ''
+        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
 
       - name: Install build dependencies
-        if: inputs.apt-packages != ''
+        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
+        env:
+          APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
           sudo --non-interactive apt-get update --error-on=any
+          # shellcheck disable=SC2086
           sudo --non-interactive apt-get install --yes --no-install-recommends \
-            ${{ inputs.apt-packages }}
+            ${APT_PACKAGES}
 
       - name: Download Coverity Build Tool
+        if: steps.gate.outputs.allowed == 'true'
+        env:
+          COVERITY_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
         run: .github/dmf/ci/coverity-download.sh
 
       - name: Run Coverity build (Python default)
-        if: inputs.build-command == ''
+        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.build_command == ''
         run: .github/dmf/ci/coverity-build-python.sh
 
       - name: Run Coverity build (caller-supplied)
-        if: inputs.build-command != ''
-        run: ${{ inputs.build-command }}
-
-      ## coverity-submit.sh always packs cov-int.tgz; when DRY_RUN is
-      ## true it skips the curl submission so the daily slot is not
-      ## consumed. The cov-int artifact still uploads via the next
-      ## step (if: always()).
-      - name: Submit to Coverity Scan
+        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.build_command != ''
         env:
-          DRY_RUN: ${{ inputs.dry-run }}
+          BUILD_COMMAND: ${{ steps.cfg.outputs.build_command }}
+        run: bash -c "${BUILD_COMMAND}"
+
+      ## coverity-submit.sh always packs cov-int.tgz. DRY_RUN is
+      ## hardcoded to false in this refactor: per the spec, dry-run
+      ## is not a wrapper-overridable input. Manual dry-runs can
+      ## be done in a development branch by editing the wrapper
+      ## temporarily.
+      - name: Submit to Coverity Scan
+        if: steps.gate.outputs.allowed == 'true'
+        env:
+          COVERITY_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          COVERITY_EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
+          COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
+          DRY_RUN: 'false'
         run: .github/dmf/ci/coverity-submit.sh
 
       - name: Upload cov-int artifact (always)

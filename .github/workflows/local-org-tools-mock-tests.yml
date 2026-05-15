@@ -29,14 +29,14 @@ on:
       - 'usr/bin/dm-github-*'
       - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
-      - '.github/workflows/test-github-org-tools.yml'
+      - '.github/workflows/local-org-tools-mock-tests.yml'
   pull_request:
     paths:
       - 'usr/bin/github-org-*'
       - 'usr/bin/dm-github-*'
       - 'usr/libexec/developer-meta-files/*.bsh'
       - 'ci/**'
-      - '.github/workflows/test-github-org-tools.yml'
+      - '.github/workflows/local-org-tools-mock-tests.yml'
   workflow_dispatch:
 
   ## Eventual default - run only on tag pushes (release candidates) +
@@ -82,7 +82,8 @@ jobs:
         run: ./ci/test-github-org-tools.sh
 
       ## The live unauth smoke probe used to live here. It moved to
-      ## .github/workflows/live.yml because it is a real-API call,
+      ## .github/workflows/local-org-policy-live-probe.yml because
+      ## it is a real-API call,
       ## logically distinct from the mock-API test suite this
       ## workflow runs. See agents/bash-style-guide.md "workflow YAML
       ## and ci scripts share a prefix".

@@ -7,7 +7,7 @@
 
 ## Submit cov-int output to Coverity Scan.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN
 ##   COVERITY_EMAIL
 ##   COVERITY_PROJECT
@@ -28,6 +28,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
 
 ## CI guard. Submits to scan.coverity.com using a repo secret.
 ## Refuse outside CI unless ALLOW_LOCAL=true is set explicitly.

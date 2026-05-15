@@ -27,6 +27,7 @@ feedback loop.
 | Writing bash | [`agents/bash-style-guide.md`](agents/bash-style-guide.md) |
 | Pre-push items the gate doesn't catch (manual review) | [`agents/pre-push-checklist.md`](agents/pre-push-checklist.md) |
 | GitHub Actions / reusable workflows | [`agents/github-actions.md`](agents/github-actions.md) |
+| Consumer-template propagation + per-repo overlays | [`agents/github-actions-consumer-templates.md`](agents/github-actions-consumer-templates.md) |
 | Threat model + trust boundaries | [`agents/security.md`](agents/security.md) |
 
 ## developer-meta-files only

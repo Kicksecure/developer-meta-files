@@ -24,12 +24,6 @@ markdown panel under the run. Currently zero workflows use it.
 Useful surface for "5 issues found / 0 errors / 3 warnings / 2
 info" in the PR check UI.
 
-### 7. PR template (`.github/PULL_REQUEST_TEMPLATE.md`)
-
-Standardize PR descriptions org-wide. Sections: Summary, Why,
-Test plan, Related. Currently each PR opens with whatever
-structure the author chose.
-
 ### 8. Workflow trigger normalization
 
 Some workflows trigger on push to master only, some on every
@@ -47,13 +41,6 @@ Validate in the reusable.
 
 ## Tier 3 - lower priority / requires consensus
 
-### 10. Pin all containers to digest
-
-`debian:trixie@sha256:...` form. Currently we pin actions but not
-containers. derivative-maker's `lint.yml` does pin
-(`debian:trixie@sha256:35b8ff...`); others use `debian:trixie` /
-`debian:stable` floating. Supply-chain analogue.
-
 ### 11. `workflow_run` cascade for diagnostics
 
 When a workflow fails opaquely (the usability-misc
@@ -62,17 +49,3 @@ triggered "diagnose-failure" workflow could fetch the workflow
 file, scan with our self-validator, post a check_run annotation
 explaining the likely cause. Closes the loop on "API doesn't
 surface annotations".
-
-### 12. Reusable-workflow `@<sha>` pinning (vs current `@master`)
-
-Currently first-party reusables are `@master`-tracked. Pinning
-each consumer reference to `@<sha>` with Dependabot bumps would
-be stronger supply chain but adds PR churn. G-A-004 explicitly
-accepts either; document the trade-off explicitly and pick a
-default.
-
-### 13. Unused-workflow audit
-
-Each repo has accumulated workflows; some may not have run in N
-days. Audit + propose removal for genuinely-dead workflows
-(e.g., the `codex-review` stub which is `if: false` everywhere).

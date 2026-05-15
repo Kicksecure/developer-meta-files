@@ -3,9 +3,14 @@
 
 ## AI-Assisted
 
-## Consumer wrapper for reusable-pre-push-static.yml. Every PR
-## (and every push to master) runs the same Tier-1 style-guide +
-## ASCII gate that the local hook (when installed) runs pre-push.
+## Managed by pkg_update_consumer_workflows. Byte-identical
+## across consumers; this file is `cp`-ed from
+## developer-meta-files/consumer-templates/.github/workflows/consumer-pre-push-static.yml.
+## DO NOT hand-edit this file in the consumer repo - changes
+## will be overwritten on the next propagation pass.
+##
+## Reusable docs:
+## https://github.com/org-ai-assisted/developer-meta-files/blob/master/.github/workflows/reusable-pre-push-static.yml
 
 name: pre-push static gate
 
