@@ -96,3 +96,17 @@ jobs:
 
       - name: Run pre-push-static.sh
         run: ./.github/dmf/agents/pre-push-static.sh "${BASE_REF}"
+
+      - name: Emit step summary
+        if: always()
+        ## Same pattern as reusable-bandit / reusable-secrets-audit:
+        ## one inline call (R-100 compliant - no control flow). Per-
+        ## hook FAIL details remain in the gate step's log; this
+        ## panel surfaces the headline result and the base ref so
+        ## the PR Checks tab tells the reader what was diffed.
+        run: |
+          .github/dmf/ci/step-summary-emit.sh \
+            --tool 'pre-push static gate' \
+            --column-header field \
+            --row "outcome=${{ job.status }}" \
+            --row "base-ref=${BASE_REF}"
