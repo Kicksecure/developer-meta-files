@@ -196,31 +196,21 @@ jobs:
           COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
         run: .github/dmf/ci/coverity-check-secrets.sh
 
-      ## First-party actions/cache. Caches downloaded .deb archives
-      ## in a runner-owned directory (NOT /var/cache/apt/archives),
-      ## so apt's permission model is never touched.
-      ##
-      ## /var/cache/apt/archives is root:root 0755 with an _apt:root
-      ## 0700 'partial/' subdirectory (apt drops privileges during
-      ## the download phase; partial/ holds unverified bytes).
-      ## actions/cache runs tar as the unprivileged runner user, so
-      ## caching that path directly requires either (a) chown'ing it
-      ## to the runner - clobbers apt's permission model and apt
-      ## recreates partial/ 0700 every install anyway - or (b) chmod
-      ## o+w on the parent - makes the system dir world-writable.
-      ## We sidestep both by caching ~/.apt-deb-cache and
-      ## sudo-copying .debs in/out in the install step.
+      ## Cache .debs in a runner-owned sidecar. See
+      ## ci/apt-install-with-cache.sh header for the rationale
+      ## (why NOT cache /var/cache/apt/archives directly).
       ##
       ## Key includes github.repository so different Coverity
       ## consumers (helper-scripts, kloak, ...) get distinct caches;
-      ## key includes the reusable workflow file's hash so a change
-      ## to the apt-install logic invalidates the cache.
+      ## key includes the reusable workflow file's hash AND the
+      ## helper-script hash so a change to either invalidates the
+      ## cache.
       - name: Cache apt downloads
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: ~/.apt-deb-cache
-          key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
+          key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml', '.github/dmf/ci/apt-install-with-cache.sh') }}
 
       - name: Install build dependencies
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
@@ -229,42 +219,13 @@ jobs:
           ## so shell metacharacters in the value cannot escape into
           ## the script during template substitution. Read into an
           ## array and expand as "${apt_packages[@]}" so each name
-          ## is a separately quoted argument (no glob expansion).
-          ## '--' after sudo / before the array terminates sudo's
-          ## and apt-get's option parsing respectively. Same pattern
-          ## as install-deps; see agents/github-actions-security.md.
+          ## becomes a separately quoted positional arg to the
+          ## helper script (which forwards them to apt-get install).
           APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
-        ## Seed/snapshot pattern:
-        ## - seed: sudo-copy previously-cached .debs into
-        ##   /var/cache/apt/archives/ so apt-get install reuses
-        ##   them instead of re-downloading.
-        ## - snapshot: copy newly-downloaded .debs back into the
-        ##   runner-owned cache dir for the next run. apt's .debs
-        ##   are root:root mode 0644 (world-readable), so the
-        ##   snapshot needs no sudo.
-        ##
-        ## shopt -s nullglob: a non-matching glob expands to empty
-        ## (instead of literal '*.deb'), so the (( ${#arr[@]} ))
-        ## guard correctly skips the copy on first run / empty
-        ## archive.
         run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          shopt -s nullglob
-          mkdir -p "$HOME/.apt-deb-cache"
-          seed_debs=("$HOME/.apt-deb-cache/"*.deb)
-          if (( ${#seed_debs[@]} > 0 )); then
-            sudo cp --no-clobber -- "${seed_debs[@]}" /var/cache/apt/archives/
-          fi
-          sudo --non-interactive -- apt-get update --error-on=any
           apt_packages=()
-          read -r -a apt_packages <<< "$APT_PACKAGES"
-          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
-          new_debs=(/var/cache/apt/archives/*.deb)
-          if (( ${#new_debs[@]} > 0 )); then
-            cp --no-clobber -- "${new_debs[@]}" "$HOME/.apt-deb-cache/"
-          fi
+          read -r -a apt_packages <<< "${APT_PACKAGES}"
+          .github/dmf/ci/apt-install-with-cache.sh "${apt_packages[@]}"
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'

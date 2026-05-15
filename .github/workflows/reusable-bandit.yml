@@ -105,65 +105,25 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Cache apt downloads
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          ## Runner-owned dir, NOT /var/cache/apt/archives.
-          ## /var/cache/apt/archives is root:root 0755 with an
-          ## _apt:root 0700 'partial/' subdirectory (apt drops
-          ## privileges during the download phase; partial/ holds
-          ## unverified bytes). actions/cache runs tar as the
-          ## unprivileged runner user, so caching that path
-          ## requires either (a) chown'ing it to the runner -
-          ## clobbers apt's permission model and apt recreates
-          ## partial/ 0700 every install anyway - or (b) chmod
-          ## o+w on the parent - makes the system dir
-          ## world-writable. We sidestep both by caching a
-          ## runner-owned dir and sudo-copying .debs in/out of
-          ## apt's archive in the install step. apt's
-          ## permissions are never touched.
-          path: ~/.apt-deb-cache
-          key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
-
-      - name: Install bandit
-        ## Seed/snapshot pattern:
-        ## - seed: sudo-copy previously-cached .debs into
-        ##   /var/cache/apt/archives/ so apt-get install reuses
-        ##   them instead of re-downloading.
-        ## - snapshot: copy newly-downloaded .debs back into the
-        ##   runner-owned cache dir for the next run. apt's .debs
-        ##   are root:root mode 0644 (world-readable), so the
-        ##   snapshot needs no sudo.
-        ##
-        ## shopt -s nullglob: a non-matching glob expands to empty
-        ## (instead of literal '*.deb'), so the (( ${#arr[@]} ))
-        ## guard correctly skips the copy on first run / empty
-        ## archive.
-        run: |
-          set -o errexit
-          set -o nounset
-          set -o pipefail
-          shopt -s nullglob
-          mkdir -p "$HOME/.apt-deb-cache"
-          seed_debs=("$HOME/.apt-deb-cache/"*.deb)
-          if (( ${#seed_debs[@]} > 0 )); then
-            sudo cp --no-clobber -- "${seed_debs[@]}" /var/cache/apt/archives/
-          fi
-          sudo --non-interactive apt-get update --error-on=any
-          sudo --non-interactive apt-get install --yes --no-install-recommends \
-            bandit
-          new_debs=(/var/cache/apt/archives/*.deb)
-          if (( ${#new_debs[@]} > 0 )); then
-            cp --no-clobber -- "${new_debs[@]}" "$HOME/.apt-deb-cache/"
-          fi
-
-      - name: Checkout developer-meta-files (discovery + step-summary helpers)
+      - name: Checkout developer-meta-files (apt-install-with-cache + discovery + step-summary helpers)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
+
+      ## Cache .debs in a runner-owned sidecar. See
+      ## ci/apt-install-with-cache.sh header for the rationale
+      ## (why NOT cache /var/cache/apt/archives directly).
+      - name: Cache apt downloads
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+        with:
+          path: ~/.apt-deb-cache
+          key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml', '.github/dmf/ci/apt-install-with-cache.sh') }}
+
+      - name: Install bandit
+        run: .github/dmf/ci/apt-install-with-cache.sh bandit
 
       - name: bandit
         ## Shebang-aware discovery via dmf helper. Feeds explicit
