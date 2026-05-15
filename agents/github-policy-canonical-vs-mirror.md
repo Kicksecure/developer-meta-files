@@ -63,8 +63,9 @@ Notes:
   constant in `github-policy-data.bsh`.
 - Secret scanning + push protection are about local git ops, not
   inbox routing, so they stay on everywhere.
-- Rulesets stay on everywhere; only the bypass-actor list pivots
-  (see Summary table below).
+- Rulesets stay on everywhere; the bypass-actor list and the
+  required_signatures rule both pivot on role (see Summary table
+  below).
 
 ## Summary of intentional canonical-vs-mirror splits
 
@@ -73,6 +74,7 @@ Notes:
 | Issue tracking | `has_issues=on` | `has_issues=off` (route upstream) |
 | Project boards / discussions / wikis | (default on, unset) | off |
 | Ruleset bypass | `[]` (no bypass) | `[OrgAdmin]` on MIRROR; `[]` on PERSON/BOT |
+| Ruleset `required_signatures` ("allow only signed commits") | **on** | on PERSON; **off on MIRROR / BOT** (AI-assisted automation pushes commits without a verifiable GPG key for the bot identity) |
 | CI / Actions | enabled, allow-list = github-owned + verified-creators | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on (it is where AI-assisted dev runs) |
 | Dependabot alerts + security updates | on | off (would duplicate upstream alerts) |
 | PVR (Private Vulnerability Reporting) | **off everywhere** (canonical disclosure is the wiki - see `.github/SECURITY.md`) | off |
@@ -84,14 +86,23 @@ Net deliberate diffs after this split:
    upstream.
 2. `[OrgAdmin]` ruleset bypass only on MIRROR (hotfix re-fork
    without dropping the ruleset); SOURCE/PERSON/BOT have no bypass.
-3. CI disabled entirely on PERSON/BOT (no workflows run on the
+3. `required_signatures` ruleset rule on SOURCE and PERSON only.
+   MIRROR (`org-ai-assisted`) and BOT (`assisted-by-ai` and
+   peers) drop the rule because AI-assisted pushes carry no GPG
+   key matching the bot's GitHub-verified identity, so leaving
+   the rule on would block every legitimate bot push. The
+   canonical SOURCE history and the maintainer's PERSON mirror
+   keep the rule. Dispatched via `POLICY_RULESET_RULES_<ROLE>`
+   in `github-policy-data.bsh` (same naming pattern as
+   `POLICY_RULESET_BYPASS_<ROLE>`).
+4. CI disabled entirely on PERSON/BOT (no workflows run on the
    personal mirrors); SOURCE/MIRROR run CI under the same selected-
    actions allow-list.
-4. Dependabot enabled only on SOURCE; PVR (Private Vulnerability
+5. Dependabot enabled only on SOURCE; PVR (Private Vulnerability
    Reporting) actively disabled everywhere because the canonical
    disclosure channel is the wiki (per `.github/SECURITY.md`),
    not GitHub's PVR flow.
-5. GitHub Pages cleanup (DELETE) only on PERSON/BOT.
+6. GitHub Pages cleanup (DELETE) only on PERSON/BOT.
 
 Everything else (fork-PR approval policy, workflow GITHUB_TOKEN
 permissions, secret scanning, rulesets) is identical content with

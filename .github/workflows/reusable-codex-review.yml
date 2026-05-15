@@ -37,8 +37,13 @@
 ##   2. Uncomment the archived 'review:' block at the bottom
 ##      (remove the leading '## ' on each line of the block
 ##      between the BEGIN/END markers).
-##   3. Update the file 'name:' from "DISABLED" to drop the suffix.
-##   4. Update this header doc status accordingly.
+##   3. Re-add the 'secrets:' schema under 'on.workflow_call:'
+##      (see the inline note near the inputs schema below).
+##      Without this step every consumer's secrets: forward for
+##      OPENAI_API_KEY is silently ignored and the action receives
+##      an empty key at runtime.
+##   4. Update the file 'name:' from "DISABLED" to drop the suffix.
+##   5. Update this header doc status accordingly.
 ##
 ## ## What this does NOT disable
 ##
@@ -109,23 +114,34 @@ on:
         required: false
         type: number
         default: 30
-    ## When re-enabling, consider tightening to an explicit
-    ## 'secrets:' schema declaration mirroring the Claude reusable's
-    ## hardening (force callers to pass OPENAI_API_KEY explicitly
-    ## rather than via 'secrets: inherit'). Currently kept loose
-    ## since the active stub does not read any secrets.
+    ## When re-enabling, you MUST re-add an explicit 'secrets:'
+    ## schema declaration here:
+    ##
+    ##   secrets:
+    ##     OPENAI_API_KEY:
+    ##       required: true
+    ##
+    ## Consumers (consumer-codex-review.yml) already forward
+    ## OPENAI_API_KEY via an explicit secrets: map, but with no
+    ## schema declared here that forward is silently ignored by
+    ## Actions - the action call inside the archived 'review:' job
+    ## would then receive an empty 'openai-api-key' input and fail
+    ## opaquely at runtime. The schema makes the contract
+    ## load-time-enforced instead. Mirrors the Claude reusable's
+    ## hardening; same rationale (forces explicit forwarding vs
+    ## 'secrets: inherit').
 
 permissions:
   contents: read
 
-## Concurrency key includes the PR/issue number so different PRs
-## don't share a group on issue_comment events (which run on the
-## default branch ref, not the PR head ref). Kept identical to the
-## archived implementation so a future re-enable does not change
-## concurrency semantics mid-flight.
-concurrency:
-  group: ${{ github.workflow }}-${{ inputs.pr-ref || github.event.pull_request.number || github.event.issue.number || github.ref }}
-  cancel-in-progress: true
+## No reusable-side concurrency block. Per agents/github-actions.md
+## G-A-006: github.workflow inside a reusable resolves to the
+## caller's workflow name, so a reusable that declares a group key
+## the caller cannot disambiguate produces an identical lock to the
+## caller's and self-cancels. The caller's lock lives in
+## consumer-codex-review.yml and covers this reusable's runs. When
+## re-enabling the archived job body below, do NOT re-add a
+## concurrency block here.
 
 jobs:
   ## ACTIVE: kill-switch stub. Every consumer wrapper calls this

@@ -159,9 +159,13 @@ jobs:
         ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
         ## `// ""` defaults and `-r` raw output in the next step
         ## are written for that implementation.
+        ##
+        ## '--' after sudo terminates sudo's option parsing; '--'
+        ## before the package name terminates apt-get's. Defense
+        ## in depth; matches the install-deps pattern.
         run: |
-          sudo --non-interactive apt-get update --error-on=any
-          sudo --non-interactive apt-get install --yes --no-install-recommends yq
+          sudo --non-interactive -- apt-get update --error-on=any
+          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- yq
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
@@ -219,12 +223,20 @@ jobs:
       - name: Install build dependencies
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         env:
+          ## Per-repo apt list arrives via env (not inlined in run:)
+          ## so shell metacharacters in the value cannot escape into
+          ## the script during template substitution. Read into an
+          ## array and expand as "${apt_packages[@]}" so each name
+          ## is a separately quoted argument (no glob expansion).
+          ## '--' after sudo / before the array terminates sudo's
+          ## and apt-get's option parsing respectively. Same pattern
+          ## as install-deps; see agents/github-actions-security.md.
           APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
-          sudo --non-interactive apt-get update --error-on=any
-          # shellcheck disable=SC2086
-          sudo --non-interactive apt-get install --yes --no-install-recommends \
-            ${APT_PACKAGES}
+          sudo --non-interactive -- apt-get update --error-on=any
+          apt_packages=()
+          read -r -a apt_packages <<< "$APT_PACKAGES"
+          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'
@@ -265,3 +277,32 @@ jobs:
           path: cov-int.tgz
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Emit step summary
+        if: always()
+        ## R-100 compliant (no control flow). 'canonical' is false on
+        ## mirror runs where the gate skipped the heavy steps -
+        ## useful signal in the PR Checks tab. The dashboard link is
+        ## a navigation hint, not a deep link to the run;
+        ## scan.coverity.com renders the slash in project_name as a
+        ## dash for display but accepts either form for navigation.
+        ##
+        ## All template-substituted values (job.status,
+        ## steps.cfg.outputs.project_name, steps.gate.outputs.allowed)
+        ## flow through env: so they cannot break out of the run:
+        ## block via shell metacharacters - same pattern as #80/#84/
+        ## #86. project_name in particular is read from the consumer
+        ## repo's dm-consumer.yml (PR-author-controllable), so env
+        ## routing is the right defense.
+        env:
+          JOB_STATUS: ${{ job.status }}
+          CANONICAL: ${{ steps.gate.outputs.allowed || 'false' }}
+          PROJECT_NAME: ${{ steps.cfg.outputs.project_name || 'unknown' }}
+        run: |
+          .github/dmf/ci/step-summary-emit.sh \
+            --tool 'Coverity Scan' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "canonical=${CANONICAL}" \
+            --row "project=${PROJECT_NAME}" \
+            --details-url "https://scan.coverity.com/projects"

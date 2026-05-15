@@ -19,6 +19,18 @@
 ## Source via:
 ##   source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
+## R-010 strict-mode quintet. Pure-data file (sourced, no
+## execution), so these are a no-op at parse time; included to
+## satisfy the gate's textual check and so that anyone sourcing
+## this file from a non-strict context inherits the same
+## guarantees the callers set on themselves.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 ## ============================================================================
 ## Shared bodies - used by both org and personal policy
 ## ============================================================================
@@ -300,14 +312,27 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ## Branch + tag ruleset body shapes. POSTed to
 ## /orgs/{org}/rulesets or /repos/{owner}/{repo}/rulesets via the
 ## policy_*_ruleset_body factories in github-policy-lib.bsh; the
-## factories inject $name and $bypass.
+## factories inject $name, $bypass, and $rules.
 ##
-## The three rules everywhere:
+## Two base rules everywhere:
 ##   - deletion           block deletion of the protected ref
 ##   - non_fast_forward   block force-push (rewriting history)
+##
+## A third optional rule pivots on role:
 ##   - required_signatures   require GPG-signed commits / tags
 ##
-## Operator note on required_signatures + GitHub's UI merge buttons:
+## POLICY_RULESET_RULES_<ROLE> below selects the rules array per
+## role. SOURCE and PERSON include required_signatures; MIRROR and
+## BOT omit it. Rationale: the bot account (BOT_USERS) and the bot
+## org (org-ai-assisted, the MIRROR_ORGS entry) push commits via
+## AI-assisted automation that does not own a GPG key matching the
+## bot's GitHub-verified identity, so required_signatures on those
+## roles blocks every legitimate bot push. The canonical SOURCE
+## history (Kicksecure / Whonix) and the maintainer's PERSON mirror
+## still enforce signed commits.
+##
+## Operator note on required_signatures + GitHub's UI merge buttons
+## (applies to SOURCE / PERSON only):
 ##   "Merge pull request" and "Squash and merge" re-sign the produced
 ##     commit with GitHub's web-flow GPG key, so they keep working on
 ##     PRs with unsigned contributor commits.
@@ -325,6 +350,31 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##                              repo-level config
 ##   - required_linear_history  breaks some merge workflows
 
+## Role-keyed rules arrays. Resolved by the apply scripts via
+## POLICY_RULESET_RULES_${kind^^} (same dynamic-variable-name pattern
+## as POLICY_RULESET_BYPASS_${kind^^}). Unlike the body templates
+## above, these are strict JSON (quoted keys) because they flow into
+## jq via --argjson, which requires JSON input - not the relaxed jq
+## syntax the body templates use.
+readonly POLICY_RULESET_RULES_SOURCE='[
+   {"type": "deletion"},
+   {"type": "non_fast_forward"},
+   {"type": "required_signatures"}
+]'
+readonly POLICY_RULESET_RULES_MIRROR='[
+   {"type": "deletion"},
+   {"type": "non_fast_forward"}
+]'
+readonly POLICY_RULESET_RULES_PERSON='[
+   {"type": "deletion"},
+   {"type": "non_fast_forward"},
+   {"type": "required_signatures"}
+]'
+readonly POLICY_RULESET_RULES_BOT='[
+   {"type": "deletion"},
+   {"type": "non_fast_forward"}
+]'
+
 ## PAID PLAN ONLY: org-scoped ruleset (uses ~ALL repository_name
 ## condition). Sent to /orgs/{org}/rulesets, Team+ only.
 # readonly POLICY_BRANCH_RULESET_BODY_ORG='{
@@ -336,11 +386,7 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 #       ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] },
 #       repository_name: { include: ["~ALL"], exclude: [] }
 #    },
-#    rules: [
-#       { type: "deletion" },
-#       { type: "non_fast_forward" },
-#       { type: "required_signatures" }
-#    ]
+#    rules: $rules
 # }'
 
 readonly POLICY_BRANCH_RULESET_BODY_REPO='{
@@ -351,11 +397,7 @@ readonly POLICY_BRANCH_RULESET_BODY_REPO='{
    conditions: {
       ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] }
    },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
+   rules: $rules
 }'
 
 ## PAID PLAN ONLY: see POLICY_BRANCH_RULESET_BODY_ORG note above.
@@ -368,11 +410,7 @@ readonly POLICY_BRANCH_RULESET_BODY_REPO='{
 #       ref_name: { include: ["~ALL"], exclude: [] },
 #       repository_name: { include: ["~ALL"], exclude: [] }
 #    },
-#    rules: [
-#       { type: "deletion" },
-#       { type: "non_fast_forward" },
-#       { type: "required_signatures" }
-#    ]
+#    rules: $rules
 # }'
 
 readonly POLICY_TAG_RULESET_BODY_REPO='{
@@ -383,11 +421,7 @@ readonly POLICY_TAG_RULESET_BODY_REPO='{
    conditions: {
       ref_name: { include: ["~ALL"], exclude: [] }
    },
-   rules: [
-      { type: "deletion" },
-      { type: "non_fast_forward" },
-      { type: "required_signatures" }
-   ]
+   rules: $rules
 }'
 
 ## ============================================================================

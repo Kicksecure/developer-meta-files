@@ -96,3 +96,25 @@ jobs:
 
       - name: Run pre-push-static.sh
         run: ./.github/dmf/agents/pre-push-static.sh "${BASE_REF}"
+
+      - name: Emit step summary
+        if: always()
+        ## Per-hook FAIL details remain in the gate step's log;
+        ## this panel surfaces the headline result and the base ref
+        ## so the PR Checks tab tells the reader what was diffed.
+        ## R-100 compliant (no control flow).
+        ##
+        ## Template-substituted values (job.status here) MUST flow
+        ## through env: so they cannot break out of the run: block
+        ## via shell metacharacters - same pattern as #80/#84/#86.
+        ## job.status itself is GitHub-controlled, but env routing
+        ## is the org-wide convention regardless, and CodeQL flags
+        ## inline ${{ ... }} in run: bodies.
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          .github/dmf/ci/step-summary-emit.sh \
+            --tool 'pre-push static gate' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "base-ref=${BASE_REF}"

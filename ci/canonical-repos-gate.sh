@@ -1,4 +1,5 @@
 #!/bin/bash
+
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
@@ -30,7 +31,7 @@ set -o pipefail
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-if printf ',%s,' "${CANONICAL_REPOS}" | grep -F -q -- ",${THIS_REPO},"; then
+if printf ',%s,' "${CANONICAL_REPOS}" | grep --fixed-strings --quiet -- ",${THIS_REPO},"; then
    printf '%s\n' \
       "gate: ${THIS_REPO} is canonical (in '${CANONICAL_REPOS}'); allowing" >&2
    printf 'allowed=true\n' >> "${GITHUB_OUTPUT}"
