@@ -151,11 +151,19 @@ group: ...` and cancels the run. Reusables therefore either omit
 [`reusable-secrets-audit.yml`](../.github/workflows/reusable-secrets-audit.yml),
 [`reusable-scorecard.yml`](../.github/workflows/reusable-scorecard.yml),
 [`reusable-bandit.yml`](../.github/workflows/reusable-bandit.yml),
-[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml))
+[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml),
+[`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-code-review.yml),
+[`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml))
 or differentiate the group key with a per-call input the caller
 doesn't replicate ([`reusable-codeql.yml`](../.github/workflows/reusable-codeql.yml)
-adds `${{ inputs.language }}`; the AI-review reusables add a
-PR/issue-number disambiguator - see Issue-comment paragraph below).
+adds `${{ inputs.language }}` to a key the caller carries as
+`${{ github.workflow }}-${{ github.ref }}`, so the two locks
+differ). A naive "the reusable adds a PR/issue-number
+disambiguator" pattern does NOT differentiate when the caller's
+key carries the same disambiguator (both sides resolve to the
+same string under `github.workflow` = caller's name); the
+AI-review reusables therefore omit the block and let the
+consumer wrapper own the cancellable lock.
 
 **Singleton** (cancel=false, workflow-only group):
 
@@ -174,23 +182,36 @@ real cost:
   [`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
   inline comment.
 
-Consumers of singleton reusables must NOT set
+Singleton reusables follow the same caller-name resolution rule
+as cancellable reusables (see "Reusable-side concurrency" above):
+`github.workflow` inside the reusable expands to the caller's
+workflow name. A reusable that declares `group: ${{ github.workflow }}`
+would resolve to the caller's group key, which the caller already
+holds; with `cancel-in-progress: false` the reusable would block-
+wait on its own caller's lock and deadlock the run. The singleton
+therefore lives on the **caller's** wrapper, and the reusable
+omits `concurrency:` entirely - see
+[`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
+which carries an explicit comment to that effect, and
+[`consumer-templates/.github/workflows/consumer-coverity.yml`](../consumer-templates/.github/workflows/consumer-coverity.yml)
+which owns the `group: ${{ github.workflow }}` + `cancel-in-progress: false`
+lock. Consumers of singleton reusables must NOT set
 `cancel-in-progress: true` at the wrapper level: a cancelled
-wrapper cancels its called workflow run, defeating the
-reusable's no-cancel guarantee. Either omit `concurrency:` at
-the wrapper level (the reusable's controls), or mirror the
-reusable's `group + cancel=false` policy explicitly.
+wrapper would cancel the in-flight call, defeating the no-cancel
+guarantee that protects the daily-quota-limited submit.
 
 **Issue-comment & PR-review-comment events** fire on the
 default branch ref, not the PR head ref - so grouping by
 `${{ github.ref }}` would put unrelated PRs into the same
-group. For AI-review workflows that listen on those events,
-the group key includes a PR/issue number disambiguator:
+group. The **consumer wrapper's** group key for AI-review
+workflows therefore includes a PR/issue number disambiguator
+(the disambiguator lives on the caller, not the reusable -
+see "Reusable-side concurrency" above for why):
 
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
 
-See [`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-code-review.yml)
-and [`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml)
+See [`consumer-templates/.github/workflows/consumer-claude-code.yml`](../consumer-templates/.github/workflows/consumer-claude-code.yml)
+and [`consumer-templates/.github/workflows/consumer-codex-review.yml`](../consumer-templates/.github/workflows/consumer-codex-review.yml)
 for the live example.
 
 

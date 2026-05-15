@@ -118,14 +118,14 @@ on:
 permissions:
   contents: read
 
-## Concurrency key includes the PR/issue number so different PRs
-## don't share a group on issue_comment events (which run on the
-## default branch ref, not the PR head ref). Kept identical to the
-## archived implementation so a future re-enable does not change
-## concurrency semantics mid-flight.
-concurrency:
-  group: ${{ github.workflow }}-${{ inputs.pr-ref || github.event.pull_request.number || github.event.issue.number || github.ref }}
-  cancel-in-progress: true
+## No reusable-side concurrency block. Per agents/github-actions.md
+## G-A-006: github.workflow inside a reusable resolves to the
+## caller's workflow name, so a reusable that declares a group key
+## the caller cannot disambiguate produces an identical lock to the
+## caller's and self-cancels. The caller's lock lives in
+## consumer-codex-review.yml and covers this reusable's runs. When
+## re-enabling the archived job body below, do NOT re-add a
+## concurrency block here.
 
 jobs:
   ## ACTIVE: kill-switch stub. Every consumer wrapper calls this
