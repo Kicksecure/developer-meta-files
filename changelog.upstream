@@ -1,3 +1,43 @@
+commit 26fd0415224658e8e0d01b257218d6dc3196f4aa
+Merge: 32932cc c901cc0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:41:37 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit c901cc0117c40ecfca6a1d3869797e79fb75b271
+Merge: 32932cc 9ecdc49
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 14:40:32 2026 -0400
+
+    Merge pull request #89 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(deps): bump github-actions group (claude-code-action, codeql-action)
+
+commit 32932ccfa69003d99b4c0ab013f7da335f1133f2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 18:38:16 2026 +0000
+
+    bumped changelog version
+
+commit 9ecdc49638114c119a6b4b4178bd3f1e5689ee80
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 18:13:38 2026 +0000
+
+    ci(deps): bump github-actions group (claude-code-action, codeql-action)
+
+    Ports Kicksecure/developer-meta-files#4 (Dependabot grouped update) to
+    the org-ai-assisted mirror, which does not run Dependabot itself per
+    agents/github-policy-canonical-vs-mirror.md.
+
+    - anthropics/claude-code-action: 62238ddb (v1.0.114) -> 51ea8ea7 (v1.0.123)
+    - github/codeql-action/init:        e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+    - github/codeql-action/analyze:     e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+    - github/codeql-action/upload-sarif:e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+
+    All three codeql-action usages move in lockstep to the same SHA so a
+    single run never mixes patch levels.
+
 commit 8b20a8a46629229fee423aea5929e3f7e8f71604
 Merge: 8d288ef 7d473d8
 Author: Patrick Schleizer <adrelanos@whonix.org>
