@@ -222,23 +222,22 @@ jobs:
 
       - name: Emit step summary
         if: always()
-        ## inputs.* are routed through env rather than interpolated
-        ## inline so a future caller passing a shell metacharacter
-        ## (or a future refactor that sources these from a less
-        ## trusted place) cannot turn this --row argument into a
-        ## shell-injection sink. github.server_url / github.repository
-        ## / job.status are server-validated enums/identifiers and
-        ## stay inline.
+        ## Route values through env and consume with shell-native
+        ## expansion inside run: to avoid expression interpolation
+        ## in shell arguments.
         env:
           CODEQL_LANGUAGE: ${{ inputs.language }}
           CODEQL_BUILD_MODE: ${{ inputs.build-mode }}
           CODEQL_QUERIES: ${{ inputs.queries }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool "CodeQL (${CODEQL_LANGUAGE})" \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
+            --row "outcome=${JOB_STATUS}" \
             --row "language=${CODEQL_LANGUAGE}" \
             --row "build-mode=${CODEQL_BUILD_MODE}" \
             --row "queries=${CODEQL_QUERIES}" \
-            --details-url "${{ github.server_url }}/${{ github.repository }}/security/code-scanning?tool_name=CodeQL"
+            --details-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/security/code-scanning?tool_name=CodeQL"
