@@ -159,9 +159,13 @@ jobs:
         ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper. The
         ## `// ""` defaults and `-r` raw output in the next step
         ## are written for that implementation.
+        ##
+        ## '--' after sudo terminates sudo's option parsing; '--'
+        ## before the package name terminates apt-get's. Defense
+        ## in depth; matches the install-deps pattern.
         run: |
-          sudo --non-interactive apt-get update --error-on=any
-          sudo --non-interactive apt-get install --yes --no-install-recommends yq
+          sudo --non-interactive -- apt-get update --error-on=any
+          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- yq
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
@@ -219,12 +223,20 @@ jobs:
       - name: Install build dependencies
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
         env:
+          ## Per-repo apt list arrives via env (not inlined in run:)
+          ## so shell metacharacters in the value cannot escape into
+          ## the script during template substitution. Read into an
+          ## array and expand as "${apt_packages[@]}" so each name
+          ## is a separately quoted argument (no glob expansion).
+          ## '--' after sudo / before the array terminates sudo's
+          ## and apt-get's option parsing respectively. Same pattern
+          ## as install-deps; see agents/github-actions-security.md.
           APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
-          sudo --non-interactive apt-get update --error-on=any
-          # shellcheck disable=SC2086
-          sudo --non-interactive apt-get install --yes --no-install-recommends \
-            ${APT_PACKAGES}
+          sudo --non-interactive -- apt-get update --error-on=any
+          apt_packages=()
+          read -r -a apt_packages <<< "$APT_PACKAGES"
+          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'
