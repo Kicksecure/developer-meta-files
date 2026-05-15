@@ -142,11 +142,16 @@ jobs:
 
       - name: Emit step summary
         if: always()
+        ## Route values through env and consume with shell-native
+        ## expansion inside run: to avoid expression interpolation
+        ## in shell arguments (CodeQL js/actions/command-injection).
+        env:
+          JOB_STATUS: ${{ job.status }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'bandit' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
+            --row "outcome=${JOB_STATUS}" \
             --row "severity=medium" \
             --row "confidence=medium" \
             --row "discovery=.py extension + shebang scan"

@@ -163,17 +163,18 @@ jobs:
       - name: Emit step summary
         if: always()
         ## Route steps.cfg.outputs.paths (sourced from the caller's
-        ## .github/dm-consumer.yml) through env rather than inlining
-        ## it into the shell command. dm-consumer-load.sh rejects
-        ## newlines, but env indirection adds a second layer that
-        ## survives refactors and satisfies CodeQL
+        ## .github/dm-consumer.yml) and job.status through env rather
+        ## than inlining into the shell command. dm-consumer-load.sh
+        ## rejects newlines, but env indirection adds a second layer
+        ## that survives refactors and satisfies CodeQL
         ## js/actions/command-injection.
         env:
           CPPCHECK_PATHS: ${{ steps.cfg.outputs.paths }}
+          JOB_STATUS: ${{ job.status }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'cppcheck' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
+            --row "outcome=${JOB_STATUS}" \
             --row "paths=${CPPCHECK_PATHS}" \
             --row "enable=warning,performance,portability"
