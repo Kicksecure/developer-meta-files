@@ -1,0 +1,85 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Composite action: install apt packages with a runner-owned .deb
+## cache sidecar.
+##
+## Wraps actions/cache (over ~/.apt-deb-cache, a runner-owned dir) +
+## an install helper that sudo-copies cached .debs into
+## /var/cache/apt/archives/ before apt-get install, then snapshots
+## newly-downloaded .debs back into the cache dir for the next run.
+##
+## Why a runner-owned sidecar (not caching /var/cache/apt/archives
+## directly):
+##
+## /var/cache/apt/archives is root:root 0755 with an _apt:root 0700
+## 'partial/' subdirectory (apt drops privileges during the
+## download phase; partial/ holds unverified bytes). actions/cache
+## runs tar as the unprivileged runner user, which can't read
+## partial/. Caching the system directory directly therefore
+## requires either (a) `sudo chown -R` (clobbers apt's permission
+## model, and apt recreates partial/ 0700 every install anyway -
+## a perpetual fight) or (b) `sudo chmod o+w` (drops a
+## world-writable bit on a system directory). Neither is
+## acceptable. A runner-owned sidecar avoids both.
+##
+## Usage:
+##
+##   - uses: actions/checkout@<sha>
+##   - uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+##     with:
+##       packages: 'cppcheck yq'
+##       cache-key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles('.github/workflows/<this>.yml') }}
+##
+## Caller responsibility:
+##   - cache-key uniqueness per workflow / per consumer so the
+##     caches do not cross-contaminate.
+##   - cache-key invalidation via hashFiles() on at least the
+##     consumer workflow file, so an apt-list change refreshes
+##     the cache.
+##
+## See agents/github-actions.md G-A-007 (cache poisoning): do NOT
+## use 'restore-keys:' with this action. The cache-key includes a
+## hashFiles() so a workflow change naturally invalidates. A broad
+## restore-keys would defeat that.
+
+name: 'apt-install-with-cache'
+description: 'Install apt packages with a runner-owned .deb cache sidecar (preserves apt permission model).'
+
+inputs:
+  packages:
+    description: 'Space-separated apt package names.'
+    required: true
+  cache-key:
+    description: 'Full cache key for the .deb sidecar (caller controls uniqueness and invalidation).'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Cache apt downloads
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
+      with:
+        path: ~/.apt-deb-cache
+        key: ${{ inputs.cache-key }}
+
+    - name: Install apt packages with .deb cache sidecar
+      shell: bash
+      env:
+        ## Route inputs.packages through env (not inlined in run:)
+        ## so shell metacharacters in the value cannot escape into
+        ## the script during template substitution. Same pattern
+        ## as install-deps/action.yml.
+        APT_PACKAGES: ${{ inputs.packages }}
+      ## $GITHUB_ACTION_PATH (shell env, runtime-resolved) instead
+      ## of ${{ github.action_path }} (template, expanded before
+      ## the shell runs). When the caller job uses 'container:',
+      ## the template expands to the host path which the container
+      ## cannot see; the env var resolves correctly. Same pattern
+      ## as install-deps/action.yml.
+      run: |
+        apt_packages=()
+        read -r -a apt_packages <<< "${APT_PACKAGES}"
+        "${GITHUB_ACTION_PATH}/install.sh" "${apt_packages[@]}"

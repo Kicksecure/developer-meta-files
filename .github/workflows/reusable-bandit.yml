@@ -105,25 +105,19 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Checkout developer-meta-files (apt-install-with-cache + discovery + step-summary helpers)
+      - name: Install bandit
+        uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: 'bandit'
+          cache-key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
+
+      - name: Checkout developer-meta-files (discovery + step-summary helpers)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
-
-      ## Cache .debs in a runner-owned sidecar. See
-      ## ci/apt-install-with-cache.sh header for the rationale
-      ## (why NOT cache /var/cache/apt/archives directly).
-      - name: Cache apt downloads
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: ~/.apt-deb-cache
-          key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml', '.github/dmf/ci/apt-install-with-cache.sh') }}
-
-      - name: Install bandit
-        run: .github/dmf/ci/apt-install-with-cache.sh bandit
 
       - name: bandit
         ## Shebang-aware discovery via dmf helper. Feeds explicit

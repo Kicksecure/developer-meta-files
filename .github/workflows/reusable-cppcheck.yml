@@ -104,19 +104,13 @@ jobs:
           path: .github/dmf
           persist-credentials: false
 
-      ## Cache .debs in a runner-owned sidecar. See
-      ## ci/apt-install-with-cache.sh header for the rationale
-      ## (why NOT cache /var/cache/apt/archives directly).
-      - name: Cache apt downloads
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: ~/.apt-deb-cache
-          key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles('.github/workflows/reusable-cppcheck.yml', '.github/dmf/ci/apt-install-with-cache.sh') }}
-
       - name: Install cppcheck + yq
         ## Ubuntu 24.04 ships kislyuk's python-yq jq wrapper, which
         ## ci/dm-consumer-load.sh expects.
-        run: .github/dmf/ci/apt-install-with-cache.sh cppcheck yq
+        uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: 'cppcheck yq'
+          cache-key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles('.github/workflows/reusable-cppcheck.yml') }}
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
