@@ -280,18 +280,29 @@ jobs:
 
       - name: Emit step summary
         if: always()
-        ## Same minimal pattern as reusable-bandit / reusable-secrets-
-        ## audit. R-100 compliant (no control flow). 'canonical' is
-        ## false on mirror runs where the gate skipped the heavy
-        ## steps - useful signal in the PR Checks tab. The dashboard
-        ## link is a navigation hint, not a deep link to the run;
-        ## scan.coverity.com renders the slash in 'project_name' as
-        ## a dash for display but accepts either form for navigation.
+        ## R-100 compliant (no control flow). 'canonical' is false on
+        ## mirror runs where the gate skipped the heavy steps -
+        ## useful signal in the PR Checks tab. The dashboard link is
+        ## a navigation hint, not a deep link to the run;
+        ## scan.coverity.com renders the slash in project_name as a
+        ## dash for display but accepts either form for navigation.
+        ##
+        ## All template-substituted values (job.status,
+        ## steps.cfg.outputs.project_name, steps.gate.outputs.allowed)
+        ## flow through env: so they cannot break out of the run:
+        ## block via shell metacharacters - same pattern as #80/#84/
+        ## #86. project_name in particular is read from the consumer
+        ## repo's dm-consumer.yml (PR-author-controllable), so env
+        ## routing is the right defense.
+        env:
+          JOB_STATUS: ${{ job.status }}
+          CANONICAL: ${{ steps.gate.outputs.allowed || 'false' }}
+          PROJECT_NAME: ${{ steps.cfg.outputs.project_name || 'unknown' }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'Coverity Scan' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
-            --row "canonical=${{ steps.gate.outputs.allowed || 'false' }}" \
-            --row "project=${{ steps.cfg.outputs.project_name || 'unknown' }}" \
+            --row "outcome=${JOB_STATUS}" \
+            --row "canonical=${CANONICAL}" \
+            --row "project=${PROJECT_NAME}" \
             --details-url "https://scan.coverity.com/projects"
