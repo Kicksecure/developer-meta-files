@@ -1,0 +1,124 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Self-CI for the apt-install-with-cache composite action.
+##
+## Why this exists:
+##
+## The reusable-{cppcheck,bandit,coverity}.yml workflows call the
+## composite action as
+##   uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+## Step-level `uses:` does NOT support context expressions in the
+## @ref portion (env / github contexts both rejected; see
+## https://github.com/orgs/community/discussions/63675 and the
+## "you can use env context in any key except `id` and `uses`"
+## clause in the GitHub Actions variables docs). Consequently, a
+## dmf PR that modifies .github/actions/apt-install-with-cache/
+## would be exercised by self-CI against the @master copy of the
+## action, NOT the PR's copy - so a breaking change in
+## install.sh could merge undetected.
+##
+## This workflow closes that dogfood gap: it uses a *local* path
+## reference (`uses: ./.github/actions/apt-install-with-cache`)
+## which IS bound to the PR's checkout, so the PR's version of the
+## action is what runs.
+
+name: apt-install-with-cache (self-test)
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/actions/apt-install-with-cache/**'
+      - '.github/workflows/local-apt-install-with-cache-self-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  self-test:
+    name: install via local action ref
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      ## Local action ref (uses: ./...) runs the PR's copy of the
+      ## composite action, not @master. The trivial `hello` package
+      ## exercises seed/install/snapshot without pulling heavy deps.
+      ## Cache key includes github.sha so each PR commit gets a
+      ## clean cache (no cross-PR contamination); the workflow runs
+      ## quickly enough that cache reuse is not the win we are
+      ## after - exercising the install logic is.
+      - name: Install hello via the PR's apt-install-with-cache
+        uses: ./.github/actions/apt-install-with-cache
+        with:
+          packages: 'hello'
+          cache-key: ${{ runner.os }}-apt-install-with-cache-self-test-${{ github.sha }}
+
+      - name: Verify hello installed
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          hello | head -1
+          dpkg-query --show --showformat='${Version}\n' hello
+
+      - name: Verify .deb snapshot landed in cache dir
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          ## install.sh's snapshot phase copies new .debs from
+          ## /var/cache/apt/archives/ into ~/.apt-deb-cache/. The
+          ## hello package was newly downloaded, so its .deb must
+          ## be present in the cache dir.
+          ls -la "${HOME}/.apt-deb-cache/"
+          if ! compgen -G "${HOME}/.apt-deb-cache/hello_"*'.deb' > /dev/null; then
+             printf '%s\n' '::error::install.sh snapshot phase did not place hello_*.deb in ~/.apt-deb-cache/' >&2
+             exit 1
+          fi
+
+      - name: Verify apt permission model untouched
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          ## The whole point of the runner-owned sidecar design is
+          ## that /var/cache/apt/archives stays root:root and
+          ## /var/cache/apt/archives/partial stays _apt:root 0700
+          ## (apt's normal posture). Regression-guard those.
+          parent_owner="$(stat --format='%U:%G' /var/cache/apt/archives)"
+          partial_owner="$(stat --format='%U:%G' /var/cache/apt/archives/partial)"
+          partial_mode="$(stat --format='%a' /var/cache/apt/archives/partial)"
+          printf '%s\n' "parent owner: ${parent_owner}"
+          printf '%s\n' "partial owner: ${partial_owner}"
+          printf '%s\n' "partial mode: ${partial_mode}"
+          if [ "${parent_owner}" != 'root:root' ]; then
+             printf '%s\n' "::error::expected /var/cache/apt/archives owner root:root, got ${parent_owner}" >&2
+             exit 1
+          fi
+          if [ "${partial_owner}" != '_apt:root' ]; then
+             printf '%s\n' "::error::expected /var/cache/apt/archives/partial owner _apt:root, got ${partial_owner}" >&2
+             exit 1
+          fi
+          if [ "${partial_mode}" != '700' ]; then
+             printf '%s\n' "::error::expected /var/cache/apt/archives/partial mode 700, got ${partial_mode}" >&2
+             exit 1
+          fi
