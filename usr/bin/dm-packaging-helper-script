@@ -1431,15 +1431,16 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
-   cp -- "${source_path}" "${destination_path}"
-   git add -- "${destination_path}"
+   cp --verbose -- "${source_path}" "${destination_path}"
+
+   true git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: ${FUNCNAME[0]}: nothing to commit"
       return 0
    fi
 
-   git commit -m "add .github/dependabot.yml"
+   true git commit -m "add .github/dependabot.yml"
 
    true
 }
