@@ -1339,6 +1339,7 @@ pkg_profile_d_zsh_creator() {
       fi
       printf '%s\n' "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
    done
+
    true
 }
 
@@ -1348,6 +1349,7 @@ pkg_copy_contributing_file() {
    repo_skip 'kloak' || return 0
 
    cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
+
    git add -- "${batch_current_package_path}/CONTRIBUTING.md"
    git commit -m "update"
 
@@ -1433,17 +1435,16 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
-   ## TODO: test
-   true cp --verbose -- "${source_path}" "${destination_path}"
+   cp --verbose -- "${source_path}" "${destination_path}"
 
-   true git add -- "${destination_path}"
+   git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: ${FUNCNAME[0]}: nothing to commit"
       return 0
    fi
 
-   true git commit -m "add .github/dependabot.yml"
+   git commit -m "add .github/dependabot.yml"
 
    true
 }
