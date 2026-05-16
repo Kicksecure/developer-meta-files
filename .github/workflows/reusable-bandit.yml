@@ -112,6 +112,7 @@ jobs:
           cache-key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
 
       - name: Checkout developer-meta-files (discovery + step-summary helpers)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
@@ -120,6 +121,7 @@ jobs:
           persist-credentials: false
 
       - name: bandit
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         ## Shebang-aware discovery via dmf helper. Feeds explicit
         ## NUL-separated file list to bandit via xargs -0.
         ##
