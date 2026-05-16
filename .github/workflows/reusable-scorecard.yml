@@ -143,7 +143,7 @@ jobs:
           persist-credentials: false
 
       - name: Emit step summary
-        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: always()
         ## Route values through env and consume with shell-native
         ## expansion inside run: to avoid expression interpolation
         ## in shell arguments (CodeQL js/actions/command-injection).

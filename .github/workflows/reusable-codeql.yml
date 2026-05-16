@@ -193,7 +193,7 @@ jobs:
 
       - name: Load per-repo config from .github/dm-consumer.yml
         id: cfg
-        if: inputs.dm-consumer-section != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: inputs.dm-consumer-section != ''
         env:
           DM_SECTION: ${{ inputs.dm-consumer-section }}
           BUILD_MODE: ${{ inputs.build-mode }}
