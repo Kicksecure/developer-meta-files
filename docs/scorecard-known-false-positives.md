@@ -243,6 +243,75 @@ trust-boundary recognition) yet exists for Signed-Releases -
 #3679 is the closest "this isn't how every project releases"
 ask but has no resolution.
 
+
+## actions/untrusted-checkout/medium (CodeQL Actions) on dmf-checkout steps
+
+**Affects**: every reusable workflow that checks
+`developer-meta-files` into `.github/dmf/` for downstream
+`ci/`-helper scripts -
+[`reusable-pre-push-static.yml`](../.github/workflows/reusable-pre-push-static.yml),
+[`reusable-bandit.yml`](../.github/workflows/reusable-bandit.yml),
+[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml),
+[`reusable-codeql.yml`](../.github/workflows/reusable-codeql.yml),
+[`reusable-secrets-audit.yml`](../.github/workflows/reusable-secrets-audit.yml),
+[`reusable-scorecard.yml`](../.github/workflows/reusable-scorecard.yml).
+
+**Why CodeQL reports it**: the rule fires on static properties
+("this job has write permissions AND it checks out cross-repo
+code") and ignores runtime guards - job-level `if:`, step-level
+`if:`, `persist-credentials: false` - none of them change the
+rule's evaluation. Empirically confirmed twice: alert #17 closed
+when step-level `if:` was added by the CodeQL autofix; #82
+opened at the same line on the next scan. PR #95 then added the
+same guard pattern to #18/#19/#66/#69/#70; the same scan flipped
+all six to "fixed" and opened #82-#87 at identical lines. The
+rule has no configuration to disable for a specific actor-trust
+posture, so the alerts regenerate on every scan.
+
+**Why it is intentional**: per
+[`agents/security.md`](../agents/security.md) Threat-model-A,
+`github.com` is the trust root for CI workflows in this org.
+Real mitigations (already in place):
+
+- Job-level `if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'`
+  blocks fork PRs from running the job at all. Same-repo PRs are
+  by definition org-member-authored and trusted under the model.
+- `persist-credentials: false` on every checkout (no token left
+  in the working tree).
+- No `pull_request_target` triggers anywhere in the org.
+- Cached payloads are apt `.deb`s re-verified by `apt-get install`
+  against fresh `Packages` metadata, per agents/github-actions.md
+  G-A-007.
+
+The codebase deliberately does not redesign these into a
+`pull_request` + `workflow_run` split (the rule's documented
+"clean" answer) - the trust model does not require the split,
+and the redesign would push real work onto every reusable for a
+purely cosmetic CodeQL improvement.
+
+## actions/unpinned-tag (CodeQL Actions) on first-party `@master` refs
+
+**Affects**:
+[`reusable-bandit.yml:109`](../.github/workflows/reusable-bandit.yml),
+[`reusable-coverity.yml:205`](../.github/workflows/reusable-coverity.yml),
+[`reusable-cppcheck.yml:111`](../.github/workflows/reusable-cppcheck.yml)
+- each carries `uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master`.
+
+**Why CodeQL reports it**: same shape as Scorecard's
+PinnedDependenciesID covered above - any `uses: <ref>@<non-sha>`
+triggers. CodeQL Actions has its own copy of the rule under a
+different ID.
+
+**Why it is intentional**: the G-A-004 rationale in the
+PinnedDependenciesID section above applies verbatim - first-
+party `org-ai-assisted/...` cross-repo refs use `@master`
+deliberately for single-source-of-truth update propagation. The
+composite action lives in this same repo as the reusable
+workflows that consume it; a SHA pin would create cross-file
+churn on every `install.sh` change with no security gain since
+the action is in the same repository under the same admin
+boundary.
+
 ## What we DO act on
 
 The Scorecard signals NOT in this list are real and worth fixing.
