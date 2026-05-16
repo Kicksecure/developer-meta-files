@@ -1711,6 +1711,13 @@ pkg_git_push_remotes() {
       branch_name_list=( "master" )
    fi
 
+   ## Policy: HEAD is a signed commit with a signed tag pointing at
+   ## it before any push hits the network. pkg_verify_signed_commit_and_tag
+   ## invokes `genmkfile git-verify`, which uniformly handles regular
+   ## and special repos (the latter opt in via
+   ## ./make-helper-overrides.bsh's make_use_git_describe_for_version).
+   pkg_verify_signed_commit_and_tag
+
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
       refspec_list=()
       for branch_name_item in "${branch_name_list[@]}"; do
@@ -2204,9 +2211,11 @@ pkg_verify_signed_commit() {
 pkg_verify_signed_commit_and_tag() {
    repo_skip 'derivative-maker' || return 0
 
-   ## TODO: broken for qubes-template-kicksecure, qubes-template-whonix, windows folder,
-   ##       because these by design to not have a debian/control file.
-
+   ## Repos without debian/control (qubes-template-{kicksecure,whonix},
+   ## Whonix-Installer, Whonix-Starter) opt in to git-tag-based version
+   ## detection via their ./make-helper-overrides.bsh; see
+   ## genmkfile/usr/share/genmkfile/shared.bsh and
+   ## make-helper-one.bsh make_get_variables.
    genmkfile git-verify
    true
 }
