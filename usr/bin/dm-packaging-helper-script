@@ -709,21 +709,21 @@ pkg_update_if_exists() {
 
    cp --verbose -- "${source_path}" "${destination_path}"
 
-   ## TODO: test
-   true git add -- "${destination_path}"
+   git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: '${destination_path}' already up to date; nothing to commit."
       return 0
    fi
 
+   #git diff --cached
+
    if [ -z "${commit_msg}" ]; then
       destination_basename="${destination_path##*/}"
       commit_msg="update ${destination_basename}"
    fi
 
-   ## TODO: test
-   true git commit -m "${commit_msg}"
+   git commit -m "${commit_msg}"
 
    true
 }
