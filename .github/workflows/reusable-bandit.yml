@@ -105,22 +105,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Prepare apt cache directory
-        run: |
-          sudo mkdir -p /var/cache/apt/archives
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
-
-      - name: Cache apt packages
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
-
       - name: Install bandit
-        run: |
-          sudo --non-interactive apt-get update --error-on=any
-          sudo --non-interactive apt-get install --yes --no-install-recommends \
-            bandit
+        uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: 'bandit'
+          cache-key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
 
       - name: Checkout developer-meta-files (discovery + step-summary helpers)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2

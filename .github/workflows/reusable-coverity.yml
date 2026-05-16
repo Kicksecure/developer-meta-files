@@ -196,47 +196,16 @@ jobs:
           COVERITY_PROJECT: ${{ steps.cfg.outputs.project_name }}
         run: .github/dmf/ci/coverity-check-secrets.sh
 
-      ## actions/cache runs as the unprivileged runner user; the
-      ## default /var/cache/apt/archives is root-owned. Take
-      ## ownership before restore/save so the cache action can
-      ## read+write the directory without sudo. apt-get (run via
-      ## sudo) can still write to a runner-owned directory because
-      ## root can write anywhere.
-      - name: Prepare apt cache directory
-        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
-        run: |
-          sudo mkdir -p /var/cache/apt/archives
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
-
-      ## First-party actions/cache. Caches downloaded .deb archives.
-      ## Key includes github.repository so different Coverity consumers
-      ## (helper-scripts, kloak, ...) get distinct caches; key
-      ## includes the reusable workflow file's hash so a change to
-      ## the apt-install logic invalidates the cache.
-      - name: Cache apt packages
-        if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
-
+      ## Cache key includes github.repository so different Coverity
+      ## consumers (helper-scripts, kloak, ...) get distinct caches;
+      ## key includes hashFiles() on the reusable workflow so a
+      ## config change invalidates the cache.
       - name: Install build dependencies
         if: steps.gate.outputs.allowed == 'true' && steps.cfg.outputs.apt_packages != ''
-        env:
-          ## Per-repo apt list arrives via env (not inlined in run:)
-          ## so shell metacharacters in the value cannot escape into
-          ## the script during template substitution. Read into an
-          ## array and expand as "${apt_packages[@]}" so each name
-          ## is a separately quoted argument (no glob expansion).
-          ## '--' after sudo / before the array terminates sudo's
-          ## and apt-get's option parsing respectively. Same pattern
-          ## as install-deps; see agents/github-actions-security.md.
-          APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
-        run: |
-          sudo --non-interactive -- apt-get update --error-on=any
-          apt_packages=()
-          read -r -a apt_packages <<< "$APT_PACKAGES"
-          sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${apt_packages[@]}"
+        uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: ${{ steps.cfg.outputs.apt_packages }}
+          cache-key: ${{ runner.os }}-apt-coverity-${{ github.repository }}-${{ hashFiles('.github/workflows/reusable-coverity.yml') }}
 
       - name: Download Coverity Build Tool
         if: steps.gate.outputs.allowed == 'true'
