@@ -1398,6 +1398,9 @@ pkg_update_consumer_workflows() {
 
    test -f "${dependabot_source}"
 
+   ## Unconditionally install dependabot.yml if missing.
+   pkg_install_dependabot_yml
+
    pkg_update_if_exists \
       "${dependabot_source}" \
       "${dependabot_destination}" \
