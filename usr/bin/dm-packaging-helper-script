@@ -2262,6 +2262,11 @@ pkg_need_version_bump_show() {
 
    repo_skip 'derivative-maker' || return 0
 
+   ## Bash syntax check for every special and regular repo every
+   ## batch iteration, independent of whether a bump is needed -
+   ## catches script breakage even when no commits are pending.
+   pkg_bash_sanity_test
+
    if repo_is_special; then
       ## Special (non-package) repos have no debian/changelog to bump.
       ## "needs version bump" here means "HEAD commit is signed but no
@@ -2276,7 +2281,6 @@ pkg_need_version_bump_show() {
          ## Already has a signed tag at HEAD; nothing to do.
          return 0
       fi
-      pkg_bash_sanity_test
       batch_current_package_needs_version_bump='y'
       printf '%s\n' "${batch_current_package_reponame}"
       return 0
@@ -2299,8 +2303,6 @@ pkg_need_version_bump_show() {
 
    ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
-
-   pkg_bash_sanity_test
 
    batch_current_package_needs_version_bump='y'
 
