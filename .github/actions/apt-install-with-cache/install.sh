@@ -69,7 +69,7 @@ mkdir --parents -- "${cache_dir}"
 ## cache) a no-op array.
 seed_debs=("${cache_dir}/"*.deb)
 if [ "${#seed_debs[@]}" -gt 0 ]; then
-   sudo cp --no-clobber -- "${seed_debs[@]}" /var/cache/apt/archives/
+   sudo cp --update=none -- "${seed_debs[@]}" /var/cache/apt/archives/
 fi
 
 sudo --non-interactive -- apt-get update --error-on=any
@@ -82,5 +82,5 @@ sudo --non-interactive -- apt-get install --yes --no-install-recommends -- "${@}
 ## needs to tar them on the post-step.
 new_debs=(/var/cache/apt/archives/*.deb)
 if [ "${#new_debs[@]}" -gt 0 ]; then
-   cp --no-clobber -- "${new_debs[@]}" "${cache_dir}/"
+   cp --update=none -- "${new_debs[@]}" "${cache_dir}/"
 fi
