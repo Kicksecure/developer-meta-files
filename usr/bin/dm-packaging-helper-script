@@ -55,7 +55,7 @@ test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files
 # shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
 source "$git_helpers_lib"
 
-canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/"
+canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/workflows"
 
 ## BEGIN Initialization functions {
 
@@ -707,10 +707,10 @@ pkg_update_if_exists() {
       return 0
    fi
 
+   cp --verbose -- "${source_path}" "${destination_path}"
+
    ## TODO: test
-   printf '%s\n' cp --verbose -- "${source_path}" "${destination_path}"
-   ## TODO: test
-   printf '%s\n' git add -- "${destination_path}"
+   true git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: '${destination_path}' already up to date; nothing to commit."
@@ -723,7 +723,7 @@ pkg_update_if_exists() {
    fi
 
    ## TODO: test
-   printf '%s\n' git commit -m "${commit_msg}"
+   true git commit -m "${commit_msg}"
 
    true
 }
@@ -1393,7 +1393,9 @@ pkg_update_consumer_workflows() {
 
    dependabot_source="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
    dependabot_destination="${batch_current_package_path}/.github/dependabot.yml"
+
    test -f "${dependabot_source}"
+
    pkg_update_if_exists \
       "${dependabot_source}" \
       "${dependabot_destination}" \
@@ -1431,7 +1433,8 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
-   cp --verbose -- "${source_path}" "${destination_path}"
+   ## TODO: test
+   true cp --verbose -- "${source_path}" "${destination_path}"
 
    true git add -- "${destination_path}"
 
