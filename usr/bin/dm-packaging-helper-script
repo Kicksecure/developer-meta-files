@@ -1432,8 +1432,7 @@ pkg_install_dependabot_yml() {
 
    if [ -f "${destination_path}" ]; then
       true "INFO: ${batch_current_package_reponame}: dependabot.yml already present; skipping."
-      ## XXX
-      #return 0
+      return 0
    fi
 
    cp --verbose -- "${source_path}" "${destination_path}"
@@ -1442,8 +1441,7 @@ pkg_install_dependabot_yml() {
 
    if nothing_to_commit; then
       true "INFO: ${FUNCNAME[0]}: nothing to commit"
-      ## XXX
-      #return 0
+      return 0
    fi
 
    git commit -m "add .github/dependabot.yml" || true
