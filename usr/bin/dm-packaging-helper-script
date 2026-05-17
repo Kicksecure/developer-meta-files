@@ -475,15 +475,8 @@ repo_skip_non_package() {
    repo_skip 'Whonix-Starter' || return 1
 }
 
-## Returns 0 if the current repo is a "special" (non-package) repo
-## - qubes-template-kicksecure, qubes-template-whonix,
-## Whonix-Installer, or Whonix-Starter - else returns 1.
-##
-## Discriminator used inside batch functions whose semantics differ
-## between Debian-packaged repos and these four. Counterpart to
-## repo_skip_non_package (which excludes all five non-package repos
-## including derivative-maker); this helper covers only the four
-## that go through the tag-and-push half of the batch.
+## Returns 0 if the current repo is one of the four "special"
+## (non-package) repos. Counterpart to repo_skip_non_package.
 repo_is_special() {
    case "${batch_current_package_reponame}" in
       qubes-template-kicksecure|qubes-template-whonix|Whonix-Installer|Whonix-Starter)
@@ -2190,12 +2183,8 @@ pkg_git_packages_git_log_writer() {
    true
 }
 
-## Signs git tags for all repos except derivative-maker using genmkfile.
-## `genmkfile git-tag-sign` is now polymorphic over make_use_git_describe_for_version:
-## regular packages get a tag named after the debian/changelog version;
-## special (non-package) repos that opt in get a commit_<HEAD-sha> tag
-## (idempotent if already present). See
-## genmkfile/usr/share/genmkfile/make-helper-one.bsh make_git_tag_sign.
+## Signs git tags for all repos except derivative-maker. The
+## special-vs-regular dispatch lives in genmkfile make_git_tag_sign.
 pkg_git_sign_tags() {
    repo_skip 'derivative-maker' || return 0
 
@@ -2280,7 +2269,6 @@ pkg_need_version_bump_show() {
       fi
       pkg_verify_signed_commit
       if genmkfile git-verify 2>/dev/null; then
-         ## Already has a signed tag at HEAD; nothing to do.
          return 0
       fi
       batch_current_package_needs_version_bump='y'
@@ -2299,13 +2287,9 @@ pkg_need_version_bump_show() {
       changelog_version="$(dpkg-parsechangelog --show-field Version)"
       source_pkg="$(dpkg-parsechangelog --show-field Source)"
 
-      ## dm-reprepro-wrapper derives basedir/dbdir/etc. from
-      ## derivative_repository_name (which genmkfile/make-helper-one.bsh
-      ## sets in its own process via `basename "$(dirname "$PWD")"`).
-      ## pkg_need_version_bump_show is NOT called via genmkfile, so we
-      ## export it ourselves before invoking the wrapper. Lowercased
-      ## batch_current_project_name matches the parent-folder convention
-      ## genmkfile uses ('kicksecure' / 'whonix').
+      ## dm-reprepro-wrapper needs derivative_repository_name in its
+      ## environment; genmkfile sets it in its own process, but this
+      ## function isn't called via genmkfile.
       export derivative_repository_name="${batch_current_project_name,,}"
       repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
       reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
