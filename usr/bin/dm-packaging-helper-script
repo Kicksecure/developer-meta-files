@@ -1749,15 +1749,15 @@ pkg_git_push_remotes() {
    #fi
 
    ## Policy: HEAD is a signed commit with a signed tag pointing at
-   ## it before any push hits the network. pkg_verify_signed_commit_and_tag
-   ## invokes `genmkfile git-verify`, which uniformly handles regular
-   ## and special repos (the latter opt in via
-   ## ./make-helper-overrides.bsh's make_use_git_describe_for_version).
+   ## it before any push hits the network. `genmkfile git-verify`
+   ## uniformly handles regular and special repos (the latter opt
+   ## in via ./make-helper-overrides.bsh's
+   ## make_use_git_describe_for_version).
    if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
       ## Manual tag creation when deemed ready.
-      pkg_verify_signed_commit
+      genmkfile git-commit-verify
    else
-      pkg_verify_signed_commit_and_tag
+      genmkfile git-verify
    fi
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
@@ -2212,62 +2212,33 @@ pkg_git_packages_git_log_writer() {
 ## Signs git tags for all repos except derivative-maker. The
 ## special-vs-regular dispatch lives in genmkfile make_git_tag_sign.
 pkg_git_sign_tags() {
+   local prefix
+   prefix="${cyan}${batch_current_package_reponame}${reset}: pkg_git_sign_tags"
+
    repo_skip 'derivative-maker' || return 0
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 TODO"
+   ## Step 1/3: HEAD commit must be signed.
+   true "${prefix} 1/3 verify HEAD commit signed"
    genmkfile git-commit-verify
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 done"
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 TODO"
-   if ! genmkfile git-verify 2>/dev/null ; then
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
-
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
+   ## Step 2/3: HEAD must have a signed tag pointing at it; sign one if not.
+   true "${prefix} 2/3 verify HEAD tag signed, sign if absent"
+   if ! genmkfile git-tag-verify 2>/dev/null; then
       dry_run_or_run genmkfile git-tag-sign
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
-   ## In dry-run the previous step didn't actually sign, so this
-   ## post-condition check would fail; wrap so dry-run flow can
-   ## continue past this function to show downstream WOULDs.
+   ## Step 3/3: full sanity-check (commit + tag).
+   ## Wrapped in dry-run because step 2's sign was a no-op in dry-run.
+   true "${prefix} 3/3 sanity check"
    dry_run_or_run genmkfile git-verify
-
-   true
 }
 
-## Verifies that the head commit of all repos is signed.
-pkg_verify_signed_commit() {
-   local cmd
-   ## XXX: hardcoded
-   [ -n "${sq_git_trust_root:-}" ] || sq_git_trust_root="HEAD"
-   ## XXX: hardcoded
-   [ -n "${sq_git_policy_file:-}" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/buildconfig.d/openpgp-policy.toml"
-   #git verify-commit HEAD
-   sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
-}
-
-# pkg_resign_with_sq() {
-#    if pkg_verify_signed_commit; then
-#       return 0
-#    fi
-#    printf '%s\n' "" >> README.md
-#    git add README.md
-#    git commit -a -m "signed commit"
-# }
-
-## Verifies that the head commit and tag of all repos except derivative-maker
-## is signed. Uses genmkfile.
-pkg_verify_signed_commit_and_tag() {
-   repo_skip 'derivative-maker' || return 0
-
-   ## Repos without debian/control (qubes-template-{kicksecure,whonix},
-   ## Whonix-Installer, Whonix-Starter) opt in to git-tag-based version
-   ## detection via their ./make-helper-overrides.bsh; see
-   ## genmkfile/usr/share/genmkfile/shared.bsh and
-   ## make-helper-one.bsh make_get_variables.
-   genmkfile git-verify
-   true
-}
+## Note: HEAD-commit verification uses `genmkfile git-commit-verify`
+## and full HEAD-commit + HEAD-tag verification uses `genmkfile git-verify`.
+## Both work uniformly for regular Debian-packaged repos and for
+## special (non-package) repos that opt in via
+## ./make-helper-overrides.bsh `make_use_git_describe_for_version=true`.
+## See genmkfile/usr/share/genmkfile/{shared.bsh,make-helper-one.bsh}.
 
 ## Finds packages that have modifications made to them since the last version
 ## bump, and displays their repo names. Also communicates that the package in
@@ -2296,7 +2267,7 @@ pkg_need_version_bump_show() {
          true "uncommitted changes in special repo"
          return 1
       fi
-      pkg_verify_signed_commit
+      genmkfile git-commit-verify
       if genmkfile git-verify 2>/dev/null; then
          return 0
       fi
@@ -2368,7 +2339,7 @@ pkg_need_version_bump_show() {
    fi
 
    ## Verify that the commit prior the next changelog commit is signed.
-   pkg_verify_signed_commit
+   genmkfile git-commit-verify
 
    batch_current_package_needs_version_bump='y'
 
@@ -2454,7 +2425,7 @@ pkg_need_version_bump_do() {
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
-   pkg_verify_signed_commit
+   genmkfile git-commit-verify
 
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
