@@ -2247,7 +2247,7 @@ pkg_verify_signed_commit_and_tag() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local changelog_version source_pkg reprepro_version repo_query_output
+   local changelog_version source_pkg reprepro_version repo_query_output source_line
 
    batch_current_package_needs_version_bump='n'
 
@@ -2291,8 +2291,24 @@ pkg_need_version_bump_show() {
       ## environment; genmkfile sets it in its own process, but this
       ## function isn't called via genmkfile.
       export derivative_repository_name="${batch_current_project_name,,}"
+
+      ## Query reprepro for every entry of this source package in
+      ## the local codename (one line per component+architecture).
       repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
-      reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
+
+      ## Filter to the |source: line. reprepro tracks at most one
+      ## version per source-package per codename, so picking the
+      ## source line gives the canonical published version without
+      ## having to sort across architectures (which `sort -V` would
+      ## do incorrectly for Debian versions with epochs or tildes).
+      source_line=""
+      source_line="$(printf '%s\n' "${repo_query_output}" | grep '|source:' || true)"
+
+      ## Extract the version (last whitespace-separated field on the
+      ## reprepro list line: 'codename|component|source: <pkg> <ver>').
+      ## Empty when the package is absent from the local repo.
+      reprepro_version=""
+      reprepro_version="$(printf '%s\n' "${source_line}" | awk 'NF{print $NF}')"
 
       ## Reliable "needs work?" check: compare debian/changelog version
       ## against the version actually published in the local reprepro
