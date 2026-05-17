@@ -514,6 +514,14 @@ reset_batch_meta_globals() {
    declare -A -g batch_meta_file_header_done_list=()
 }
 
+## Returns 0 if the current HEAD commit subject is the sentinel
+## 'bumped changelog version' message produced by
+## `genmkfile deb-uachl-commit-changelog`. Marks an in-progress
+## bump-and-build that may not yet have completed reprepro-add.
+is_changelog_bump_commit() {
+   [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
+}
+
 ## XXX: Duplicated.
 nothing_to_commit() {
    local nothing_to_commit_msg_one git_status_last_line
@@ -2250,8 +2258,6 @@ pkg_verify_signed_commit_and_tag() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local last_log_entry
-
    batch_current_package_needs_version_bump='n'
 
    repo_skip 'derivative-maker' || return 0
@@ -2303,8 +2309,6 @@ pkg_need_version_bump_show() {
       repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
       reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
 
-      last_log_entry="$(git log --format=%s -1)"
-
       ## Reliable "needs work?" check: compare debian/changelog version
       ## against the version actually published in the local reprepro
       ## repo. The previous heuristic ("last commit is `bumped changelog
@@ -2313,7 +2317,7 @@ pkg_need_version_bump_show() {
       ## reprepro yet skip subsequent runs forever.
       if [ -n "${reprepro_version}" ] \
             && dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
-         if [ 'bumped changelog version' = "${last_log_entry}" ]; then
+         if is_changelog_bump_commit; then
             ## Truly done: changelog matches reprepro AND the last commit
             ## IS the bump that produced it. No new work since.
             return 0
@@ -2361,15 +2365,18 @@ pkg_upstream_and_debian_changelog_bump() {
       return 0
    fi
 
-   ## Idempotency for resumed interrupted builds: if the last commit
-   ## is already the bump, pkg_need_version_bump_show let us through
-   ## because reprepro is behind (changelog > reprepro). Re-bumping
-   ## here would produce a useless second bump with no intervening
-   ## changes - skip and let the downstream build+reprepro-add steps
-   ## resume. batch_meta_force_version_bump bypasses this so the
-   ## force-bump-from-bump-commit case still works.
-   if [ "${batch_meta_force_version_bump:-n}" != "y" ] \
-         && [ "$(git log --format=%s -1)" = 'bumped changelog version' ]; then
+   ## Forced re-bump bypasses the idempotency guard below: a forced
+   ## run with last commit == "bumped changelog version" should bump
+   ## to the next version, not skip.
+   if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
+      true "${batch_current_package_reponame}: forced version bump - bumping despite last commit."
+   elif is_changelog_bump_commit; then
+      ## Idempotency for resumed interrupted builds: if the last
+      ## commit is already the bump, pkg_need_version_bump_show let
+      ## us through because reprepro is behind (changelog >
+      ## reprepro). Re-bumping here would produce a useless second
+      ## bump with no intervening changes - skip and let the
+      ## downstream build+reprepro-add steps resume.
       true "${batch_current_package_reponame}: changelog already bumped; skipping re-bump (resuming interrupted build)."
       return 0
    fi
