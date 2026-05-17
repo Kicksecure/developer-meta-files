@@ -2271,12 +2271,12 @@ pkg_need_version_bump_show() {
          true "uncommitted changes in special repo"
          return 1
       fi
-      genmkfile git-commit-verify
+      genmkfile git-commit-verify >/dev/null
       if genmkfile git-verify 2>/dev/null; then
          return 0
       fi
       batch_current_package_needs_version_bump='y'
-      printf '%s\n' "${batch_current_package_reponame}"
+      printf '%s\n' "${bold}${batch_current_package_reponame}${reset}"
       return 0
    fi
 
@@ -2294,7 +2294,7 @@ pkg_need_version_bump_show() {
       ## dm-reprepro-wrapper reads derivative_repository_name from env.
       export derivative_repository_name="${batch_current_project_name,,}"
 
-      repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
+      repo_query_output="$(dist_build_non_interactive=true dm-reprepro-wrapper list "${dist_build_apt_codename}" "${source_pkg}" 2>/dev/null || true)"
       ## Example repo_query_output:
       ## local|main|amd64: sdwdate 1.2.3-1
       ## local|main|source: sdwdate 1.2.3-1
@@ -2308,14 +2308,13 @@ pkg_need_version_bump_show() {
       ## Example reprepro_version:
       ## 1.2.3-1
 
-      ## Reliable "needs work?" check: compare debian/changelog version
-      ## against the version actually published in the local reprepro
-      ## repo. The previous heuristic ("last commit is `bumped changelog
-      ## version`") was unreliable - a build interrupted between the
-      ## bump commit and reprepro-add would leave changelog ahead of
-      ## reprepro yet skip subsequent runs forever.
-      if [ -n "${reprepro_version}" ] \
-            && dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
+      if [ -z "${repo_query_output}" ]; then
+         true "${source_pkg}: changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
+         return 1
+      elif [ -z "${reprepro_version}" ]; then
+         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
+         return 1
+      elif dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
          if is_changelog_bump_commit; then
             ## Truly done: changelog matches reprepro AND the last commit
             ## IS the bump that produced it. No new work since.
@@ -2325,15 +2324,12 @@ pkg_need_version_bump_show() {
             ## previous build - new work. Fall through.
             true "${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump."
          fi
-      elif [ -n "${reprepro_version}" ] \
-            && dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
+      elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
          ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
          ## the inconsistency rather than silently rolling back.
          printf '%s\n' "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro '${reprepro_version}' - possible corruption; continuing." >&2
       else
-         ## Either changelog > reprepro (interrupted previous build),
-         ## or the package isn't in the local repo yet (first build).
-         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
+         die 1 "${FUNCNAME} unknown else case."
       fi
    fi
 
@@ -2343,7 +2339,7 @@ pkg_need_version_bump_show() {
    fi
 
    ## Verify that the commit prior the next changelog commit is signed.
-   genmkfile git-commit-verify
+   genmkfile git-commit-verify >/dev/null
 
    batch_current_package_needs_version_bump='y'
 
@@ -2425,7 +2421,7 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   printf '%s\n' "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
+   true "INFO: ${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
@@ -2480,7 +2476,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       return 0
    fi
 
-   printf '%s\n' "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
+   true "INFO: ${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_git_manpages
    pkg_git_debinstfile
