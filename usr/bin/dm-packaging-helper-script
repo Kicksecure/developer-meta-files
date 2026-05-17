@@ -2272,7 +2272,7 @@ pkg_need_version_bump_show() {
          return 1
       fi
       genmkfile git-commit-verify >/dev/null
-      if genmkfile git-verify 2>/dev/null; then
+      if genmkfile git-verify &>/dev/null; then
          return 0
       fi
       batch_current_package_needs_version_bump='y'
