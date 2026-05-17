@@ -515,6 +515,19 @@ is_changelog_bump_commit() {
    [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
 }
 
+## Wrap any state-mutating command. In normal mode runs the command
+## as-is; in dry-run mode (batch_meta_dry_run=y) prints the would-be
+## invocation and returns 0 without running it. Read-only commands
+## (verification, queries, parsing) are NOT wrapped - they always
+## run so dry-run can surface policy violations before a real run.
+dry_run_or_run() {
+   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*"
+      return 0
+   fi
+   "$@"
+}
+
 ## XXX: Duplicated.
 nothing_to_commit() {
    local nothing_to_commit_msg_one git_status_last_line
@@ -1761,7 +1774,10 @@ pkg_git_push_remotes() {
          ##   Single-ref pushes are unaffected.
          ## --porcelain: one machine-readable line per ref so failures
          ##   in wait_for_git_processes are diagnosable beyond exit code.
-         log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
+         ## In dry-run the wrapper backgrounds a fast-exiting printf
+         ## instead of the actual push; wait_for_git_processes still
+         ## reaps it cleanly.
+         dry_run_or_run log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
          git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
       fi
    done
@@ -1779,7 +1795,7 @@ pkg_git_push_tags() {
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
+      dry_run_or_run git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
       git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
    done
 
@@ -2207,11 +2223,14 @@ pkg_git_sign_tags() {
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
 
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      genmkfile git-tag-sign
+      dry_run_or_run genmkfile git-tag-sign
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
-   genmkfile git-verify
+   ## In dry-run the previous step didn't actually sign, so this
+   ## post-condition check would fail; wrap so dry-run flow can
+   ## continue past this function to show downstream WOULDs.
+   dry_run_or_run genmkfile git-verify
 
    true
 }
@@ -2407,12 +2426,12 @@ pkg_upstream_and_debian_changelog_bump() {
    ## refuse adding it.
    if [ "${version_numbers_by_upstream:-}" = "true" ]; then
       ## XXX: manual
-      genmkfile deb-uachl-bumpup-manual
+      dry_run_or_run genmkfile deb-uachl-bumpup-manual
    else
-      genmkfile deb-uachl-bumpup-major
+      dry_run_or_run genmkfile deb-uachl-bumpup-major
    fi
 
-   genmkfile deb-uachl-commit-changelog
+   dry_run_or_run genmkfile deb-uachl-commit-changelog
 
    true
 }
@@ -2511,10 +2530,10 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
-   genmkfile reprepro-remove
-   genmkfile reprepro-add
-   genmkfile deb-cleanup
+   dry_run_or_run genmkfile deb-pkg
+   dry_run_or_run genmkfile reprepro-remove
+   dry_run_or_run genmkfile reprepro-add
+   dry_run_or_run genmkfile deb-cleanup
 
    true
 }
@@ -2525,7 +2544,7 @@ pkg_only_build_all() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
+   dry_run_or_run genmkfile deb-pkg
 
    true
 }
@@ -2535,7 +2554,7 @@ pkg_only_reprepro_add() {
    repo_skip_non_package || return 0
 
    export make_use_cowbuilder=true
-   genmkfile reprepro-add
+   dry_run_or_run genmkfile reprepro-add
 
    true
 }
@@ -2797,6 +2816,22 @@ run_batch() {
 main() {
    local target_cmd arg_list
 
+   while [ $# -gt 0 ]; do
+      case "${1}" in
+         --dry-run)
+            batch_meta_dry_run='y'
+            shift
+            ;;
+         --*)
+            printf '%s\n' "${red}${bold}FATAL ERROR:${reset} unknown flag '${1}'"
+            exit 1
+            ;;
+         *)
+            break
+            ;;
+      esac
+   done
+
    target_cmd="${1:-}"
    shift || true
    arg_list=( "$@" )
@@ -2804,7 +2839,7 @@ main() {
    if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] function-name arguments"
       exit 0
    fi
 
@@ -2868,6 +2903,7 @@ batch_meta_relative_file_name=''
 batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
 batch_meta_force_version_bump='n'
+batch_meta_dry_run='n'
 
 declare -A -g batch_meta_file_header_done_list=()
 batch_run_counter=0
