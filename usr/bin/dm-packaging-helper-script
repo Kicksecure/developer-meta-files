@@ -2287,26 +2287,22 @@ pkg_need_version_bump_show() {
       changelog_version="$(dpkg-parsechangelog --show-field Version)"
       source_pkg="$(dpkg-parsechangelog --show-field Source)"
 
-      ## dm-reprepro-wrapper needs derivative_repository_name in its
-      ## environment; genmkfile sets it in its own process, but this
-      ## function isn't called via genmkfile.
+      ## dm-reprepro-wrapper reads derivative_repository_name from env.
       export derivative_repository_name="${batch_current_project_name,,}"
 
-      ## Query reprepro for every entry of this source package in
-      ## the local codename (one line per component+architecture).
       repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
+      ## Example repo_query_output:
+      ## local|main|amd64: sdwdate 1.2.3-1
+      ## local|main|source: sdwdate 1.2.3-1
+      ## local|main|i386: sdwdate 1.2.3-1
 
-      ## Filter to the |source: line. reprepro tracks at most one
-      ## version per source-package per codename, so picking the
-      ## source line gives the canonical published version without
-      ## having to sort across architectures (which `sort -V` would
-      ## do incorrectly for Debian versions with epochs or tildes).
       source_line="$(printf '%s\n' "${repo_query_output}" | grep --fixed-strings -- '|source:' || true)"
+      ## Example source_line:
+      ## local|main|source: sdwdate 1.2.3-1
 
-      ## Extract the version (last whitespace-separated field on the
-      ## reprepro list line: 'codename|component|source: <pkg> <ver>').
-      ## Empty when the package is absent from the local repo.
       reprepro_version="$(printf '%s\n' "${source_line}" | awk 'NF{print $NF}')"
+      ## Example reprepro_version:
+      ## 1.2.3-1
 
       ## Reliable "needs work?" check: compare debian/changelog version
       ## against the version actually published in the local reprepro
