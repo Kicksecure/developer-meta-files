@@ -475,6 +475,24 @@ repo_skip_non_package() {
    repo_skip 'Whonix-Starter' || return 1
 }
 
+## Returns 0 if the current repo is a "special" (non-package) repo
+## - qubes-template-kicksecure, qubes-template-whonix,
+## Whonix-Installer, or Whonix-Starter - else returns 1.
+##
+## Discriminator used inside batch functions whose semantics differ
+## between Debian-packaged repos and these four. Counterpart to
+## repo_skip_non_package (which excludes all five non-package repos
+## including derivative-maker); this helper covers only the four
+## that go through the tag-and-push half of the batch.
+repo_is_special() {
+   case "${batch_current_package_reponame}" in
+      qubes-template-kicksecure|qubes-template-whonix|Whonix-Installer|Whonix-Starter)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
 ## Resets all batch_meta_* global state variables to default values.
 reset_batch_meta_globals() {
    batch_meta_category_list=()
@@ -2165,6 +2183,9 @@ pkg_git_packages_git_log_writer() {
 }
 
 ## Signs git tags for all repos except derivative-maker using genmkfile.
+## For "special" (non-package) repos that have no debian/changelog-derived
+## version number, falls back to dm-quickgittagsign whose adrelanos_<sha>
+## tag name is unique per HEAD commit.
 pkg_git_sign_tags() {
    repo_skip 'derivative-maker' || return 0
 
@@ -2177,7 +2198,15 @@ pkg_git_sign_tags() {
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
 
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      genmkfile git-tag-sign
+      if repo_is_special; then
+         ## genmkfile git-tag-sign would attempt to create a tag named
+         ## after `git describe --abbrev=0` (the existing nearest tag)
+         ## and fail. dm-quickgittagsign's SHA-suffixed tag name is
+         ## unique per HEAD and idempotent.
+         dm-quickgittagsign
+      else
+         genmkfile git-tag-sign
+      fi
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
@@ -2233,6 +2262,30 @@ pkg_need_version_bump_show() {
 
    repo_skip 'derivative-maker' || return 0
 
+   ## Bash syntax check for every special and regular repo every
+   ## batch iteration, independent of whether a bump is needed -
+   ## catches script breakage even when no commits are pending.
+   pkg_bash_sanity_test
+
+   if repo_is_special; then
+      ## Special (non-package) repos have no debian/changelog to bump.
+      ## "needs version bump" here means "HEAD commit is signed but no
+      ## signed tag points at HEAD". The downstream pkg_git_sign_tags
+      ## will create one via dm-quickgittagsign.
+      if ! nothing_to_commit; then
+         true "uncommitted changes in special repo"
+         return 1
+      fi
+      pkg_verify_signed_commit
+      if genmkfile git-verify 2>/dev/null; then
+         ## Already has a signed tag at HEAD; nothing to do.
+         return 0
+      fi
+      batch_current_package_needs_version_bump='y'
+      printf '%s\n' "${batch_current_package_reponame}"
+      return 0
+   fi
+
    last_log_entry="$(git log --format=%s -1)"
 
    if [ 'bumped changelog version' = "${last_log_entry}" ]; then
@@ -2251,8 +2304,6 @@ pkg_need_version_bump_show() {
    ## Verify that the commit prior the next changelog commit is signed.
    pkg_verify_signed_commit
 
-   pkg_bash_sanity_test
-
    batch_current_package_needs_version_bump='y'
 
    printf '%s\n' "${batch_current_package_reponame}"
@@ -2264,6 +2315,13 @@ pkg_need_version_bump_show() {
 ## functions when necessary, calling this directly is probably a bad idea.
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip 'derivative-maker' || return 0
+
+   ## No debian/changelog in special repos - nothing to bump. The
+   ## tag-creation step happens in pkg_git_sign_tags via
+   ## dm-quickgittagsign, downstream of this no-op.
+   if repo_is_special; then
+      return 0
+   fi
 
    ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
    ## individual packages.
@@ -2338,7 +2396,18 @@ pkg_need_version_bump_do() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip_non_package || return 0
+   repo_skip 'derivative-maker' || return 0
+
+   ## Special (non-package) repos: tag-and-push only. No manpages,
+   ## no debinstfile, no Debian build, no reprepro - none of those
+   ## apply to repos without debian/* files. pkg_need_version_bump_do
+   ## dispatches internally on repo_is_special; see
+   ## pkg_need_version_bump_show, pkg_upstream_and_debian_changelog_bump,
+   ## and pkg_git_sign_tags.
+   if repo_is_special; then
+      pkg_need_version_bump_do
+      return 0
+   fi
 
    #if [ "${batch_current_package_reponame}" = "kloak" ]; then
    #   continue_yes=true
