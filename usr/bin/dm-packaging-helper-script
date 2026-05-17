@@ -1730,6 +1730,11 @@ pkg_git_push_remotes() {
       branch_name_list=( "master" )
    fi
 
+   ## Development.
+   #if [ "$batch_current_package_reponame" = "developer-meta-files" ]; then
+      #return 0
+   #fi
+
    ## Policy: HEAD is a signed commit with a signed tag pointing at
    ## it before any push hits the network. pkg_verify_signed_commit_and_tag
    ## invokes `genmkfile git-verify`, which uniformly handles regular
@@ -1737,7 +1742,6 @@ pkg_git_push_remotes() {
    ## ./make-helper-overrides.bsh's make_use_git_describe_for_version).
    if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
       ## Manual tag creation when deemed ready.
-      exit 255
       pkg_verify_signed_commit
    else
       pkg_verify_signed_commit_and_tag
