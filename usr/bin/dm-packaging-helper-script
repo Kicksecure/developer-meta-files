@@ -2316,18 +2316,19 @@ pkg_need_version_bump_show() {
          return 1
       elif dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
          if is_changelog_bump_commit; then
-            ## Truly done: changelog matches reprepro AND the last commit
-            ## IS the bump that produced it. No new work since.
+            true "INFO: Done. changelog matches reprepro AND the last commit IS the bump that produced it."
             return 0
          else
-            ## Versions match but a non-bump commit came in after the
-            ## previous build - new work. Fall through.
-            true "${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump."
+            true "INFO: ${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump. Needs build."
          fi
       elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
          ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
          ## the inconsistency rather than silently rolling back.
-         printf '%s\n' "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro '${reprepro_version}' - possible corruption; continuing." >&2
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro"
+         return 1
+      elif dpkg --compare-versions "${changelog_version}" gt "${reprepro_version}"; then
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro"
+         return 1
       else
          die 1 "${FUNCNAME} unknown else case."
       fi
