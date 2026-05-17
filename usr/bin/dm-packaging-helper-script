@@ -2286,51 +2286,58 @@ pkg_need_version_bump_show() {
       return 0
    fi
 
-   local changelog_version source_pkg reprepro_version repo_query_output
-   changelog_version="$(dpkg-parsechangelog --show-field Version)"
-   source_pkg="$(dpkg-parsechangelog --show-field Source)"
-
-   ## dm-reprepro-wrapper derives basedir/dbdir/etc. from
-   ## derivative_repository_name (which genmkfile/make-helper-one.bsh
-   ## sets in its own process via `basename "$(dirname "$PWD")"`).
-   ## pkg_need_version_bump_show is NOT called via genmkfile, so we
-   ## export it ourselves before invoking the wrapper. Lowercased
-   ## batch_current_project_name matches the parent-folder convention
-   ## genmkfile uses ('kicksecure' / 'whonix').
-   export derivative_repository_name="${batch_current_project_name,,}"
-   repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
-   reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
-
-   last_log_entry="$(git log --format=%s -1)"
-
-   ## Reliable "needs work?" check: compare debian/changelog version
-   ## against the version actually published in the local reprepro
-   ## repo. The previous heuristic ("last commit is `bumped changelog
-   ## version`") was unreliable - a build interrupted between the
-   ## bump commit and reprepro-add would leave changelog ahead of
-   ## reprepro yet skip subsequent runs forever.
-   if [ -n "${reprepro_version}" ] \
-         && dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
-      if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
-         true "Forced version bump (changelog == reprepro == ${changelog_version})."
-      elif [ 'bumped changelog version' = "${last_log_entry}" ]; then
-         ## Truly done: changelog matches reprepro AND the last commit
-         ## IS the bump that produced it. No new work since.
-         return 0
-      else
-         ## Versions match but a non-bump commit came in after the
-         ## previous build - new work. Fall through.
-         true "${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump."
-      fi
-   elif [ -n "${reprepro_version}" ] \
-         && dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
-      ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
-      ## the inconsistency rather than silently rolling back.
-      printf '%s\n' "${red}${bold}WARNING:${reset} ${source_pkg}: changelog ${changelog_version} < reprepro ${reprepro_version} - possible corruption; continuing." >&2
+   ## Forced bump: skip the reprepro query entirely and fall straight
+   ## through to the bump+build pipeline. The bump-already-done guard
+   ## in pkg_upstream_and_debian_changelog_bump is also force-aware,
+   ## so a forced run with last commit == "bumped changelog version"
+   ## bumps to the next version as expected.
+   if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
+      true "${batch_current_package_reponame}: forced version bump - skipping reprepro version check."
    else
-      ## Either changelog > reprepro (interrupted previous build),
-      ## or the package isn't in the local repo yet (first build).
-      true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
+      local changelog_version source_pkg reprepro_version repo_query_output
+      changelog_version="$(dpkg-parsechangelog --show-field Version)"
+      source_pkg="$(dpkg-parsechangelog --show-field Source)"
+
+      ## dm-reprepro-wrapper derives basedir/dbdir/etc. from
+      ## derivative_repository_name (which genmkfile/make-helper-one.bsh
+      ## sets in its own process via `basename "$(dirname "$PWD")"`).
+      ## pkg_need_version_bump_show is NOT called via genmkfile, so we
+      ## export it ourselves before invoking the wrapper. Lowercased
+      ## batch_current_project_name matches the parent-folder convention
+      ## genmkfile uses ('kicksecure' / 'whonix').
+      export derivative_repository_name="${batch_current_project_name,,}"
+      repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
+      reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
+
+      last_log_entry="$(git log --format=%s -1)"
+
+      ## Reliable "needs work?" check: compare debian/changelog version
+      ## against the version actually published in the local reprepro
+      ## repo. The previous heuristic ("last commit is `bumped changelog
+      ## version`") was unreliable - a build interrupted between the
+      ## bump commit and reprepro-add would leave changelog ahead of
+      ## reprepro yet skip subsequent runs forever.
+      if [ -n "${reprepro_version}" ] \
+            && dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
+         if [ 'bumped changelog version' = "${last_log_entry}" ]; then
+            ## Truly done: changelog matches reprepro AND the last commit
+            ## IS the bump that produced it. No new work since.
+            return 0
+         else
+            ## Versions match but a non-bump commit came in after the
+            ## previous build - new work. Fall through.
+            true "${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump."
+         fi
+      elif [ -n "${reprepro_version}" ] \
+            && dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
+         ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
+         ## the inconsistency rather than silently rolling back.
+         printf '%s\n' "${red}${bold}WARNING:${reset} ${source_pkg}: changelog ${changelog_version} < reprepro ${reprepro_version} - possible corruption; continuing." >&2
+      else
+         ## Either changelog > reprepro (interrupted previous build),
+         ## or the package isn't in the local repo yet (first build).
+         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
+      fi
    fi
 
    if ! nothing_to_commit; then
