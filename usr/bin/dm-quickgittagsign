@@ -9,12 +9,13 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 commit="$(git rev-parse --verify HEAD)"
 
 git verify-commit "$commit" &>/dev/null
 
-tag="adrelanos_${commit}"
+tag="commit_${commit}"
 
 if git rev-parse --verify "refs/tags/$tag" &>/dev/null ; then
   true "$0: INFO: tag already signed, ok."
