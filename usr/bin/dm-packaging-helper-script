@@ -2324,11 +2324,10 @@ pkg_need_version_bump_show() {
       elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
          ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
          ## the inconsistency rather than silently rolling back.
-         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro"
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro. Unknown error condition."
          return 1
       elif dpkg --compare-versions "${changelog_version}" gt "${reprepro_version}"; then
-         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro"
-         return 1
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro. Needs build."
       else
          die 1 "${FUNCNAME} unknown else case."
       fi
