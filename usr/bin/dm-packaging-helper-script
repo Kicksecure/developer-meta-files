@@ -2230,18 +2230,18 @@ pkg_git_sign_tags() {
 
    ## Step 1/3: HEAD commit must be signed.
    true "${prefix} 1/3 verify HEAD commit signed"
-   genmkfile git-commit-verify
+   genmkfile git-commit-verify  >/dev/null
 
    ## Step 2/3: HEAD must have a signed tag pointing at it; sign one if not.
    true "${prefix} 2/3 verify HEAD tag signed, sign if absent"
    if ! genmkfile git-tag-verify 2>/dev/null; then
-      dry_run_or_run genmkfile git-tag-sign
+      dry_run_or_run genmkfile git-tag-sign >/dev/null
    fi
 
    ## Step 3/3: full sanity-check (commit + tag).
    ## Wrapped in dry-run because step 2's sign was a no-op in dry-run.
    true "${prefix} 3/3 sanity check"
-   dry_run_or_run genmkfile git-verify
+   dry_run_or_run genmkfile git-verify >/dev/null
 }
 
 ## Finds packages that have modifications made to them since the last version
