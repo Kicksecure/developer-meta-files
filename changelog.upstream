@@ -1,3 +1,1193 @@
+commit ed8979d9918bd94d557a786453e27cc0442ccfba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 17:07:38 2026 -0400
+
+    .
+
+commit 99d51de7ddf226e99162c14c64b6757803ce8e52
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 17:03:12 2026 -0400
+
+    .
+
+commit 1f7ae23ffaaa92db7b332b48a113f525a154a65a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 17:01:36 2026 -0400
+
+    .
+
+commit 2fed3e4985b3600474c9ce3be5104912949cc80b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:59:25 2026 -0400
+
+    .
+
+commit c72b72bd64d1e25f793a97206f8b353c7b1b1481
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:57:10 2026 -0400
+
+    .
+
+commit 52f084513af2438de677d3c7b803da89b653c7e0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:55:06 2026 -0400
+
+    .
+
+commit 616ff9b86ef02fe6a5b6b2250583bd646fefdae2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:51:14 2026 -0400
+
+    .
+
+commit f7770c45d8cd3223609d6b7e93bb37967d378274
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:44:54 2026 -0400
+
+    .
+
+commit ded3e61ef9f05ddf0834094b487b52824e7f7ff5
+Merge: 9ff813a 3556085
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 16:22:17 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 355608529ece605a19cbaa24a8b3fdfa72a879a7
+Merge: edcf50d 7cc1dcd
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 14:02:46 2026 -0400
+
+    Merge pull request #105 from org-ai-assisted/claude/fix-dependabot-action-UnL7w
+
+    dependabot.yml: drop docker block from canonical; add manual-opt-out marker
+
+commit 7cc1dcde1789bbe3055b7132b670cff98a6812cb
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 17:59:35 2026 +0000
+
+    trim file commentary
+
+commit 9ff813a157e80ef45002623fd5eef1036b547e9f
+Merge: c52169e edcf50d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 13:48:37 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit edcf50d0ef0650b7c06d66f54319ce749a660e0c
+Merge: c52169e f9d340b
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 13:47:06 2026 -0400
+
+    Merge pull request #104 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    dm-packaging-helper-script: add --dry-run
+
+commit f9d340ba3d39f317d7b5302dccc14f958398af1e
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 17:44:03 2026 +0000
+
+    drop 4 over-commented blocks per R-151
+
+commit b57df9b1f612ede27bf8977e0c54ac81bfa6ac8a
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 17:42:17 2026 +0000
+
+    dependabot.yml: drop docker block from canonical; add manual-opt-out
+
+    The previous canonical at consumer-templates/.github/dependabot.yml
+    carried both github-actions and docker package-ecosystem blocks on
+    the documented theory that the docker block was a "harmless no-op"
+    in repos without a /Dockerfile. That theory was wrong: the
+    dependabot-action errors with `dependency_file_not_found` and
+    aborts the whole job - including the github-actions ecosystem run
+    that shares it - so every consumer using the canonical lost its
+    github-actions Dependabot coverage too.
+
+    Canonical is now github-actions only. Docker-bearing repos
+    (derivative-maker at docker/Dockerfile, helper-scripts at
+    .clusterfuzzlite/Dockerfile) opt out of byte-identical propagation
+    via a "## propagation: manual" header marker and hand-maintain
+    their own dependabot.yml with a correctly-pathed docker block.
+
+    dm-packaging-helper-script: new dependabot_yml_is_manual helper;
+    pkg_install_dependabot_yml and pkg_update_consumer_workflows now
+    grep -q for the marker and skip the file when present.
+
+    agents/github-actions-consumer-templates.md: replaces the
+    "Unified canonical" subsection with "Canonical scope: github-
+    actions only" plus a new "Per-repo manual dependabot.yml" section
+    documenting the opt-out marker and the two current manually-
+    maintained repos.
+
+commit b0cc0fde709c5ff6da1a565b6082cf83cf50a9dd
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 17:37:53 2026 +0000
+
+    drop pkg_verify_signed_commit/_and_tag wrappers; clean up pkg_git_sign_tags
+
+    The two wrappers were thin shims around genmkfile targets that had
+    identical semantics:
+
+      pkg_verify_signed_commit       == genmkfile git-commit-verify
+      pkg_verify_signed_commit_and_tag == genmkfile git-verify (+
+                                          derivative-maker skip)
+
+    The derivative-maker skip in the second wrapper was redundant -
+    the only caller (pkg_git_push_remotes) is only reached after the
+    outer-level functions skip derivative-maker. Inline the genmkfile
+    calls at every site; drop both wrapper definitions and the dead
+    commented-out pkg_resign_with_sq stub.
+
+    pkg_git_sign_tags rewrite:
+      - 3-step structure (was 4 announced as 1/4-3/4 with no 4/4),
+        counting now matches the work
+      - drop the noisy "<step> TODO" / "<step> done" pair per step;
+        one log line per step is sufficient
+      - use `genmkfile git-tag-verify` in step 2's gate instead of
+        `genmkfile git-verify`; we already did the commit check in
+        step 1, so re-running it inside the conditional was wasted
+      - step 3's final `genmkfile git-verify` is the full sanity
+        check (commit + tag), kept under dry_run_or_run so a dry-run
+        pass doesn't trip on step 2's would-be (unfinished) sign
+
+    Net: -29 lines including the deleted wrappers.
+
+commit 2cad35717dde1428097f905301affd5f6a195774
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 16:57:02 2026 +0000
+
+    dm-packaging-helper-script: add --dry-run
+
+    New batch_meta_dry_run flag plus a dry_run_or_run helper that wraps
+    every state-mutating command. In dry-run the helper logs
+
+       [DRY-RUN] <reponame>: WOULD: <cmd args...>
+
+    and returns 0 instead of running the command. Read-only commands
+    (verifications, queries, parsers, sanity tests) are NOT wrapped -
+    they always run so dry-run can surface policy violations
+    (unsigned commit, missing tag, debian/control absent, etc.) before
+    a real run.
+
+    CLI: `--dry-run` as the first argument
+      dm-packaging-helper-script --dry-run pkg_need_version_bump_and_pkg_build_and_reprepro_add
+
+    Wrapped sites:
+      - pkg_upstream_and_debian_changelog_bump: genmkfile deb-uachl-{bumpup-manual,bumpup-major,commit-changelog}
+      - pkg_git_sign_tags: genmkfile git-tag-sign + the post-condition git-verify (the latter so dry-run can continue past this function instead of failing on a tag the mutation didn't create)
+      - pkg_need_version_bump_and_pkg_build_and_reprepro_add: genmkfile deb-pkg / reprepro-remove / reprepro-add / deb-cleanup
+      - pkg_only_build_all: genmkfile deb-pkg
+      - pkg_only_reprepro_add: genmkfile reprepro-add
+
+    Backgrounded `git push &` in pkg_git_push_remotes and
+    pkg_git_push_tags can't be expressed through dry_run_or_run because
+    the `&` is essential; both sites use an inline conditional that
+    mirrors the helper's output format.
+
+    For signed-tag creation, dry-run says "WOULD: genmkfile git-tag-sign"
+    without predicting the exact target version - per the design
+    discussion, prediction would require duplicating genmkfile's
+    version-bump logic and the precision isn't worth the complexity.
+
+commit c52169e7ea93b38247608429a6b46391c40e10ea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 13:21:32 2026 -0400
+
+    .
+
+commit 9f77d457ddcc24665f65ef2d1adaa279c8ef1f57
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 13:18:12 2026 -0400
+
+    .
+
+commit ba31723359cd0f2fdf4ed477394ca67fa77bd494
+Merge: 76be2b2 ec5d726
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 12:46:05 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit ec5d7264d6786b521d51a4672ef5e1962d7759f0
+Merge: 3081569 8ae5126
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 12:21:14 2026 -0400
+
+    Merge pull request #103 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    pkg_need_version_bump_show: filter reprepro list to source line, drop sort
+
+commit 8ae5126efec635930edeb74b6d62ecd223b0249e
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 16:17:05 2026 +0000
+
+    pkg_need_version_bump_show: add ## Example <var>: comments, trim narrative
+
+    After each parsing step, show what the variable looks like - matches
+    the existing pattern in genmkfile make-helper-one.bsh
+
+        ## Example make_changelog_version values:
+        ##   3:0.1-1
+        make_changelog_version="$(dpkg-parsechangelog --show-field Version)"
+
+    Worth more than three lines of narrative about what the parser does.
+    Drop the verbose rationale paragraphs; keep one short comment for
+    the non-obvious export.
+
+commit ea233b74bf808ff40d62610219509a597d4c8036
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 16:15:44 2026 +0000
+
+    pkg_need_version_bump_show: drop redundant =""; grep --fixed-strings --
+
+    Two micro-cleanups on the reprepro version extraction:
+
+    1. The pre-assignment `source_line=""` / `reprepro_version=""` lines
+       were redundant. The vars are declared in the function's `local`
+       line at the top and assigned by the very next statement; nothing
+       reads them in between.
+
+    2. The literal-string filter is more correctly expressed as
+       `grep --fixed-strings -- '|source:'`:
+       - R-060: long flag.
+       - R-062: `--` end-of-options separator on a tool that supports
+         one. Defensive idiom even though the pattern here is a
+         hardcoded literal.
+
+commit 00fb54e3800c71be516f1d119e170f3733ab84e3
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 16:12:26 2026 +0000
+
+    pkg_need_version_bump_show: filter reprepro list to source line, drop sort
+
+    Two issues with the previous one-liner extracting reprepro_version:
+
+      reprepro_version="$(printf '%s\n' "${repo_query_output}" \
+          | awk 'NF{print $NF}' | sort -V | tail -n1)"
+
+    1. sort -V follows GNU "version sort" rules, NOT Debian version
+       semantics. Epochs (`1:1.0` vs `0:2.0`), tildes (`1.0~rc1` < `1.0`),
+       and a few other Debian-specific orderings can be sorted wrong.
+       The right Debian-version comparator is `dpkg --compare-versions`.
+
+    2. The pipeline took the highest of all per-architecture lines.
+       reprepro tracks at most ONE version per source-package per
+       codename, so every architecture line carries the same version;
+       sorting was a workaround for using the wrong data source.
+
+    Filter to the `|source:` line instead - that's the canonical per-
+    package entry. No sort needed. Multi-step for readability:
+
+      1. query reprepro
+      2. grep '|source:' to pick the canonical line
+      3. awk '{print $NF}' to extract the version
+
+    Empty result still means "package absent" / "needs build", which
+    the downstream comparison handles unchanged.
+
+commit 308156998cca94b3f3095e29e211413213974113
+Merge: 2130086 8d92876
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 11:35:41 2026 -0400
+
+    Merge pull request #102 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    trim comments per R-150/R-151/R-152 in dm-packaging-helper-script
+
+commit 8d92876dea0481fe25f236f9a3710b6ac631c332
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 15:25:33 2026 +0000
+
+    trim comments per R-150/R-151/R-152
+
+    Audit of session-added comments against the bash-style-guide
+    turned up four sites where my comments ran longer than the file's
+    established convention (one-line ## preambles, sparse inline) or
+    restated WHAT the code already shows.
+
+    - repo_is_special preamble: 8 lines -> 2 (the four repo names
+      are visible in the case statement itself).
+    - pkg_git_sign_tags preamble: 6 lines -> 2 (the polymorphism
+      details belong in genmkfile, not duplicated here).
+    - pkg_need_version_bump_show's `dm-reprepro-wrapper derives
+      basedir...` block: 7 lines -> 3 (keep the "we must export
+      derivative_repository_name" point; drop the basename-derivation
+      walkthrough since that's genmkfile's concern).
+    - pkg_need_version_bump_show's `## Already has a signed tag at
+      HEAD; nothing to do.` next to a one-line `return 0`: dropped
+      (R-151 - well-named code paths already say that).
+
+    Net: -16 lines. No behaviour change.
+
+    dm-push, dm-quickgittagsign, git-helpers.bsh reviewed in the same
+    pass - their comments are either pre-existing or already at the
+    right size.
+
+commit 21300864d470b1830a8971ea38c19d362347c3ef
+Merge: e730a07 6006f52
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 10:31:42 2026 -0400
+
+    Merge pull request #101 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    pkg_need_version_bump_show: fix R-021 and R-024 style violations
+
+commit 6006f5208fac5d0d1ba3d91889c5de3d9978d7d7
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 14:30:04 2026 +0000
+
+    pkg_need_version_bump_show: fix R-021 and R-024 style violations
+
+    Two findings from the bash-style-guide audit of recent changes:
+
+    R-021 (locals at top of function): hoist
+    `local changelog_version source_pkg reprepro_version repo_query_output`
+    out of the else-branch up to the function preamble.
+
+    R-024 (variable names in messages wrapped in single quotes): wrap
+    ${source_pkg}, ${changelog_version}, ${reprepro_version} in single
+    quotes in the rare-corner-case WARNING printf so empty/whitespace
+    values stay visible.
+
+commit e730a07b2235650cd9e294635caa83b572e8816e
+Merge: eb6f9d5 7540ed2
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 10:18:13 2026 -0400
+
+    Merge pull request #100 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    factor out is_changelog_bump_commit; simplify force-bump guard
+
+commit 7540ed2c6188c314c86685af73729d5ccfa4a8ab
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 13:27:22 2026 +0000
+
+    factor out is_changelog_bump_commit; simplify force-bump guard
+
+    Two related cleanups around the "last commit is 'bumped changelog
+    version'" sentinel:
+
+    1. Extract the literal-string check into a single helper
+       is_changelog_bump_commit() next to nothing_to_commit(). Used in
+       two places now (pkg_need_version_bump_show's reprepro-equality
+       branch and pkg_upstream_and_debian_changelog_bump's idempotency
+       guard).
+
+    2. Split the compound `if NOT-force AND is-bump-commit` in
+       pkg_upstream_and_debian_changelog_bump into a force-first
+       if/elif. The force branch logs intent and falls through; the
+       elif branch returns 0 for the resumed-interrupted-build case.
+       Easier to read and matches the natural priority ordering
+       (force overrides every other guard).
+
+commit eb6f9d553dca2fd1c1781ff95226af23bc8c853b
+Merge: 860191b 6238068
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 08:43:18 2026 -0400
+
+    Merge pull request #99 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    pkg_need_version_bump_show: detect interrupted builds via reprepro version
+
+commit 623806865af4364391ff5341671adf0cf669665c
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 11:29:19 2026 +0000
+
+    dm-quickgittagsign: add R-010 shopt -s shift_verbose
+
+    The strict-mode quintet (sextet) was incomplete in this script -
+    missing the final `shopt -s shift_verbose`. It went unnoticed until
+    the prefix-rename commit brought the file into the pre-push static
+    gate's changed-files set; CI then flagged R-010 (5/6 strict-mode
+    lines).
+
+commit e61456387eef747a7a035cd132dbe743b4618c34
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 11:27:46 2026 +0000
+
+    git tag prefix: adrelanos_ -> commit_; drop pkg_git_sign_tags dispatch
+
+    genmkfile's make_git_tag_sign now dispatches on
+    make_use_git_describe_for_version internally (see companion
+    genmkfile PR), so pkg_git_sign_tags no longer needs the
+    `if repo_is_special; then dm-quickgittagsign; else genmkfile
+    git-tag-sign; fi` workaround - one uniform `genmkfile git-tag-sign`
+    call covers both.
+
+    dm-quickgittagsign's standalone CLI keeps working but the tag prefix
+    moves from `adrelanos_` to `commit_` for project-neutrality. Existing
+    adrelanos_<sha> tags remain valid (they're still signed annotated
+    tags reachable by `git describe`); new tags use the new prefix.
+
+    Requires companion genmkfile PR to be merged first; otherwise the
+    removed in-caller dispatch leaves special repos failing on
+    `genmkfile git-tag-sign` (which would try to create a tag with the
+    existing nearest-tag name).
+
+commit 78d92ff8dcc242d7d53deab7f91c46b39b85a757
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 09:53:43 2026 +0000
+
+    pkg_need_version_bump_show: short-circuit force flag before reprepro query
+
+    When batch_meta_force_version_bump=y the developer is explicitly
+    asking for a bump regardless of repo state, so the reprepro query
+    is wasted work and the interleaved force checks inside each
+    comparison branch add noise.
+
+    Hoist the force check to the top of the new block: if forced,
+    log and fall straight through to the pipeline. Otherwise run the
+    existing reprepro version comparison. pkg_upstream_and_debian_changelog_bump's
+    guard is already force-aware so the forced re-bump still works.
+
+commit afbc4a16421b75ed1664a231c705ccdc132f56ce
+Author: Claude <noreply@anthropic.com>
+Date:   Sun May 17 09:09:08 2026 +0000
+
+    pkg_need_version_bump_show: detect interrupted builds via reprepro version
+
+    Replace the unreliable "last commit is 'bumped changelog version'"
+    sentinel with a comparison between debian/changelog and the version
+    actually published in the local reprepro repo.
+
+    The old sentinel had a real failure mode: if a previous batch ran
+    the bump commit and built the .deb but was interrupted (Ctrl-C,
+    OOM, disk-full, sudo timeout) before reprepro-add finished, the
+    changelog moved ahead of reprepro yet subsequent runs would see
+    the bump commit and skip forever. The mismatch surfaced only when
+    a downstream consumer noticed the apt repository was stale.
+
+    New logic queries dm-reprepro-wrapper (which self-sources
+    help-steps/variables and handles basedir/dbdir options) for the
+    package's current local-codename version and compares it via
+    `dpkg --compare-versions`:
+
+      - changelog == reprepro and last commit IS the bump: truly done,
+        skip (unless batch_meta_force_version_bump=y)
+      - changelog == reprepro and last commit is something else: new
+        work since the bump, fall through
+      - changelog > reprepro: interrupted previous build, fall through
+        (pkg_upstream_and_debian_changelog_bump now no-ops via a new
+        guard so we don't re-bump unnecessarily)
+      - changelog < reprepro: rare; warn and continue, let reprepro-add
+        surface the mismatch loudly
+      - package absent from repo: first build, fall through
+
+    The rest of the pipeline (sign tags, push, deb-pkg,
+    reprepro-remove/add) is already idempotent so a resumed build
+    runs cleanly to completion.
+
+commit 76be2b2034493b771a9233d084771ba708a9df40
+Merge: 7b714a3 860191b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 04:33:30 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 860191bf2a1f48829f97200ded824e60a7d57910
+Merge: 5f033f9 14d5610
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun May 17 04:25:41 2026 -0400
+
+    Merge pull request #98 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    dm-packaging-helper-script: integrate special repos into version-bump batch
+
+commit 14d56101de1124616c480c1d22aabb05265e7c5e
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 16 22:57:41 2026 +0000
+
+    pkg_need_version_bump_show: run pkg_bash_sanity_test unconditionally
+
+    Previously bash syntax check ran only on the path that ended up
+    marking a repo as needing work - both branches (regular and the new
+    special-repo path) skipped it on their early-return cases (uncommitted
+    changes, "bumped changelog version" sentinel, signed tag already at
+    HEAD).
+
+    Move pkg_bash_sanity_test to the top of the function, immediately
+    after the derivative-maker skip. Bash syntax is now verified for
+    every special and regular repo every batch iteration regardless of
+    whether a bump is needed - catches script breakage even when no
+    commits are pending.
+
+commit 858c2bcd61dce8cf5618ce221aa20d98fd2fca5f
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 16 21:45:47 2026 +0000
+
+    dm-packaging-helper-script: integrate special repos into version-bump batch
+
+    `pkg_need_version_bump_and_pkg_build_and_reprepro_add` previously
+    early-returned on the four special (non-package) repos via
+    `repo_skip_non_package`, so a special repo whose HEAD commit was
+    signed but lacked a tag at HEAD was silently ignored by the
+    batch "rebuild all that need it" entry point.
+
+    Add a `repo_is_special` discriminator and dispatch on it inside the
+    existing helpers so the same call chain
+    (pkg_need_version_bump_show -> pkg_upstream_and_debian_changelog_bump
+    -> pkg_verify_signed_commit -> pkg_git_sign_tags -> pkg_git_push_remotes
+    -> pkg_git_push_tags) handles both kinds of repo:
+
+    - pkg_need_version_bump_show: for specials, "needs version bump"
+      means "HEAD has a signed commit but no signed tag at HEAD". No
+      changelog sentinel check.
+    - pkg_upstream_and_debian_changelog_bump: no-op for specials (no
+      debian/changelog to bump).
+    - pkg_git_sign_tags: for specials, use dm-quickgittagsign (tag name
+      encodes HEAD SHA, unique per commit) instead of
+      `genmkfile git-tag-sign` (which would try to recreate the existing
+      nearest tag name and fail).
+    - pkg_need_version_bump_and_pkg_build_and_reprepro_add: top-level
+      dispatch - specials get the tag-and-push half, skip Debian
+      build/reprepro entirely.
+
+commit 7b714a38896c730900a37692daa6a795d067330c
+Merge: 84f25c2 5f033f9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 17:13:01 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 5f033f9ec53eb9fcc99b8bca8b8dbc84a5427faa
+Merge: b168d9a e9d4c88
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 16:20:31 2026 -0400
+
+    Merge pull request #97 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    dm-packaging-helper-script: enforce signed-HEAD-and-tag policy on push
+
+commit e9d4c888fd56c5584c5c2f259d7277e11e0e2f0b
+Author: Claude <noreply@anthropic.com>
+Date:   Sat May 16 20:01:42 2026 +0000
+
+    dm-packaging-helper-script: enforce signed-HEAD-and-tag policy on push
+
+    pkg_git_push_remotes now calls pkg_verify_signed_commit_and_tag
+    before any push hits the network, closing the gap where branches
+    could be pushed without a signed tag pointing at HEAD.
+
+    pkg_verify_signed_commit_and_tag's TODO about repos without
+    debian/control is resolved: genmkfile git-verify now handles
+    qubes-template-{kicksecure,whonix}, Whonix-Installer, and
+    Whonix-Starter via their ./make-helper-overrides.bsh opt-in
+    (make_use_git_describe_for_version=true).
+
+commit b168d9a8e80b25448b3c897beaa8d3736a15e5f0
+Merge: 7b84f09 cffb490
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 07:10:24 2026 -0400
+
+    Merge pull request #96 from org-ai-assisted/claude/codeql-known-false-positives-docs
+
+    docs: add CodeQL Actions sections to known-false-positives
+
+commit cffb490ba9b7ea782fefb5ea1f58157f38e4f56f
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 07:07:17 2026 -0400
+
+    docs: add CodeQL Actions sections to known-false-positives
+
+    Two new sections cover the 9 open CodeQL alerts on master:
+
+      - actions/untrusted-checkout/medium (#82-#87, 6 alerts on the
+        dmf-checkout steps in six reusable workflows): empirically
+        confirmed across two scans that the rule fires on static
+        properties only and ignores runtime if: guards. Alert #17
+        autofix closed #17 and opened #82; PR #95 closed five more
+        and opened five more at identical lines.
+
+      - actions/unpinned-tag (#79, #80, #81 - 3 alerts on the new
+        apt-install-with-cache@master references in cppcheck/bandit/
+        coverity reusables): same rationale as the existing
+        PinnedDependenciesID section above.
+
+    Both reference the existing agents/security.md Threat-model-A
+    trust-root argument and agents/github-actions.md G-A-004
+    single-source-of-truth update propagation rationale that the
+    codebase has already documented as opt-in patterns.
+
+    The doc page name remains scorecard-known-false-positives.md
+    even though the new entries are CodeQL findings - both scanners
+    hit the same accepted-FP shapes, and a single page is easier to
+    keep current than splitting per-tool.
+
+commit 7b84f0913dc7342ff488eb72eafeea8bac1ccfd2
+Merge: 84f25c2 5b50182
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 06:27:03 2026 -0400
+
+    Merge pull request #95 from org-ai-assisted/claude/codeql-untrusted-checkout-stepguards
+
+    ci(codeql): step-level if: guards on dmf-checkout flow (alerts 18/19/66/69/70)
+
+commit 5b50182a8d452d71759bd73315798640ae4d682e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 06:25:23 2026 -0400
+
+    simplify: only the dmf-checkout step gets the cosmetic guard
+
+    The previous revision mechanically copied alert #17\'s autofix
+    shape - guard the checkout AND the immediately-following dmf-
+    script step. That made the diff inconsistent across files
+    because "immediately following" varies (in scorecard it\'s the
+    emit-step-summary; in bandit it\'s the scan; in codeql it\'s
+    the load-config; etc.). Same logic applies to ALL dmf-using
+    steps in all reusables, not just the next one.
+
+    The job-level fork-PR guard already blocks fork PRs from running
+    the job at all, so every step-level guard is purely cosmetic
+    for CodeQL. With no functional effect, "guard only what CodeQL
+    directly flags" is the minimal-surface answer. That\'s the
+    checkout step in each of the five reusables - alerts #18, #19,
+    #66, #69, #70 all point at the checkout line, not at a downstream
+    script step.
+
+    Reverted the second-step guards in scorecard / secrets-audit /
+    bandit / cppcheck / codeql. All five files now carry exactly one
+    cosmetic step-level guard each, on the dmf-checkout step.
+
+    reusable-pre-push-static.yml on master still carries the old
+    two-step-guard shape from alert #17\'s autofix. Out of scope for
+    this PR; if codeql\'s next scan generates noise there too it can
+    be simplified separately.
+
+commit 84f25c2f66b4eec96f070baf15be259b069f1dca
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 06:11:41 2026 -0400
+
+    .
+
+commit 50124377c83e55d2a694a69cd94606895743e2c9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 06:09:01 2026 -0400
+
+    .
+
+commit a9dbc6da986e067be0139d8019102c9e7fdde09f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 06:08:28 2026 -0400
+
+    .
+
+commit 07503f221bccfc85c5d03ed8a4effca777ecd882
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 06:04:52 2026 -0400
+
+    .
+
+commit 76776e02229ec84467ac78e8d205d56644345470
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 06:01:43 2026 -0400
+
+    .
+
+commit 2b28db2e4023e321b1f11b6ee47f2536ed611c80
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 05:58:52 2026 -0400
+
+    .
+
+commit 07f84bb2d5281d4c523ea4e79e6e6748ebe50c57
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 05:46:01 2026 -0400
+
+    ci(codeql): step-level if: guards on dmf-checkout flow (alerts 18/19/66/69/70)
+
+    Mirror of the autofix that CodeQL applied to reusable-pre-push-static.yml
+    for alert #17 (now \'fixed\'). Same shape across the remaining five
+    reusables that still have an open \'actions/untrusted-checkout/medium\'
+    alert against their dmf-checkout step:
+
+      #18 reusable-secrets-audit.yml:61
+      #19 reusable-scorecard.yml:136
+      #66 reusable-bandit.yml:114
+      #69 reusable-codeql.yml:176
+      #70 reusable-cppcheck.yml:99
+
+    Each file gets a step-level `if:` matching the existing job-level
+    fork-PR guard, applied to:
+
+      - The `Checkout developer-meta-files` step itself.
+      - The next step that runs a `.github/dmf/...` script (so CodeQL\'s
+        data-flow tracking sees the guard at both the source and the
+        sink, matching the alert-17 autofix shape exactly).
+
+    Where the target step already has a condition the guard is `&&`-
+    ed onto it (reusable-scorecard.yml combines `always()` with the
+    fork-PR guard; reusable-codeql.yml combines `inputs.dm-consumer-section != \'\'`).
+
+    Honest note (already established in agents/security.md Threat
+    model A and discussed on PR #92): the runtime mitigation
+    (job-level guard + persist-credentials: false + no
+    pull_request_target) was already in place. Step-level guards are
+    cosmetic - they don\'t actually change what runs on a fork PR
+    since the job-level guard already blocks the job. They are
+    applied here for consistency with the alert-#17 autofix
+    precedent, and to satisfy CodeQL\'s static analysis.
+
+    Caveat: CodeQL\'s rule doesn\'t look at runtime guards (job-level
+    or step-level if:); it looks at static properties. The alert-#17
+    autofix flipped #17 open->fixed but the next scan opened #82 at
+    the same line. Same shape may recur here. If that happens, the
+    right answer is to add an actions/untrusted-checkout section to
+    docs/scorecard-known-false-positives.md, not a workflow_run
+    redesign (the trust model doesn\'t require one).
+
+    reusable-pre-push-static.yml is untouched - it already has the
+    guards from alert #17\'s autofix.
+
+commit 8e0022f7aca13a37cf660f6da567f4b0af0e438d
+Merge: f9e0914 1db0b4a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 05:42:48 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/cp-update-none-warning-fix'
+
+commit f9e09142d6e1e134cbac1a6776dba3d523e6c3b7
+Merge: b67a136 525b8b3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 05:36:14 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/alert-autofix-17'
+
+commit 525b8b3f88a2b7f87e8e0f76bbdaac179b670284
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 05:35:45 2026 -0400
+
+    Potential fix for code scanning alert no. 17: Checkout of untrusted code in trusted context
+
+    Co-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>
+
+commit b67a136da8db6c1a2f0ea23ee82c997591fa414d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 05:29:42 2026 -0400
+
+    .
+
+commit 3e866df7b2ab0dad5083a5c34b6e2700536cbd86
+Merge: 7a53168 9a6e09c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 16 05:26:34 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 1db0b4a9c2414e2cc6ba3328bc68d2484221f60b
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 04:45:49 2026 -0400
+
+    ci(apt-cache): cp --update=none replaces deprecated --no-clobber
+
+    Live kloak rerun (https://github.com/org-ai-assisted/kloak/actions/runs/25935205795/attempts/2)
+    of the merged apt-install-with-cache composite action emits:
+
+      cp: warning: behavior of -n is non-portable and may change in
+      future; use --update=none instead
+
+    GNU coreutils 9.x deprecates the -n / --no-clobber short-flag
+    semantics. The newer --update=none is the documented replacement
+    and is supported on coreutils >= 9.1; Ubuntu 24.04 ships 9.4, and
+    all callers (reusable-cppcheck/bandit/coverity, msgcollector\'s
+    local-*-tests.yml, security-misc\'s local-dbus-fuzz.yml +
+    local-python-lint.yml) run on ubuntu-24.04 or ubuntu-latest
+    (which is currently 24.04), so the upgrade is safe across the
+    deployment surface.
+
+    Functionally identical: --update=none means "do not overwrite an
+    existing file" - same as --no-clobber, but without the
+    portability warning. The local cache dir at ~/.apt-deb-cache can
+    accumulate the same name from a previous run, and so can
+    /var/cache/apt/archives; both call sites want skip-if-exists.
+
+    Two call sites in install.sh:
+      - seed:     sudo cp --no-clobber -> sudo cp --update=none
+      - snapshot:      cp --no-clobber ->      cp --update=none
+
+commit 9a6e09c34cea293e2218329887c2751e554d58d9
+Merge: 7a53168 7df2714
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 04:40:11 2026 -0400
+
+    Merge pull request #92 from org-ai-assisted/claude/fix-cppcheck-tar-error-0qNYv
+
+    ci: apt-install-with-cache composite action + claude-review concurrency fix
+
+commit 7df2714169df3598da2a5ad4828d4decd15033d8
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 04:25:58 2026 -0400
+
+    ci: isolate bot-authored events into a separate concurrency group
+
+    Manually testing @claude review on this PR surfaced a race: the
+    Claude action posts its review as claude[bot], that comment fires
+    this same workflow again, and with the existing single-group
+    `cancel-in-progress: true` concurrency setting the bot-triggered
+    re-run cancelled the in-flight human-triggered review *mid-flight*
+    - after the prompt had been assembled but before the Claude API
+    call posted anything visible to the PR. Live run on PR #92:
+
+      - 07:58:42 issue_comment run #25956755466 starts
+        (actor=assisted-by-ai, body contains @claude)
+      - 07:58:55 final prompt assembled, about to call Claude API
+      - 07:58:56 issue_comment run #25956759124 starts
+        (actor=claude[bot], body lacks @claude)
+      - run #25956759124 enters the same concurrency group, cancels
+        #25956755466
+      - #25956759124 itself then gets job-level skipped by the
+        \'@claude\' substring filter, but the damage is done
+      - #25956755466 ends \'cancelled\'; PR gets no review
+
+    The job-level `if:` was the only existing filter for bot
+    comments; concurrency runs BEFORE that filter, so by the time
+    the bot run is rejected on substring grounds it has already
+    cancelled the in-flight work.
+
+    Fix: per-actor-class concurrency grouping. GitHub\'s standard
+    \'[bot]\' suffix on App accounts (claude[bot],
+    github-advanced-security[bot], dependabot[bot], chatgpt-codex-
+    connector[bot], ...) is the natural split:
+
+      group: ${{ github.workflow }}-${{ ... }}-${{ endsWith(github.actor, \'[bot]\') && \'bot\' || \'human\' }}
+
+    Bot-triggered runs (which always skip via the \'if:\') land in
+    a separate group from human-triggered reviews, so they only
+    cancel each other. The in-flight human review runs to
+    completion.
+
+    Edit on the source-of-truth at consumer-templates/ + the
+    byte-identical in-dmf mirror at .github/workflows/ (dmf is its
+    own consumer per agents/github-actions.md G-A-005). Other
+    consumer repos pick up the fix at the next
+    pkg_update_consumer_workflows propagation pass.
+
+    codex-review.yml does NOT need the same fix: its triggers are
+    pull_request + workflow_dispatch only (no issue_comment), so
+    codex\'s own review comments do not re-trigger its workflow.
+
+commit 36a93412554a355114229d1eed5c0e85d0ac96b6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 04:17:08 2026 -0400
+
+    Revert "ci: add self-test workflow that dogfoods PR\'s composite action"
+
+    The earlier commit added a dedicated self-CI workflow to address
+    a codex review comment about install.sh changes not being
+    exercised by dmf self-CI (because the reusable-* workflows pin
+    the composite action to @master, so a PR\'s install.sh isn\'t
+    the version that runs in self-CI).
+
+    On second look, the codex finding doesn\'t pass the bar:
+
+    1. agents/github-actions.md G-A-004 explicitly endorses @master
+       for first-party cross-repo `uses:` references:
+       "First-party reusable workflows (org-ai-assisted/... /
+        Kicksecure/... / Whonix/...) reference each other by branch
+        name (@master) on purpose - single-source-of-truth update
+        propagation."
+
+    2. The two existing composite actions in this repo
+       (install-deps, shellcheck) follow exactly the same pattern -
+       their action.yml header docs `@master` for cross-repo
+       usage, and they\'re only invoked from local-* workflows via
+       `./` (local ref) within the same repo. Neither has a
+       dogfood-on-PR mechanism. The new composite action matches that
+       precedent.
+
+    3. install.sh is ~25 lines, passes shellcheck, and the
+       pre-push static gate enforces R-001/R-010/R-020 etc. before
+       merge. Code review covers the rest. Adding a dedicated
+       self-test workflow to catch an install.sh regression that
+       shellcheck+review wouldn\'t catch is over-engineering.
+
+    4. The codebase\'s explicit policy (docs/scorecard-known-false-
+       positives.md) treats PinnedDependenciesID alerts on @master
+       refs as accepted false positives - the trust model puts
+       github.com in scope as a trust root for CI (security.md
+       "Threat model A"), so SHA-pin ceremony for internal refs is
+       not the goal.
+
+    So removing the self-test workflow. The PR returns to its prior
+    shape: composite action @master in the three reusable workflows,
+    no special dogfood mechanism.
+
+commit c11898eb3c692cd991a14052a5fbe89af75fd4fc
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat May 16 04:04:36 2026 -0400
+
+    ci: add self-test workflow that dogfoods PR\'s composite action
+
+    Codex review on PR #92 flagged a dogfood gap (P1): the reusable-*
+    workflows pin the new composite action to @master, so a dmf PR
+    that modifies .github/actions/apt-install-with-cache/install.sh
+    gets self-CI against the @master copy of install.sh, NOT the
+    PR\'s copy. A breaking change could merge undetected.
+
+    The structural fix (use ${{ env.DMF_REF }} in the @ref portion)
+    is rejected by GitHub Actions: step-level `uses:` does NOT accept
+    context expressions in the @ref. Per the Variables docs: "you
+    can use the env context in any key in a workflow step except
+    for the id and uses keys". The github context is similarly
+    restricted in practice (community discussion #63675).
+
+    This commit adds a dedicated self-CI workflow that uses a *local*
+    action reference (`uses: ./.github/actions/apt-install-with-cache`)
+    which IS bound to the PR\'s checkout. The workflow:
+      - triggers only when .github/actions/apt-install-with-cache/
+        changes (path filter)
+      - installs `hello` via the PR\'s composite action
+      - verifies hello got installed
+      - verifies install.sh\'s snapshot phase populated
+        ~/.apt-deb-cache/hello_*.deb
+      - regression-guards apt\'s normal permission posture
+        (/var/cache/apt/archives root:root 0755 parent,
+        _apt:root 0700 partial/ - the whole point of the
+        runner-owned sidecar design)
+
+    So a PR that introduces a breaking install.sh change fails this
+    workflow before merging, closing the dogfood gap.
+
+commit 7dcc93b6e627ba14fe643b3db607e5675d437f88
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 19:57:41 2026 -0400
+
+    ci: convert apt-install-with-cache to a composite action
+
+    Replaces the helper-script-at-fixed-path approach (ci/apt-install-with-cache.sh
+    called from reusable workflows via .github/dmf/ci/...) with a
+    GitHub composite action (.github/actions/apt-install-with-cache/),
+    matching the existing .github/actions/install-deps and
+    .github/actions/shellcheck pattern.
+
+    Benefits:
+      - One \'uses:\' line per consumer step instead of separate
+        actions/cache + script-call steps.
+      - Centralized cache-action SHA pin (one place to update on
+        Dependabot bumps; reduces duplicate Dependabot PRs across
+        consumers per agents/github-actions.md "Action SHA pinning").
+      - Caller does not need to manually checkout developer-meta-files
+        just to reach the install script; GitHub Actions checks the
+        composite action out automatically when \'uses:\' is resolved.
+      - Reusable for the local-* workflows in other consumer repos
+        (msgcollector, security-misc) that today carry the same
+        \'chown /var/cache/apt/archives + actions/cache\' bug.
+
+    Structure (mirrors .github/actions/install-deps/):
+      .github/actions/apt-install-with-cache/action.yml   (composite)
+      .github/actions/apt-install-with-cache/install.sh   (seed/install/snapshot)
+
+    Caller signature:
+      - uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: \'cppcheck yq\'
+          cache-key: ${{ runner.os }}-apt-cppcheck-${{ hashFiles(\'.github/workflows/reusable-cppcheck.yml\') }}
+
+    Removed:
+      - ci/apt-install-with-cache.sh (moved to .github/actions/apt-install-with-cache/install.sh)
+      - The bandit-workflow dmf-checkout reorder from the previous
+        revision (no longer needed: the composite action self-checks-out).
+
+commit 3b8724678e67323fa36dcb2384bf3254eb02f5af
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 19:08:57 2026 -0400
+
+    ci: chmod +x ci/apt-install-with-cache.sh
+
+    The initial push via the Contents API created the file with mode
+    100644; check-shebang-scripts-are-executable in the pre-push gate
+    fails because the file has a #!/bin/bash shebang. All other ci/*.sh
+    are 100755. Fix the mode via the git data API directly (the
+    Contents API does not preserve the exec bit).
+
+commit 460b7f7129f17acdb2d13b63a8b5921f47365601
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 19:07:05 2026 -0400
+
+    ci: extract apt-install-with-cache helper to satisfy R-100
+
+    The inline run: blocks for the apt-cache seed/snapshot logic were
+    ~15 lines each with control flow (if-guards, array initialization,
+    nullglob shopt). Per bash-style-guide.md R-100, substantial bash
+    logic with control flow does not belong inside workflow YAML run:
+    blocks: shellcheck only sees real .sh files, not YAML blocks, so
+    inline shell silently bypasses linting.
+
+    This commit:
+
+    - Extracts the seed/install/snapshot logic into ci/apt-install-with-cache.sh,
+      a single-purpose helper with the full strict-mode quintet (R-010),
+      the 'AI-Assisted' header (R-002), and a CI guard mirroring
+      ci/coverity-check-secrets.sh.
+    - Each reusable workflow's install step becomes a single-line
+      invocation of the helper (or 3 lines for coverity, which still
+      expands APT_PACKAGES env into an array for safe shell-metacharacter
+      handling; under the R-100 ~5-line threshold and no control flow).
+    - Cache keys now include the helper script's hashFiles() so a
+      change to the seed/snapshot logic invalidates the cache.
+    - Comments shrunk to one-line pointers to the script header
+      (R-150: state rationale once per file).
+    - The "earlier revisions" journaling comment in reusable-bandit.yml
+      is removed (rot-prone, per the "no task-history comments" rule).
+    - bandit's developer-meta-files checkout moved before the install
+      step because the install step now calls a dmf script.
+
+    AGENTS.md adherence:
+      R-001 ASCII only:                    pass
+      R-002 'AI-Assisted' header:          pass
+      R-010 strict-mode quintet (6 lines): pass
+      R-020 ${var} braces:                 pass
+      R-025 array init under nounset:      pass (seed_debs, new_debs)
+      R-060 long flag names:               pass (--no-clobber, --parents,
+                                           --non-interactive, --yes,
+                                           --no-install-recommends, etc.)
+      R-061 no combined short flags:       pass
+      R-062 -- end-of-options:             pass (apt-get, cp, mkdir)
+      R-100 substantial bash out of YAML:  pass
+      R-102 no bash/sh prepend:            pass
+      R-120 no rm (using cp):              pass
+      R-150 rationale once per file:       pass (lives in script header)
+      R-151 no rot-prone comments:         pass
+      shellcheck --external-sources:       pass
+      G-A-007 cache poisoning:             pass (cached .debs re-verified
+                                           by apt-get install on next run)
+
+commit fb2ac4f84b26b25e623edab4b616341414aa02b7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 18:54:02 2026 -0400
+
+    ci: cache .debs in runner-owned dir, never touch apt's permissions
+
+    Refactor #2 of the apt-cache pattern in three reusable workflows
+    (reusable-cppcheck, reusable-bandit, reusable-coverity).
+
+    Background: /var/cache/apt/archives is root:root 0755 with an
+    _apt:root 0700 'partial/' subdirectory. apt drops privileges during
+    the download phase, and partial/ holds unverified bytes; 0700 is
+    deliberate. actions/cache runs tar as the unprivileged runner user,
+    which can't read partial/.
+
+    Earlier attempts to make actions/cache's tar work with the system
+    path:
+
+      A) sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+         Clobbers apt's permission model. apt-get install also
+         recreates partial/ 0700 every run, so the chown has to be
+         re-applied after install - a perpetual fight.
+
+      B) sudo chmod o+w /var/cache/apt/archives + path: *.deb
+         Drops world-writable on a system directory. Better than (A)
+         for partial/ specifically, but worse on the parent - any
+         local process can now plant .debs there.
+
+    Both touch system permissions. Neither is necessary. New approach:
+
+      - Cache ~/.apt-deb-cache (a runner-owned directory). actions/cache
+        tars it as the runner without any permission gymnastics; the
+        system /var/cache/apt/archives is never the cached path.
+      - Install step uses a seed/snapshot pattern:
+          seed:     sudo cp ~/.apt-deb-cache/*.deb /var/cache/apt/archives/
+                    so apt-get install finds and reuses the cached .debs
+                    instead of re-downloading.
+          install:  sudo apt-get install ... (unchanged)
+          snapshot: cp /var/cache/apt/archives/*.deb ~/.apt-deb-cache/
+                    to capture any newly-downloaded .debs for the next
+                    run. No sudo - apt's .debs are root:root mode 0644
+                    (world-readable).
+      - shopt -s nullglob + (( ${#arr[@]} > 0 )) guards make the empty-
+        glob case (first run, or no new downloads) a no-op without
+        relying on '|| true'.
+
+    apt's /var/cache/apt/archives stays exactly as Ubuntu ships it -
+    root:root 0755 parent, _apt:root 0700 partial/ - across runs.
+
+    Mirrors what awalsh128/cache-apt-pkgs-action does (cache a
+    runner-owned dir, shuttle .debs in/out); we just don't take the
+    Marketplace dependency.
+
+    Observed on
+    https://github.com/org-ai-assisted/kloak/actions/runs/25935205795
+
+commit dc2d0a7eb93782f04f5a7d8e5d097827c226c5b0
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 18:33:37 2026 -0400
+
+    ci: switch apt cache to *.deb glob + chmod o+w (preserve apt ownership)
+
+    Refactor of the prior chown-based approach. Three reusable workflows
+    (reusable-cppcheck, reusable-bandit, reusable-coverity) had a
+    "Prepare apt cache directory" step that ran:
+
+      sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
+
+    and cached `path: /var/cache/apt/archives`. This worked but had two
+    problems:
+
+    1. apt-get install (run via sudo) recreates the archives/partial/
+       subdirectory as _apt:root mode 0700 regardless of the parent's
+       ownership. The cache-save post-step then tars the cached path
+       as the unprivileged runner user, fails to read partial/, and
+       emits 'Failed to save: tar exit code 2'. The cache never
+       persists across runs.
+    2. Even with a post-install re-chown to address (1), recursively
+       chowning /var/cache/apt/archives to the runner clobbers apt's
+       normal permission model. The _apt:root mode 0700 on partial/
+       exists for a real reason: apt drops privileges during the
+       download phase, and unverified packages in partial/ should not
+       be readable by other local users.
+
+    New approach:
+
+    - chmod o+w /var/cache/apt/archives (not chown -R) - the parent
+      needs to be writable by the runner so actions/cache can extract
+      .deb files on restore, but ownership stays root:root and
+      partial/ keeps its _apt:root 0700.
+    - path: /var/cache/apt/archives/*.deb - glob to .deb files only.
+      Excludes partial/ (unreadable by runner) and lock (irrelevant).
+      The cache-save post-step never traverses partial/, so apt
+      recreating it as _apt:root mode 0700 after each install is
+      harmless.
+
+    Observed on
+    https://github.com/org-ai-assisted/kloak/actions/runs/25935205795
+
+commit 733632d498e454b173767b76fdf42835af68a894
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 18:10:21 2026 -0400
+
+    ci: re-chown apt cache after install to fix cache-save tar warning
+
+    The reusable-cppcheck, reusable-bandit and reusable-coverity workflows
+    all chown /var/cache/apt/archives before the install step so that
+    actions/cache can restore into it without sudo. apt-get install then
+    recreates the archives/partial/ subdirectory as _apt:root mode 0700,
+    which the unprivileged runner user cannot read. When actions/cache's
+    post-step runs at job cleanup it tars the cached path as that user
+    and bails out with:
+
+      /usr/bin/tar: ../../../../../var/cache/apt/archives/partial:
+      Cannot open: Permission denied
+      ##[warning]Failed to save: "/usr/bin/tar" failed with error:
+      The process '/usr/bin/tar' failed with exit code 2
+
+    The job still succeeds (just a warning), but the cache never
+    persists across runs, so each invocation re-downloads packages
+    from apt.
+
+    Fix: re-take ownership of /var/cache/apt/archives at the end of
+    the install step. The save step then reads partial/ cleanly and
+    the cache actually gets written.
+
+    Observed on
+    https://github.com/org-ai-assisted/kloak/actions/runs/25935205795
+
+commit 7a531684e870257b75788f433115faafae97f925
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 20:08:04 2026 +0000
+
+    bumped changelog version
+
 commit 996af11dc73a329177cb6d9b6b7f82f1302e3d1b
 Merge: 70fc09f cd7e21d
 Author: Patrick Schleizer <adrelanos@whonix.org>
