@@ -1735,7 +1735,13 @@ pkg_git_push_remotes() {
    ## invokes `genmkfile git-verify`, which uniformly handles regular
    ## and special repos (the latter opt in via
    ## ./make-helper-overrides.bsh's make_use_git_describe_for_version).
-   pkg_verify_signed_commit_and_tag
+   if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
+      ## Manual tag creation when deemed ready.
+      exit 255
+      pkg_verify_signed_commit
+   else
+      pkg_verify_signed_commit_and_tag
+   fi
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
       refspec_list=()
