@@ -144,56 +144,35 @@ opt-out flags.
 
 ## `.github/dependabot.yml` propagation
 
-`dependabot.yml` is propagated alongside the `consumer-*.yml`
-workflow wrappers and sits at the same byte-identical canonical
-shape. It uses both semantics:
+Canonical at `consumer-templates/.github/dependabot.yml` carries
+the `github-actions` ecosystem only. Propagation:
 
-- `pkg_update_consumer_workflows` refreshes
-  `.github/dependabot.yml` from
-  `consumer-templates/.github/dependabot.yml` whenever the file
-  is already present on the consumer (UPDATE-if-exists, parallel
-  to the consumer-`*.yml` loop above it).
-- `pkg_install_dependabot_yml` bootstraps the file when missing,
-  on the rule "if a consumer has `.github/workflows/`, give it a
-  `dependabot.yml`". Idempotent: a re-run after rollout no-ops.
-  Repos with no `.github/workflows/` directory have no GitHub
-  Actions for Dependabot to bump and are skipped.
+- `pkg_update_consumer_workflows` refreshes the file when
+  already present (UPDATE-if-exists).
+- `pkg_install_dependabot_yml` bootstraps it when missing, if
+  the consumer has `.github/workflows/`. Idempotent.
 
-### Unified canonical (both github-actions and docker)
+Both honour a `## propagation: manual` header marker on the
+consumer's file and skip when present.
 
-The canonical at `consumer-templates/.github/dependabot.yml`
-carries **both** `github-actions` and `docker` package-ecosystem
-blocks. The `docker` block is included even in repos without
-Dockerfiles, because:
+### Per-repo manual `dependabot.yml`
 
-- Dependabot's `docker` ecosystem only scans for Dockerfiles in
-  well-known locations. Repos without any get no PRs from the
-  block - it is a harmless no-op, not an error.
-- Carrying the docker block uniformly across the org keeps the
-  template byte-identical, removing what would otherwise be a
-  per-repo divergence (Dockerfile-bearing repos like
-  derivative-maker carrying a different shape than the rest).
-- A consumer adding its first Dockerfile post-rollout gets
-  Dependabot coverage automatically, no `dependabot.yml` edit
-  required.
+Repos with a Dockerfile at a non-root path hand-maintain their
+own:
 
-Note: Dependabot's `docker` ecosystem only watches Dockerfile
-`FROM` lines, NOT workflow `container:` image references
-(`debian:trixie@sha256:...` in `local-lint.yml` etc.). Those
-container pins need manual re-pinning; see
-[`github-actions.md`](github-actions.md) action SHA-pinning
-discipline and each repo's `agents/github-actions-security.md`
-for the procedure.
+| Repo | Dockerfile | dependabot `directory:` |
+| --- | --- | --- |
+| `derivative-maker` | `docker/Dockerfile` | `"docker"` |
+| `helper-scripts` | `.clusterfuzzlite/Dockerfile` | `".clusterfuzzlite"` |
 
-### No repo exclusions
+Place `## propagation: manual` as the first content line. Keep
+the `github-actions` `updates:` block byte-identical to the
+canonical; only the `docker` block diverges.
 
-Both functions are exclusion-free. Every consumer - including
-derivative-maker (which previously carried a hand-maintained
-docker-bearing variant) and developer-meta-files (which
-previously carried hub-specific commentary) - converges on the
-canonical on the next propagation pass. The hub-private
-rationale that used to live in dmf's own `dependabot.yml`
-header is now in this doc.
+Dependabot's `docker` ecosystem watches Dockerfile `FROM` lines
+only, not workflow `container:` / `image:` pins; those are
+manually maintained per
+[`github-actions.md`](github-actions.md).
 
 ## Scheduling in byte-identical templates
 
