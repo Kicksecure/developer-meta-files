@@ -2301,13 +2301,11 @@ pkg_need_version_bump_show() {
       ## source line gives the canonical published version without
       ## having to sort across architectures (which `sort -V` would
       ## do incorrectly for Debian versions with epochs or tildes).
-      source_line=""
-      source_line="$(printf '%s\n' "${repo_query_output}" | grep '|source:' || true)"
+      source_line="$(printf '%s\n' "${repo_query_output}" | grep --fixed-strings -- '|source:' || true)"
 
       ## Extract the version (last whitespace-separated field on the
       ## reprepro list line: 'codename|component|source: <pkg> <ver>').
       ## Empty when the package is absent from the local repo.
-      reprepro_version=""
       reprepro_version="$(printf '%s\n' "${source_line}" | awk 'NF{print $NF}')"
 
       ## Reliable "needs work?" check: compare debian/changelog version
