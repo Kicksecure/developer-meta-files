@@ -515,6 +515,14 @@ is_changelog_bump_commit() {
    [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
 }
 
+dry_run_or_run() {
+   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*"
+      return 0
+   fi
+   "$@"
+}
+
 ## XXX: Duplicated.
 nothing_to_commit() {
    local nothing_to_commit_msg_one git_status_last_line
@@ -1735,16 +1743,11 @@ pkg_git_push_remotes() {
       #return 0
    #fi
 
-   ## Policy: HEAD is a signed commit with a signed tag pointing at
-   ## it before any push hits the network. pkg_verify_signed_commit_and_tag
-   ## invokes `genmkfile git-verify`, which uniformly handles regular
-   ## and special repos (the latter opt in via
-   ## ./make-helper-overrides.bsh's make_use_git_describe_for_version).
    if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
       ## Manual tag creation when deemed ready.
-      pkg_verify_signed_commit
+      genmkfile git-commit-verify
    else
-      pkg_verify_signed_commit_and_tag
+      genmkfile git-verify
    fi
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
@@ -1761,7 +1764,7 @@ pkg_git_push_remotes() {
          ##   Single-ref pushes are unaffected.
          ## --porcelain: one machine-readable line per ref so failures
          ##   in wait_for_git_processes are diagnosable beyond exit code.
-         log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
+         dry_run_or_run log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
          git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
       fi
    done
@@ -1779,7 +1782,7 @@ pkg_git_push_tags() {
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
+      dry_run_or_run git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
       git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
    done
 
@@ -2196,58 +2199,25 @@ pkg_git_packages_git_log_writer() {
 ## Signs git tags for all repos except derivative-maker. The
 ## special-vs-regular dispatch lives in genmkfile make_git_tag_sign.
 pkg_git_sign_tags() {
+   local prefix
+   prefix="${cyan}${batch_current_package_reponame}${reset}: pkg_git_sign_tags"
+
    repo_skip 'derivative-maker' || return 0
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 TODO"
+   ## Step 1/3: HEAD commit must be signed.
+   true "${prefix} 1/3 verify HEAD commit signed"
    genmkfile git-commit-verify
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 done"
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 TODO"
-   if ! genmkfile git-verify 2>/dev/null ; then
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
-
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      genmkfile git-tag-sign
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
+   ## Step 2/3: HEAD must have a signed tag pointing at it; sign one if not.
+   true "${prefix} 2/3 verify HEAD tag signed, sign if absent"
+   if ! genmkfile git-tag-verify 2>/dev/null; then
+      dry_run_or_run genmkfile git-tag-sign
    fi
 
-   genmkfile git-verify
-
-   true
-}
-
-## Verifies that the head commit of all repos is signed.
-pkg_verify_signed_commit() {
-   local cmd
-   ## XXX: hardcoded
-   [ -n "${sq_git_trust_root:-}" ] || sq_git_trust_root="HEAD"
-   ## XXX: hardcoded
-   [ -n "${sq_git_policy_file:-}" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/buildconfig.d/openpgp-policy.toml"
-   #git verify-commit HEAD
-   sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
-}
-
-# pkg_resign_with_sq() {
-#    if pkg_verify_signed_commit; then
-#       return 0
-#    fi
-#    printf '%s\n' "" >> README.md
-#    git add README.md
-#    git commit -a -m "signed commit"
-# }
-
-## Verifies that the head commit and tag of all repos except derivative-maker
-## is signed. Uses genmkfile.
-pkg_verify_signed_commit_and_tag() {
-   repo_skip 'derivative-maker' || return 0
-
-   ## Repos without debian/control (qubes-template-{kicksecure,whonix},
-   ## Whonix-Installer, Whonix-Starter) opt in to git-tag-based version
-   ## detection via their ./make-helper-overrides.bsh; see
-   ## genmkfile/usr/share/genmkfile/shared.bsh and
-   ## make-helper-one.bsh make_get_variables.
-   genmkfile git-verify
-   true
+   ## Step 3/3: full sanity-check (commit + tag).
+   ## Wrapped in dry-run because step 2's sign was a no-op in dry-run.
+   true "${prefix} 3/3 sanity check"
+   dry_run_or_run genmkfile git-verify
 }
 
 ## Finds packages that have modifications made to them since the last version
@@ -2277,7 +2247,7 @@ pkg_need_version_bump_show() {
          true "uncommitted changes in special repo"
          return 1
       fi
-      pkg_verify_signed_commit
+      genmkfile git-commit-verify
       if genmkfile git-verify 2>/dev/null; then
          return 0
       fi
@@ -2349,7 +2319,7 @@ pkg_need_version_bump_show() {
    fi
 
    ## Verify that the commit prior the next changelog commit is signed.
-   pkg_verify_signed_commit
+   genmkfile git-commit-verify
 
    batch_current_package_needs_version_bump='y'
 
@@ -2407,12 +2377,12 @@ pkg_upstream_and_debian_changelog_bump() {
    ## refuse adding it.
    if [ "${version_numbers_by_upstream:-}" = "true" ]; then
       ## XXX: manual
-      genmkfile deb-uachl-bumpup-manual
+      dry_run_or_run genmkfile deb-uachl-bumpup-manual
    else
-      genmkfile deb-uachl-bumpup-major
+      dry_run_or_run genmkfile deb-uachl-bumpup-major
    fi
 
-   genmkfile deb-uachl-commit-changelog
+   dry_run_or_run genmkfile deb-uachl-commit-changelog
 
    true
 }
@@ -2435,7 +2405,7 @@ pkg_need_version_bump_do() {
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
-   pkg_verify_signed_commit
+   genmkfile git-commit-verify
 
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
@@ -2511,10 +2481,10 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
-   genmkfile reprepro-remove
-   genmkfile reprepro-add
-   genmkfile deb-cleanup
+   dry_run_or_run genmkfile deb-pkg
+   dry_run_or_run genmkfile reprepro-remove
+   dry_run_or_run genmkfile reprepro-add
+   dry_run_or_run genmkfile deb-cleanup
 
    true
 }
@@ -2525,7 +2495,7 @@ pkg_only_build_all() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
+   dry_run_or_run genmkfile deb-pkg
 
    true
 }
@@ -2535,7 +2505,7 @@ pkg_only_reprepro_add() {
    repo_skip_non_package || return 0
 
    export make_use_cowbuilder=true
-   genmkfile reprepro-add
+   dry_run_or_run genmkfile reprepro-add
 
    true
 }
@@ -2797,6 +2767,22 @@ run_batch() {
 main() {
    local target_cmd arg_list
 
+   while [ $# -gt 0 ]; do
+      case "${1}" in
+         --dry-run)
+            batch_meta_dry_run='y'
+            shift
+            ;;
+         --*)
+            printf '%s\n' "${red}${bold}FATAL ERROR:${reset} unknown flag '${1}'"
+            exit 1
+            ;;
+         *)
+            break
+            ;;
+      esac
+   done
+
    target_cmd="${1:-}"
    shift || true
    arg_list=( "$@" )
@@ -2804,7 +2790,7 @@ main() {
    if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] function-name arguments"
       exit 0
    fi
 
@@ -2868,6 +2854,7 @@ batch_meta_relative_file_name=''
 batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
 batch_meta_force_version_bump='n'
+batch_meta_dry_run='n'
 
 declare -A -g batch_meta_file_header_done_list=()
 batch_run_counter=0
