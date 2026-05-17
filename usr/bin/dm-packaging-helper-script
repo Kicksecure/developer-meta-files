@@ -2183,9 +2183,11 @@ pkg_git_packages_git_log_writer() {
 }
 
 ## Signs git tags for all repos except derivative-maker using genmkfile.
-## For "special" (non-package) repos that have no debian/changelog-derived
-## version number, falls back to dm-quickgittagsign whose adrelanos_<sha>
-## tag name is unique per HEAD commit.
+## `genmkfile git-tag-sign` is now polymorphic over make_use_git_describe_for_version:
+## regular packages get a tag named after the debian/changelog version;
+## special (non-package) repos that opt in get a commit_<HEAD-sha> tag
+## (idempotent if already present). See
+## genmkfile/usr/share/genmkfile/make-helper-one.bsh make_git_tag_sign.
 pkg_git_sign_tags() {
    repo_skip 'derivative-maker' || return 0
 
@@ -2198,15 +2200,7 @@ pkg_git_sign_tags() {
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
 
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      if repo_is_special; then
-         ## genmkfile git-tag-sign would attempt to create a tag named
-         ## after `git describe --abbrev=0` (the existing nearest tag)
-         ## and fail. dm-quickgittagsign's SHA-suffixed tag name is
-         ## unique per HEAD and idempotent.
-         dm-quickgittagsign
-      else
-         genmkfile git-tag-sign
-      fi
+      genmkfile git-tag-sign
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
@@ -2286,13 +2280,57 @@ pkg_need_version_bump_show() {
       return 0
    fi
 
-   last_log_entry="$(git log --format=%s -1)"
+   ## Forced bump: skip the reprepro query entirely and fall straight
+   ## through to the bump+build pipeline. The bump-already-done guard
+   ## in pkg_upstream_and_debian_changelog_bump is also force-aware,
+   ## so a forced run with last commit == "bumped changelog version"
+   ## bumps to the next version as expected.
+   if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
+      true "${batch_current_package_reponame}: forced version bump - skipping reprepro version check."
+   else
+      local changelog_version source_pkg reprepro_version repo_query_output
+      changelog_version="$(dpkg-parsechangelog --show-field Version)"
+      source_pkg="$(dpkg-parsechangelog --show-field Source)"
 
-   if [ 'bumped changelog version' = "${last_log_entry}" ]; then
-      if [ "$batch_meta_force_version_bump" = "y" ]; then
-         true "Forced version bump."
+      ## dm-reprepro-wrapper derives basedir/dbdir/etc. from
+      ## derivative_repository_name (which genmkfile/make-helper-one.bsh
+      ## sets in its own process via `basename "$(dirname "$PWD")"`).
+      ## pkg_need_version_bump_show is NOT called via genmkfile, so we
+      ## export it ourselves before invoking the wrapper. Lowercased
+      ## batch_current_project_name matches the parent-folder convention
+      ## genmkfile uses ('kicksecure' / 'whonix').
+      export derivative_repository_name="${batch_current_project_name,,}"
+      repo_query_output="$(dm-reprepro-wrapper list local "${source_pkg}" 2>/dev/null || true)"
+      reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}' | sort -V | tail -n1)"
+
+      last_log_entry="$(git log --format=%s -1)"
+
+      ## Reliable "needs work?" check: compare debian/changelog version
+      ## against the version actually published in the local reprepro
+      ## repo. The previous heuristic ("last commit is `bumped changelog
+      ## version`") was unreliable - a build interrupted between the
+      ## bump commit and reprepro-add would leave changelog ahead of
+      ## reprepro yet skip subsequent runs forever.
+      if [ -n "${reprepro_version}" ] \
+            && dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
+         if [ 'bumped changelog version' = "${last_log_entry}" ]; then
+            ## Truly done: changelog matches reprepro AND the last commit
+            ## IS the bump that produced it. No new work since.
+            return 0
+         else
+            ## Versions match but a non-bump commit came in after the
+            ## previous build - new work. Fall through.
+            true "${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump."
+         fi
+      elif [ -n "${reprepro_version}" ] \
+            && dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
+         ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
+         ## the inconsistency rather than silently rolling back.
+         printf '%s\n' "${red}${bold}WARNING:${reset} ${source_pkg}: changelog ${changelog_version} < reprepro ${reprepro_version} - possible corruption; continuing." >&2
       else
-         return 0
+         ## Either changelog > reprepro (interrupted previous build),
+         ## or the package isn't in the local repo yet (first build).
+         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
       fi
    fi
 
@@ -2320,6 +2358,19 @@ pkg_upstream_and_debian_changelog_bump() {
    ## tag-creation step happens in pkg_git_sign_tags via
    ## dm-quickgittagsign, downstream of this no-op.
    if repo_is_special; then
+      return 0
+   fi
+
+   ## Idempotency for resumed interrupted builds: if the last commit
+   ## is already the bump, pkg_need_version_bump_show let us through
+   ## because reprepro is behind (changelog > reprepro). Re-bumping
+   ## here would produce a useless second bump with no intervening
+   ## changes - skip and let the downstream build+reprepro-add steps
+   ## resume. batch_meta_force_version_bump bypasses this so the
+   ## force-bump-from-bump-commit case still works.
+   if [ "${batch_meta_force_version_bump:-n}" != "y" ] \
+         && [ "$(git log --format=%s -1)" = 'bumped changelog version' ]; then
+      true "${batch_current_package_reponame}: changelog already bumped; skipping re-bump (resuming interrupted build)."
       return 0
    fi
 
