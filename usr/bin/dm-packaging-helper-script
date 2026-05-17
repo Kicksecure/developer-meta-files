@@ -2258,6 +2258,8 @@ pkg_verify_signed_commit_and_tag() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
+   local changelog_version source_pkg reprepro_version repo_query_output
+
    batch_current_package_needs_version_bump='n'
 
    repo_skip 'derivative-maker' || return 0
@@ -2294,7 +2296,6 @@ pkg_need_version_bump_show() {
    if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
       true "${batch_current_package_reponame}: forced version bump - skipping reprepro version check."
    else
-      local changelog_version source_pkg reprepro_version repo_query_output
       changelog_version="$(dpkg-parsechangelog --show-field Version)"
       source_pkg="$(dpkg-parsechangelog --show-field Source)"
 
@@ -2330,7 +2331,7 @@ pkg_need_version_bump_show() {
             && dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
          ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
          ## the inconsistency rather than silently rolling back.
-         printf '%s\n' "${red}${bold}WARNING:${reset} ${source_pkg}: changelog ${changelog_version} < reprepro ${reprepro_version} - possible corruption; continuing." >&2
+         printf '%s\n' "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro '${reprepro_version}' - possible corruption; continuing." >&2
       else
          ## Either changelog > reprepro (interrupted previous build),
          ## or the package isn't in the local repo yet (first build).
