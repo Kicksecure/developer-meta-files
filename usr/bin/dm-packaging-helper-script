@@ -1383,12 +1383,29 @@ pkg_copy_contributing_file() {
    true
 }
 
+## True if .github/dependabot.yml carries the
+## "## propagation: manual" opt-out marker.
+dependabot_yml_is_manual() {
+   local target_path
+
+   target_path="${batch_current_package_path}/.github/dependabot.yml"
+
+   if ! [ -f "${target_path}" ]; then
+      return 1
+   fi
+
+   if grep --quiet --extended-regexp '^## propagation: manual$' "${target_path}"; then
+      return 0
+   fi
+
+   return 1
+}
+
 ## Bulk variant of pkg_update_if_exists: iterates a fixed set of
 ## consumer-wrapper filenames against canonical_workflows_dir, and
 ## also refreshes .github/dependabot.yml from the canonical at
-## consumer-templates/.github/dependabot.yml (different source path
-## because dependabot.yml lives at .github/ root, not under
-## .github/workflows/).
+## consumer-templates/.github/dependabot.yml. dependabot.yml
+## refresh honours "## propagation: manual".
 pkg_update_consumer_workflows() {
    local workflow_name source_path destination_path
    local dependabot_source dependabot_destination
@@ -1428,10 +1445,14 @@ pkg_update_consumer_workflows() {
    ## Unconditionally install dependabot.yml if missing.
    pkg_install_dependabot_yml
 
-   pkg_update_if_exists \
-      "${dependabot_source}" \
-      "${dependabot_destination}" \
-      "update .github/dependabot.yml"
+   if dependabot_yml_is_manual; then
+      true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping update."
+   else
+      pkg_update_if_exists \
+         "${dependabot_source}" \
+         "${dependabot_destination}" \
+         "update .github/dependabot.yml"
+   fi
 
    true
 }
@@ -1439,10 +1460,8 @@ pkg_update_consumer_workflows() {
 ## Installs the canonical .github/dependabot.yml into every repo
 ## that uses GitHub Actions (has .github/workflows/) and doesn't
 ## already carry the file. INSTALL semantic, parallel to
-## pkg_install_codeql_actions_scan. Idempotent: a re-run after
-## rollout no-ops everywhere. The canonical carries both
-## github-actions and docker package-ecosystem blocks; the docker
-## block is a harmless no-op in repos without Dockerfiles.
+## pkg_install_codeql_actions_scan. Idempotent. Honours
+## "## propagation: manual".
 pkg_install_dependabot_yml() {
    local source_path destination_dir destination_path
 
@@ -1457,6 +1476,11 @@ pkg_install_dependabot_yml() {
 
    if ! [ -d "${batch_current_package_path}/.github/workflows" ]; then
       true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if dependabot_yml_is_manual; then
+      true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping install."
       return 0
    fi
 
