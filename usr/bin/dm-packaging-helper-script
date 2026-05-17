@@ -2183,9 +2183,11 @@ pkg_git_packages_git_log_writer() {
 }
 
 ## Signs git tags for all repos except derivative-maker using genmkfile.
-## For "special" (non-package) repos that have no debian/changelog-derived
-## version number, falls back to dm-quickgittagsign whose adrelanos_<sha>
-## tag name is unique per HEAD commit.
+## `genmkfile git-tag-sign` is now polymorphic over make_use_git_describe_for_version:
+## regular packages get a tag named after the debian/changelog version;
+## special (non-package) repos that opt in get a commit_<HEAD-sha> tag
+## (idempotent if already present). See
+## genmkfile/usr/share/genmkfile/make-helper-one.bsh make_git_tag_sign.
 pkg_git_sign_tags() {
    repo_skip 'derivative-maker' || return 0
 
@@ -2198,15 +2200,7 @@ pkg_git_sign_tags() {
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
 
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      if repo_is_special; then
-         ## genmkfile git-tag-sign would attempt to create a tag named
-         ## after `git describe --abbrev=0` (the existing nearest tag)
-         ## and fail. dm-quickgittagsign's SHA-suffixed tag name is
-         ## unique per HEAD and idempotent.
-         dm-quickgittagsign
-      else
-         genmkfile git-tag-sign
-      fi
+      genmkfile git-tag-sign
       true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
    fi
 
