@@ -515,11 +515,6 @@ is_changelog_bump_commit() {
    [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
 }
 
-## Wrap any state-mutating command. In normal mode runs the command
-## as-is; in dry-run mode (batch_meta_dry_run=y) prints the would-be
-## invocation and returns 0 without running it. Read-only commands
-## (verification, queries, parsing) are NOT wrapped - they always
-## run so dry-run can surface policy violations before a real run.
 dry_run_or_run() {
    if [ "${batch_meta_dry_run:-n}" = "y" ]; then
       printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*"
@@ -1748,11 +1743,6 @@ pkg_git_push_remotes() {
       #return 0
    #fi
 
-   ## Policy: HEAD is a signed commit with a signed tag pointing at
-   ## it before any push hits the network. `genmkfile git-verify`
-   ## uniformly handles regular and special repos (the latter opt
-   ## in via ./make-helper-overrides.bsh's
-   ## make_use_git_describe_for_version).
    if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
       ## Manual tag creation when deemed ready.
       genmkfile git-commit-verify
@@ -1774,9 +1764,6 @@ pkg_git_push_remotes() {
          ##   Single-ref pushes are unaffected.
          ## --porcelain: one machine-readable line per ref so failures
          ##   in wait_for_git_processes are diagnosable beyond exit code.
-         ## In dry-run the wrapper backgrounds a fast-exiting printf
-         ## instead of the actual push; wait_for_git_processes still
-         ## reaps it cleanly.
          dry_run_or_run log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
          git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
       fi
@@ -2232,13 +2219,6 @@ pkg_git_sign_tags() {
    true "${prefix} 3/3 sanity check"
    dry_run_or_run genmkfile git-verify
 }
-
-## Note: HEAD-commit verification uses `genmkfile git-commit-verify`
-## and full HEAD-commit + HEAD-tag verification uses `genmkfile git-verify`.
-## Both work uniformly for regular Debian-packaged repos and for
-## special (non-package) repos that opt in via
-## ./make-helper-overrides.bsh `make_use_git_describe_for_version=true`.
-## See genmkfile/usr/share/genmkfile/{shared.bsh,make-helper-one.bsh}.
 
 ## Finds packages that have modifications made to them since the last version
 ## bump, and displays their repo names. Also communicates that the package in
