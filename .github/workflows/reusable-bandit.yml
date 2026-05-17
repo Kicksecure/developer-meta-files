@@ -151,23 +151,28 @@ jobs:
         ## confidence threshold; non-zero otherwise. -r recurses; -ll
         ## maps the severity-level word to flags (low/medium/high
         ## map to -l / -ll / -lll respectively); same for -ii.
+        env:
+          INPUT_PATHS: ${{ inputs.paths }}
+          INPUT_SEVERITY_LEVEL: ${{ inputs.severity-level }}
+          INPUT_CONFIDENCE_LEVEL: ${{ inputs.confidence-level }}
+          INPUT_SKIPS: ${{ input.skips }}
         run: |
-          set -- ${{ inputs.paths }}
-          case "${{ inputs.severity-level }}" in
+          set -- ${INPUT_PATHS}
+          case "${INPUT_SEVERITY_LEVEL}" in
             low)    sev_flag="-l"   ;;
             medium) sev_flag="-ll"  ;;
             high)   sev_flag="-lll" ;;
             *)      echo "::error::invalid severity-level"; exit 64 ;;
           esac
-          case "${{ inputs.confidence-level }}" in
+          case "${INPUT_CONFIDENCE_LEVEL}" in
             low)    conf_flag="-i"   ;;
             medium) conf_flag="-ii"  ;;
             high)   conf_flag="-iii" ;;
             *)      echo "::error::invalid confidence-level"; exit 64 ;;
           esac
           skip_args=()
-          if [ -n "${{ inputs.skips }}" ]; then
-            skip_args=(--skip "${{ inputs.skips }}")
+          if [ -n "${INPUT_SKIPS}" ]; then
+            skip_args=(--skip "${INPUT_SKIPS}")
           fi
           bandit -r "${sev_flag}" "${conf_flag}" "${skip_args[@]}" -- "$@"
 
@@ -182,11 +187,16 @@ jobs:
 
       - name: Emit step summary
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          INPUT_PATHS: ${{ inputs.paths }}
+          INPUT_SEVERITY_LEVEL: ${{ inputs.severity-level }}
+          INPUT_CONFIDENCE_LEVEL: ${{ inputs.confidence-level }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'bandit' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
-            --row "paths=${{ inputs.paths }}" \
-            --row "severity=${{ inputs.severity-level }}" \
-            --row "confidence=${{ inputs.confidence-level }}"
+            --row "outcome=${JOB_STATUS}" \
+            --row "paths=${INPUT_PATHS}" \
+            --row "severity=${INPUT_SEVERITY_LEVEL}" \
+            --row "confidence=${INPUT_CONFIDENCE_LEVEL}"

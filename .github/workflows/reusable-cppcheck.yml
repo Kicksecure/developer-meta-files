@@ -72,14 +72,8 @@ on:
       enable:
         required: false
         type: string
-        ## 'style' deliberately omitted from the default. cppcheck's
-        ## --error-exitcode triggers on ANY finding at any enabled
-        ## severity (NOT only the 'error' severity, despite the
-        ## flag's name); style findings are typically noisy
-        ## (variableScope, constVariablePointer, etc.) and would
-        ## fail CI on every PR for repos that haven't been previously
-        ## audited. Add 'style' explicitly via the input when a repo
-        ## wants the broader check.
+        ## 'style' deliberately omitted from the default, as cppcheck's
+        ## style rules conflict with our usual C coding style.
         default: "warning,performance,portability"
       extra-args:
         required: false
@@ -157,14 +151,18 @@ jobs:
         ## NB: cppcheck does NOT support '--' as end-of-options
         ## separator (verified locally; rejects with 'unrecognized
         ## command line option'). Per R-062, do not add it here.
+        env:
+          INPUT_ENABLE: ${{ inputs.enable }}
+          INPUT_EXTRA_ARGS: ${{ inputs.extra-args }}
+          INPUT_PATHS: ${{ inputs.paths }}
         run: |
           cppcheck \
-            --enable=${{ inputs.enable }} \
+            --enable=${INPUT_ENABLE} \
             --inline-suppr \
             --error-exitcode=2 \
             --quiet \
-            ${{ inputs.extra-args }} \
-            ${{ inputs.paths }}
+            ${INPUT_EXTRA_ARGS} \
+            ${INPUT_PATHS}
 
       - name: Checkout developer-meta-files (step-summary helper)
         if: always()
@@ -177,10 +175,14 @@ jobs:
 
       - name: Emit step summary
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          INPUT_PATHS: ${{ inputs.paths }}
+          INPUT_ENABLE: ${{ inputs.enable }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'cppcheck' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
-            --row "paths=${{ inputs.paths }}" \
-            --row "enable=${{ inputs.enable }}"
+            --row "outcome=${JOB_STATUS}" \
+            --row "paths=${INPUT_PATHS}" \
+            --row "enable=${INPUT_ENABLE}"

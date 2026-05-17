@@ -30,7 +30,7 @@ source /usr/libexec/helper-scripts/has.sh
 has shellcheck \
    || { printf '%s\n' 'error: shellcheck not found on PATH; install via apt.' >&2; exit 1; }
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 
 ## Files this test owns. Keep the list explicit rather than globbing
@@ -70,6 +70,8 @@ for script_path in "${files[@]}"; do
    ## appears to be unreachable") does not fire for show_help and
    ## similar callbacks invoked indirectly from the policy lib.
    if ! shellcheck --external-sources -- "${script_path}"; then
+      ## FIXME: Print some sort of warning so we know *what* scripts failed
+      ## shellcheck.
       fail=1
    fi
 done

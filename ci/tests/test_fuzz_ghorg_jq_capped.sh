@@ -106,7 +106,7 @@ fi
 ## Both indicate a real issue; "graceful jq parse error" is fine.
 case "${rc}" in
    139|137)
-      printf '%s\n' "FAIL[nested]: rc=${rc}; jq crashed or hit hard timeout on a depth=${depth} input" >&2
+      printf '%s\n' "FAIL[nested]: rc=${rc}; jq crashed or hit hard timeout on a depth='${depth}' input" >&2
       fail=1
       ;;
 esac

@@ -27,6 +27,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+## FIXME: Why aren't the shopt settings here?
 
 ## CI guard. Requires ./cov-analysis/bin/coverity (set up by
 ## coverity-download.sh). Refuse outside CI unless ALLOW_LOCAL=true

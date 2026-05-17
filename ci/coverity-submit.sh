@@ -28,6 +28,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+## FIXME: Why aren't the shopt settings here?
 
 ## CI guard. Submits to scan.coverity.com using a repo secret.
 ## Refuse outside CI unless ALLOW_LOCAL=true is set explicitly.

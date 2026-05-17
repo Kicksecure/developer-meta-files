@@ -14,9 +14,7 @@ diff; don't skip a phase. Each item cites the relevant rule.
     [ ] Run pre-push-static.sh; it enforces all four items in
         one call: bash -n, shellcheck --external-sources,
         ASCII-only files (R-001), and ASCII-only commit-range
-        message (R-001). The shellcheck pass also catches
-        SC2317 unreachable-via-source for callbacks invoked
-        indirectly across files.
+        message (R-001).
 
 Wire as a hook so the gate is unmissable:
 

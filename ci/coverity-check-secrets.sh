@@ -19,6 +19,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+## FIXME: Why aren't the shopt settings here?
 
 ## CI guard. The Coverity workflow expects to find token/email/project
 ## in env. There is no sensible local invocation. Refuse outside CI

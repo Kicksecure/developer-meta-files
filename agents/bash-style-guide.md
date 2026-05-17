@@ -10,10 +10,8 @@ Each rule: a one-line statement (the bold first sentence), an
 optional "Why" rationale, an optional code example. Skim the bold
 lines to audit a diff; read the Why for context. Rules at the top
 of a section are hard; rules at the bottom are softer preferences.
-
-Hard rules at the top, soft preferences at the bottom of each
-section. Rules that cite a helper script include the source path
-so a reader can confirm intent against implementation.
+Rules that cite a helper script include the source path so a reader
+can confirm intent against implementation.
 
 
 ## File-level
@@ -21,14 +19,13 @@ so a reader can confirm intent against implementation.
 **R-001: ASCII only.** Source code and commit messages are ASCII
 only. No smart quotes, em dashes, zero-width spaces, emoji.
 
-Why: AI tools reflexively render bullet lists with cosmetic
-unicode (U+2014 em dash, U+2192 right-arrow); strip them. ASCII-
-only files make `LC_ALL=C grep -PlI '[^\x00-\x7F]'` a useful
-pre-push gate. The runnable gate
-[`agents/pre-push-static.sh`](pre-push-static.sh) applies that
-grep to both changed files and the commit-range message; install
-it as `.git/hooks/pre-push` to make R-001 violations impossible
-to push.
+Why: AI tools reflexively render text with cosmetic unicode (U+2014 em
+dash, U+2192 right-arrow); strip them. ASCII-only files make
+`LC_ALL=C grep -PlI '[^\x00-\x7F]'` a useful pre-push gate. The
+runnable gate [`agents/pre-push-static.sh`](pre-push-static.sh)
+applies that grep to both changed files and the commit-range message;
+install it as `.git/hooks/pre-push` to make R-001 violations
+impossible to push.
 
 **R-002: File header includes the 'AI-Assisted' marker.** Every
 new file from scratch carries the standard 5-line header:
@@ -48,7 +45,7 @@ policy.
 
 ## Shell options
 
-**R-010: Set the strict-mode quintet at the top of every script.**
+**R-010: Set the strict-mode block at the top of every script.**
 
     set -o errexit
     set -o nounset
@@ -60,10 +57,9 @@ policy.
 Why: `errexit` aborts on first uncaught failure. `nounset` catches
 unset-variable typos. `pipefail` makes the exit code of a pipeline
 the first non-zero (so failures earlier in the pipe propagate).
-`errtrace` makes ERR traps inherit into shell functions and command
-substitutions. `inherit_errexit` makes `$()` subshells respect
-errexit (bash >= 4.4). `shift_verbose` logs when `shift` runs past
-argv end.
+`errtrace` makes ERR traps inherit into shell functions.
+`inherit_errexit` makes `$()` subshells respect errexit (bash >= 4.4).
+`shift_verbose` logs when `shift` runs past argv end.
 
 **R-011: Don't toggle errexit around a command to capture its rc.**
 Use `||`-suffixed assignment.
@@ -164,7 +160,7 @@ shell-escaping is genuinely required), no extra `\n` in the format.
 
 **R-031: Multi-line block: ONE quoted string with embedded
 newlines.** Multiple separate lines: one `printf '%s\n'` per line.
-Blank line: `printf '%s\n' ""`, NOT `\n` in the format.
+Blank line: `printf '%s\n' ""`, NOT `printf '\n'` by itself.
 
 **R-032: Quote choice.** Double quotes preferred. Single quotes
 acceptable when the body has many doubles to escape:
@@ -225,7 +221,7 @@ exactly one blank line.** End-of-file is the only exception.
     }
 
 Why: without a blank line the next block runs into the function
-body visually and the boundary is hard to spot in a 600-line file.
+body visually and the boundary is hard to spot in large files.
 
 **R-051: Trap targets are standalone named functions, never inline
 command strings.**
@@ -247,13 +243,19 @@ means the reference is `nounset`-safe with no `${var:-}` default.
 
 **R-052: Backgrounded children (`&`) cannot mutate the parent
 shell's variables.** If a per-item loop with `&` needs shared
-state (a counter, a flag), use a tempfile with PIPE_BUF-atomic
-appends or sequentialize the loop.
+state (a counter, a flag), use other IPC mechanisms (flag files,
+STDIO, etc.).
 
 Why: child shells get a copy of the parent's vars; assignments
-inside the child are lost on `wait`. Single-byte appends to a
-file (`printf 'w' >> "${flag}"`) are atomic across concurrent
-writers up to PIPE_BUF (4096 bytes on Linux).
+inside the child are lost on `wait`.
+
+**R-053: Always use the strings 'true' and 'false' for booleans.** Do
+not use other truthy/falsey values (1/0, y/n, on/off) unless passing
+values to another tool that does not understand 'true' and 'false'.
+
+Why: All code should use the same convention for booleans to avoid
+mismatch bugs. The convention for Kicksecure and Whonix's codebase is
+to use the strings 'true' and 'false'.
 
 
 ## Flags
@@ -293,9 +295,9 @@ single-line arms get split.
 `'.git'` not `.git`, `'-'*` not `-*`.
 
 **R-073: Quote interpolated values in case patterns: `"${x}"`,
-not `${x}`.** Bash treats unquoted expansions in case patterns
-as glob, with NO `|`-alternation interpretation across the
-expansion. Single-value semantics only.
+not `${x}`.** Bash does not interpret `|` characters in an expanded
+variable as special in this context. Only single-value semantics are
+supported.
 
 Why: shellcheck SC2254 fires on the unquoted form. The quoted
 form makes the interpolation a literal pattern. If you need
@@ -337,12 +339,12 @@ directly.** Don't rely on transitive sourcing.
 Why: `log_run_die.sh` happens to source `strings.bsh` for its own
 use; if your script also calls `is_whole_number`, source
 `strings.bsh` itself. Otherwise a future refactor that drops the
-transitive source breaks you silently.
+transitive source breaks your script silently.
 
 **R-083: `wc` invocations are preceded by sourcing
 `wc-test.sh`.**
 
-Why: a broken `wc` binary fails loudly rather than silently
+Why: this makes a broken `wc` binary fail loudly rather than silently
 producing an empty count.
 
 **R-084: Reuse strings.bsh helpers before reimplementing.**
@@ -400,9 +402,9 @@ in a standalone script under `ci/` and have the workflow call it.
 
 Why: shellcheck only sees real `.sh` files, not YAML blocks;
 inline shell silently bypasses linting. A standalone script is
-reproducible from a developer machine. Diff reviews are line-
-level instead of YAML-indent-embedded. The script's args are an
-explicit, named, testable contract.
+usable from a developer machine. Diff reviews are line-level instead
+of YAML-indent-embedded. The script's args are an explicit, named,
+testable contract.
 
 **R-101: Workflow YAML and its scripts share a prefix.**
 
@@ -495,7 +497,8 @@ untrusted.**
   before use.
 - **Display sinks** (printf/log to stdout/stderr): pass through a
   sanitizer (e.g. `sanitize-string`) that strips ANSI escapes,
-  control chars, HTML markup, and truncates oversized payloads.
+  control chars, HTML markup, Unicode, and truncates oversized
+  payloads.
 - **Don't sanitize the raw API body before parsing** - the parser
   (jq) is the schema validator. Sanitize after extraction, before
   display.
@@ -508,6 +511,68 @@ The github-org-* / dm-* tools implement R-140 via
 `ghorg_validate_name` and `ghorg_safe_print`; see
 [github-org-tools.md](github-org-tools.md) G-001 through G-004
 for the project-specific implementation.
+
+**R-141: Avoid or carefully guard code that causes implied `eval`.**
+Arithmetic contexts (`(( ... ))`, `$(( ... ))`, any numeric comparison
+options in `[[ ... ]]`), array indexing, dereferencing via `${!...}`,
+the `-v` option of `test` and `[ ... ]`, and `printf -v` all can cause
+`eval`-like behavior, where code in string literals is executed as if
+it were part of the script. This injection can be done by passing a
+string such as `a[$(date)]` where a variable name or integer is
+expected. The following rules MUST be followed to avoid code injection
+when using these features of Bash:
+
+* If a variable is expected to contain an integer but comes from a
+  potentially untrusted source (i.e. a function argument), verify it
+  using `is_integer` or `is_whole_number` from helper-scripts'
+  `strings.bsh` library. This must be done BEFORE using the variable
+  in an arithmetic context or as an array index.
+* If a variable is expected to contain a variable name but comes from
+  a potentially untrusted source, verify it using
+  `check_variable_name` from `strings.bsh`. This must be done BEFORE
+  assigning the string to a nameref variable, dereferencing it,
+  checking for its existence as a variable with `test -v ...` /
+  `[ -v ... ]`, or setting a variable with its name with `printf -v`.
+* Prefer using `[ ... ]` over `[[ ... ]]` where possible.
+* Be very cautious when passing an array by name to a function and
+  setting its value in the function. In particular, do not EVER use
+  `printf -v` to set the value of an array element:
+
+    ## This is bad; arbitrary code can be injected via `arr_idx`:
+    bad_fn() {
+      local arr_name="$1" arr_idx="$2" element_val="$3"
+      printf -v "${arr_name}[${arr_idx}]" '%s' "${element_val}"
+    }
+
+    ## This is good provided that `arr_ref` is set to the name of an
+    ## associative array, but allows arbitrary code to be injected via
+    ## `arr_idx` for non-associative arrays:
+    good_for_assoc_array() {
+      local arr_idx element_val
+      local -n arr_ref
+
+      check_variable_name "$1" || return 1
+      arr_ref="$1"
+      arr_idx="$2"
+      element_val="$3"
+
+      arr_ref["${arr_idx}"]="${element_val}"
+    }
+
+    ## This is good for non-associative arrays, no code injection is
+    ## possible:
+    good_for_normal_array() {
+      local arr_idx element_val
+      local -n arr_ref
+
+      check_variable_name "$1" || return 1
+      arr_ref="$1"
+      arr_idx="$2"
+      element_val="$3"
+
+      is_whole_number "${arr_idx}" || return 1
+      arr_ref["${arr_idx}"]="${element_val}"
+    }
 
 
 ## Comments
@@ -547,3 +612,10 @@ Why: file-local consistency keeps each file readable as a unified
 document; jarring shifts in voice signal copy-paste and undermine
 trust in the prose. Match locally; impose org-wide style only
 when it would otherwise conflict.
+
+**R-153: Never extract a comment from the running script to display
+it to the user.** "Help modes" should be implemented as dedicated
+functions that print a string.
+
+Why: Code that expects comments to provide user interface components
+is liable to break if a comment-only change is made.

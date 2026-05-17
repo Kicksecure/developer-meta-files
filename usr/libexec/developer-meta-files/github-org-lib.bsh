@@ -6,8 +6,6 @@
 ## AI-Assisted
 
 ## Shared functions for the github-org-* tools (clone/fork/push).
-## Source via:
-##   source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 ## THREAT MODEL
 ## Every byte returned by the GitHub REST API is treated as untrusted.
@@ -42,14 +40,13 @@ GHORG_MAX_DISPLAY_LEN=256
 
 ## Cap on bytes passed through log() (which pipes through
 ## sanitize-string with LOG_MAX_LEN). Without this, log() defaults to
-## 'nolimit' and a hostile API body up to --max-filesize (10 MB)
-## flows through every log warn unbounded.
+## 'nolimit'.
 [[ -v LOG_MAX_LEN ]] || LOG_MAX_LEN="${GHORG_MAX_DISPLAY_LEN}"
 
-## Backoff doubles per attempt: 30s, 60s, 120s, 240s ... clamped at
-## GHORG_MAX_BACKOFF_SECONDS.
 [[ -v GHORG_MAX_RETRIES ]] || GHORG_MAX_RETRIES='3'
 
+## Backoff doubles per attempt: 30s, 60s, 120s ...
+##
 ## Refuse a single sleep longer than this (Retry-After /
 ## X-RateLimit-Reset on a quiet hour boundary can suggest hours).
 [[ -v GHORG_MAX_BACKOFF_SECONDS ]] || GHORG_MAX_BACKOFF_SECONDS='3600'
@@ -57,8 +54,6 @@ GHORG_MAX_DISPLAY_LEN=256
 ## Cap hostile pager loop.
 [[ -v GHORG_MAX_PAGES ]] || GHORG_MAX_PAGES='100'
 
-## Curl already strips Authorization on cross-host redirect; this
-## caps request-URL exfil through a redirect chain.
 [[ -v GHORG_MAX_REDIRS ]] || GHORG_MAX_REDIRS='5'
 
 ## Cap on numeric id length before URL interpolation. ^[0-9]+$ alone
@@ -76,10 +71,6 @@ ghorg_authenticated_user_cached=''
 ## 400, and contain a single token line. Symlinks are refused because
 ## a stat-then-read sequence would dereference, letting an attacker
 ## substitute the file between perm check and read.
-##
-## `local -; set +x` saves the caller's shell options on entry and bash
-## automatically restores them on every exit path, so an enclosing
-## `set -x` cannot leak the secret regardless of how this function exits.
 ghorg_token() {
   local token_file mode token default_config_dir default_token_path
 
@@ -88,58 +79,56 @@ ghorg_token() {
 
   if [ -n "${GITHUB_TOKEN:-}" ]; then
     token="${GITHUB_TOKEN}"
-    [ "${#token}" -le 255 ] || { log error 'GITHUB_TOKEN exceeds 255 bytes'; return 1; }
-    ## stderr suppressed: check_is_alpha_numeric prints the value on
-    ## failure, which for a token would leak the secret.
-    check_is_alpha_numeric token 2>/dev/null \
-      || { log error 'GITHUB_TOKEN has disallowed characters'; return 1; }
-    printf '%s' "${token}"
-    return 0
+  else
+    default_config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}"
+    default_token_path="${default_config_dir}/github-token"
+    token_file="${GHORG_TOKEN_FILE:-${default_token_path}}"
+    if [ -L "${token_file}" ]; then
+      log error "'${token_file}' is a symlink"
+      return 1
+    fi
+    if [ ! -e "${token_file}" ]; then
+      log error "no GitHub token. Set GITHUB_TOKEN or write one line to '${token_file}' and set its permissions to 0600."
+      return 1
+    fi
+    if [ ! -f "${token_file}" ]; then
+      log error "'${token_file}' is not a regular file"
+      return 1
+    fi
+    if [ ! -r "${token_file}" ]; then
+      log error "'${token_file}' is not readable"
+      return 1
+    fi
+    ## TODO: There was previously a 'stat -f '%Lp' -- "${token_file}"'
+    ## alternative here, but 'man 1 stat' does not document '%Lp' as being a
+    ## valid format string for 'stat'. '-f' is also used to stat a filesystem,
+    ## which makes little sense here. Investigate.
+    mode="$(stat -c '%a' -- "${token_file}" 2>/dev/null || true)"
+    if [ -z "${mode}" ]; then
+      log error "cannot stat '${token_file}'"
+      return 1
+    fi
+    if [ "${mode}" != '600' ] && [ "${mode}" != '400' ]; then
+      log error "'${token_file}' permissions are '${mode}', expected 600 or 400"
+      return 1
+    fi
+    token="$(head --lines=1 -- "${token_file}" | tr -d '\r\n')"
   fi
-  default_config_dir="${XDG_CONFIG_HOME:-${HOME}/.config}"
-  default_token_path="${default_config_dir}/github-token"
-  token_file="${GHORG_TOKEN_FILE:-${default_token_path}}"
-  if [ -L "${token_file}" ]; then
-    log error "'${token_file}' is a symlink"
-    return 1
-  fi
-  if [ ! -e "${token_file}" ]; then
-    log error "no GitHub token. Set GITHUB_TOKEN or write one line to '${token_file}' (chmod 600)."
-    return 1
-  fi
-  if [ ! -f "${token_file}" ]; then
-    log error "'${token_file}' is not a regular file"
-    return 1
-  fi
-  if [ ! -r "${token_file}" ]; then
-    log error "'${token_file}' is not readable"
-    return 1
-  fi
-  mode="$(stat -c '%a' -- "${token_file}" 2>/dev/null \
-    || stat -f '%Lp' -- "${token_file}" 2>/dev/null \
-    || true)"
-  if [ -z "${mode}" ]; then
-    log error "cannot stat '${token_file}'"
-    return 1
-  fi
-  if [ "${mode}" != '600' ] && [ "${mode}" != '400' ]; then
-    log error "'${token_file}' permissions are '${mode}', expected 600 or 400"
-    return 1
-  fi
-  token="$(head --lines=1 -- "${token_file}" | tr -d '\r\n')"
+
+  ## Verify token.
   [ "${#token}" -le 255 ] || { log error "'${token_file}' first line exceeds 255 bytes"; return 1; }
+  ## stderr suppressed: check_is_alpha_numeric prints the value on
+  ## failure, which would leak the secret.
   check_is_alpha_numeric token 2>/dev/null \
     || { log error "'${token_file}' contains disallowed characters"; return 1; }
   printf '%s' "${token}"
 }
 
-## git is included even though the policy tools never exec git
-## themselves - the entire family is meant to run in a git-using
-## operator environment.
 ghorg_require_deps() {
   local cmd
 
-  for cmd in curl jq git; do
+  ## No Git dependency, as none of the github-org-tools use Git.
+  for cmd in curl jq; do
     has "${cmd}" || { log error "required command not found: '${cmd}'"; return 1; }
   done
 }
@@ -159,6 +148,8 @@ ghorg_validate_name() {
       max_len="${GHORG_MAX_USER_LOGIN_LEN}"
       ;;
     *)
+      ## FIXME: Verify that no use of ghorg_validate_name passes an unhandled
+      ## 'kind', then make this branch error out.
       max_len="${GHORG_MAX_REPO_NAME_LEN}"
       ;;
   esac
@@ -193,13 +184,17 @@ ghorg_validate_name() {
 }
 
 ## Backoff in seconds for retry attempt (0-indexed): 30s, 60s, 120s,
-## 240s ... bounded by GHORG_MAX_BACKOFF_SECONDS. Floor for when no
+## ... bounded by GHORG_MAX_BACKOFF_SECONDS. Floor for when no
 ## Retry-After or X-RateLimit-Reset is parseable from a 429 /
 ## 403-rate-limit response.
 ghorg_compute_backoff_seconds() {
   local attempt seconds
 
   attempt="${1:-0}"
+  ## 1 << 62 is the largest positive number possible with Bash
+  ## bit-shifting of 1. 1 << 63 is a "large" negative number, 1 << 64
+  ## is 1.
+  [ "${attempt}" -gt 62 ] && attempt='62'
   seconds=$(( 30 * (1 << attempt) ))
 
   if [ "${seconds}" -gt "${GHORG_MAX_BACKOFF_SECONDS}" ]; then
@@ -223,8 +218,7 @@ ghorg_parse_rate_limit_wait() {
 
   [ -r "${hdr_file}" ] || return 0
 
-  ## Trailing `|| true` keeps a missing header (grep exit 1) from
-  ## propagating through pipefail + inherit_errexit.
+  ## '|| true' is necessary as a header may be missing.
   retry_after="$(grep --ignore-case -- '^retry-after:' "${hdr_file}" 2>/dev/null \
     | head --lines=1 \
     | sed -- 's/^[^:]*:[[:space:]]*//' \
@@ -245,6 +239,7 @@ ghorg_parse_rate_limit_wait() {
       return 0
     fi
   fi
+  ## TODO: We may need 'printf "%s" "0"' here.
 }
 
 ## Mock-mode dispatcher. When GHORG_MOCK=1, requests are served from
@@ -255,7 +250,7 @@ ghorg_parse_rate_limit_wait() {
 ##   POST /orgs/Whonix/forks             -> POST_orgs_Whonix_forks
 ##
 ## Slashes become underscores. Query strings are stripped. The fixture
-## must end with a HTTP_STATUS:NNN line.
+## contents must end with an HTTP_STATUS:NNN line.
 ##
 ## Missing fixture maps to "HTTP 599 mock not configured" so tests fail
 ## loudly rather than appearing to succeed against unset state.
@@ -265,15 +260,17 @@ ghorg_mock_dispatch() {
   method="$1"
   path="$2"
   clean_path="${path%%\?*}"
+  ## 'clean_path' will start with a '/' character, therefore we do not
+  ## need an extra '_' separator after '${method}'.
   key="${method}${clean_path//\//_}"
   fixture="${GHORG_MOCK_DIR}/${key}"
 
-  if [ -r "${fixture}" ]; then
+  if [ -f "${fixture}" ] && [ -r "${fixture}" ]; then
     cat -- "${fixture}"
     return 0
   fi
   ## Exception to the project-wide "printf '%s\n' ..." rule: emitting
-  ## a JSON literal full of double-quotes reads cleaner with %s.
+  ## a JSON literal full of double-quotes reads cleaner this way.
   printf '{"mock":"missing","method":"%s","path":"%s","key":"%s"}\n' \
     "${method}" "${clean_path}" "${key}"
   printf '%s\n' 'HTTP_STATUS:599'
@@ -287,18 +284,13 @@ ghorg_mock_dispatch() {
 ## X-RateLimit-Reset (or exponential backoff), retry up to
 ## GHORG_MAX_RETRIES times.
 ##
-## Hardening (real-network mode):
-## - Authorization fed via curl --config from stdin so the token
-##   never appears in argv (no `ps aux` leak).
-## - --proto / --proto-redir pinned to https.
-## - --connect-timeout / --max-time bound network waits.
-## - --max-filesize caps response body to 10 MB.
-##
 ## Args: METHOD PATH [BODY_JSON]
 ##
 ## Without a token, the request goes anonymously (60/hr per IP).
 
 ghorg_api_cleanup_hdr_file() {
+  ## hdr_file is inherited from ghorg_api.
+  # shellcheck disable=SC2154
   safe-rm --force -- "${hdr_file}"
 }
 
@@ -312,15 +304,18 @@ ghorg_api() {
   body="${3:-}"
 
   xtrace_off
-  trap xtrace_restore RETURN
+  ## We use a RETURN trap to run ghorg_api_cleanup_hdr_file, so we
+  ## can't use a RETURN trap here.
+  # trap xtrace_restore RETURN
 
   if [ "${GHORG_MOCK:-0}" = '1' ]; then
     ghorg_mock_dispatch "${method}" "${path}"
+    xtrace_restore
     return 0
   fi
 
-  is_whole_number "${GHORG_MAX_RETRIES}" || { log error 'GHORG_MAX_RETRIES must be unsigned integer'; return 1; }
-  is_whole_number "${GHORG_MAX_BACKOFF_SECONDS}" || { log error 'GHORG_MAX_BACKOFF_SECONDS must be unsigned integer'; return 1; }
+  is_whole_number "${GHORG_MAX_RETRIES}" || { log error 'GHORG_MAX_RETRIES must be a whole number'; return 1; }
+  is_whole_number "${GHORG_MAX_BACKOFF_SECONDS}" || { log error 'GHORG_MAX_BACKOFF_SECONDS must be a whole number'; return 1; }
 
   ## Fail closed when auth was explicitly configured but invalid;
   ## silently downgrading to anonymous would mask a bad token and
@@ -333,6 +328,7 @@ ghorg_api() {
       || [ -n "${GHORG_TOKEN_FILE:-}" ] \
       || [ -e "${default_token_path}" ]; then
       log error 'GitHub token configured but invalid'
+      xtrace_restore
       return 1
     fi
     token=''
@@ -361,17 +357,30 @@ ghorg_api() {
     args+=( --header 'Content-Type: application/json' --data "${body}" )
   fi
 
+  ## FIXME: Starting 'attempt' at 0 will result in a 0-second wait by
+  ## default the first time a request fails. Verify this is
+  ## intentional, or set 'attempt' to 1 and rework the retry code below
+  ## otherwise.
   attempt=0
   max="${GHORG_MAX_RETRIES:-3}"
 
   while true ; do
     true > "${hdr_file}"
     if [ -n "${token}" ]; then
+      ## API token must be passed through stdin to prevent it from
+      ## showing up in the output of 'ps aux'.
+      ##
+      ## '${path}' starts with a '/' character, no extra separator is
+      ## needed after '${GHORG_API}'.
       result="$(printf '%s\n' "header = \"Authorization: Bearer ${token}\"" \
         | curl "${args[@]}" --config - "${GHORG_API}${path}" || true)"
     else
       result="$(curl "${args[@]}" "${GHORG_API}${path}" || true)"
     fi
+    ## FIXME: If we aren't going to validate that the string starts
+    ## with 'HTTP_STATUS:', we don't need to append it as part of
+    ## '--write-out'. If we are going to append it, we should check
+    ## for it too. Do one or the other.
     status="$(printf '%s\n' "${result}" | tail --lines=1 | sed -- 's/^HTTP_STATUS://')"
 
     case "${status}" in
@@ -381,7 +390,14 @@ ghorg_api() {
       403)
         ## 403 covers both rate-limit-exceeded (retry) and real
         ## permission errors (don't retry). Distinguish by body.
-        body_text="$(printf '%s\n' "${result}" | sed -- '${d}')"
+        ##
+        ## FIXME: This is not the correct way to detect a 403 rate
+        ## limit response according to
+        ## https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2026-03-10.
+        ## One should instead check the headers for an
+        ## 'x-ratelimit-remaining' header with a value of 0. Rewrite
+        ## this accordingly.
+        body_text="$(printf '%s\n' "${result}" | sed -- '$d')"
         if printf '%s' "${body_text}" | grep --quiet --ignore-case -- 'rate limit\|secondary rate'; then
           true "INFO: ghorg_api: HTTP 403 rate-limit body - will retry"
         else
@@ -416,14 +432,16 @@ ghorg_api() {
   done
 
   printf '%s\n' "${result}"
+  xtrace_restore
 }
 
 ghorg_status_of() {
+  ## FIXME: Again, either check for 'HTTP_STATUS:', or get rid of it.
   printf '%s\n' "$1" | tail --lines=1 | sed -- 's/^HTTP_STATUS://'
 }
 
 ghorg_body_of() {
-  printf '%s\n' "$1" | sed -- '${d}'
+  printf '%s\n' "$1" | sed -- '$d'
 }
 
 ## ============================================================================
@@ -431,22 +449,19 @@ ghorg_body_of() {
 ## ============================================================================
 ##
 ## All jq calls in the github-org-* / dm-github-* tools go through
-## these so a future bump (timeout knobs, gojq swap, byte cap,
-## sandbox) is a one-place change. See agents/security.md
+## these to apply additional hardening. See agents/security.md
 ## "Parser-level trust assumptions".
 ##
-##   ghorg_jq         input is hardcoded (POLICY_* constant or similar
-##                    trusted source). Wall-clock timeout only.
-##   ghorg_jq_capped  input flows from stdin and may be hostile.
-##                    Caps stdin to GHORG_JQ_MAX_BYTES BEFORE jq sees
-##                    them, then applies the same timeout.
+##   ghorg_jq         input is trusted. Wall-clock timeout only.
+##   ghorg_jq_capped  input may be hostile. Caps stdin to
+##                    GHORG_JQ_MAX_BYTES before jq sees them, then
+##                    applies the same timeout.
 ##
 ## --kill-after is mandatory: if a parser bug leaves jq's signal
 ## handler blocked, the SIGTERM at the soft deadline is silently
 ## ignored. --kill-after schedules a follow-up SIGKILL.
 ##
 ## R-062: timeout does NOT support '--' between DURATION and COMMAND.
-## Do not re-add.
 
 : "${GHORG_JQ_MAX_BYTES:=4194304}"
 
@@ -462,13 +477,13 @@ ghorg_body_of() {
 
 ghorg_jq() {
   timeout --kill-after="${GHORG_JQ_TIMEOUT_HARD}" \
-          "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
+    "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
 }
 
 ghorg_jq_capped() {
   head -c "${GHORG_JQ_MAX_BYTES}" \
     | timeout --kill-after="${GHORG_JQ_TIMEOUT_HARD}" \
-              "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
+      "${GHORG_JQ_TIMEOUT_SOFT}" jq "$@"
 }
 
 ## Probes whether $1 is a User or Organization. Cached in
@@ -479,6 +494,9 @@ ghorg_account_type() {
   owner="$1"
 
   ghorg_validate_name "${owner}" user || return 1
+  ## Passing '${owner}' as an index is safe here, since associative
+  ## arrays are not vulnerable to index command injection the way
+  ## normal arrays are.
   if [ -n "${ghorg_account_type_cache[${owner}]:-}" ]; then
     printf '%s' "${ghorg_account_type_cache[${owner}]}"
     return 0
@@ -487,12 +505,12 @@ ghorg_account_type() {
   status="$(ghorg_status_of "${result}")"
   body="$(ghorg_body_of "${result}")"
   if [ "${status}" != '200' ]; then
+    ## FIXME: Shouldn't we log the body here too?
     log error "account type lookup for '${owner}': HTTP '${status}'"
     return 1
   fi
-  type="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.type')"
-  ## Strict allowlist - an unexpected value trips a clear rejection
-  ## rather than reaching any downstream comparison.
+  type="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output \
+    -- '.type')"
   case "${type}" in
     User|Organization) ;;
     *)
@@ -500,7 +518,7 @@ ghorg_account_type() {
       return 1
       ;;
   esac
-  ghorg_account_type_cache[${owner}]="${type}"
+  ghorg_account_type_cache["${owner}"]="${type}"
   printf '%s' "${type}"
 }
 
@@ -515,6 +533,9 @@ ghorg_account_type() {
 ##   $4 include_forks    (1 = include, 0 = exclude)
 ##
 ## Output: one repo name per line.
+##
+## FIXME: Refactor to take 'true' and 'false' for the three include
+## arguments, to match our conventions. See Bash style guide R-053.
 ghorg_list_repos() {
   local owner inc_private inc_archived inc_forks
   local account_type api_base auth_user jq_filter
@@ -571,6 +592,9 @@ ghorg_list_repos() {
       log warn "ghorg_list_repos: hit pagination cap GHORG_MAX_PAGES='${GHORG_MAX_PAGES}' for '${owner}'; possible runaway pager"
       break
     fi
+    ## All possible values of "${api_base}" have a query string
+    ## already, thus there is no need to check if "?page=" needs to be
+    ## used here instead.
     result="$(ghorg_api GET "${api_base}&page=${page}")" || return 1
     status="$(ghorg_status_of "${result}")"
     body="$(ghorg_body_of "${result}")"
@@ -614,7 +638,7 @@ ghorg_filter_names() {
     cat
   fi | {
     if [ -n "${exclude_re}" ]; then
-      grep --invert-match -E -- "${exclude_re}" || true
+      grep --invert-match --extended-regexp -- "${exclude_re}" || true
     else
       cat
     fi
@@ -628,7 +652,7 @@ ghorg_filter_names() {
 ##
 ## Return codes:
 ##   0 - repo exists (HTTP 200)
-##   1 - repo definitively does not exist (HTTP 404)
+##   1 - repo does not exist (HTTP 404)
 ##   2 - lookup failed for any other reason
 ghorg_repo_lookup() {
   local owner repo result status
@@ -657,10 +681,9 @@ ghorg_repo_lookup() {
 }
 
 ## Returns parent.full_name of a repo, or empty if not a fork. Used
-## to detect cross-source name collisions: if assisted-by-ai already
-## has a `foo` that's a fork of Whonix/foo, attempting to mirror
-## Kicksecure/foo through the same name would silently conflate two
-## distinct upstreams.
+## purely as a diagnostic aid to detect cross-source name collisions:
+## if assisted-by-ai already has a `foo` that's a fork of Whonix/foo,
+## the user should be warned when attempting to mirror Kicksecure/foo.
 ##
 ## Args: $1 owner, $2 repo. Stdout: parent full_name or empty.
 ghorg_repo_parent() {
@@ -681,12 +704,12 @@ ghorg_repo_parent() {
   fi
   body="$(ghorg_body_of "${result}")"
   parent="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.parent.full_name // empty')"
-  ## Split owner/repo in bash to avoid trusting the API-supplied "/".
+  ## Validate owner and repo separately.
   if [ -n "${parent}" ]; then
     p_owner="${parent%%/*}"
     p_repo="${parent#*/}"
     if ! ghorg_validate_name "${p_owner}" user || \
-       ! ghorg_validate_name "${p_repo}" repo; then
+      ! ghorg_validate_name "${p_repo}" repo; then
       return 1
     fi
   fi
@@ -712,13 +735,14 @@ ghorg_authenticated_user() {
   fi
   body="$(ghorg_body_of "${result}")"
   login="$(printf '%s' "${body}" | ghorg_jq_capped -r -- '.login')"
+  ## NOTE: Technically, "null" is a valid GitHub username, and there
+  ## is actually someone on GitHub with that name. This is therefore
+  ## slightly incorrect. Not using '-r' with 'jq' would fix this, but
+  ## it's probably not worth doing this for now.
   if [ -z "${login}" ] || [ "${login}" = 'null' ]; then
     log error 'authenticated user response missing .login'
     return 1
   fi
-  ## Login flows into equality checks that gate fork creation; a
-  ## hostile API returning weird bytes here must not be allowed to
-  ## bypass those checks via comparison quirks.
   ghorg_validate_name "${login}" user || return 1
   ghorg_authenticated_user_cached="${login}"
   printf '%s' "${login}"

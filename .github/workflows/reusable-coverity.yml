@@ -35,8 +35,8 @@
 ##   typical choice. Schedule cannot live in workflow_call per
 ##   G-A-002.
 ## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
-## - Forward via explicit 'secrets:' map (see Caller example). Not
-##   'inherit'.
+## - Forward secrets via explicit 'secrets:' map (see Caller example).
+##   Do not use 'inherit'.
 ## - Set repo variable 'COVERITY_PROJECT' to the project name as it
 ##   appears in the scan.coverity.com URL (or pass project-name
 ##   input to override).
@@ -243,10 +243,12 @@ jobs:
 
       - name: Install build dependencies
         if: inputs.apt-packages != ''
+        env:
+          APT_PACKAGES: ${{ inputs.apt-packages }}
         run: |
           sudo --non-interactive apt-get update --error-on=any
           sudo --non-interactive apt-get install --yes --no-install-recommends \
-            ${{ inputs.apt-packages }}
+            ${APT_PACKAGES}
 
       - name: Download Coverity Build Tool
         run: bash .github/dmf/ci/coverity-download.sh

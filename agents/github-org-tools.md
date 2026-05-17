@@ -207,8 +207,8 @@ short; longer rules go above.)
   prefer pre-capture into a `$( ... )` string, or document why
   the substitution form is intentional.
 - New backgrounded `&` worker that needs to update shared state?
-  Sequentialize the loop or use a tempfile + atomic appends; see
-  R-052 for the underlying constraint.
+  Sequentialize the loop or use a tempfile; see R-052 for the
+  underlying constraint.
 - New `policy_api_call` site against an endpoint with a documented
   non-2xx success status (e.g. DELETE on a missing resource)?
   Pass that status as the 5th arg (G-034 example).

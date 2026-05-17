@@ -9,9 +9,13 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 commit="$(git rev-parse --verify HEAD)"
 
+## FIXME: Silencing errors from 'git verify-commit' is a bad idea.
+## Either remove '&>/dev/null', or capture the command output and only
+## print it in the event that verification fails.
 git verify-commit "$commit" &>/dev/null
 
 tag="adrelanos_${commit}"

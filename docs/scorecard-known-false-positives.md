@@ -125,13 +125,14 @@ not apply to a reusable in our own org.
   - history: Scorecard originally did NOT flag reusable
   workflows; #2174 asked for them to be treated like Marketplace
   actions. Closed completed Jun 2025 - that change is what
-  produced the current FP we live with.
+  produced the current false positive we live with.
 - [slsa-framework/slsa-github-generator#722](https://github.com/slsa-framework/slsa-github-generator/issues/722)
   - the contention: SLSA generators argue reusables MUST be
   pinned by TAG (not SHA) for generator-self-security reasons -
   direct conflict with Scorecard's "SHA only" expectation.
 - [ossf/scorecard#2518](https://github.com/ossf/scorecard/issues/2518)
-  - tangential: dev-only-deps FP, same trust-boundary class.
+  - tangential: dev-only-deps false positive, same trust-boundary
+  class.
 
 Source-inferred: `checks/raw/pinned_dependencies.go` contains no
 mention of "reusable"; Scorecard treats every `uses:` uniformly,
@@ -140,7 +141,7 @@ no same-org exemption. (Verified via repo-wide code search.)
 ## MaintainedID = 0/10 on freshly-created repos
 
 **Affects**: any repo created within the last 90 days. As of
-2026-05-08 this includes the recently-AI-assisted forks under
+2026-05-08 this includes the recently created AI-assisted forks under
 `org-ai-assisted/`.
 
 **Why Scorecard reports it**: the rule penalizes new repos because

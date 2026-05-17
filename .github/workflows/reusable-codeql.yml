@@ -203,12 +203,19 @@ jobs:
 
       - name: Emit step summary
         if: always()
+        env:
+          INPUT_LANGUAGE: ${{ inputs.language }}
+          JOB_STATUS: ${{ job.status }}
+          INPUT_BUILD_MODE: ${{ inputs.build-mode }}
+          INPUT_QUERIES: ${{ inputs.queries }}
+          GH_SERVER_URL: ${{ github.server_url }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
-            --tool "CodeQL (${{ inputs.language }})" \
+            --tool "CodeQL (${INPUT_LANGUAGE})" \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
-            --row "language=${{ inputs.language }}" \
-            --row "build-mode=${{ inputs.build-mode }}" \
-            --row "queries=${{ inputs.queries }}" \
-            --details-url "${{ github.server_url }}/${{ github.repository }}/security/code-scanning?tool_name=CodeQL"
+            --row "outcome=${JOB_STATUS}" \
+            --row "language=${INPUT_LANGUAGE}" \
+            --row "build-mode=${INPUT_BUILD_MODE}" \
+            --row "queries=${INPUT_QUERIES}" \
+            --details-url "${GH_SERVER_URL}/${GH_REPOSITORY}/security/code-scanning?tool_name=CodeQL"

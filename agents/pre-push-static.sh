@@ -15,7 +15,7 @@
 ##   3. LC_ALL=C grep -PlI '[^\x00-\x7F]' on changed files (R-001)
 ##   4. LC_ALL=C grep -P  '[^\x00-\x7F]' on the commit-range
 ##      message (R-001)
-##   5. R-010 strict-mode quintet present in top 30 lines
+##   5. R-010 strict-mode block present in top 30 lines
 ##   6. R-011 no 'set +o errexit' toggling
 ##   7. R-042 no blank-line printf/log separators
 ##   8. R-051 no inline trap command strings (use named function)
@@ -27,7 +27,7 @@
 ##      (applies to shell + yml files)
 ##  13. R-120 'safe-rm' not 'rm' (with conservative carve-outs
 ##      for comments and known safe constructs)
-##  14. R-130 ':' as bare no-op placeholder on its own line
+##  14. R-130 No ':' as bare no-op placeholder on its own line
 ##      (does NOT flag the ': "${var:=default}"' parameter-default
 ##      idiom widely used in the codebase)
 ##  15. pre-commit-hooks (direct binary execution, no framework)
@@ -132,14 +132,14 @@ is_shell_file() {
    local path first
 
    path="${1}"
+   if [ ! -f "${path}" ]; then
+      return 1
+   fi
    case "${path}" in
       *.sh|*.bsh)
          return 0
          ;;
    esac
-   if [ ! -f "${path}" ]; then
-      return 1
-   fi
    first=""
    read -r first < "${path}" || true
    case "${first}" in
@@ -224,9 +224,6 @@ emit_hits() {
    done <<< "${hits}"
 }
 
-## Some scripts (including this one) carry long-form header
-## docstrings before the strict-mode block; head -100 is generous
-## enough to accommodate them without missing the rule's intent.
 is_self_referential() {
    case "${1}" in
       agents/pre-push-static.sh) return 0 ;;
@@ -234,7 +231,10 @@ is_self_referential() {
    return 1
 }
 
-check_R010_strict_quintet() {
+## Some scripts (including this one) carry long-form header
+## docstrings before the strict-mode block; head -100 is generous
+## enough to accommodate them without missing the rule's intent.
+check_R010_strict_block() {
    local script count
 
    for script in "${@}"; do
@@ -243,7 +243,7 @@ check_R010_strict_quintet() {
             '^(set -o (errexit|nounset|pipefail|errtrace)|shopt -s (inherit_errexit|shift_verbose))$' \
          || true)"
       if [ "${count}" -lt 6 ]; then
-         fail "R-010 strict-mode quintet" "'${script}' has only ${count}/6 strict-mode lines in head -100"
+         fail "R-010 strict-mode block" "'${script}' has only ${count}/6 strict-mode lines in head -100"
       fi
    done
 }
@@ -339,6 +339,7 @@ check_R102_interpreter_prepend() {
    ## Run on shell + yml/yaml files; .md is excluded by caller (the
    ## style guide itself self-cites the bad pattern as an example).
    ## Self-filter strips this script (whose docs cite the pattern).
+   ## FIXME: This won't catch things like "bash my-extensionless-executable".
    mapfile -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    hits="$(grep --line-number --extended-regexp \
@@ -354,6 +355,8 @@ check_R120_rm() {
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
       ## (lines starting with optional whitespace then '#').
+      ## FIXME: `rm` by itself at the beginning of a line will be
+      ## missed by this.
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
@@ -564,7 +567,7 @@ run_file_checks() {
    if [ "${#shell_files[@]}" -gt 0 ]; then
       check_bash_n "${shell_files[@]}"
       check_shellcheck "${shell_files[@]}"
-      check_R010_strict_quintet "${shell_files[@]}"
+      check_R010_strict_block "${shell_files[@]}"
       check_R011_errexit_toggle "${shell_files[@]}"
       check_R042_blank_logline "${shell_files[@]}"
       check_R051_trap_inline "${shell_files[@]}"

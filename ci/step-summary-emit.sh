@@ -38,6 +38,8 @@ details_url=''
 extra=''
 declare -a rows=()
 
+## FIXME: This function is named as if it will print usage information, but
+## doesn't.
 die_usage() {
    printf '%s\n' "$1" >&2
    exit 64
@@ -57,6 +59,8 @@ while [ "$#" -gt 0 ]; do
          ;;
       --row)
          [ "$#" -ge 2 ] || die_usage 'missing value for --row'
+         ## FIXME: Either rename this variable to 'row', or rename the option
+         ## to '--rows', the naming is confusing.
          rows+=( "$2" )
          shift 2
          ;;
@@ -80,6 +84,10 @@ while [ "$#" -gt 0 ]; do
          break
          ;;
       -h|--help)
+         ## FIXME: Implement a proper 'print_usage' function that prints a
+         ## string that replaces the comments. Do not extract help information
+         ## from script-embedded comments. Do not duplicate the same text in
+         ## both comments and help text. See Bash style guide R-153.
          sed --quiet -- 's/^## \{0,1\}//p' "${BASH_SOURCE[0]}"
          exit 0
          ;;

@@ -13,6 +13,9 @@
 ## captured per-test and only printed on failure to keep success runs
 ## quiet.
 
+## FIXME: This file seems misnamed - what if in the future a test is added to
+## ci/tests/ that doesn't just exercise the GitHub org tools?
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -35,6 +38,7 @@ fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 TESTS_DIR="${SCRIPT_DIR}/tests"
+## FIXME: Should this be named FIXTURES_DIR?
 FIXTURE_DIR="${SCRIPT_DIR}/fixtures"
 
 if [ ! -d "${TESTS_DIR}" ]; then
@@ -68,6 +72,8 @@ for test_path in "${TESTS_DIR}"/test_*.sh; do
   test_name="$(basename -- "${test_path}")"
   printf '%s\n' "== ${test_name} =="
   log_file="$(mktemp)"
+  ## FIXME: Either don't use `bash` here, or document why it needs to be used.
+  ## See Bash style guide R-102.
   if GHORG_MOCK_DIR="${FIXTURE_DIR}" bash -- "${test_path}" > "${log_file}" 2>&1; then
     printf '%s\n' '  PASS'
     pass=$(( pass + 1 ))

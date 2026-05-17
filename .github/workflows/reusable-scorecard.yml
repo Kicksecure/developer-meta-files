@@ -137,9 +137,13 @@ jobs:
 
       - name: Emit step summary
         if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          GH_SERVER_URL: ${{ github.server_url }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'OpenSSF Scorecard' \
             --column-header field \
-            --row "outcome=${{ job.status }}" \
-            --details-url "${{ github.server_url }}/${{ github.repository }}/security/code-scanning?tool_name=Scorecard"
+            --row "outcome=${JOB_STATUS}" \
+            --details-url "${GH_SERVER_URL}/${GH_REPOSITORY}/security/code-scanning?tool_name=Scorecard"

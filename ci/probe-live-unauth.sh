@@ -5,6 +5,12 @@
 
 ## AI-Assisted
 
+## FIXME: This is an exact duplicate of ci/live-probe-unauth.sh, but uses
+## 'command -v' to check for dependencies instead of 'has'. Get rid of one or
+## the other implementation. If both methods of checking for dependencies are
+## needed, combine the implementations, using 'has' by default and
+## 'command -v' as a fallback.
+
 ## Best-effort live smoke test against the real GitHub REST API
 ## without a token. Exercises github-org-clone's read paths (account-
 ## type lookup + paginated repo listing) against a small, stable

@@ -41,6 +41,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
+## FIXME: Why aren't the shopt settings here?
 
 ## CI guard. Downloads a token-gated binary and writes it to disk.
 ## Refuse outside CI unless ALLOW_LOCAL=true is set explicitly.

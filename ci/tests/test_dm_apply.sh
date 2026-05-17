@@ -109,6 +109,8 @@ required=(
 mirror_dep_pvr_forbidden=(
    'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
+   ## FIXME: Isn't Private Vulnerability Reporting disabled everywhere,
+   ## including SOURCE?
    'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
 )
 for needle in "${mirror_dep_pvr_forbidden[@]}"; do

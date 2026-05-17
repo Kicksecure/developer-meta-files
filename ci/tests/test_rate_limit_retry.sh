@@ -22,6 +22,9 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
+## FIXME: The CI scripts are inconsistent with whether they tell shellcheck
+## how to source a file, or whether they tell shellcheck to not warn about a
+## file it can't find.
 # shellcheck disable=SC1091
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
@@ -36,7 +39,7 @@ expect() {
   if [ "${got}" != "${want}" ]; then
     want_q="$(printf '%q' "${want}")"
     got_q="$(printf '%q' "${got}")"
-    printf '%s\n' "FAIL: ${desc}: want ${want_q} got ${got_q}" >&2
+    printf '%s\n' "FAIL: ${desc}: want '${want_q}' got '${got_q}'" >&2
     fail=1
   fi
 }
@@ -75,7 +78,7 @@ printf '%s\r\n' \
 got="$(ghorg_parse_rate_limit_wait "${hdr}")"
 if [ -z "${got}" ] || ! [[ "${got}" =~ ^[0-9]+$ ]]; then
   got_q="$(printf '%q' "${got}")"
-  printf '%s\n' "FAIL: parse X-RateLimit-Reset: got ${got_q}" >&2
+  printf '%s\n' "FAIL: parse X-RateLimit-Reset: got '${got_q}'" >&2
   fail=1
 fi
 

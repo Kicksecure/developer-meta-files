@@ -43,6 +43,9 @@
 ##
 ## github-org-lib.bsh must be sourced before this file.
 
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
+
 ## ============================================================================
 ## API call wrapper
 ## ============================================================================
@@ -224,6 +227,12 @@ policy_apply_org() {
    label_v="POLICY_${name}_LABEL"
    extra_ok_v="POLICY_${name}_EXTRA_OK_STATUS"
 
+   check_variable_name "${body_v}" || return 1
+   check_variable_name "${endpoint_v}" || return 1
+   check_variable_name "${method_v}" || return 1
+   check_variable_name "${label_v}" || return 1
+   check_variable_name "${extra_ok_v}" || return 1
+
    endpoint="${!endpoint_v}"
    endpoint="${endpoint//__ORG__/${org}}"
 
@@ -252,6 +261,12 @@ policy_apply_repo() {
    label_v="POLICY_${name}_LABEL"
    extra_ok_v="POLICY_${name}_EXTRA_OK_STATUS"
 
+   check_variable_name "${body_v}" || return 1
+   check_variable_name "${endpoint_v}" || return 1
+   check_variable_name "${method_v}" || return 1
+   check_variable_name "${label_v}" || return 1
+   check_variable_name "${extra_ok_v}" || return 1
+
    endpoint="${!endpoint_v}"
    endpoint="${endpoint//__OWNER__/${owner}}"
    endpoint="${endpoint//__REPO__/${repo}}"
@@ -278,6 +293,9 @@ policy_skip_ui() {
    label_v="POLICY_${name}_LABEL"
    url_v="POLICY_${name}_${suffix}"
 
+   check_variable_name "${label_v}" || return 1
+   check_variable_name "${url_v}" || return 1
+
    url="${!url_v}"
    url="${url//__ORG__/${context}}"
 
@@ -297,6 +315,9 @@ policy_skip_ui_repo() {
 
    label_v="POLICY_${name}_LABEL"
    url_v="POLICY_${name}_${suffix}"
+
+   check_variable_name "${label_v}" || return 1
+   check_variable_name "${url_v}" || return 1
 
    url="${!url_v}"
    url="${url//__OWNER__/${owner}}"
@@ -384,7 +405,6 @@ policy_tag_ruleset_body() {
 ##
 ## Args: the script's "$@" verbatim.
 policy_parse_mode_args() {
-
    while [ "$#" -gt 0 ]; do
       case "$1" in
          --apply)

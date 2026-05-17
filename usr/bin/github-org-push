@@ -19,6 +19,9 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
+
 branches='HEAD'
 push_tags=0
 remote_name=''
@@ -26,7 +29,6 @@ include_re=''
 exclude_re=''
 url_scheme='ssh'
 jobs=4
-create_missing=0
 # G-030: --apply or --dry-run required.
 dry_run=0
 mode_set=0
@@ -35,17 +37,15 @@ verbose=0
 show_help() {
   cat <<'EOF'
 For each git checkout under <source-dir>, push HEAD (and optionally
-tags) to a same-named repo in <target-owner> on GitHub. Useful as
-the third step of a clone -> fork -> push pipeline that keeps a
-mirror in sync with the upstream you cloned.
+tags) to a same-named repo in <target-owner> on GitHub. Useful to keep
+a mirror in sync with a cloned upstream.
 
-Usage (one mode flag is required - no implicit default):
-  github-org-push --apply   [OPTIONS] <source-dir> <target-owner>
-  github-org-push --dry-run [OPTIONS] <source-dir> <target-owner>
+Repos in the current working directory will be pushed if no source dir
+is specified. Subdirs that aren't git checkouts are ignored.
 
-Layout:
-  Expects <source-dir>/<repo-name>/.git, matching github-org-clone's
-  output. Subdirs that aren't git checkouts are ignored.
+Usage:
+  github-org-push --apply   [OPTIONS] <target-owner> [<source-dir>]
+  github-org-push --dry-run [OPTIONS] <target-owner> [<source-dir>]
 
 Options:
   --branches "a b c"   branches to push per repo (default: HEAD;
@@ -53,12 +53,11 @@ Options:
   --tags               also push tags (default: off)
   --remote-name NAME   name of the git remote pointing at the
                        target (default: target_owner value)
-  --include REGEX      only repos whose name matches REGEX
-  --exclude REGEX      drop repos whose name matches REGEX
+  --include REGEX      only push repos whose name matches REGEX
+  --exclude REGEX      skip pushing repos whose name matches REGEX
   --ssh                use git@github.com:... URLs (default)
   --https              use https://github.com/... URLs
   --jobs N             parallel pushes (default: 4)
-  --create-missing     reserved; not implemented
   --apply              perform pushes
   --dry-run            report planned actions, do nothing
   -v, --verbose        print each git command
@@ -66,13 +65,16 @@ Options:
 
 Refusal modes:
   - Target repo does not exist: warn and skip (run github-org-fork
-    first to create it).
+    first to create it). There is intentionally no --create-missing
+    feature; github-org-fork is the supported way to fork repos in an
+    automated fashion.
   - Lookup itself fails for a non-404 reason (auth/rate-limit/network):
-    refuse to push to that repo and report; other repos continue.
+    refuse to push to that repo and report; continue with other repos.
 
-Auth:
-  ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token. Token
-  needs `repo` scope to push.
+Auth: ${GITHUB_TOKEN} env var, or ~/.config/github-token with
+permissions 0600. The token must have 'repo' scope to push.
+If pushing over SSH, the local system is also expected to have a
+suitable SSH key present and configured in GitHub.
 EOF
 }
 
@@ -92,14 +94,33 @@ while [ "$#" -gt 0 ]; do
       remote_name="$2"
       shift 2
       ;;
+    ## --include / --exclude can each be passed multiple times. All
+    ## includes are stacked to produce a whitelist, then all excludes
+    ## are stacked to blacklist previously whitelisted values.
     --include)
       [ "$#" -ge 2 ] || die 64 "missing value for --include"
-      include_re="$2"
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${include_re}" ]; then
+        include_re="(${2})"
+      else
+        include_re+="|(${2})"
+      fi
       shift 2
       ;;
     --exclude)
       [ "$#" -ge 2 ] || die 64 "missing value for --exclude"
-      exclude_re="$2"
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${exclude_re}" ]; then
+        exclude_re="(${2})"
+      else
+        exclude_re+="|(${2})"
+      fi
       shift 2
       ;;
     --ssh)
@@ -114,10 +135,6 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || die 64 "missing value for --jobs"
       jobs="$2"
       shift 2
-      ;;
-    --create-missing)
-      create_missing=1
-      shift
       ;;
     --apply)
       [ "${mode_set}" -eq 0 ] || die 64 'conflicting mode flags; specify exactly one of --apply / --dry-run'
@@ -151,13 +168,14 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
   show_help >&2
   exit 64
 fi
 
-source_dir="$1"
-target_owner="$2"
+target_owner="$1"
+source_dir="${2:-.}"
+
 [ -z "${remote_name}" ] && remote_name="${target_owner}"
 
 [ "${mode_set}" -eq 1 ] \
@@ -183,7 +201,7 @@ remote_url() {
 }
 
 push_one() {
-  local repo_dir repo url branch resolved_head
+  local repo_dir repo url branch resolved_head repo_lookup_ret
 
   repo_dir="$1"
   repo="$(basename -- "${repo_dir}")"
@@ -200,18 +218,12 @@ push_one() {
   ## reason". A skip is only safe when the repo definitely isn't
   ## there; otherwise a bad token or transient outage would silently
   ## no-op an entire run.
-  ghorg_repo_lookup "${target_owner}" "${repo}"
-  case $? in
+  repo_lookup_ret=0
+  ghorg_repo_lookup "${target_owner}" "${repo}" || repo_lookup_ret="$?"
+  case "${repo_lookup_ret}" in
     0) ;;
     1)
-      if [ "${create_missing}" = '1' ]; then
-        ## Reserved flag; deliberately not implemented to avoid
-        ## surprise repo creation. github-org-fork is the supported
-        ## path for adding repos to the target.
-        log warn "'${target_owner}/${repo}' missing - run github-org-fork to create it; skipping"
-      else
-        log warn "'${target_owner}/${repo}' does not exist on target, skipping"
-      fi
+      log warn "'${target_owner}/${repo}' does not exist on target, skipping"
       return 0
       ;;
     *)
@@ -237,11 +249,9 @@ push_one() {
 
   for branch in ${branches}; do
     if [ "${branch}" = 'HEAD' ]; then
-      ## Resolve HEAD to a fully qualified ref locally so the push is
-      ## not vulnerable to tag/branch name ambiguity (a tag named
-      ## `master` shadowing the branch). symbolic-ref returns
-      ## refs/heads/<branch> for an attached HEAD; non-zero for a
-      ## detached HEAD - treated as skip-with-warning.
+      ## Resolve HEAD to a fully qualified ref locally to detect
+      ## detached HEAD. Repos with a detached HEAD are skipped with a
+      ## warning.
       if ! resolved_head="$(git -C "${repo_dir}" symbolic-ref HEAD 2>/dev/null)"; then
         log warn "'${repo_dir}': HEAD detached, skipping HEAD push"
         continue
@@ -256,10 +266,18 @@ push_one() {
       ## for repo names) before constructing a fully-qualified ref.
       ## Blocks ref injection like `master HEAD` and prevents
       ## tag/branch ambiguity (always refs/heads/...).
+      ##
+      ## FIXME: Create a dedicated 'ref' kind in ghorg_validate_name
+      ## and use it here. Reusing 'repo' is wrong because the repo
+      ## name length and branch name length limits on GitHub are
+      ## different, and very confusing error messages will be printed
+      ## if the name fails validation.
       if ! ghorg_validate_name "${branch}" repo; then
         log warn "'${repo_dir}': skipping invalid branch name"
         continue
       fi
+      ## FIXME: Verify that the branch exists before trying to
+      ## push it.
       [ "${verbose}" = '1' ] \
         && log notice "push ${branch} ${repo_dir} -> ${remote_name}"
       git -C "${repo_dir}" push -- "${remote_name}" \
@@ -286,13 +304,13 @@ main() {
   ## odd bytes survive intact (find -print0 + read -d '').
   candidate_dirs=()
   while IFS= read -r -d '' candidate_dir; do
+    ## TODO: Print the name of skipped directories.
     [ -e "${candidate_dir}/.git" ] || continue
     candidate_dirs+=( "${candidate_dir}" )
   done < <(find "${source_dir}" -mindepth 1 -maxdepth 1 -type d -print0 \
     | sort --zero-terminated --unique)
 
   if [ -n "${include_re}" ] || [ -n "${exclude_re}" ]; then
-    local -a filtered
     local kept_names cand_basename
     local names_in=''
     for candidate_dir in "${candidate_dirs[@]}"; do
@@ -301,12 +319,11 @@ main() {
     done
     kept_names="$(printf '%s' "${names_in}" \
       | ghorg_filter_names "${include_re}" "${exclude_re}")"
-    filtered=()
+    candidate_dirs=()
     while IFS= read -r base_name; do
       [ -z "${base_name}" ] && continue
-      filtered+=( "${source_dir}/${base_name}" )
+      candidate_dirs+=( "${source_dir}/${base_name}" )
     done <<< "${kept_names}"
-    candidate_dirs=( "${filtered[@]}" )
   fi
 
   candidate_count="${#candidate_dirs[@]}"

@@ -206,23 +206,27 @@ jobs:
 ##        if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
 ##        env:
 ##          GH_TOKEN: ${{ github.token }}
+##          GH_EVENT_NAME: ${{ github.event_name }}
+##          GH_ISSUE_PR_URL: ${{ github.event.issue.pull_request.url }}
+##          GH_PR_URL: ${{ github.event.pull_request.url }}
+##          GH_REPO: ${{ github.repository }}
 ##        run: |
-##          case "${{ github.event_name }}" in
+##          case "${GH_EVENT_NAME}" in
 ##            issue_comment)
-##              pr_url="${{ github.event.issue.pull_request.url }}"
+##              pr_url="${GH_ISSUE_PR_URL}"
 ##              ;;
 ##            pull_request_review_comment)
-##              pr_url="${{ github.event.pull_request.url }}"
+##              pr_url="${GH_PR_URL}"
 ##              ;;
 ##          esac
 ##          if [ -z "$pr_url" ]; then
-##            echo "::error::Could not resolve PR URL from ${{ github.event_name }} event"
+##            echo "::error::Could not resolve PR URL from ${GH_EVENT_NAME} event"
 ##            exit 1
 ##          fi
 ##          json="$(gh api "$pr_url")"
 ##          head_repo="$(jq -r '.head.repo.full_name' <<<"$json")"
 ##          head_sha="$(jq -r '.head.sha' <<<"$json")"
-##          if [ "$head_repo" != "${{ github.repository }}" ]; then
+##          if [ "$head_repo" != "${GH_REPO}" ]; then
 ##            echo "::error::PR is from fork '$head_repo'. Use workflow_dispatch with pr_ref to review fork PRs."
 ##            exit 1
 ##          fi

@@ -9,18 +9,19 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 # shellcheck source=/usr/libexec/helper-scripts/parallel.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/parallel.bsh
 
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
+
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
-## Shared push gate (also sourced by dm-packaging-helper-script).
-## Prefer the in-tree copy alongside this script during dev runs;
-## fall back to the installed path.
 git_helpers_lib="${MYDIR}/../libexec/developer-meta-files/git-helpers.bsh"
 test -r "${git_helpers_lib}" || git_helpers_lib="/usr/libexec/developer-meta-files/git-helpers.bsh"
 # shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
@@ -47,7 +48,10 @@ declare -A push_label=()
 queue_branch_refspec() {
    local branch="$1"
    local remote="$2"
-   local -n refspecs_ref="$3"
+   local -n refspecs_ref
+
+   check_variable_name "$3" || return 1
+   refspecs_ref="$3"
 
    if ! git rev-parse --verify "refs/heads/$branch" &>/dev/null ; then
       #log info "'refs/heads/$branch' existing: no"
@@ -55,7 +59,7 @@ queue_branch_refspec() {
    fi
    #log info "'refs/heads/$branch' existing: yes"
 
-   ## internal_git_diff dispatches between the local (tracking-ref)
+   ## internal_git_diff chooses between the local (tracking-ref)
    ## and remote (ls-remote) gate based on DM_GATE_LS_REMOTE; in both
    ## variants 0 = differs (push needed), 1 = identical (skip).
    if ! internal_git_diff "$branch" "$remote" ; then
@@ -64,18 +68,27 @@ queue_branch_refspec() {
    fi
 
    log info "'refs/heads/$branch' up-to-date on '$remote': no"
+   ## FIXME: '&>/dev/null' undoes the point of using 'log_run'. If the
+   ## command output should actually be silenced, use 'log info ...',
+   ## then run the command with '&>/dev/null'.
    log_run info git verify-commit "refs/heads/$branch" &>/dev/null
    refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
 }
 
 queue_tag_refspec() {
    local tag="$1"
-   local -n refspecs_ref="$2"
+   local -n refspecs_ref
+
+   check_variable_name "$2" || return 1
+   refspecs_ref="$2"
+
    ## Tags live in the global refs/tags/ namespace, not per-remote, so
    ## there is no local remote-tracking ref to gate against without an
    ## ls-remote round-trip. Always queue the tag; if the remote already
    ## has it at the same SHA the server short-circuits with "= up to
    ## date" inside the same atomic push.
+   ##
+   ## FIXME: 'log_run' vs. '&>/dev/null' conflict again.
    log_run info git verify-tag "refs/tags/$tag" &>/dev/null
    refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
 }
@@ -91,10 +104,10 @@ for git_remote in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" 
 
    refspec_list=()
 
-   queue_branch_refspec main    "${git_remote}" refspec_list
-   queue_branch_refspec master  "${git_remote}" refspec_list
+   queue_branch_refspec main "${git_remote}" refspec_list
+   queue_branch_refspec master "${git_remote}" refspec_list
    ## TODO: Debian 14 / forky
-   queue_branch_refspec trixie  "${git_remote}" refspec_list
+   queue_branch_refspec trixie "${git_remote}" refspec_list
 
    if [ -n "$git_tag_nearest" ]; then
       queue_tag_refspec "$git_tag_nearest" refspec_list
@@ -114,7 +127,7 @@ done
 
 if ! parallel_wait push_label ; then
    log error "failed pushes:"
-   log error "${parallel_failures[@]}"
+   log error "${parallel_failures[*]}"
    exit 1
 fi
 

@@ -24,18 +24,15 @@ source /usr/libexec/developer-meta-files/github-org-lib.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 include_private=0
 include_archived=0
 include_forks=0
-## --include / --exclude can each be passed multiple times; OR-combine
-## so a wrapper-supplied filter (e.g. dm-github-fork-sync's per-source
-## SOURCE_EXCLUDE_RE) is not silently overridden by a user-supplied
-## --exclude on the same command line.
-include_re_list=()
-exclude_re_list=()
 include_re=''
 exclude_re=''
+## FIXME: Use 'true' and 'false' booleans here (R-053)
 disable_issues=0
 disable_wiki=0
 disable_projects=0
@@ -50,12 +47,11 @@ verbose=0
 show_help() {
   cat <<'EOF'
 Fork every selected repo from a source GitHub user/org into a target
-user/org. Idempotent: existing forks are left in place; only missing
+user/org. Idempotent: existing forks are left in place, only missing
 ones are created. Optional flags also (re-)apply per-repo settings on
-the target side, so the script doubles as a drift corrector on every
-run.
+the target side.
 
-Usage (one mode flag is required - no implicit default):
+Usage:
   github-org-fork --apply   [OPTIONS] <source-owner> <target-owner>
   github-org-fork --dry-run [OPTIONS] <source-owner> <target-owner>
 
@@ -65,8 +61,8 @@ Options:
   --include-private    include private repos       (default: skip)
   --include-archived   include archived repos      (default: skip)
   --include-forks      include forks of other repos (default: skip)
-  --include REGEX      only repos whose name matches REGEX
-  --exclude REGEX      drop repos whose name matches REGEX
+  --include REGEX      only fork repos whose name matches REGEX
+  --exclude REGEX      skip forking repos whose name matches REGEX
   --disable-issues     turn off issues on each target repo
   --disable-wiki       turn off wiki on each target repo
   --disable-projects   turn off projects on each target repo
@@ -77,24 +73,22 @@ Options:
                        set default GITHUB_TOKEN permissions in target
                        workflows (default: leave)
   --sync-branches      after fork-create + configure, fast-forward each
-                       target repo's default branch from upstream via
-                       POST /repos/{owner}/{repo}/merge-upstream. 409
-                       (diverged) and 422 (branch missing) become warns.
+                       target repo's default branch from upstream.
   -v, --verbose        print each API call's effect
   -h, --help           show this help and exit
 
-Auth:
-  ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token. Token
-  needs `repo` scope; for --actions or --workflow-perms it also needs
-  `workflow`.
+--include and --exclude can be passed multiple times. All includes and
+excludes stack on top of each other.
+
+Auth: ${GITHUB_TOKEN} env var, or ~/.config/github-token with
+permissions 0600. The token must have admin access to the
+org-ai-assisted org so that github-org-fork can create forks under it.
 EOF
 }
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --debug)
-      ## set -x here AND inside the lib (sourced above); 'set -x' is
-      ## a shell-local option, sourced lib functions inherit it.
       set -x
       shift
       ;;
@@ -110,14 +104,33 @@ while [ "$#" -gt 0 ]; do
       include_forks=1
       shift
       ;;
+    ## --include / --exclude can each be passed multiple times. All
+    ## includes are stacked to produce a whitelist, then all excludes
+    ## are stacked to blacklist previously whitelisted values.
     --include)
       [ "$#" -ge 2 ] || die 64 "missing value for --include"
-      include_re_list+=( "$2" )
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${include_re}" ]; then
+        include_re="(${2})"
+      else
+        include_re+="|(${2})"
+      fi
       shift 2
       ;;
     --exclude)
       [ "$#" -ge 2 ] || die 64 "missing value for --exclude"
-      exclude_re_list+=( "$2" )
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${exclude_re}" ]; then
+        exclude_re="(${2})"
+      else
+        exclude_re+="|(${2})"
+      fi
       shift 2
       ;;
     --disable-issues)
@@ -203,30 +216,6 @@ target_owner="$2"
 [ "${mode_set}" -eq 1 ] \
    || { show_help >&2; die 64 'specify exactly one of --apply / --dry-run'; }
 
-## Each pattern wrapped in (...) so alternation between user-supplied
-## and wrapper-supplied filters cannot be unbalanced by bare '|'
-## inside one of them.
-combine_alt() {
-  check_variable_name "$1" || return 1
-  local -n list_ref="$1"
-  local item out=''
-  for item in "${list_ref[@]}"; do
-    ## Empty pattern = no filter at this slot. A wrapper forwarding
-    ## an optional regex with --exclude "${EXCLUDE_RE:-}" should not
-    ## silently match every repo via 'grep -v -E ()'.
-    [ -z "${item}" ] && continue
-    if [ -z "${out}" ]; then
-      out="(${item})"
-    else
-      out="${out}|(${item})"
-    fi
-  done
-  printf '%s' "${out}"
-}
-
-include_re="$(combine_alt include_re_list)"
-exclude_re="$(combine_alt exclude_re_list)"
-
 ghorg_require_deps
 ghorg_validate_name "${source_owner}" user
 ghorg_validate_name "${target_owner}" user
@@ -264,6 +253,9 @@ fork_one() {
   result="$(ghorg_api POST "/repos/${source_owner}/${repo}/forks" "${body}")"
   status="$(ghorg_status_of "${result}")"
   case "${status}" in
+    ## TODO: https://docs.github.com/en/rest/repos/forks?apiVersion=2026-03-10
+    ## does not document 201 as a valid response code for this API.
+    ## Reject?
     202|201)
       log notice "forked: ${source_owner}/${repo} -> ${target_owner}/${repo}"
       ;;
@@ -299,10 +291,12 @@ configure_one() {
 
   repo="$1"
 
-  if [ "${disable_issues}${disable_wiki}${disable_projects}" != '000' ]; then
+  if [ "${disable_issues}" != '0' ] \
+    || [ "${disable_wiki}" != '0' ] \
+    || [ "${disable_projects}" != '0' ]; then
     patch='{}'
-    [ "${disable_issues}"   = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
-    [ "${disable_wiki}"     = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
+    [ "${disable_issues}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
+    [ "${disable_wiki}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
     [ "${disable_projects}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_projects: false}')"
     if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: PATCH ${target_owner}/${repo} ${patch}"
@@ -311,6 +305,8 @@ configure_one() {
       status="$(ghorg_status_of "${result}")"
       [ "${status}" != '200' ] && \
         log warn "PATCH '${target_owner}/${repo}': HTTP '${status}'"
+      ## FIXME: Display the body returned from the request for
+      ## debugging.
       [ "${verbose}" = '1' ] && [ "${status}" = '200' ] && \
         log notice "configured: ${target_owner}/${repo} ${patch}"
     fi
@@ -325,9 +321,16 @@ configure_one() {
       result="$(ghorg_api PUT "/repos/${target_owner}/${repo}/actions/permissions" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
+        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
+        ## does not document 200 as a valid response status code.
+        ## Reject?
         204|200) [ "${verbose}" = '1' ] && \
           log notice "actions=${actions_state} on ${target_owner}/${repo}" ;;
-        *) log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}" ;;
+        *)
+          log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}"
+          ## FIXME: Display the body returned from the request for
+          ## debugging.
+          ;;
       esac
     fi
   fi
@@ -342,9 +345,16 @@ configure_one() {
         "/repos/${target_owner}/${repo}/actions/permissions/workflow" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
+        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
+        ## does not document 200 as a valid response status code.
+        ## Reject?
         204|200) [ "${verbose}" = '1' ] && \
           log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}" ;;
-        *) log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}" ;;
+        *)
+          log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}"
+          ## FIXME: Display the body returned from the request for
+          ## debugging.
+          ;;
       esac
     fi
   fi
@@ -360,9 +370,12 @@ configure_one() {
 ##
 ## Default branch via /repos/{owner}/{repo}.default_branch. Most are
 ## 'master', some 'main' or other; do not hard-code.
+##
+## WARNING: This function may cause GitHub to create merge commits
+## remotely. It should therefore NEVER be used on official production
+## repos.
 sync_one() {
-  local repo result status info default_branch body
-  local merge_type merged_commits
+  local repo result status info default_branch body merge_type
 
   repo="$1"
 
@@ -378,6 +391,8 @@ sync_one() {
     return 0
   fi
   default_branch="$(ghorg_body_of "${info}" | jq -r -- '.default_branch')"
+  ## NOTE: 'null' is a valid branch name. Probably not worth working
+  ## around this.
   if [ -z "${default_branch}" ] || [ "${default_branch}" = 'null' ]; then
     log warn "sync-branches: '${target_owner}/${repo}' has no default branch"
     return 0
@@ -389,12 +404,9 @@ sync_one() {
   ## Branch names can legitimately contain '+' etc.
   ##
   ## 'git check-ref-format' does not support '--' as end-of-options on
-  ## any of its forms (verified against git 2.43); both
-  ## '--branch -- <X>' and '-- <refname>' return usage error 129 even
-  ## for valid names. Validate as a full refname instead, prefixing
+  ## any of its forms. Validate as a full refname instead, prefixing
   ## 'refs/heads/' ourselves - the prefix ensures the resulting argv
-  ## element never starts with '-', closing a shell-level arg-injection
-  ## path from a hostile API response.
+  ## element never starts with '-'.
   if ! git check-ref-format "refs/heads/${default_branch}" >/dev/null 2>&1; then
     log warn "sync-branches: '${target_owner}/${repo}' default branch invalid: '${default_branch}'"
     return 0
@@ -407,34 +419,46 @@ sync_one() {
   case "${status}" in
     200)
       merge_type="$(ghorg_body_of "${result}" | jq -r -- '.merge_type')"
-      merged_commits="$(ghorg_body_of "${result}" | jq -r -- '.merged_commits // 0')"
+      ## https://docs.github.com/en/rest/branches/branches?apiVersion=2026-03-10
+      ## does not document any "merged_commits" return value for the
+      ## merge-upstream endpoint.
       [ "${verbose}" = '1' ] && log notice \
-        "synced: ${target_owner}/${repo}/${default_branch} merge_type='${merge_type}' commits='${merged_commits}'"
+        "synced: ${target_owner}/${repo}/${default_branch} merge_type='${merge_type}'"
       ;;
     409)
       log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409)"
+      ## FIXME: Print response body for debugging?
       ;;
     422)
+      ## FIXME: Code 422 here means the branch could not be synced
+      ## "for some other reason", not necessarily just "missing
+      ## branch".
       log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' branch missing on upstream (HTTP 422)"
+      ## FIXME: Print response body for debugging?
       ;;
     *)
       log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}'"
+      ## FIXME: Print response body for debugging?
       ;;
   esac
 }
 
 ## Populates the associative array named in $1 with one key per
 ## newline-separated repo name in $2.
+##
+## FIXME: This function's name is horrible. Maybe 'create_repo_map'
+## instead?
 fork_main_build_repo_set() {
-  local set_name list_text repo_name
+  local list_text repo_name
+  local -n set_name
 
+  check_variable_name "$1" || return 1
   set_name="$1"
   list_text="$2"
-  check_variable_name "${set_name}" || return 1
 
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
-    printf -v "${set_name}[${repo_name}]" '%s' '1'
+    set_name["${repo_name}"]='1'
   done <<< "${list_text}"
 }
 
@@ -443,11 +467,13 @@ main() {
   local -A target_set=()
   local -a missing=() to_configure=()
 
+  ## sync_one calls 'git check-ref-format'.
+  die_if_not_has git
+
   log notice "source: ${source_owner} -> target: ${target_owner}"
 
   ## If the target is a User, GitHub forks to the authenticated user
-  ## regardless of target_owner. Verify equivalence up front rather
-  ## than discovering this per repo.
+  ## regardless of target_owner. Verify equivalence up front.
   target_type="$(ghorg_account_type "${target_owner}")"
   if [ "${target_type}" = 'User' ]; then
     auth_user="$(ghorg_authenticated_user)"
@@ -468,8 +494,6 @@ main() {
     return 0
   fi
 
-  ## ${target_set[$key]:-} is required because nounset triggers on an
-  ## associative-array subscript with an unset key.
   fork_main_build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
@@ -486,6 +510,12 @@ main() {
 
   ## GitHub fork creation is async; brand-new forks may not appear
   ## yet, but configure_one is idempotent on the next run.
+  ##
+  ## FIXME: Wait for all new forks to be fully forked before
+  ## proceeding past this point. Failed repository configuration
+  ## caused by trying to configure too early is not acceptable. A
+  ## possible way of detecting fork completion can be seen here:
+  ## https://stackoverflow.com/questions/33666838/determine-if-a-fork-is-ready
   target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
     | sort --unique)"
 
@@ -506,16 +536,9 @@ main() {
     for repo_name in "${to_configure[@]}"; do
       check_collision "${repo_name}" || true
       configure_one "${repo_name}" || true
-    done
-  fi
-
-  ## sync_one calls 'git check-ref-format'; check git up-front so a
-  ## missing binary fails loudly instead of silently rejecting every
-  ## repo.
-  if [ "${sync_branches}" = '1' ] && [ "${#to_configure[@]}" -gt 0 ]; then
-    die_if_not_has git
-    for repo_name in "${to_configure[@]}"; do
-      sync_one "${repo_name}" || true
+      if [ "${sync_branches}" = '1' ]; then
+        sync_one "${repo_name}" || true
+      fi
     done
   fi
 }
