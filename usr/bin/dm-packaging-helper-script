@@ -1375,13 +1375,8 @@ pkg_copy_contributing_file() {
    true
 }
 
-## Returns 0 (true) when the consumer's .github/dependabot.yml
-## carries the propagation-opt-out header marker and should be
-## skipped by both pkg_install_dependabot_yml and
-## pkg_update_consumer_workflows. Returns 1 (false) when the
-## file is absent or the marker is absent. See agents/
-## github-actions-consumer-templates.md "Per-repo manual
-## dependabot.yml" for the marker rationale.
+## True if .github/dependabot.yml carries the
+## "## propagation: manual" opt-out marker.
 dependabot_yml_is_manual() {
    local target_path
 
@@ -1401,11 +1396,8 @@ dependabot_yml_is_manual() {
 ## Bulk variant of pkg_update_if_exists: iterates a fixed set of
 ## consumer-wrapper filenames against canonical_workflows_dir, and
 ## also refreshes .github/dependabot.yml from the canonical at
-## consumer-templates/.github/dependabot.yml (different source path
-## because dependabot.yml lives at .github/ root, not under
-## .github/workflows/). The dependabot.yml refresh honours the
-## "## propagation: manual" opt-out marker via
-## dependabot_yml_is_manual.
+## consumer-templates/.github/dependabot.yml. dependabot.yml
+## refresh honours "## propagation: manual".
 pkg_update_consumer_workflows() {
    local workflow_name source_path destination_path
    local dependabot_source dependabot_destination
@@ -1460,14 +1452,8 @@ pkg_update_consumer_workflows() {
 ## Installs the canonical .github/dependabot.yml into every repo
 ## that uses GitHub Actions (has .github/workflows/) and doesn't
 ## already carry the file. INSTALL semantic, parallel to
-## pkg_install_codeql_actions_scan. Idempotent: a re-run after
-## rollout no-ops everywhere. The canonical carries the
-## github-actions package-ecosystem only; docker-bearing repos
-## hand-maintain their own dependabot.yml with a
-## "## propagation: manual" header marker that
-## dependabot_yml_is_manual recognizes (see agents/
-## github-actions-consumer-templates.md "Per-repo manual
-## dependabot.yml").
+## pkg_install_codeql_actions_scan. Idempotent. Honours
+## "## propagation: manual".
 pkg_install_dependabot_yml() {
    local source_path destination_dir destination_path
 

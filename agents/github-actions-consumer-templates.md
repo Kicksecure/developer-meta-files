@@ -144,85 +144,35 @@ opt-out flags.
 
 ## `.github/dependabot.yml` propagation
 
-`dependabot.yml` is propagated alongside the `consumer-*.yml`
-workflow wrappers and sits at the same byte-identical canonical
-shape. It uses both semantics:
+Canonical at `consumer-templates/.github/dependabot.yml` carries
+the `github-actions` ecosystem only. Propagation:
 
-- `pkg_update_consumer_workflows` refreshes
-  `.github/dependabot.yml` from
-  `consumer-templates/.github/dependabot.yml` whenever the file
-  is already present on the consumer (UPDATE-if-exists, parallel
-  to the consumer-`*.yml` loop above it). Honours the
-  `## propagation: manual` opt-out marker (see "Per-repo manual
-  `dependabot.yml`" below).
-- `pkg_install_dependabot_yml` bootstraps the file when missing,
-  on the rule "if a consumer has `.github/workflows/`, give it a
-  `dependabot.yml`". Idempotent: a re-run after rollout no-ops.
-  Repos with no `.github/workflows/` directory have no GitHub
-  Actions for Dependabot to bump and are skipped.
+- `pkg_update_consumer_workflows` refreshes the file when
+  already present (UPDATE-if-exists).
+- `pkg_install_dependabot_yml` bootstraps it when missing, if
+  the consumer has `.github/workflows/`. Idempotent.
 
-### Canonical scope: github-actions only
-
-The canonical at `consumer-templates/.github/dependabot.yml`
-carries the `github-actions` package-ecosystem only. A previous
-iteration also carried a `docker` package-ecosystem block on the
-theory that Dependabot's docker scanner is a "harmless no-op" in
-repos without a `/Dockerfile`. That theory was wrong: the
-dependabot-action emits `dependency_file_not_found` and aborts
-the whole job (including the `github-actions` ecosystem run that
-shares it), so every consumer without a `/Dockerfile` lost
-`github-actions` coverage too. The docker block was removed for
-that reason.
-
-Note: Dependabot's `docker` ecosystem only watches Dockerfile
-`FROM` lines, NOT workflow `container:` image references
-(`debian:trixie@sha256:...` in `local-lint.yml` etc.). Those
-container pins need manual re-pinning; see
-[`github-actions.md`](github-actions.md) action SHA-pinning
-discipline and each repo's `agents/github-actions-security.md`
-for the procedure.
+Both honour a `## propagation: manual` header marker on the
+consumer's file and skip when present.
 
 ### Per-repo manual `dependabot.yml`
 
-Two repos in the org carry a Dockerfile at a non-root path and
-want Dependabot docker coverage scoped to that path:
+Repos with a Dockerfile at a non-root path hand-maintain their
+own:
 
-| Repo | Dockerfile path | dependabot `directory:` |
+| Repo | Dockerfile | dependabot `directory:` |
 | --- | --- | --- |
 | `derivative-maker` | `docker/Dockerfile` | `"docker"` |
 | `helper-scripts` | `.clusterfuzzlite/Dockerfile` | `".clusterfuzzlite"` |
 
-These repos opt out of byte-identical propagation by placing
-the header marker
+Place `## propagation: manual` as the first content line. Keep
+the `github-actions` `updates:` block byte-identical to the
+canonical; only the `docker` block diverges.
 
-    ## propagation: manual
-
-near the top of their `.github/dependabot.yml`. Both
-`pkg_update_consumer_workflows` and `pkg_install_dependabot_yml`
-`grep -q` for this marker and skip the file when present.
-
-An opted-out `dependabot.yml` MUST still carry the canonical's
-`github-actions` `updates:` block byte-identical to the
-canonical, so org-wide action-bump uniformity is preserved.
-Only the per-repo `docker` block (and the `## propagation:
-manual` marker line) diverges. If the canonical's
-`github-actions` block changes, opted-out files must be
-hand-updated to match - the cost of opting out.
-
-A new Dockerfile-bearing repo joining this list goes through:
-
-1. Add a `docker` `updates:` entry to `.github/dependabot.yml`
-   with `directory:` matching the Dockerfile's parent dir.
-2. Add the `## propagation: manual` marker.
-3. Add the row to the table above and land both changes in the
-   same PR.
-
-### No hardcoded repo exclusions
-
-Both propagation functions are exclusion-free at the script
-level - there is no hardcoded list of repo names to skip. The
-opt-out is filesystem-driven by the marker, mirroring the
-file-presence opt-in for `consumer-*.yml` wrappers.
+Dependabot's `docker` ecosystem watches Dockerfile `FROM` lines
+only, not workflow `container:` / `image:` pins; those are
+manually maintained per
+[`github-actions.md`](github-actions.md).
 
 ## Scheduling in byte-identical templates
 
