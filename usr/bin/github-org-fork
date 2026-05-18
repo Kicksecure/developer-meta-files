@@ -456,6 +456,55 @@ build_repo_set() {
   done <<< "${list_text}"
 }
 
+## Poll GET /repos/{owner}/{repo}/commits?per_page=1 until the fork is
+## past the empty-repo state. Per the StackOverflow research linked
+## from the original FIXME, a freshly-POSTed /forks repo returns:
+##   - 404 from /repos lookup       (not yet visible)
+##   - 200 from /repos lookup + 409 from /commits  (created, empty)
+##   - 200 from both                                (ready)
+## We treat 200 on /commits as ready. Bounded wait so a stuck fork
+## doesn't hang the whole batch; on timeout, return non-zero and let
+## the caller's '|| true' move on - the next run picks it up.
+##
+## Backoff schedule: 1, 2, 4, 8, 16, ... capped at 30s; total wait
+## bounded by GHORG_FORK_READY_TIMEOUT_SECONDS (default 300s = 5m).
+wait_for_fork_ready() {
+  local repo result status elapsed wait deadline now timeout_seconds
+
+  repo="$1"
+
+  ## Mock-mode tests don't simulate async fork creation; skip so they
+  ## don't have to ship a /commits fixture for every forked repo.
+  [ "${GHORG_MOCK:-0}" = '1' ] && return 0
+
+  timeout_seconds="${GHORG_FORK_READY_TIMEOUT_SECONDS:-300}"
+
+  is_whole_number "${timeout_seconds}" \
+    || { log warn "GHORG_FORK_READY_TIMEOUT_SECONDS='${timeout_seconds}' not a whole number; using 300"; timeout_seconds=300; }
+
+  deadline=$(( $(date -u +%s) + timeout_seconds ))
+  wait=1
+  while true; do
+    result="$(ghorg_api GET "/repos/${target_owner}/${repo}/commits?per_page=1")" \
+      || result=''
+    status="$(ghorg_status_of "${result}")"
+    if [ "${status}" = '200' ]; then
+      [ "${verbose}" = '1' ] && log notice "fork ready: ${target_owner}/${repo}"
+      return 0
+    fi
+    now="$(date -u +%s)"
+    if [ "${now}" -ge "${deadline}" ]; then
+      log warn "fork-ready wait: '${target_owner}/${repo}' not ready after '${timeout_seconds}'s (last HTTP '${status}'); a later run will pick up the configure"
+      return 1
+    fi
+    elapsed=$(( now - (deadline - timeout_seconds) ))
+    [ "${verbose}" = '1' ] && log info "fork-ready wait: ${target_owner}/${repo} HTTP '${status}' after '${elapsed}'s; retry in '${wait}'s"
+    sleep -- "${wait}"
+    wait=$(( wait * 2 ))
+    [ "${wait}" -gt 30 ] && wait=30
+  done
+}
+
 main() {
   local target_type auth_user source_repos target_repos repo_name
   local -A target_set=()
@@ -500,16 +549,19 @@ main() {
     for repo_name in "${missing[@]}"; do
       fork_one "${repo_name}"
     done
+    ## GitHub fork creation is async: POST /forks returns 202 and
+    ## the new repo is published to the API some seconds later. Wait
+    ## for each newly-forked repo to reach the "ready" state (GET
+    ## .../commits returns 200 with at least one commit) before
+    ## handing it to configure_one. Without this wait, PATCH /repos,
+    ## PUT .../actions/permissions, or POST .../merge-upstream can
+    ## hit the not-yet-initialized repo and 404/409/422; the
+    ## downstream '|| true' would then leave drift.
+    for repo_name in "${missing[@]}"; do
+      wait_for_fork_ready "${repo_name}" || true
+    done
   fi
 
-  ## GitHub fork creation is async; brand-new forks may not appear
-  ## yet, but configure_one is idempotent on the next run.
-  ##
-  ## FIXME: Wait for all new forks to be fully forked before
-  ## proceeding past this point. Failed repository configuration
-  ## caused by trying to configure too early is not acceptable. A
-  ## possible way of detecting fork completion can be seen here:
-  ## https://stackoverflow.com/questions/33666838/determine-if-a-fork-is-ready
   target_repos="$(ghorg_list_repos "${target_owner}" 'true' 'true' 'true' \
     | sort --unique)"
 
