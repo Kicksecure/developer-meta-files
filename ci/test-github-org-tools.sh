@@ -72,12 +72,7 @@ for test_path in "${TESTS_DIR}"/test_*.sh; do
   test_name="$(basename -- "${test_path}")"
   printf '%s\n' "== ${test_name} =="
   log_file="$(mktemp)"
-  ## R-102 carve-out: invoking the test file via 'bash --' instead of
-  ## executing it directly lets the suite run inside containers that
-  ## strip the executable bit off the checkout (some sandboxed CI
-  ## runners do this) and keeps a single, predictable interpreter
-  ## across all tests.
-  if GHORG_MOCK_DIR="${FIXTURES_DIR}" bash -- "${test_path}" > "${log_file}" 2>&1; then
+  if GHORG_MOCK_DIR="${FIXTURES_DIR}" "${test_path}" > "${log_file}" 2>&1; then
     printf '%s\n' '  PASS'
     pass=$(( pass + 1 ))
   else
