@@ -1,3 +1,621 @@
+commit 67c3cfaa6abb3cb89643f4be48cc5ce0a81d38c4
+Merge: 16d98093 585ef13c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 17:49:08 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 585ef13c8b926114f6ef7c9cb8071b449ee05801
+Merge: 16d98093 f7e106a7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 18 17:26:20 2026 -0400
+
+    Merge pull request #109 from org-ai-assisted/claude/review-rule-r141-coORj
+
+    ghorg_api: restore RETURN trap for xtrace_restore
+
+commit f7e106a765768e8f3d64759c54190ada94e0bb2d
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 19:22:27 2026 +0000
+
+    simplify: hoist GHORG_FORK_READY_TIMEOUT_SECONDS, die-not-fallback, trim comments
+
+    - github-org-lib.bsh: declare GHORG_FORK_READY_TIMEOUT_SECONDS in the
+      global vars block (with the rest of the GHORG_* knobs), so the
+      default lives once. Drop the local copy in wait_for_fork_ready.
+    - wait_for_fork_ready: 'is_whole_number || { log warn; fallback }'
+      was a 2-line dance for a env var that almost never gets set. Replace
+      with 'is_whole_number || die 1 ...'; an operator who sets it to
+      a bad value gets a hard stop and a clear message.
+    - github-org-push: drop the three-line 'Validate user-supplied branch
+      name ... blocks ref injection like master HEAD' comment - the
+      ghorg_validate_name call says what it does, the security intent
+      lives in agents/security.md, and the constructed 'refs/heads/...'
+      prefix below is self-evident.
+    - R-010 strict-mode-block 'callers already set these ...' header
+      comment removed from 5 sourced libs (github-org-lib, github-
+      policy-lib, github-policy-data, git-helpers, repo-metadata). R-010
+      is documented in agents/bash-style-guide.md; each file's compliance
+      is visible from the strict-mode lines themselves.
+
+commit 73597b9b1179d602363032d73c8a255b1e68ec33
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 19:17:03 2026 +0000
+
+    dm-quickgittagsign: drop 'exec' wrapping the dm-packaging-helper-script call
+
+    Plain invocation keeps the parent shell around so a future post-call
+    hook can fire if needed; nothing in this script required the
+    process-replacement semantics of exec.
+
+commit 81b50f0568e81288616b8b7e834eb4b0c6319f40
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 19:11:54 2026 +0000
+
+    test_dm_dryrun_source_vs_mirror: shorten header to bare doc citation
+
+commit c05312318dfba613a1451344ff6aabaf0a83351d
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 19:08:28 2026 +0000
+
+    github-org-clone: drop the 'forks default to include' rationale comment
+
+    show_help already states '--exclude-forks   skip fork repos
+    (default: include)'; the why doesn't add anything for someone
+    reading the variable assignment.
+
+commit 5ccf976b18cc1da1366c30c1349ecb976f5c0b68
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 19:05:56 2026 +0000
+
+    dm-push: use log_run_silent_if_success for git-verify calls
+
+    Drops the 'log info "cmd"; cmd &>/dev/null' pattern (and the
+    explanatory comment that justified it) in favor of the helper added
+    in helper-scripts#43. Same on-screen behaviour for the success path,
+    but captured stdout/stderr now surface to stderr on failure instead
+    of being silently dropped.
+
+commit e7fe612a0bf72edf7ed339965040a4a4c1529085
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:34:00 2026 +0000
+
+    trim comments per R-150 / R-151 across this branch's touched files
+
+    R-150 (single source of truth):
+    - github-org-fork main(): drop the 8-line caller-side rationale
+      block before the wait_for_fork_ready loop; the same content lives
+      in the function's docstring.
+    - wait_for_fork_ready docstring: trim the StackOverflow-FIXME
+      reference (the FIXME is gone, the link rots) and the 'backoff
+      schedule: 1, 2, 4...' line that restated the code two lines down.
+
+    R-151 (don't restate WHAT):
+    - github-org-clone include_forks default: drop the 'Operators who
+      want a fork-free listing can pass --exclude-forks' sentence;
+      show_help already says '(default: include)'.
+    - github-org-lib.bsh ghorg_mock_dispatch:295: drop the 'clean_path
+      starts with / so no extra _ separator needed' comment - the next
+      line shows the construction.
+    - github-org-lib.bsh ghorg_api:405: drop the 'path starts with /'
+      separator comment, fold the 'token via stdin so it does not show
+      up in ps aux' rationale to a single line.
+    - agents/pre-push-static.sh check_R080: trim the
+      'two regex alternatives' decomposition; the regex is short
+      enough that the bullet list was over-explaining.
+    - dm-packaging-helper-script main(): drop the 4-line --no-batch
+      rationale block per your prior direction.
+
+commit 02cfec5ef0f5240650ece75ca19bed55138e1fb2
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:24:29 2026 +0000
+
+    R-080: relative shellcheck source paths, codified + gated
+
+    Lift the convention encoded by the earlier mass rewrite (commit
+    c335685) into agents/bash-style-guide.md so the next contributor
+    doesn't have to re-derive it from a diff, and wire a static-gate
+    check so violations fail pre-push.
+
+    - agents/bash-style-guide.md R-080: rewritten with the four
+      forbidden forms and a depth/path conventions table for each
+      script location. The 'why' (canonical context is derivative-
+      maker with submodules; source-tree copy may differ from
+      installed copy) is now there once.
+    - agents/pre-push-static.sh check_R080_shellcheck_source_path:
+      flags any '# shellcheck source=/...' that starts with an
+      absolute path (/usr, /home, /dev/null, etc.). Relative paths
+      ('../...') pass. Wired into run_file_checks immediately before
+      the existing R-081 check.
+    - agents/pre-push-static.sh header docstring: list R-080 as
+      rule 10a (R-081 already at 10).
+
+commit a267dd7f34a2237a3eb82a2fb82907b392c58ab1
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:20:16 2026 +0000
+
+    test fixes the previous PVR cleanup glossed over
+
+    - test_dm_dryrun_source_vs_mirror: the 'unexpected MIRROR-side
+      fragment present' / 'unexpected SOURCE-side fragment present'
+      diagnostics were correct for some entries of the forbidden arrays
+      but wrong for 'enable private vulnerability reporting' (a forbidden
+      fragment in both directions, not a side-specific leak). The earlier
+      commit removed the FIXME without fixing the message. Make the
+      diagnostics side-agnostic: 'FAIL[SOURCE]: forbidden fragment
+      present: ...' / 'FAIL[MIRROR]: forbidden fragment present: ...'.
+    - test_fuzz_ghorg_jq_capped: quote every /tmp/long_in_$$ use,
+      not just the safe-rm call. R-032 prefers double-quoted paths
+      even when the expansion is integer-only.
+
+commit 742bd5fc1d11698a9602c9b6efa678bcbc4a9a6a
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:17:50 2026 +0000
+
+    collapse mirrored policy/threat-model comments into single-source-of-truth cites
+
+    Per R-150 (rationale once per file, then cite at subsequent sites).
+    Five inline restatements were drifting from their canonical docs:
+
+    - github-org-lib.bsh: 8-line 'THREAT MODEL' header restated the
+      identifier/display-sink rules from agents/security.md (R-140);
+      reduced to a 4-line cite that names the lib's two implementations
+      of that contract (ghorg_validate_name, log() -> sanitize-string).
+    - test_ruleset_body_rules_dispatch.sh: 6-line 'Rationale:' block
+      duplicated agents/github-policy-canonical-vs-mirror.md's #3 entry;
+      the same test already cited that doc 2 lines later. Replaced with
+      a one-line cite.
+    - test_dm_dryrun_source_vs_mirror.sh: 24-line synthetic copy of the
+      policy table dropped in favor of a 5-line cite to the canonical
+      table; the test code is unchanged.
+    - dm-github-org-policy: 19-line apply_repo_policy header re-derived
+      the SOURCE-vs-MIRROR split + the required_signatures bot rationale;
+      collapsed to a 4-line cite + pointer to github-policy-data.bsh for
+      the constants.
+    - dm-github-personal-policy: 7-line PERSON/BOT split rationale
+      reduced to a 3-line cite.
+
+    All 29 mock-API tests still pass; gate green.
+
+commit 24c81e1493ac01cb6babc37763c8ec4cc4d5ac92
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:13:00 2026 +0000
+
+    test_dm_apply / test_dm_dryrun: reference PVR policy doc instead of restating
+
+    The inline 'wiki is the canonical disclosure channel' fragment
+    duplicated content from agents/github-policy-canonical-vs-mirror.md
+    and would drift if the policy ever changed. Point at the doc with
+    a one-liner cite instead per R-150.
+
+commit 5593d9fefda186cd4a8ce49caa53dc3462db42ce
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:10:22 2026 +0000
+
+    test-github-org-tools: invoke tests directly, drop speculative bash -- workaround
+
+    The 'R-102 carve-out' comment hedged against a sandbox that strips
+    exec bits, but no such CI ever showed up and the workaround has been
+    dead weight. Tests are committed with mode 755; trust that and just
+    run them directly.
+
+commit 35cd3924208d40a7ccf8767adc68ef6b51d296e6
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:08:08 2026 +0000
+
+    R-042: actually drop the blank-line emissions, don't reformat them
+
+    The previous commit replaced 'printf '%s\n' ""' followed by a real
+    printf line with a single multi-line printf that took "" as the
+    first arg. That bypassed the static gate's grep but still emitted
+    the blank line - the very thing R-042 says to drop.
+
+    - ci/live-probe-unauth.sh: just delete the blank-line emissions
+      (visual separators in CLI output, the rule's intended target).
+    - usr/bin/dm-github-org-security-report: the blank line between the
+      H1 and the table is structurally required by markdown, so use
+      R-031's 'one quoted string with embedded newlines' form, with a
+      brief comment explaining the carve-out.
+
+commit 4c71ff834e3c5e8a2986f376919eb8d0a9c7e2d1
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 18:02:50 2026 +0000
+
+    ghorg_parse_rate_limit_wait: signal 'no signal' via exit code, not empty stdout
+
+    Replace the magic empty-string sentinel with standard shell idiom:
+    value on stdout, success/failure via exit code. The caller switches
+    from 'wait="$(...)"; if [ -z "${wait}" ]; then ...' to
+    'if ! wait="$(ghorg_parse_rate_limit_wait "${hdr_file}")"; then
+      wait="$(ghorg_compute_backoff_seconds "${attempt}")"; fi',
+    which documents itself at the call site and removes the body-comment
+    warning about not echoing '0'.
+
+    test_rate_limit_retry: stale-reset and no-rate-limit-header paths now
+    assert both empty stdout AND non-zero exit code. The assignment form
+    gets wrapped so inherit_errexit doesn't kill the test on the new
+    return 1.
+
+commit 9aed3b2ba91bb59958ea90a7b767a729eafdf3a0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 17:29:52 2026 +0000
+
+    repo-metadata.bsh: add R-010 strict-mode block + exec bit
+
+    Same fix shape applied to github-org-lib.bsh / git-helpers.bsh
+    earlier: the previous commit pulled this file into the pre-push
+    gate's changed-files set, exposing the missing strict-mode block
+    and missing executable bit. Match the canonical pattern used by
+    github-policy-lib.bsh and github-policy-data.bsh.
+
+commit f5add52c574a9f73186e0635196354da8ffc1307
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 17:28:14 2026 +0000
+
+    FIXME / TODO sweep cleanups
+
+    - ghorg_parse_rate_limit_wait: replace 'TODO: We may need printf 0
+      here' with an explicit comment - empty stdout IS the contract for
+      'use exponential backoff'. Echoing 0 would starve the backoff path.
+    - ghorg_token: drop the stat -f / %Lp investigation TODO; we only
+      support Debian stable (GNU stat).
+    - github-org-fork: three undocumented-status TODOs (201 on /forks,
+      200 on /actions/permissions PUT) accepted and briefly documented;
+      GitHub docs lag the observed responses.
+    - github-org-clone: flip the fork default from exclude to include
+      (Kicksecure/privleap and other core repos are themselves forks).
+      --include-forks (now redundant) replaced by --exclude-forks for
+      the inverse case; help text + test_clone_dryrun fixture updated to
+      match (3 repos by default, 2 with --exclude-forks).
+    - github-org-push: log the name of skipped non-git-checkout
+      candidate dirs under --verbose.
+    - dm-packaging-helper-script: rename pkg_claude_md_pointer_do to
+      pkg_claude_md_pointer_create; remove the stale 'press enter to
+      continue_not' xtrace breadcrumb + commented #read in
+      pkg_git_commit_packaging.
+    - repo-metadata.bsh: drop the stale 'TBD' next to dm-github-org-
+      metadata-sync; that tool now exists.
+
+commit 81f3ac48576d1b9e53204d0d23d099598acb313c
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:11:01 2026 +0000
+
+    github-org-fork: wait for async fork creation before configure_one
+
+    Per the StackOverflow research the FIXME pointed at: GitHub's POST
+    /repos/{src}/{src_repo}/forks returns 202 (accepted), and the newly
+    created repo only becomes API-visible some seconds later. Querying
+    GET /repos/{owner}/{repo} can return 404 during that window; once it
+    returns 200, the repo exists but may still be empty - subsequent
+    PATCH /repos, PUT .../actions/permissions, and POST .../merge-upstream
+    calls can hit 409/422 against the empty-repo state.
+
+    Add a wait_for_fork_ready helper that polls
+    GET /repos/{owner}/{repo}/commits?per_page=1 with exponential backoff
+    (1, 2, 4, 8, 16, 30s cap) until 200, bounded by
+    GHORG_FORK_READY_TIMEOUT_SECONDS (default 300s / 5 min). The call site
+    runs the wait once per newly-POSTed fork before the existing list +
+    configure flow. On timeout, the helper warns and returns non-zero;
+    the caller's || true keeps the batch moving and the next idempotent
+    run picks up the configure.
+
+    Skipped under GHORG_MOCK=1 so the existing mock-API test fixtures
+    don't have to ship a /commits fixture for every forked repo.
+
+commit e6990b63842dd45489a3084ed26bcf5e55471521
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:08:17 2026 +0000
+
+    fix gate failures surfaced by previous commits
+
+    The shellcheck-source standardization brought several files into the
+    gate's changed-files set, exposing pre-existing R-042 / R-120 /
+    shebang-executable hits in code I had not previously touched.
+
+    - usr/bin/github-org-{clone,fork,push}, dm-github-{fork-sync,
+      org-security-report,token-test}: set exec bit (shebang +
+      package layout intent).
+    - dm-github-org-security-report:122-125: collapse the printf calls
+      into a single multi-line printf invocation so the blank-line
+      separator stops violating R-042.
+    - ci/live-probe-unauth.sh:79,95: same multi-line-printf treatment.
+    - ci/tests/test_fuzz_ghorg_jq_capped.sh:128: 'rm -f ...' replaced
+      with 'safe-rm --force --' per R-120.
+
+commit c335685c00eee25efed529b752d4856299e1c6d5
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:05:51 2026 +0000
+
+    shellcheck source paths: standardize on relative submodule-friendly paths
+
+    Apply the convention the FIXME in dm-github-org-metadata-sync
+    documented. The same library file is shipped both at /usr/libexec/...
+    (installed) and at the source tree path of the in-tree checkout;
+    absolute 'source=' directives followed the installed copy, which can
+    drift from the source tree under review. Relative directives point
+    at the source tree the developer is actually editing.
+
+    Conventions used:
+    - usr/bin/<script>  -> developer-meta-files self-libs:
+        # shellcheck source=../libexec/developer-meta-files/<lib>.bsh
+    - usr/bin/<script>  -> helper-scripts (submodule layout):
+        # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/<file>
+    - usr/libexec/developer-meta-files/<lib>.bsh -> helper-scripts:
+        # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/<file>
+    - ci/<script> at depth 1:
+        # shellcheck source=../usr/libexec/developer-meta-files/<lib>
+        # shellcheck source=../../helper-scripts/usr/libexec/helper-scripts/<file>
+    - ci/tests/<script> at depth 2:
+        # shellcheck source=../../usr/libexec/developer-meta-files/<lib>
+        # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/<file>
+
+    These resolve against the source tree when a developer checks out
+    the derivative-maker submodule layout (the assumed canonical context
+    per the FIXME). Standalone shellcheck on a bare developer-meta-files
+    checkout falls back to SC1091 ('not found') for the helper-scripts
+    paths, which is acceptable - the in-tree copy of the library shipped
+    alongside is what matters for accurate linting.
+
+commit c4342b411ae7fb4eb8366ce4a90ad9a7e4342bfb
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:03:34 2026 +0000
+
+    pre-push-static.sh: catch 'bash extensionless-script' and bare 'rm'
+
+    R-102 check: extend the regex to also match invocations of an
+    extensionless script through the bash/sh interpreter ('bash my-tool',
+    'sh ./my-tool'), while filtering known-good 'bash -c' / 'sh -x' /
+    similar flag patterns. The previous regex only matched the
+    *.sh / *.bsh / *.bash extensions.
+
+    R-120 check: extend the rm regex with a third alternative
+    ('^[[:space:]]*rm$') so a single-token 'rm' line at the start of
+    the file is no longer missed.
+
+    git-helpers.bsh: this file is now in the gate's changed-files set
+    (touched by an earlier R-053 commit on this branch), so add the
+    canonical R-010 strict-mode block + exec bit to match
+    github-policy-lib.bsh and github-org-lib.bsh.
+
+commit 03816142c154c6fc8ce3f8bedc54a5bf3cc5adc9
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:02:24 2026 +0000
+
+    test infra polish
+
+    - test_dm_security_report: assert rc -ne 64 (the expected die code)
+      instead of rc -eq 0, so a tool that exits with a different
+      non-zero rc (e.g. 1 from a different error path) doesn't slip by.
+    - test_shellcheck_clean: collect the failing scripts in a list and
+      print them once at the end so CI logs make it clear which files
+      reported issues without scrolling through every shellcheck call.
+    - test_rate_limit_retry: switch from 'shellcheck disable=SC1091' to
+      the proper 'shellcheck source=' directive so the lib gets followed
+      during external-sources runs and SC2317 doesn't fire.
+
+commit 3c2859006c4e757426f89e813a9814b985de60df
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:01:27 2026 +0000
+
+    Remove orphan duplicate ci/probe-live-unauth.sh
+
+    The canonical script is ci/live-probe-unauth.sh; it is the one wired
+    into .github/workflows/local-org-policy-live-probe.yml and into
+    ci/tests/test_shellcheck_clean.sh's clean-list. The 'probe-live-'
+    copy was a stale duplicate that drifted to use 'command -v' instead
+    of 'has' for the dep check and had no callers. The FIXME flagged the
+    duplication; remove the orphan to resolve.
+
+commit 054ca59c7965baad128d3dfd531229a2cd168fe3
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:01:07 2026 +0000
+
+    dm-push: stop wrapping verify-commit/verify-tag in log_run + &>/dev/null
+
+    'log_run info <cmd> &>/dev/null' silenced log_run's own narration,
+    which defeated the purpose of using it. Split: log the intent
+    explicitly with 'log info', then run the command with the redirect.
+    Same shape for both verify-commit and verify-tag.
+
+commit e9c39ed31caa285b89e85739d718944684540824
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 15:00:36 2026 +0000
+
+    github-org-fork / ghorg_account_type: include response body in warn lines
+
+    When a non-success status comes back, the operator usually wants to
+    see GitHub's error body to understand whether the cause was scope,
+    quota, validation, or a hostile name collision. Add a bounded
+    '${response_body:0:512}' tail to every existing warn/error in the
+    configure_one PATCH and PUT paths, the sync_one 409/422/* arms, and
+    the ghorg_account_type non-200 path. The 512-byte cap protects the
+    log line; the log helper still routes the value through
+    sanitize-string for terminal safety.
+
+commit 60131538460bff2a1f01bce1d8b6a488f4aa15df
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:58:44 2026 +0000
+
+    sync-branches 422 message + github-org-push branch-exists pre-check
+
+    - github-org-fork sync_one: HTTP 422 from POST .../merge-upstream
+      means 'validation failed', which covers more than 'branch missing'
+      (target isn't a fork, target isn't behind, etc.). Don't claim a
+      specific cause; let the operator inspect.
+    - github-org-push: verify the local branch exists with
+      'git rev-parse --verify' before constructing the refspec, so a
+      missing branch produces a clear skip instead of a confusing
+      'src refspec ... does not match any' lost inside the generic push
+      warn line.
+
+commit c3335558b3817747c62d828a42d7c3829f9da5c5
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:58:00 2026 +0000
+
+    ghorg_api: clarify retry-attempt zero-indexing isn't a 0-second wait
+
+    The earlier FIXME assumed the formula was linear (30 * attempt). The
+    actual formula in ghorg_compute_backoff_seconds is exponential
+    (30 * (1 << attempt)), so attempt=0 yields a 30s wait, not 0s. The
+    behaviour already waits before every retry; replace the FIXME with a
+    short note about the math so the next reader doesn't re-derive.
+
+commit 57036f4e06c24face592ee6f4f8ad7458bcacb2f
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:57:37 2026 +0000
+
+    ghorg_api: validate HTTP_STATUS sentinel; detect 403 rate-limit via headers
+
+    - Require the 'HTTP_STATUS:' prefix curl appends via --write-out
+      before treating the last line as the status. If the prefix is
+      missing (curl wrote nothing, or the caller passed only the body),
+      fail closed instead of silently consuming the last body line as a
+      status code.
+    - ghorg_status_of: same prefix gate so out-of-band consumers can't
+      mis-parse the result either.
+    - Replace the 403 body-grep heuristic with header inspection:
+      - 'x-ratelimit-remaining: 0' signals the primary rate limit;
+      - 'retry-after:' signals the secondary rate limit.
+      Both are documented in the GitHub REST rate-limits docs; the body
+      wording ('rate limit' / 'secondary rate') is not contractual.
+
+commit b74ccdf2b91f86d2b3deb48852369d8ebad5d1dd
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:56:16 2026 +0000
+
+    ghorg_validate_name: add 'ref' kind; refuse unknown kinds outright
+
+    - New 'ref' kind: allowlist '^[A-Za-z0-9._/-]+$' so 'feature/foo' is
+      accepted, length cap GHORG_MAX_BRANCH_NAME_LEN=255 (filesystem max
+      for refs stored under .git/refs/), additional rejection of leading
+      '/' and '//' substrings. Deeper format checks stay where they
+      already are: 'git check-ref-format refs/heads/...' downstream.
+    - Default 'kind' branch in the case now errors out instead of silently
+      reusing the repo cap (audited: every existing caller passes 'user',
+      'repo', or now 'ref').
+    - github-org-push: branch validation switched from 'repo' to 'ref', so
+      feature/foo branches no longer get a misleading 'over cap' message.
+    - Property fuzz test (test_fuzz_validate_name.sh) now rotates over
+      all three kinds; the divergence oracle is kept in lockstep.
+    - Targeted attacks test (test_validate_name_rejects_attacks.sh)
+      gains coverage of: good refs (master, feature/foo, claude/foo-bar,
+      release/1.2.3, .hidden-branch), bad refs (leading '/', '//' double
+      slash, '@{1}', etc.), ref 255-char OK / 256-char reject, and the
+      unknown-kind reject path.
+
+commit 56f0258e1c4a2a84efcc96c7c76229866e7d7822
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:53:45 2026 +0000
+
+    PVR test comments: drop stale 'is it disabled everywhere?' FIXMEs
+
+    PVR (Private Vulnerability Reporting) is disabled everywhere - on
+    SOURCE the wiki is the canonical disclosure channel, and on MIRROR
+    there is nothing to receive. The enable-PUT constant does not exist
+    in github-policy-data.bsh. Clarify the surrounding comments and
+    remove the FIXMEs that questioned whether the policy might differ.
+
+commit 41609a9b5d38849610672e205fe77b79ad37788a
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:52:30 2026 +0000
+
+    renames: FIXTURE_DIR -> FIXTURES_DIR; fork_main_build_repo_set -> build_repo_set
+
+    - Bulk rename of FIXTURE_DIR (test-github-org-tools and 17 test files)
+      to FIXTURES_DIR so the variable name matches the on-disk 'fixtures'
+      directory.
+    - fork_main_build_repo_set / metadata_build_repo_set -> build_repo_set
+      in github-org-fork and dm-github-org-metadata-sync; the 'main' and
+      'metadata' prefixes were carryovers from earlier refactors that no
+      longer add information.
+
+    ci/test-github-org-tools.sh:
+    - Document the R-102 carve-out for invoking tests via 'bash --'.
+    - Replace the 'misnamed file' FIXME with a comment explaining the
+      scope drift since the script was first introduced.
+
+    ci/step-summary-emit.sh:
+    - die_usage was named for behaviour it didn't have; split into a
+      print_usage helper and a die_with_usage wrapper. -h/--help now
+      prints the real usage instead of sed-extracting comments (R-153).
+    - Document why --row (singular option) appends to the 'rows' array.
+
+commit 041a288f5281e5b3e07c5731db933c46451f844a
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:50:12 2026 +0000
+
+    R-053: switch ghorg_list_repos + github-org-fork flags to 'true'/'false'
+
+    - ghorg_list_repos: docstring + body now reads 'true'/'false' for the
+      three include arguments instead of 0/1.
+    - All six callers updated: github-org-clone (--include-private/-archived
+      /-forks flow), github-org-fork (source_repos), and the dm-* policy /
+      metadata callers which pass the literal 'false' 'false' 'true' tuple
+      for 'all repos including forks, no archived/private'.
+    - github-org-fork local boolean flags (include_*, disable_*,
+      sync_branches) flipped from 0/1 to 'true'/'false' to match.
+    - DM_GATE_LS_REMOTE: opt-in toggle reads 'true' now.
+
+commit 2b2161d6f9567a09dd3c550408a0ba9df222f4ea
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 14:46:55 2026 +0000
+
+    coverity-build-python.sh: add shopt strict-mode lines (R-010)
+
+    git-helpers.bsh: finish the dangling 'Both variants (FIXME: of what?)'
+    comment by naming the two functions explicitly.
+
+commit 54d47f8f40d75e4d4015e616aa98f45bc0aa8c3d
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 13:55:33 2026 +0000
+
+    dm-debug-whonix-test-changes: add missing shopt -s shift_verbose for R-010
+
+commit 1e97ce59b58c07dcc5c3d7902e85882bb81dfd83
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 13:54:05 2026 +0000
+
+    R-141 cleanup + dm-quickgittagsign rewrite via new --no-batch flag
+
+    - dm-github-personal-policy: guard ${!rules_var} with check_variable_name;
+      add direct strings.bsh source per R-082.
+    - dm-debug-whonix-test-changes: [[ -v ]] -> [ -v ] for R-141 style.
+    - dm-packaging-helper-script: new --no-batch flag runs one function in
+      cwd without iterating the package list; seeds
+      batch_current_package_reponame from $PWD so repo_skip still works.
+    - dm-quickgittagsign: replace exit-1 stub with a thin wrapper that
+      exec's dm-packaging-helper-script --no-batch pkg_git_sign_tags.
+
+commit cf98f9b342889498c8ef964d47ea9a54c214c0dc
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 13:24:48 2026 +0000
+
+    github-org-lib.bsh: add R-010 strict-mode block, set exec bit to match other libs
+
+commit bca9a917532a7f7e115876a441e35d027ed6b9ed
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 13:22:11 2026 +0000
+
+    test_fork_apply: drop stale commits='3' expectation to match sync_one log line
+
+commit 624470dcc56156323f18d96d6bfb8ac652aebaad
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 13:10:03 2026 +0000
+
+    R-141 follow-ups: fix strings.bsh source typo, validate ghorg_compute_backoff_seconds arg, prefer [ -v ] over [[ -v ]], check_variable_name in test helper
+
+commit d53e215080ec983e8f3eb6bb0a7f52a72efec049
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 12:59:54 2026 +0000
+
+    ghorg_api: restore RETURN trap by merging hdr_file cleanup and xtrace_restore into one handler
+
+commit 16d98093b07426cf9cc20cc74da0fc8da809b168
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 10:41:29 2026 +0000
+
+    bumped changelog version
+
 commit 0a305a3b6a7dbdd3c86c3167233d0384bd0f3679
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 06:41:07 2026 -0400
@@ -11,14 +629,14 @@ Date:   Mon May 18 06:32:10 2026 -0400
     .
 
 commit 44ddec9cae7462a92d8ba8443211febb17be7c3f
-Merge: 3b7c28f 677d0d5
+Merge: 3b7c28f7 677d0d5d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 06:24:36 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/master'
 
 commit 677d0d5d427dfb7ca3a9383e0b7f2aae8eeb46f5
-Merge: 3b7c28f 5b4cfa7
+Merge: 3b7c28f7 5b4cfa79
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 18 06:19:48 2026 -0400
 
@@ -39,7 +657,7 @@ Date:   Mon May 18 05:55:23 2026 -0400
     TODO
 
 commit e641b0d27775ff4afd7977563a3ec64522fc0a96
-Merge: 1f166b5 5b95031
+Merge: 1f166b5a 5b950319
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 05:44:02 2026 -0400
 
@@ -68,7 +686,7 @@ Date:   Mon May 18 09:03:49 2026 +0000
     behaviour.
 
 commit 5b9503192e9b79d1f88cfea6b6e8a39dfa4a9037
-Merge: babd7b3 ed8979d
+Merge: babd7b39 ed8979d9
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Sun May 17 22:52:30 2026 -0400
 
@@ -129,7 +747,7 @@ Date:   Sun May 17 16:44:54 2026 -0400
     .
 
 commit ded3e61ef9f05ddf0834094b487b52824e7f7ff5
-Merge: 9ff813a 3556085
+Merge: 9ff813a1 35560852
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 16:22:17 2026 -0400
 
@@ -142,7 +760,7 @@ Date:   Sun May 17 14:14:27 2026 -0400
     Misc fixes, TODOs, FIXMEs
 
 commit 355608529ece605a19cbaa24a8b3fdfa72a879a7
-Merge: edcf50d 7cc1dcd
+Merge: edcf50d0 7cc1dcde
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 14:02:46 2026 -0400
 
@@ -157,14 +775,14 @@ Date:   Sun May 17 17:59:35 2026 +0000
     trim file commentary
 
 commit 9ff813a157e80ef45002623fd5eef1036b547e9f
-Merge: c52169e edcf50d
+Merge: c52169e7 edcf50d0
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 13:48:37 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/master'
 
 commit edcf50d0ef0650b7c06d66f54319ce749a660e0c
-Merge: c52169e f9d340b
+Merge: c52169e7 f9d340ba
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 13:47:06 2026 -0400
 
@@ -292,14 +910,14 @@ Date:   Sun May 17 13:18:12 2026 -0400
     .
 
 commit ba31723359cd0f2fdf4ed477394ca67fa77bd494
-Merge: 76be2b2 ec5d726
+Merge: 76be2b20 ec5d7264
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 12:46:05 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit ec5d7264d6786b521d51a4672ef5e1962d7759f0
-Merge: 3081569 8ae5126
+Merge: 30815699 8ae5126e
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 12:21:14 2026 -0400
 
@@ -376,7 +994,7 @@ Date:   Sun May 17 16:12:26 2026 +0000
     the downstream comparison handles unchanged.
 
 commit 308156998cca94b3f3095e29e211413213974113
-Merge: 2130086 8d92876
+Merge: 21300864 8d92876d
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 11:35:41 2026 -0400
 
@@ -414,7 +1032,7 @@ Date:   Sun May 17 15:25:33 2026 +0000
     right size.
 
 commit 21300864d470b1830a8971ea38c19d362347c3ef
-Merge: e730a07 6006f52
+Merge: e730a07b 6006f520
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 10:31:42 2026 -0400
 
@@ -440,7 +1058,7 @@ Date:   Sun May 17 14:30:04 2026 +0000
     values stay visible.
 
 commit e730a07b2235650cd9e294635caa83b572e8816e
-Merge: eb6f9d5 7540ed2
+Merge: eb6f9d55 7540ed2c
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 10:18:13 2026 -0400
 
@@ -471,7 +1089,7 @@ Date:   Sun May 17 13:27:22 2026 +0000
        (force overrides every other guard).
 
 commit eb6f9d553dca2fd1c1781ff95226af23bc8c853b
-Merge: 860191b 6238068
+Merge: 860191bf 62380686
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 08:43:18 2026 -0400
 
@@ -568,14 +1186,14 @@ Date:   Sun May 17 09:09:08 2026 +0000
     runs cleanly to completion.
 
 commit 76be2b2034493b771a9233d084771ba708a9df40
-Merge: 7b714a3 860191b
+Merge: 7b714a38 860191bf
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 04:33:30 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit 860191bf2a1f48829f97200ded824e60a7d57910
-Merge: 5f033f9 14d5610
+Merge: 5f033f9e 14d56101
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sun May 17 04:25:41 2026 -0400
 
@@ -633,14 +1251,14 @@ Date:   Sat May 16 21:45:47 2026 +0000
       build/reprepro entirely.
 
 commit 7b714a38896c730900a37692daa6a795d067330c
-Merge: 84f25c2 5f033f9
+Merge: 84f25c2f 5f033f9e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 16 17:13:01 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit 5f033f9ec53eb9fcc99b8bca8b8dbc84a5427faa
-Merge: b168d9a e9d4c88
+Merge: b168d9a8 e9d4c888
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sat May 16 16:20:31 2026 -0400
 
@@ -665,7 +1283,7 @@ Date:   Sat May 16 20:01:42 2026 +0000
     (make_use_git_describe_for_version=true).
 
 commit b168d9a8e80b25448b3c897beaa8d3736a15e5f0
-Merge: 7b84f09 cffb490
+Merge: 7b84f091 cffb490b
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sat May 16 07:10:24 2026 -0400
 
@@ -704,7 +1322,7 @@ Date:   Sat May 16 07:07:17 2026 -0400
     keep current than splitting per-tool.
 
 commit 7b84f0913dc7342ff488eb72eafeea8bac1ccfd2
-Merge: 84f25c2 5b50182
+Merge: 84f25c2f 5b50182a
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sat May 16 06:27:03 2026 -0400
 
@@ -829,14 +1447,14 @@ Date:   Sat May 16 05:46:01 2026 -0400
     guards from alert #17\'s autofix.
 
 commit 8e0022f7aca13a37cf660f6da567f4b0af0e438d
-Merge: f9e0914 1db0b4a
+Merge: f9e09142 1db0b4a9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 16 05:42:48 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/claude/cp-update-none-warning-fix'
 
 commit f9e09142d6e1e134cbac1a6776dba3d523e6c3b7
-Merge: b67a136 525b8b3
+Merge: b67a136d 525b8b3f
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 16 05:36:14 2026 -0400
 
@@ -857,7 +1475,7 @@ Date:   Sat May 16 05:29:42 2026 -0400
     .
 
 commit 3e866df7b2ab0dad5083a5c34b6e2700536cbd86
-Merge: 7a53168 9a6e09c
+Merge: 7a531684 9a6e09c3
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 16 05:26:34 2026 -0400
 
@@ -895,7 +1513,7 @@ Date:   Sat May 16 04:45:49 2026 -0400
       - snapshot:      cp --no-clobber ->      cp --update=none
 
 commit 9a6e09c34cea293e2218329887c2751e554d58d9
-Merge: 7a53168 7df2714
+Merge: 7a531684 7df27141
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Sat May 16 04:40:11 2026 -0400
 
@@ -1277,14 +1895,14 @@ Date:   Fri May 15 20:08:04 2026 +0000
     bumped changelog version
 
 commit 996af11dc73a329177cb6d9b6b7f82f1302e3d1b
-Merge: 70fc09f cd7e21d
+Merge: 70fc09fa cd7e21d5
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 15:58:12 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/master'
 
 commit cd7e21d52b96eeb75dc887ac11177f0987e329a6
-Merge: 70fc09f aa11f96
+Merge: 70fc09fa aa11f961
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 15:27:41 2026 -0400
 
@@ -1378,21 +1996,21 @@ Date:   Fri May 15 19:11:24 2026 +0000
     YAML still parses; agents/pre-push-static.sh passes.
 
 commit 70fc09facaf4b7a1a08525e605b8291d740b42bc
-Merge: a436fbb 509f0dc
+Merge: a436fbb4 509f0dcb
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 15:07:57 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/master'
 
 commit a436fbb45b5765511a957d78ef563c403c82639d
-Merge: ff8bf9c 650de18
+Merge: ff8bf9c5 650de180
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 15:05:25 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/claude/review-developer-meta-files-vHKKI'
 
 commit 509f0dcb0a4ae502abff987ae7ab02886ddcf347
-Merge: ff8bf9c 650de18
+Merge: ff8bf9c5 650de180
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 15:04:43 2026 -0400
 
@@ -1436,7 +2054,7 @@ Date:   Fri May 15 18:59:23 2026 +0000
     hits remaining. YAML still parses, agents/pre-push-static.sh passes.
 
 commit ff8bf9c51423d08c42340f2e1b55ad8db476a7be
-Merge: 32d9a4c 3add64d
+Merge: 32d9a4c0 3add64d2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 14:52:36 2026 -0400
 
@@ -1457,14 +2075,14 @@ Date:   Fri May 15 18:45:58 2026 +0000
     bumped changelog version
 
 commit 26fd0415224658e8e0d01b257218d6dc3196f4aa
-Merge: 32932cc c901cc0
+Merge: 32932ccf c901cc01
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 14:41:37 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit c901cc0117c40ecfca6a1d3869797e79fb75b271
-Merge: 32932cc 9ecdc49
+Merge: 32932ccf 9ecdc496
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 14:40:32 2026 -0400
 
@@ -1497,21 +2115,21 @@ Date:   Fri May 15 18:13:38 2026 +0000
     single run never mixes patch levels.
 
 commit 8b20a8a46629229fee423aea5929e3f7e8f71604
-Merge: 8d288ef 7d473d8
+Merge: 8d288efc 7d473d84
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 12:47:36 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit 8d288efcd0aa90209b6b84686510c5ed9c0673fa
-Merge: 055af09 150c73a
+Merge: 055af09e 150c73ac
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 15 12:34:02 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/claude/update-todo-list-I5jPu'
 
 commit 7d473d8418ddd42f1c4c2940b02d64c32eab55e4
-Merge: 4a1e11a 8e0d17e
+Merge: 4a1e11a7 8e0d17eb
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 12:29:08 2026 -0400
 
@@ -1539,7 +2157,7 @@ Date:   Fri May 15 12:26:54 2026 -0400
     this panel surfaces the headline result in the Actions tab.
 
 commit 4a1e11a7710b0a719d68f4a14aecf791aa178b0b
-Merge: 04f690b e89cca8
+Merge: 04f690b5 e89cca80
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 12:18:28 2026 -0400
 
@@ -1597,7 +2215,7 @@ Date:   Fri May 15 12:12:30 2026 -0400
     step-summary-emit.sh invocation in an 'if: always()' step.
 
 commit 04f690b5a86d75c1a952248724cc92357025cc6f
-Merge: ccb3800 715a944
+Merge: ccb38001 715a9448
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 12:06:44 2026 -0400
 
@@ -1606,7 +2224,7 @@ Date:   Fri May 15 12:06:44 2026 -0400
     ci(coverity): env-array apt install + '--' separators for sudo/apt-get
 
 commit ccb380014e77dfde61893e07b48bc4bdfe516085
-Merge: 3a505d0 46df6ad
+Merge: 3a505d04 46df6ad8
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 12:06:12 2026 -0400
 
@@ -1644,7 +2262,7 @@ Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.git
 Date:   Fri May 15 12:04:12 2026 -0400
 
 commit 3a505d041036f7f67766182bb88c0f8e4ea0db39
-Merge: 00adc79 16c3c5d
+Merge: 00adc79d 16c3c5d2
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 08:28:43 2026 -0400
 
@@ -1653,7 +2271,7 @@ Date:   Fri May 15 08:28:43 2026 -0400
     reusable-{claude,codex}-review: drop self-cancelling concurrency block
 
 commit 00adc79de55aa40a193e73038e81915f7fd72611
-Merge: e57a980 cce1428
+Merge: e57a9809 cce1428e
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Fri May 15 08:23:36 2026 -0400
 
@@ -1801,7 +2419,7 @@ Date:   Fri May 15 06:34:58 2026 -0400
     absent and to point at the G-A-006 rule.
 
 commit e57a980951c125d855a11a89166c01ee482c834a
-Merge: e74b2fc 1f775c8
+Merge: e74b2fca 1f775c83
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Thu May 14 18:48:58 2026 -0400
 
@@ -1844,7 +2462,7 @@ Date:   Thu May 14 18:38:12 2026 -0400
     to keep the byte-identical-across-consumers invariant intact.
 
 commit e74b2fcae1be76b781e4d7128da694a0af90c215
-Merge: 309f925 dcae38b
+Merge: 309f9254 dcae38b2
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Thu May 14 18:36:49 2026 -0400
 
@@ -1869,7 +2487,7 @@ Date:   Thu May 14 18:31:20 2026 -0400
     separated package lists like 'safe-rm moreutils').
 
 commit 309f925470361be0061c4f0aab12487eacb9b444
-Merge: 9e0bc4e e97caf7
+Merge: 9e0bc4e4 e97caf73
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Thu May 14 18:28:19 2026 -0400
 
@@ -1919,7 +2537,7 @@ Date:   Thu May 14 18:16:15 2026 -0400
     PR-controlled value through.
 
 commit 9e0bc4e432212b4cc3cd43eaaae939691a63ad3b
-Merge: c2a34d5 225c53d
+Merge: c2a34d5e 225c53d5
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 19:56:20 2026 -0400
 
@@ -1928,7 +2546,7 @@ Date:   Tue May 12 19:56:20 2026 -0400
     github-actions.md G-A-006: drop event-type-differentiated pattern
 
 commit c2a34d5eed8099f85e54c14765014d4172044b67
-Merge: 6749c4e b48cccb
+Merge: 6749c4e1 b48cccb8
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 19:44:48 2026 -0400
 
@@ -2038,7 +2656,7 @@ Date:   Tue May 12 21:18:09 2026 +0000
     authorized this in the conversation thread to unblock CI.
 
 commit 6749c4e12d68e564f9c7bc4f3acf659a1d612dee
-Merge: 20b8cdd 866ba19
+Merge: 20b8cdd8 866ba19d
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 17:17:16 2026 -0400
 
@@ -2300,7 +2918,7 @@ Date:   Tue May 12 19:41:22 2026 +0000
     per role.
 
 commit 20b8cdd847a65bcf4ce0b490e49b9705967c8edf
-Merge: 1934a86 643d44c
+Merge: 1934a865 643d44c5
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 15:28:55 2026 -0400
 
@@ -2359,7 +2977,7 @@ Date:   Tue May 12 15:23:23 2026 -0400
     in commit history and discussions stay stable.
 
 commit 1934a86539896e1b6ff62bb291d7559c0f5f2299
-Merge: 7fc7cb8 44dee7c
+Merge: 7fc7cb89 44dee7c3
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 15:18:53 2026 -0400
 
@@ -2410,7 +3028,7 @@ Date:   Tue May 12 19:16:17 2026 +0000
     runs clean against origin/master.
 
 commit 7fc7cb8900b55de6751d2508950ccd9c23fa8377
-Merge: 4eb0223 0b91c52
+Merge: 4eb0223c 0b91c521
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 14:31:47 2026 -0400
 
@@ -2491,7 +3109,7 @@ Date:   Tue May 12 18:25:23 2026 +0000
     was the lone offender.
 
 commit 4eb0223c7ba910e173cd9c1f22a6e8478e5400aa
-Merge: 52f6c1c a3d5668
+Merge: 52f6c1c6 a3d5668f
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 13:54:50 2026 -0400
 
@@ -2533,7 +3151,7 @@ Date:   Tue May 12 17:52:18 2026 +0000
       not the migration window.
 
 commit 52f6c1c6d87e03479ff72c75ca7f28882fed2820
-Merge: ea4a077 b0f036d
+Merge: ea4a0775 b0f036d4
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 13:48:27 2026 -0400
 
@@ -2562,7 +3180,7 @@ Date:   Tue May 12 17:45:55 2026 +0000
     https://github.com/org-ai-assisted/developer-meta-files/blob/master/agents/github-actions-consumer-templates.md
 
 commit ea4a0775bb959d433e86ebafb1d0eb8f8383b097
-Merge: 72dc855 6c20e4d
+Merge: 72dc855c 6c20e4d5
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 12:35:21 2026 -0400
 
@@ -2603,7 +3221,7 @@ Date:   Tue May 12 16:32:44 2026 +0000
     User-facing `name:` fields unchanged.
 
 commit 72dc855c84ff651c815da1ce03799d96ecc66770
-Merge: 4a7d2cc bf3c2b6
+Merge: 4a7d2cca bf3c2b66
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 12:30:08 2026 -0400
 
@@ -2762,7 +3380,7 @@ Date:   Tue May 12 15:58:02 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit 4a7d2ccaf96a66bb83d51758579c9665c17345f3
-Merge: 4a19d09 97de394
+Merge: 4a19d09a 97de3949
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 11:32:42 2026 -0400
 
@@ -2841,7 +3459,7 @@ Date:   Tue May 12 15:08:34 2026 +0000
     PRs (dm-consumer.yml + rename) immediately after this lands.
 
 commit 4a19d09ae92f9f681b410b1953603a3b0effd0bb
-Merge: 3f8cb32 dbdb16f
+Merge: 3f8cb323 dbdb16f8
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 11:04:28 2026 -0400
 
@@ -2916,7 +3534,7 @@ Date:   Tue May 12 14:57:24 2026 +0000
     Standard universal-template prefix sweep. No behavior change.
 
 commit 3f8cb323a12455199c8f789ef0803f67f02eb0b3
-Merge: f8cc94f f2d839d
+Merge: f8cc94fa f2d839df
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:54:37 2026 -0400
 
@@ -2952,7 +3570,7 @@ Date:   Tue May 12 14:45:20 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit f8cc94fa5bafcf7ab075476137d3931ccdd2e48a
-Merge: e780e49 b58cab4
+Merge: e780e49f b58cab4a
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:44:38 2026 -0400
 
@@ -2986,7 +3604,7 @@ Date:   Tue May 12 14:38:59 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit e780e49f2e03fcb633b6e9ed95750e39eeedd739
-Merge: 818a805 a050fb1
+Merge: 818a8055 a050fb16
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:37:57 2026 -0400
 
@@ -3038,7 +3656,7 @@ Date:   Tue May 12 14:35:36 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit 818a8055a90d0c2c01713fc588f0aa715e6b1b1d
-Merge: 8fe2e5b d25d15d
+Merge: 8fe2e5b1 d25d15d4
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:31:57 2026 -0400
 
@@ -3071,7 +3689,7 @@ Date:   Tue May 12 14:26:01 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit 8fe2e5b17ce24b70158e37fb478fb9d361083c7d
-Merge: 2d8f333 683eaf6
+Merge: 2d8f3339 683eaf6e
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:25:18 2026 -0400
 
@@ -3123,7 +3741,7 @@ Date:   Tue May 12 14:17:36 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit 2d8f33393195c22a04fce6203ecb7aec86ec7f55
-Merge: 943be7d fc90e6f
+Merge: 943be7d9 fc90e6fe
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 10:16:21 2026 -0400
 
@@ -3167,7 +3785,7 @@ Date:   Tue May 12 14:02:33 2026 +0000
     Spec: agents/github-actions-consumer-templates.md.
 
 commit 943be7d9c11ff1804ccf3592c662c46486ae0106
-Merge: 1f8684a 28b34b7
+Merge: 1f8684a3 28b34b72
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 09:59:43 2026 -0400
 
@@ -3344,7 +3962,7 @@ Date:   Tue May 12 12:51:49 2026 +0000
     requiring a reusable-side discovery rewrite.
 
 commit 1f8684a3af8a0d434a5d8266fe251a615d882f8a
-Merge: 055af09 c0c9a52
+Merge: 055af09e c0c9a529
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 08:28:50 2026 -0400
 
@@ -3397,14 +4015,14 @@ Date:   Tue May 12 06:24:30 2026 -0400
     .
 
 commit abd8d86e1b6bd531f0412ce6e6c9ba62411cb348
-Merge: 058a41e 2cc40b9
+Merge: 058a41e0 2cc40b93
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue May 12 06:16:59 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
 
 commit 2cc40b936fd66b2968b4d4f34c2bdc09baaa1ea4
-Merge: 4ce10eb 5f113b0
+Merge: 4ce10eb5 5f113b0b
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 04:13:00 2026 -0400
 
@@ -3454,7 +4072,7 @@ Date:   Tue May 12 08:09:37 2026 +0000
     .github/workflows/ directory.
 
 commit 4ce10eb5185e5f8a5f796449bcda1b1bff56dd48
-Merge: b96c03f c457acf
+Merge: b96c03f8 c457acfc
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 04:04:21 2026 -0400
 
@@ -3512,7 +4130,7 @@ Date:   Tue May 12 07:56:16 2026 +0000
       it belongs in the list; codeql.yml stays per-repo.
 
 commit b96c03f849ac3de56acf4dfb2aba4c8fedaa25e3
-Merge: 4bb0ae0 e996c70
+Merge: 4bb0ae05 e996c707
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Tue May 12 03:38:41 2026 -0400
 
@@ -3551,7 +4169,7 @@ Date:   Tue May 12 07:21:28 2026 +0000
     attack and the four mitigations already in place in this repo.
 
 commit 4bb0ae05e3e043b4e7c45f9ed459b172c0020cf9
-Merge: 058a41e dee0233
+Merge: 058a41e0 dee02333
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 18:53:58 2026 -0400
 
@@ -3785,7 +4403,7 @@ Date:   Mon May 11 17:22:42 2026 -0400
     .
 
 commit c5928650423acd64c8b0b3b582ab8f74a0b78fc9
-Merge: 1c3662c d2d59b2
+Merge: 1c3662cd d2d59b27
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 11 16:59:46 2026 -0400
 
@@ -3891,7 +4509,7 @@ Date:   Mon May 11 15:32:41 2026 -0400
     .
 
 commit 1c682f1fc0c6b2323d257984f6e6a70423ffba05
-Merge: 4fbfc05 e319c92
+Merge: 4fbfc05b e319c923
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 11 14:56:11 2026 -0400
 
@@ -3904,7 +4522,7 @@ Date:   Mon May 11 12:53:21 2026 -0400
     .
 
 commit e319c923b6c158fdc018ff79836c4e34612e7419
-Merge: f4525fb 289fc08
+Merge: f4525fb5 289fc08a
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 12:33:30 2026 -0400
 
@@ -4166,7 +4784,7 @@ Date:   Mon May 11 14:43:57 2026 +0000
     expected heading + outcome table + total line.
 
 commit f4525fb50ecbcee171b0629112ac6fdb47eb0d14
-Merge: 7b09879 ce5e4c9
+Merge: 7b098792 ce5e4c90
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 10:33:55 2026 -0400
 
@@ -4175,7 +4793,7 @@ Date:   Mon May 11 10:33:55 2026 -0400
     reusable-coverity: add dry-run input
 
 commit 7b098792f954541e9eec4d6118ddc1547eaf1278
-Merge: 1011e73 a974f5b
+Merge: 1011e735 a974f5ba
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 10:33:44 2026 -0400
 
@@ -4184,7 +4802,7 @@ Date:   Mon May 11 10:33:44 2026 -0400
     dm-github-org-policy: emit SOURCE-only UI-flip notices for Dependabot + code-scanning
 
 commit 1011e735266e6b11611d0b5f9e3262b359b4cb30
-Merge: 353be59 7d3635a
+Merge: 353be591 7d3635aa
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 10:33:35 2026 -0400
 
@@ -4193,7 +4811,7 @@ Date:   Mon May 11 10:33:35 2026 -0400
     agents+ci: unified pre-push gate (bash style + pre-commit-hooks direct), minimal CLAUDE.md/AGENTS.md
 
 commit 353be591d7c504c0810d9552e3b57b7ec47225a0
-Merge: 5f96c58 b90a88e
+Merge: 5f96c581 b90a88ed
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 10:33:26 2026 -0400
 
@@ -4202,7 +4820,7 @@ Date:   Mon May 11 10:33:26 2026 -0400
     test_workflow_yaml: add W-007 (dependabot.yml required when direct third-party SHAs present)
 
 commit 5f96c5813ed9d08d1ae7b45d1999a7f2b4f8a9a5
-Merge: 0642475 a1ea0b5
+Merge: 06424756 a1ea0b5d
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 10:33:18 2026 -0400
 
@@ -4440,7 +5058,7 @@ Date:   Mon May 11 12:54:10 2026 +0000
     https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
 
 commit 06424756ff1c1dfd0ffe340dff9170f64e77688d
-Merge: 46d1ccb fb463cb
+Merge: 46d1ccb5 fb463cb6
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 08:45:31 2026 -0400
 
@@ -4660,7 +5278,7 @@ Date:   Mon May 11 12:11:10 2026 +0000
     https://claude.ai/code/session_018rti4CCm2SQ3PWKa7jRt7p
 
 commit 46d1ccb55e2d53a1e216c1703b1d2819ff3d43ec
-Merge: 11d01e7 99738b2
+Merge: 11d01e7a 99738b2b
 Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
 Date:   Mon May 11 08:11:00 2026 -0400
 
@@ -4918,7 +5536,7 @@ Date:   Sun May 10 16:21:31 2026 -0400
     .
 
 commit 03dcbd12ff50146b2659e0a50ca0b989acbef040
-Merge: 96efe45 c41d043
+Merge: 96efe45d c41d043c
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 10 15:48:16 2026 -0400
 
@@ -4960,7 +5578,7 @@ Date:   Sun May 10 14:56:40 2026 -0400
     No code changes. No agent-doc changes.
 
 commit 979f4ac41ccbe37c7389b83bbe03e29ac30fd80b
-Merge: 295f8a8 9a02558
+Merge: 295f8a8f 9a025582
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 10 14:33:43 2026 -0400
 
@@ -5069,7 +5687,7 @@ Date:   Sun May 10 14:05:12 2026 -0400
     Co-authored-by: claude-code <claude-code@anthropic.com>
 
 commit d9873299bab078f09af62eeac4a752994be3c013
-Merge: 09a9dd3 541a933
+Merge: 09a9dd3c 541a9331
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 10 13:37:03 2026 -0400
 
@@ -5124,7 +5742,7 @@ Date:   Sun May 10 12:28:03 2026 -0400
     github actions improvements
 
 commit 15634a7964b7ac65ce1dea54d34468f1e98e1d7b
-Merge: 9c04158 39cabbf
+Merge: 9c04158b 39cabbf4
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 10 12:16:44 2026 -0400
 
@@ -5182,7 +5800,7 @@ Date:   Sun May 10 16:12:03 2026 +0000
     MIRROR repos see "disable PVR" idempotent (HTTP 204).
 
 commit 9c04158b82732c555f6c97b4aade2adaaa970bed
-Merge: 66cbbe6 286c2b8
+Merge: 66cbbe61 286c2b8f
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 10 12:09:45 2026 -0400
 
@@ -5811,7 +6429,7 @@ Date:   Sat May 9 21:43:05 2026 +0000
     and a future per-repo fan-out can pick them up unchanged.
 
 commit 66cbbe613796f66d22b32c20e9f26ba7ac778dd6
-Merge: d1a00c4 056000b
+Merge: d1a00c4f 056000ba
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 9 16:46:11 2026 -0400
 
@@ -5850,7 +6468,7 @@ Date:   Sat May 9 20:40:21 2026 +0000
                      distinguish plan tier).
 
 commit d1a00c4f012f7cd7f5839a7e7776946aa0e6be4a
-Merge: 511e4dc f0d7cae
+Merge: 511e4dc6 f0d7cae6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 9 16:26:48 2026 -0400
 
@@ -5885,7 +6503,7 @@ Date:   Sat May 9 19:40:38 2026 +0000
     entries from the test forbidden-string lists.
 
 commit 511e4dc6f7bb027a3240acd8b0ebf10076d00f54
-Merge: f8cc858 7e7650e
+Merge: f8cc8583 7e7650e6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 9 15:16:05 2026 -0400
 
@@ -5941,7 +6559,7 @@ Date:   Sat May 9 18:58:31 2026 +0000
     will be honored.
 
 commit 10ccb228d82b1be67a489b1020fb1c551533373a
-Merge: bc5df1d cef850c
+Merge: bc5df1d4 cef850cb
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 9 14:55:40 2026 -0400
 
@@ -6951,7 +7569,7 @@ Date:   Fri May 8 16:14:57 2026 +0000
     PATCH and dependabot.yml presence audit.
 
 commit 931195fbc4c6b3621e41b648c4fbe759d8bdae1f
-Merge: 99a166f b147a56
+Merge: 99a166fa b147a561
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 8 12:09:41 2026 -0400
 
@@ -7318,7 +7936,7 @@ Date:   Fri May 8 12:38:21 2026 +0000
     pylint which focus on correctness / style.
 
 commit 160fd35daee753818c717c1d055e4c0977271855
-Merge: 99a166f 447f18a
+Merge: 99a166fa 447f18ab
 Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
 Date:   Fri May 8 08:01:34 2026 -0400
 
@@ -7571,7 +8189,7 @@ Date:   Thu May 7 17:35:15 2026 -0400
     .
 
 commit a8678d38a30473f93bef5d8d6253bfa8f18f117f
-Merge: 3d1b99d 7bb1a45
+Merge: 3d1b99d6 7bb1a45e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu May 7 17:31:26 2026 -0400
 
@@ -7590,7 +8208,7 @@ Date:   Thu May 7 17:26:49 2026 -0400
     .
 
 commit 7bb1a45e1c304ff1db86c0b93c7d7a1423cc97e2
-Merge: 913899f 6a9a46c
+Merge: 913899f7 6a9a46c4
 Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
 Date:   Thu May 7 16:54:18 2026 -0400
 
@@ -7599,7 +8217,7 @@ Date:   Thu May 7 16:54:18 2026 -0400
     scorecard reusable: enrich header to absorb consumer commentary
 
 commit 913899f7de05bae29e7aa2526dc812638564a2a6
-Merge: d792d6f 8b8110d
+Merge: d792d6fb 8b8110dd
 Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
 Date:   Thu May 7 16:54:12 2026 -0400
 
@@ -7651,7 +8269,7 @@ Date:   Thu May 7 20:33:16 2026 +0000
     since the conventions apply org-wide.
 
 commit d792d6fbb8a67d06c9244322aa655b61e40da799
-Merge: f9a4764 abd7353
+Merge: f9a47643 abd73531
 Author: assisted-by-ai (Bot Account) <server@kicksecure.com>
 Date:   Thu May 7 16:03:12 2026 -0400
 
@@ -7699,7 +8317,7 @@ Date:   Thu May 7 19:23:44 2026 +0000
     bumped changelog version
 
 commit 595dd3bc1890f1854c28248e9de5b2911945f398
-Merge: e92d370 9fbe616
+Merge: e92d3704 9fbe6165
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu May 7 15:14:25 2026 -0400
 
@@ -7872,7 +8490,7 @@ Date:   Thu May 7 17:52:20 2026 +0000
     asserts at indirection sites (R-140 belt-and-suspenders).
 
 commit 31864908a7f5a63313f4142966334f44b35ead35
-Merge: 5c2e180 8d8ae2f
+Merge: 5c2e180a 8d8ae2f7
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu May 7 13:46:44 2026 -0400
 
@@ -7956,7 +8574,7 @@ Date:   Wed May 6 16:08:44 2026 -0400
     rename
 
 commit bd6a547463ed017a8a401ffa8daa73b2cef9d780
-Merge: 8a38a3d 24b1c88
+Merge: 8a38a3db 24b1c885
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 6 16:05:30 2026 -0400
 
@@ -8559,7 +9177,7 @@ Date:   Mon May 4 15:43:24 2026 -0400
     agents
 
 commit e8f0df0b9f7142b113908a0ee3e4266eb6229e99
-Merge: 9d6c909 ef46b6f
+Merge: 9d6c9093 ef46b6f6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 15:35:00 2026 -0400
 
@@ -8625,14 +9243,14 @@ Date:   Mon May 4 14:52:40 2026 -0400
     .
 
 commit 141cae73efdafa557e7ca6d1c82acd121637c150
-Merge: c52669f 2c16512
+Merge: c52669f2 2c165123
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 13:10:09 2026 -0400
 
     Merge remote-tracking branch 'assisted-by-ai/claude/dm-fork-sync-fixes-Pq3vH'
 
 commit c52669f2e746f8979a207bb51f058e39c4db4b8e
-Merge: 2e5b1f3 a4f5914
+Merge: 2e5b1f39 a4f59146
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 13:02:13 2026 -0400
 
@@ -8692,7 +9310,7 @@ Date:   Mon May 4 16:29:04 2026 +0000
     the cross-file usage is tracked correctly.
 
 commit 2e5b1f391bb410abfdd39e6bc58d12ac77139f5b
-Merge: 63a2606 bb37101
+Merge: 63a26065 bb37101b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 12:26:33 2026 -0400
 
@@ -8751,7 +9369,7 @@ Date:   Mon May 4 16:08:59 2026 +0000
     abstract the file-append). Doc block updated.
 
 commit 63a26065b2595e2a6754b3c010c8cfb9c1cf1d78
-Merge: f3a69ba c0207cd
+Merge: f3a69ba4 c0207cd1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 12:07:47 2026 -0400
 
@@ -8928,7 +9546,7 @@ Date:   Mon May 4 14:43:38 2026 +0000
     [NOTICE]: prefix.
 
 commit f3a69ba4694b0789ce81e4f1a95ba4a76d7fd5b2
-Merge: 3ff04b8 24dcec3
+Merge: 3ff04b80 24dcec3a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 10:31:54 2026 -0400
 
@@ -9004,7 +9622,7 @@ Date:   Mon May 4 13:45:05 2026 +0000
     regression back to actions=true / selected-actions allow-list.
 
 commit 3ff04b80bbc59be73d96e67912f62670cf3ba789
-Merge: 5b3406c d603b86
+Merge: 5b3406c5 d603b860
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 4 09:39:55 2026 -0400
 
@@ -9538,7 +10156,7 @@ Date:   Sat May 2 16:34:31 2026 -0400
     fix
 
 commit 38fdf95e9c6ff56b5b1969857b8ac31bd352360c
-Merge: 0be80fe 165cf36
+Merge: 0be80fe9 165cf36d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 2 16:27:15 2026 -0400
 
@@ -9581,7 +10199,7 @@ Date:   Sat May 2 19:00:49 2026 +0000
     bumped changelog version
 
 commit 09bef9384a3fd238b43be7472b3cbc360c57dd4b
-Merge: b86ec53 78a6f6c
+Merge: b86ec537 78a6f6cd
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat May 2 15:00:26 2026 -0400
 
@@ -9681,7 +10299,7 @@ Date:   Fri May 1 16:45:02 2026 -0400
     add CLAUDE.md
 
 commit f462ab536a56e85c930f03917184dfc610c9d670
-Merge: 33e548b a06e4b6
+Merge: 33e548b7 a06e4b67
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 16:42:19 2026 -0400
 
@@ -9781,7 +10399,7 @@ Date:   Fri May 1 11:15:40 2026 +0000
     bumped changelog version
 
 commit 48f465b480e289a44dc5287f9f1d1efa72602605
-Merge: 2f61fc0 c069ca4
+Merge: 2f61fc0a c069ca4a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 07:13:52 2026 -0400
 
@@ -9822,7 +10440,7 @@ Date:   Fri May 1 10:58:15 2026 +0000
     bumped changelog version
 
 commit de964e753734b96178cbe4e28f204a830548e2ae
-Merge: f405bad c7572a9
+Merge: f405bad3 c7572a93
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 06:43:38 2026 -0400
 
@@ -9871,7 +10489,7 @@ Date:   Fri May 1 10:29:50 2026 +0000
     bumped changelog version
 
 commit 2aac444914694c9bd559ac3905a2311c3d2ce1ae
-Merge: ddaed18 29cdc3b
+Merge: ddaed189 29cdc3be
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 06:20:25 2026 -0400
 
@@ -9952,14 +10570,14 @@ Date:   Fri May 1 10:14:04 2026 +0000
     AI-Assisted
 
 commit ddaed1899ad352eea175481d8563817af6c655ba
-Merge: bfb0aef ec4d43a
+Merge: bfb0aef9 ec4d43a4
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 06:12:20 2026 -0400
 
     Merge remote-tracking branch 'assisted-by-ai/claude/style-and-org-vars-X9b1n'
 
 commit bfb0aef9170ea0be85de3f569b304745c372b19f
-Merge: 23a1b1a 8a83cb4
+Merge: 23a1b1a8 8a83cb44
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 06:11:03 2026 -0400
 
@@ -10024,7 +10642,7 @@ Date:   Fri May 1 10:01:58 2026 +0000
     AI-Assisted
 
 commit 23a1b1a88dabcff056fc7caa09f7a079af489ebb
-Merge: c51acf1 116d9fd
+Merge: c51acf11 116d9fd1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri May 1 05:56:48 2026 -0400
 
@@ -10393,7 +11011,7 @@ Date:   Thu Apr 30 21:54:20 2026 +0000
     bumped changelog version
 
 commit 0b42fa3584009819c3785021530682cc90c68850
-Merge: b917caf d5a8747
+Merge: b917caf4 d5a8747e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Apr 30 17:32:02 2026 -0400
 
@@ -10585,7 +11203,7 @@ Date:   Wed Apr 29 09:01:11 2026 +0000
     bumped changelog version
 
 commit a2aae8db4fa635c768abcbea5c93b33ca8b56604
-Merge: 8274943 d141554
+Merge: 82749439 d141554d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Apr 29 04:41:00 2026 -0400
 
@@ -10610,7 +11228,7 @@ Date:   Mon Apr 27 15:32:55 2026 +0000
     bumped changelog version
 
 commit 6b5c6d9dfe95a847eeae286c5b1614afd8dba53c
-Merge: 639c0dd 6509a15
+Merge: 639c0dda 6509a15d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Apr 27 05:43:38 2026 -0400
 
@@ -10630,7 +11248,7 @@ Date:   Sun Apr 26 16:06:01 2026 +0000
     https://claude.ai/code/session_01BAQS9pE9zQYieV6Uys9Reo
 
 commit 639c0ddaabe59c1990a7ad86bd1993cdf33deff5
-Merge: e205fd9 add4588
+Merge: e205fd9b add45885
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Apr 26 12:00:01 2026 -0400
 
@@ -10693,7 +11311,7 @@ Date:   Sun Apr 26 05:27:51 2026 -0400
     deprecate no longer used paypal related generators
 
 commit 029a1881eadbb1fbec481e1130d983d90c4cc671
-Merge: 5b145e6 9efa3ee
+Merge: 5b145e6e 9efa3ee7
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Apr 26 05:27:27 2026 -0400
 
@@ -10860,7 +11478,7 @@ Date:   Sat Apr 25 08:43:33 2026 -0400
     fix
 
 commit 869bf84a96dbf099a8acb33d168943fd2622628c
-Merge: f5a823e 58c2a7d
+Merge: f5a823e0 58c2a7d1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Apr 25 08:31:54 2026 -0400
 
@@ -10948,14 +11566,14 @@ Date:   Sat Apr 25 09:23:38 2026 +0000
     bumped changelog version
 
 commit dbb07910b89ae523a215bd99c19721642bd60065
-Merge: 04296ca 2b30e0b
+Merge: 04296ca9 2b30e0b9
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Apr 25 04:50:19 2026 -0400
 
     Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
 
 commit 2b30e0b9fcdc9c4304fe7cd5cb0e0f55477a1b99
-Merge: 2b50b67 04296ca
+Merge: 2b50b678 04296ca9
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Fri Apr 24 20:25:24 2026 -0400
 
@@ -10986,7 +11604,7 @@ Date:   Fri Apr 17 07:27:15 2026 +0000
     bumped changelog version
 
 commit e22d0bf89b01200d60d9de0f81d48feacbd7067f
-Merge: f61df66 b932f59
+Merge: f61df66b b932f590
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Apr 17 02:58:45 2026 -0400
 
@@ -11005,7 +11623,7 @@ Date:   Wed Apr 15 21:43:00 2026 -0400
     Stop including qps on LXQt systems by default
 
 commit ce13778278f8fe49572c9e1e8872ff98b287735b
-Merge: b139585 8347cf8
+Merge: b1395855 8347cf8b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Apr 13 06:49:24 2026 -0400
 
@@ -11054,7 +11672,7 @@ Date:   Sat Apr 11 08:31:34 2026 +0000
     bumped changelog version
 
 commit 1fe273bba320e77435a003142e989ec747050ed1
-Merge: 3c6091a e02f824
+Merge: 3c6091a0 e02f824f
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Apr 11 03:37:28 2026 -0400
 
@@ -11283,7 +11901,7 @@ Date:   Fri Feb 27 05:08:19 2026 -0500
     end-of-options
 
 commit 61aa5ce7cdfed5c8556463637e7a1712efd35e1d
-Merge: 8851f7f 10cf2ec
+Merge: 8851f7f3 10cf2ec5
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Feb 27 05:04:41 2026 -0500
 
@@ -11296,7 +11914,7 @@ Date:   Tue Feb 24 00:10:02 2026 -0500
     Update dm-tor-update-repository to use helper-scripts/deb822-extract.bsh
 
 commit a7a0f6616fcb4539dac5b517347598e89f10ee51
-Merge: c436327 8851f7f
+Merge: c4363274 8851f7f3
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Mon Feb 23 19:42:27 2026 -0500
 
@@ -11360,7 +11978,7 @@ Date:   Mon Feb 16 10:28:07 2026 +0000
     bumped changelog version
 
 commit 6dfd008f876f0511d5fc43b6a255099ef64d62a8
-Merge: 3025dbc 58d3574
+Merge: 3025dbcf 58d3574b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Feb 16 05:03:50 2026 -0500
 
@@ -11439,7 +12057,7 @@ Date:   Tue Feb 10 12:13:30 2026 +0000
     bumped changelog version
 
 commit 1abb3cb7901ef86d1d59a26c5fcd92fbf81cca09
-Merge: 51e2f90 3aab71a
+Merge: 51e2f908 3aab71a5
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Feb 10 07:07:10 2026 -0500
 
@@ -11458,14 +12076,14 @@ Date:   Sun Feb 1 14:00:22 2026 +0000
     bumped changelog version
 
 commit 04594eb481061461133b2451d9887c3273d21628
-Merge: 68649f7 e5dd895
+Merge: 68649f70 e5dd8955
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Feb 1 08:02:42 2026 -0500
 
     Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
 
 commit e5dd8955cdba8fe4a2cec1d434069772586c7876
-Merge: b62ed49 68649f7
+Merge: b62ed49f 68649f70
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Sun Feb 1 04:35:40 2026 -0600
 
@@ -11496,7 +12114,7 @@ Date:   Sun Jan 25 07:42:03 2026 +0000
     bumped changelog version
 
 commit 9a6a33b1cc77e73e91f9c88c32137c19f60a517b
-Merge: 730e203 b1606ac
+Merge: 730e203e b1606ac2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Jan 25 02:37:28 2026 -0500
 
@@ -11605,7 +12223,7 @@ Date:   Fri Dec 19 09:47:10 2025 +0000
     bumped changelog version
 
 commit dc8c6fe63d4c38f69baceb9ce48f897897dc5bd6
-Merge: 65e8adc e79a0cd
+Merge: 65e8adc8 e79a0cd5
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Dec 19 03:25:12 2025 -0500
 
@@ -11726,7 +12344,7 @@ Date:   Wed Dec 3 08:24:54 2025 +0000
     bumped changelog version
 
 commit 205678906b2f292409e6c5afcf6c8349f0cb5907
-Merge: 70c7963 7ca7258
+Merge: 70c79631 7ca7258a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Dec 1 23:34:32 2025 -0500
 
@@ -11745,7 +12363,7 @@ Date:   Sat Nov 29 06:06:46 2025 +0000
     bumped changelog version
 
 commit 2c1f27b8233a778e1a347b14fdf3ae352abcf6bc
-Merge: fe0a4c2 84ac9c4
+Merge: fe0a4c26 84ac9c4b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Nov 27 06:11:38 2025 -0500
 
@@ -11896,7 +12514,7 @@ Date:   Mon Nov 10 07:56:05 2025 +0000
     bumped changelog version
 
 commit 6d24be5bc2ce872fa527e23a985b3af9894eaf23
-Merge: 51c80e9 b58d176
+Merge: 51c80e9a b58d1761
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 10 01:55:56 2025 -0500
 
@@ -11933,7 +12551,7 @@ Date:   Sat Nov 8 07:05:53 2025 +0000
     bumped changelog version
 
 commit 4f24509109a952fb4abb6fd4460dd2506f6d8ac2
-Merge: 172f95f 556c122
+Merge: 172f95f4 556c122e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Nov 8 01:28:01 2025 -0500
 
@@ -12070,7 +12688,7 @@ Date:   Sun Oct 26 10:16:09 2025 +0000
     bumped changelog version
 
 commit 71ec87b1c9173e95bf22c227b4d9b15ff67ae551
-Merge: c227a89 9ac989d
+Merge: c227a89d 9ac989d6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Oct 26 04:08:25 2025 -0400
 
@@ -12107,7 +12725,7 @@ Date:   Fri Oct 24 04:26:58 2025 +0000
     bumped changelog version
 
 commit ff14d01e0aac9a06eafeb41c0c35e3a348394be6
-Merge: a12f40a a5178ec
+Merge: a12f40ae a5178ecf
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Oct 24 00:21:01 2025 -0400
 
@@ -12188,7 +12806,7 @@ Date:   Sun Oct 19 03:00:17 2025 -0400
     .
 
 commit eee685f7f8953140dda3fad457ae579d163e9337
-Merge: 1e3ecb7 d22c2a4
+Merge: 1e3ecb7b d22c2a47
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Oct 19 02:55:26 2025 -0400
 
@@ -12207,7 +12825,7 @@ Date:   Sat Oct 18 09:08:07 2025 +0000
     bumped changelog version
 
 commit eea60bc7b56d994ed98b772704e3a6faf6bf8b7e
-Merge: a1ef42b fb7d15f
+Merge: a1ef42b2 fb7d15f2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Oct 18 04:42:08 2025 -0400
 
@@ -12232,7 +12850,7 @@ Date:   Mon Oct 13 13:45:59 2025 +0000
     bumped changelog version
 
 commit 1723f381b4cc6a4b4d15f0223070fa6634b50095
-Merge: aba6449 b31b301
+Merge: aba6449b b31b301a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Oct 13 08:00:20 2025 -0400
 
@@ -12275,7 +12893,7 @@ Date:   Fri Oct 10 08:02:01 2025 +0000
     bumped changelog version
 
 commit fbcc9939bc4433876646caf1ad8772d91e67a28f
-Merge: 6a1fa47 7f68384
+Merge: 6a1fa474 7f683845
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Oct 9 11:40:16 2025 -0400
 
@@ -12294,7 +12912,7 @@ Date:   Tue Oct 7 08:36:15 2025 +0000
     bumped changelog version
 
 commit ed66f3afe29ffc08b060347d619a28d9f6af3c25
-Merge: 1c6888f 36056e1
+Merge: 1c6888f7 36056e18
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Oct 7 03:13:22 2025 -0400
 
@@ -12441,7 +13059,7 @@ Date:   Fri Sep 26 08:37:03 2025 +0000
     bumped changelog version
 
 commit f50b916360651b9db767a0883f980026126b7396
-Merge: c4aa1ce 1049847
+Merge: c4aa1ce4 1049847b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Sep 26 04:24:34 2025 -0400
 
@@ -12460,7 +13078,7 @@ Date:   Wed Sep 24 14:06:45 2025 +0000
     bumped changelog version
 
 commit 433f9f267614d84d28de3e7cf5d438cc5a63a3bb
-Merge: 0e27cec 7d82fab
+Merge: 0e27cece 7d82fab0
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Sep 24 10:03:18 2025 -0400
 
@@ -12515,7 +13133,7 @@ Date:   Mon Sep 22 17:12:36 2025 +0000
     bumped changelog version
 
 commit d711e24c8f17df3b9dabd022cdc1f7135f310668
-Merge: 69d459f 9935b08
+Merge: 69d459f9 9935b082
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 22 12:58:26 2025 -0400
 
@@ -12648,7 +13266,7 @@ Date:   Sat Sep 13 08:29:43 2025 +0000
     bumped changelog version
 
 commit 15ac45b722404c77671377cb40f88c16ce3204b4
-Merge: b664a5c 837f312
+Merge: b664a5c9 837f3127
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Sep 13 04:03:02 2025 -0400
 
@@ -12679,7 +13297,7 @@ Date:   Tue Sep 9 15:53:00 2025 +0000
     bumped changelog version
 
 commit 217de9bcd6b07fb59ee1c419483b8cf75205e1f5
-Merge: d9fc0ca 1fd9a1d
+Merge: d9fc0ca7 1fd9a1d4
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Sep 9 11:46:53 2025 -0400
 
@@ -12728,7 +13346,7 @@ Date:   Sun Sep 7 07:59:43 2025 +0000
     bumped changelog version
 
 commit 538afe761dc898ba91d2ebab15df4237082bdf1c
-Merge: eca4687 e09bb3e
+Merge: eca4687c e09bb3e6
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Sep 7 03:15:01 2025 -0400
 
@@ -12789,7 +13407,7 @@ Date:   Thu Sep 4 15:25:39 2025 +0000
     bumped changelog version
 
 commit c2ab3c684bd0e5de1c311e1c7239c12e05d06c5b
-Merge: a014e19 1b60c96
+Merge: a014e19d 1b60c96d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Sep 4 11:24:34 2025 -0400
 
@@ -12820,7 +13438,7 @@ Date:   Thu Sep 4 13:33:21 2025 +0000
     bumped changelog version
 
 commit 1d94e25468527b5e83e761f8dc9fb9cda4bdf8a0
-Merge: 07c618f 1493fcd
+Merge: 07c618f4 1493fcde
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu Sep 4 09:27:31 2025 -0400
 
@@ -12923,7 +13541,7 @@ Date:   Sat Aug 30 10:10:29 2025 -0400
     .
 
 commit c9faf80d8d428622d9c2fd4c5dd1c5adbc6e6ad9
-Merge: 744cc40 21f8c31
+Merge: 744cc40b 21f8c316
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Aug 30 07:53:10 2025 -0400
 
@@ -12966,7 +13584,7 @@ Date:   Wed Aug 27 19:17:07 2025 +0000
     bumped changelog version
 
 commit f815575bd0b39ec19e7fa096a462d8818db32c2b
-Merge: 0696c3f 28260a6
+Merge: 0696c3f3 28260a68
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Aug 27 05:00:17 2025 -0400
 
@@ -12979,7 +13597,7 @@ Date:   Wed Aug 27 00:10:01 2025 -0500
     Add dm-metapackage-helper
 
 commit 904e31ea866797554d364a94a2e0fd704b68ab32
-Merge: 3242529 0696c3f
+Merge: 3242529e 0696c3f3
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Tue Aug 26 19:15:36 2025 -0500
 
@@ -12992,7 +13610,7 @@ Date:   Tue Aug 26 08:53:24 2025 +0000
     bumped changelog version
 
 commit 3242529ea27c48d97c6ba4c1a0573acb6164b5e3
-Merge: 7e84e3b ee10968
+Merge: 7e84e3bd ee109682
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Thu Aug 21 19:44:10 2025 -0500
 
@@ -13047,7 +13665,7 @@ Date:   Wed Aug 20 02:59:50 2025 -0400
     .
 
 commit 0400a00210f55ecdae1a25d711f50a8597efc167
-Merge: 306339e c579e80
+Merge: 306339ed c579e804
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Aug 20 02:56:37 2025 -0400
 
@@ -13084,7 +13702,7 @@ Date:   Sun Aug 17 09:34:55 2025 -0400
     .
 
 commit c579e8044d12741704c31224693dfcc55570c6c0
-Merge: 0922ec0 ad53db0
+Merge: 0922ec03 ad53db0e
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Fri Aug 15 15:55:34 2025 -0500
 
@@ -13109,7 +13727,7 @@ Date:   Tue Aug 12 03:55:23 2025 -0400
     .
 
 commit d52502b8b0401af1a99c21e9743fbd1705cef8e3
-Merge: c0ae349 fa80722
+Merge: c0ae3497 fa80722a
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Sat Aug 9 21:33:13 2025 -0500
 
@@ -13128,7 +13746,7 @@ Date:   Sat Aug 9 03:13:16 2025 -0400
     .
 
 commit c0ae3497b0c99d38f48db7e7bd90ca072dc16baa
-Merge: 523e1bb cbb94ca
+Merge: 523e1bb4 cbb94ca0
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Thu Aug 7 19:33:58 2025 -0500
 
@@ -14349,7 +14967,7 @@ Date:   Mon Nov 18 07:58:14 2024 -0500
     comments
 
 commit 3a371999d294b7e9245c230113619ff14dd30a41
-Merge: 00c14a2 65b428c
+Merge: 00c14a29 65b428c3
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Nov 18 06:58:05 2024 -0500
 
@@ -14368,7 +14986,7 @@ Date:   Sun Nov 17 16:05:48 2024 +0000
     bumped changelog version
 
 commit acceba78d035c4be1d3751ff99028300da34e13d
-Merge: 9aa1c36 9c36322
+Merge: 9aa1c361 9c36322b
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Nov 17 10:16:21 2024 -0500
 
@@ -14435,21 +15053,21 @@ Date:   Tue Nov 12 01:16:52 2024 -0500
     .
 
 commit 4ddd55063bcff1078535c97213366772abc34a7a
-Merge: 9bbbc1b 8c66793
+Merge: 9bbbc1b9 8c667933
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Nov 12 01:10:20 2024 -0500
 
     Merge remote-tracking branch 'ArrayBolt3/arraybolt3/tor-browser-version-update'
 
 commit 9bbbc1b9c0bb650c65028932971ed1834b6d86c3
-Merge: 7961dda fc5a151
+Merge: 7961dda5 fc5a1516
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Nov 12 01:05:20 2024 -0500
 
     Merge remote-tracking branch 'ArrayBolt3/arraybolt3/dm-packaging-helper-script-refactor'
 
 commit 7961dda570841efe43e561d6daefb301cb349bbb
-Merge: 37d777d 2ec3ed0
+Merge: 37d777dc 2ec3ed0a
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Nov 12 01:04:50 2024 -0500
 
@@ -14472,7 +15090,7 @@ Date:   Mon Nov 11 18:05:47 2024 -0600
     Make the whitelisted directory list in dm-check-unicode look nicer
 
 commit fc5a1516eb24245587a5ac856a7e074c6e7b6cd6
-Merge: b746d99 37d777d
+Merge: b746d990 37d777dc
 Author: Aaron Rainbolt <arraybolt3@ubuntu.com>
 Date:   Mon Nov 11 17:41:29 2024 -0600
 
@@ -14563,7 +15181,7 @@ Date:   Sun Nov 10 08:55:37 2024 -0500
     remove trailing spaces
 
 commit 9fcc138270474372d8df10ac25b5c9539e20603e
-Merge: ace4574 386ae2d
+Merge: ace45741 386ae2d1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun Nov 10 08:55:14 2024 -0500
 
@@ -14774,7 +15392,7 @@ Date:   Fri Oct 25 14:30:33 2024 +0000
     bumped changelog version
 
 commit 522e491bf905d3c63260b63f72f38aec58663bc7
-Merge: e3659e0 d053175
+Merge: e3659e08 d053175d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Oct 25 09:35:00 2024 -0400
 
@@ -20381,14 +20999,14 @@ Date:   Thu Aug 1 06:30:19 2019 -0400
     https by default
 
 commit d60f4371c8762caa36d8d22d165a219bf3d0e350
-Merge: 715decc c3ab575
+Merge: 715decca c3ab5755
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Aug 1 06:29:22 2019 -0400
 
     Merge remote-tracking branch 'origin/master'
 
 commit c3ab5755d340747877f31bf5d7aa100185a97f6c
-Merge: 715decc fbfe8a5
+Merge: 715decca fbfe8a52
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Aug 1 10:28:37 2019 +0000
 
@@ -21191,7 +21809,7 @@ Date:   Thu Dec 21 14:56:28 2017 +0000
     .
 
 commit 8ea6048ed9fd9967fcae7670800ae8adbcd02634
-Merge: bbf200e 8c66041
+Merge: bbf200ea 8c660419
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Wed Dec 20 15:35:05 2017 +0000
 
@@ -21204,7 +21822,7 @@ Date:   Wed Dec 20 15:34:29 2017 +0000
     .
 
 commit 8c660419810c0eed48758ed4afbaaeccc0fdf530
-Merge: 02acfb8 d90a9b5
+Merge: 02acfb82 d90a9b58
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Nov 30 21:36:11 2017 +0100
 
@@ -21627,7 +22245,7 @@ Date:   Thu Dec 22 23:12:25 2016 +0100
     news
 
 commit c156bd693f48103c296ad9f30ec1340b11c6b88a
-Merge: d67bc6a d2ea29b
+Merge: d67bc6a6 d2ea29b5
 Author: Patrick Schleizer <adrelanos@riseup.net>
 Date:   Thu Dec 22 23:10:33 2016 +0100
 
