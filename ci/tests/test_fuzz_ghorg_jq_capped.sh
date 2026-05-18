@@ -125,7 +125,7 @@ printf '"' >> /tmp/long_in_$$
 ghorg_jq_capped -- '.' </tmp/long_in_$$ >/dev/null 2>&1 || rc=$?
 end_ms="$(date +%s%N)"
 elapsed_ms=$(( (end_ms - start_ms) / 1000000 ))
-rm -f /tmp/long_in_$$
+safe-rm --force -- /tmp/long_in_$$
 
 if [ "${elapsed_ms}" -gt 3000 ]; then
    printf '%s\n' "FAIL[longstring]: took ${elapsed_ms}ms on a 10 MB input with 1 KB cap; cap leaked or wrapper hung" >&2
