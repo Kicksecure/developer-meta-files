@@ -461,7 +461,7 @@ build_repo_set() {
 ## caller's '|| true' moves on and the next idempotent run picks
 ## the configure up.
 wait_for_fork_ready() {
-  local repo result status elapsed wait deadline now timeout_seconds
+  local repo result status elapsed wait deadline now
 
   repo="$1"
 
@@ -469,12 +469,10 @@ wait_for_fork_ready() {
   ## don't have to ship a /commits fixture for every forked repo.
   [ "${GHORG_MOCK:-0}" = '1' ] && return 0
 
-  timeout_seconds="${GHORG_FORK_READY_TIMEOUT_SECONDS:-300}"
+  is_whole_number "${GHORG_FORK_READY_TIMEOUT_SECONDS}" \
+    || die 1 "GHORG_FORK_READY_TIMEOUT_SECONDS='${GHORG_FORK_READY_TIMEOUT_SECONDS}' not a whole number"
 
-  is_whole_number "${timeout_seconds}" \
-    || { log warn "GHORG_FORK_READY_TIMEOUT_SECONDS='${timeout_seconds}' not a whole number; using 300"; timeout_seconds=300; }
-
-  deadline=$(( $(date -u +%s) + timeout_seconds ))
+  deadline=$(( $(date -u +%s) + GHORG_FORK_READY_TIMEOUT_SECONDS ))
   wait=1
   while true; do
     result="$(ghorg_api GET "/repos/${target_owner}/${repo}/commits?per_page=1")" \
@@ -486,10 +484,10 @@ wait_for_fork_ready() {
     fi
     now="$(date -u +%s)"
     if [ "${now}" -ge "${deadline}" ]; then
-      log warn "fork-ready wait: '${target_owner}/${repo}' not ready after '${timeout_seconds}'s (last HTTP '${status}'); a later run will pick up the configure"
+      log warn "fork-ready wait: '${target_owner}/${repo}' not ready after '${GHORG_FORK_READY_TIMEOUT_SECONDS}'s (last HTTP '${status}'); a later run will pick up the configure"
       return 1
     fi
-    elapsed=$(( now - (deadline - timeout_seconds) ))
+    elapsed=$(( now - (deadline - GHORG_FORK_READY_TIMEOUT_SECONDS) ))
     [ "${verbose}" = '1' ] && log info "fork-ready wait: ${target_owner}/${repo} HTTP '${status}' after '${elapsed}'s; retry in '${wait}'s"
     sleep -- "${wait}"
     wait=$(( wait * 2 ))

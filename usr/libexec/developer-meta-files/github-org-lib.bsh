@@ -14,9 +14,6 @@
 ## (GHORG_MAX_*) below bound damage from hostile pagination,
 ## redirect chains, oversized bodies, and oversized "numeric" ids.
 
-## R-010 strict-mode block. Sourced lib; callers already set these,
-## so these lines are a no-op there. Guarantees strict mode if ever
-## sourced from a non-strict context.
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -68,6 +65,11 @@ GHORG_MAX_DISPLAY_LEN=256
 [ -v GHORG_MAX_PAGES ] || GHORG_MAX_PAGES='100'
 
 [ -v GHORG_MAX_REDIRS ] || GHORG_MAX_REDIRS='5'
+
+## Max wall-clock seconds to wait for a freshly-POSTed fork to leave
+## the empty-repo state. On timeout, wait_for_fork_ready warns and
+## the next idempotent run picks up the configure.
+[ -v GHORG_FORK_READY_TIMEOUT_SECONDS ] || GHORG_FORK_READY_TIMEOUT_SECONDS='300'
 
 ## Cap on numeric id length before URL interpolation. ^[0-9]+$ alone
 ## would accept arbitrary length.

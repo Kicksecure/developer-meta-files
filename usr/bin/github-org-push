@@ -262,9 +262,6 @@ push_one() {
         "${resolved_head}:${resolved_head}" \
         || log warn "'${repo_dir}': '${resolved_head}' push to '${remote_name}' failed"
     else
-      ## Validate the user-supplied branch name before constructing a
-      ## fully-qualified ref. Blocks ref injection like `master HEAD`
-      ## and prevents tag/branch ambiguity (always refs/heads/...).
       if ! ghorg_validate_name "${branch}" ref; then
         log warn "'${repo_dir}': skipping invalid branch name"
         continue

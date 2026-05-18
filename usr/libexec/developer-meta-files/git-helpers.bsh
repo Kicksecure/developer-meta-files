@@ -17,9 +17,6 @@
 ## new commit SHA with an unchanged tree, and all need to be pushed.
 ## Tree-level `git diff` would falsely report "no diff" in those cases.
 
-## R-010 strict-mode block. Sourced lib; callers already set these,
-## so these lines are a no-op there. Guarantees strict mode if ever
-## sourced from a non-strict context.
 set -o errexit
 set -o nounset
 set -o pipefail
