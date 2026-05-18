@@ -3,29 +3,7 @@
 ## Copyright (C) 2025 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-set -x
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o errtrace
-shopt -s inherit_errexit
-shopt -s shift_verbose
+set -e
 
-commit="$(git rev-parse --verify HEAD)"
-
-## FIXME: Silencing errors from 'git verify-commit' is a bad idea.
-## Either remove '&>/dev/null', or capture the command output and only
-## print it in the event that verification fails.
-git verify-commit "$commit" &>/dev/null
-
-tag="commit_${commit}"
-
-if git rev-parse --verify "refs/tags/$tag" &>/dev/null ; then
-  true "$0: INFO: tag already signed, ok."
-  exit 0
-fi
-
-git tag -s -m . -- "$tag"
-
-## Done before push in 'dm-push'.
-#git verify-tag "$tag"
+## FIXME: run script dm-packaging-helper-script function pkg_git_sign_tags
+exit 1
