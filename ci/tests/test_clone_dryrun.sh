@@ -51,9 +51,6 @@ for repo in "${unexpected[@]}"; do
   fi
 done
 
-## "2 repos to process under <dir>" goes through log notice now, so
-## it is not anchored at column 0 anymore - look for the substring
-## anywhere in the line.
 if ! grep --quiet --fixed-strings -- '2 repos to process under' <<< "${out}"; then
   printf '%s\n' 'FAIL: expected "2 repos to process" header' >&2
   fail=1

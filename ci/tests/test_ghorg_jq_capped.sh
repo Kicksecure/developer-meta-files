@@ -52,7 +52,7 @@ out="$(yes '1,' | head -n 64 | tr -d '\n' | sed 's/,$//' | sed 's/^/[/' | sed 's
 
 if [ "${rc}" -eq 0 ]; then
    printf '%s\n' "FAIL: ghorg_jq_capped with 16-byte cap on a 1 KB input returned 0; the cap did not fire (jq saw the full input as valid JSON)" >&2
-   printf '%s\n' "got: ${out}" >&2
+   printf '%s\n' "got: '${out}'" >&2
    fail=1
 fi
 
@@ -68,7 +68,7 @@ out="$(printf '%s' '[1,2,3,4,5]' | ghorg_jq_capped -- 'length' 2>&1)" || rc=$?
 
 if [ "${rc}" -ne 0 ]; then
    printf '%s\n' "FAIL: ghorg_jq_capped with default 4 MiB cap on a 5-element array returned '${rc}'" >&2
-   printf '%s\n' "got: ${out}" >&2
+   printf '%s\n' "got: '${out}'" >&2
    fail=1
 fi
 if [ "${out}" != '5' ]; then

@@ -95,6 +95,7 @@ done
 rc=0
 out_nomode="$(dm-github-org-security-report 2>&1)" || rc=$?
 if [ "${rc}" -eq 0 ]; then
+   ## FIXME: Shouldn't we be checking for '-ne 64' here?
    printf '%s\n' 'FAIL: missing-mode-flag run exited 0; should die 64' >&2
    fail=1
 fi

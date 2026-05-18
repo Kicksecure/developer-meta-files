@@ -168,10 +168,8 @@ jobs:
     ##    no-op internally, and minutes would be burned for nothing.
     ##
     ## 2. Across all event types, restrict to the configured
-    ##    'allowed-users' roster. The 'allowed_users' parameter on
-    ##    the action below performs the same check internally; doing
-    ##    it at the job-level too prevents unauthorized actors from
-    ##    even spinning up a runner. Defense in depth: API budget
+    ##    'allowed-users' roster. This prevents unauthorized actors
+    ##    from even spinning up a runner. Defense in depth: API budget
     ##    protection (random external commenter cannot exhaust the
     ##    org's ANTHROPIC_API_KEY by spam-mentioning @claude) and
     ##    blast-radius reduction (a compromised allowed_users action

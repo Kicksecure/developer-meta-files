@@ -30,9 +30,7 @@ six rules:
                              current repo, that block must include
                              'contents: read'. Job-level permissions
                              REPLACE top-level (GitHub does not
-                             merge); the trap that caused the
-                             long-running startup_failure on
-                             usability-misc/builds.yml.
+                             merge).
   W-006 DEPRECATED           ::set-output, ::save-state, node12,
                              node16, actions/upload-artifact@v3,
                              etc.
@@ -185,7 +183,8 @@ def check_workflow(path, repo_root, findings):
         m = re.match(r'^([^/@]+)/[^@]+@(.+)$', uses)
         if not m:
             continue
-        owner, ref = m.group(1), m.group(2)
+        owner = m.group(1)
+        ref = m.group(2)
         if owner in FIRST_PARTY_OWNERS:
             continue
         if not SHA40.match(ref):

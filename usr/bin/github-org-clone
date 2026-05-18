@@ -19,10 +19,9 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
-## Sanity-check the system 'wc' binary - wc can core dump on some
-## systems (rspamd issue #5137). The helper prints a clear diagnostic
-## and exits non-zero if wc is broken.
-## ${HELPER_SCRIPTS_PATH:-} lets a caller point at an in-tree checkout.
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
+## Check that 'wc' works (R-083).
 # shellcheck source=/usr/libexec/helper-scripts/wc-test.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 
@@ -40,25 +39,27 @@ mode_set=0
 verbose=0
 
 show_help() {
+  ## TODO: Do we really want to exclude forks by default? Some of our
+  ## core repos are forks, for instance Kicksecure/privleap.
   cat <<'EOF'
 Clone or update every selected repo of a GitHub user/organization
 into a local directory tree. Idempotent - re-running fetches and
 fast-forwards each existing clone, never merging or rebasing.
 
-Usage (one mode flag is required - no implicit default):
+Repos will be cloned to (or updated in) the current working directory
+if no dest dir is specified.
+
+Usage:
   github-org-clone --apply [OPTIONS] <source-org> [<dest-dir>]
   github-org-clone --dry-run [OPTIONS] <source-org> [<dest-dir>]
-
-Layout:
-  <dest-dir>/<repo-name>/      ## one git checkout per repo, flat
 
 Options:
   --include-private    include private repos (default: skip)
   --include-archived   include archived repos (default: skip)
   --include-forks      include fork repos     (default: skip)
-  --include REGEX      only repos whose name matches REGEX
-  --exclude REGEX      drop repos whose name matches REGEX
-  --shallow            clone with --depth=1 (no update support)
+  --include REGEX      only fork repos whose name matches REGEX
+  --exclude REGEX      skip cloning repos whose name matches REGEX
+  --shallow            clone with --depth=1
   --ssh                use git@github.com:... URLs (default)
   --https              use https://github.com/... URLs
   --jobs N             parallel clones/fetches (default: 4)
@@ -67,10 +68,10 @@ Options:
   -v, --verbose        print each git command
   -h, --help           show this help and exit
 
-Auth (optional for public reads):
-  ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token. Without
-  a token, requests go out unauthenticated and are subject to GitHub's
-  60-req/hr-per-IP rate limit.
+Auth: ${GITHUB_TOKEN} env var, or ~/.config/github-token with
+permissions 0600. If fetching over SSH, the local system is also
+expected to have a suitable SSH key present and configured in GitHub.
+Authentication is optional for public reads over HTTPS.
 EOF
 }
 
@@ -88,14 +89,33 @@ while [ "$#" -gt 0 ]; do
       include_forks=1
       shift
       ;;
+    ## --include / --exclude can each be passed multiple times. All
+    ## includes are stacked to produce a whitelist, then all excludes
+    ## are stacked to blacklist previously whitelisted values.
     --include)
       [ "$#" -ge 2 ] || die 64 "missing value for --include"
-      include_re="$2"
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${include_re}" ]; then
+        include_re="(${2})"
+      else
+        include_re+="|(${2})"
+      fi
       shift 2
       ;;
     --exclude)
       [ "$#" -ge 2 ] || die 64 "missing value for --exclude"
-      exclude_re="$2"
+      if [ -z "$2" ]; then
+        shift 2
+        continue
+      fi
+      if [ -z "${exclude_re}" ]; then
+        exclude_re="(${2})"
+      else
+        exclude_re+="|(${2})"
+      fi
       shift 2
       ;;
     --shallow)
@@ -112,6 +132,7 @@ while [ "$#" -gt 0 ]; do
       ;;
     --jobs)
       [ "$#" -ge 2 ] || die 64 "missing value for --jobs"
+      ## The value stored here is validated later.
       jobs="$2"
       shift 2
       ;;
@@ -171,8 +192,12 @@ repo_url() {
   repo="$1"
 
   case "${url_scheme}" in
-    ssh)   printf '%s' "git@github.com:${source_org}/${repo}.git" ;;
-    https) printf '%s' "https://github.com/${source_org}/${repo}.git" ;;
+    ssh)
+      printf '%s' "git@github.com:${source_org}/${repo}.git"
+      ;;
+    https)
+      printf '%s' "https://github.com/${source_org}/${repo}.git"
+      ;;
   esac
 }
 
@@ -188,13 +213,19 @@ clone_or_update_one() {
   repo_dir="${dest_dir}/${repo}"
   url="$(repo_url "${repo}")"
 
-  if [ -d "${repo_dir}/.git" ]; then
+  ## Git submodules are valid Git repositories, but have a .git file
+  ## instead of a .git directory. The file points to the git database
+  ## location in the superproject's .git dir. Thus we need to tolerate
+  ## both .git files and dirs.
+  if [ -e "${repo_dir}/.git" ]; then
     ## Origin-URL collision check: if an existing clone's origin
     ## points elsewhere (operator reused dest_dir across source orgs
     ## and a name collided), skip rather than silently fetch from
     ## the wrong upstream.
     existing_url="$(git -C "${repo_dir}" remote get-url origin 2>/dev/null || true)"
-    if [ -n "${existing_url}" ] && [ "${existing_url}" != "${url}" ]; then
+    ## Compare the URLs even if "${existing_url}" is empty. "No
+    ## remote" should cause the same error as "wrong remote".
+    if [ "${existing_url}" != "${url}" ]; then
       log warn "'${repo_dir}': origin is '${existing_url}', expected '${url}'; skipping (name collision?)"
       return 0
     fi
@@ -210,8 +241,8 @@ clone_or_update_one() {
     git -C "${repo_dir}" fetch --prune --tags -- origin
     current_branch="$(git -C "${repo_dir}" symbolic-ref --short HEAD 2>/dev/null || true)"
     if [ -n "${current_branch}" ]; then
-      ## @{u} is a symbolic ref for the upstream of the current
-      ## branch - immune to tag/branch name collisions.
+      ## @{u} is shorthand for the upstream of the current branch -
+      ## immune to tag/branch name collisions.
       if ! git -C "${repo_dir}" merge --ff-only "@{u}" 2>/dev/null; then
         log warn "'${repo_dir}': '${current_branch}' not fast-forwardable, skipping merge"
       fi
@@ -227,16 +258,15 @@ clone_or_update_one() {
     [ "${verbose}" = '1' ] && log notice "clone: ${url}"
     clone_args=( clone )
     [ "${shallow}" = '1' ] && clone_args+=( --depth=1 )
-    ## G-021: blocks file:// and ext:: helper protocols (CVE-class
-    ## hostile-upstream redirect).
+    ## G-021: block file:// and ext:: helper protocols to reduce
+    ## attack surface.
     clone_args+=(
       --config protocol.file.allow=never
       --config protocol.ext.allow=never
     )
     clone_args+=( -- "${url}" "${repo_dir}" )
     ## G-020: prevents LFS smudge filter from auto-fetching
-    ## attacker-chosen objects on clone. Operators who want LFS
-    ## payloads can pre-export GIT_LFS_SKIP_SMUDGE to something else.
+    ## large files by default.
     GIT_LFS_SKIP_SMUDGE="${GIT_LFS_SKIP_SMUDGE:-1}" git "${clone_args[@]}"
   fi
 }

@@ -11,16 +11,19 @@
 ## Safe to source: no top-level side effects beyond function and
 ## constant definitions.
 ##
-## Both variants compare commit SHAs rather than tree contents:
-## amend, rebased message, or cherry-pick of an already-applied
-## change all produce a new commit SHA with an unchanged tree, and
-## all need to be pushed. Tree-level `git diff` would falsely
-## report "no diff" in those cases.
+## Both variants (FIXME: of what?) compare commit SHAs rather than
+## tree contents: amend, rebased message, or cherry-pick of an
+## already-applied change all produce a new commit SHA with an
+## unchanged tree, and all need to be pushed. Tree-level `git diff`
+## would falsely report "no diff" in those cases.
+
+# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 ## Returns 0 if local branch and tracking ref differ (push needed),
 ## 1 if same commit (skip).
 ##
-## No network round-trip; only as fresh as the last `git fetch`.
+## No network access; only as fresh as the last `git fetch`.
 ## Misses concurrent-pusher races: if someone advanced the remote
 ## since our last fetch, this gate will incorrectly say "skip"; the
 ## eventual `git push` will be rejected non-fast-forward and the
@@ -62,7 +65,8 @@ internal_git_diff_local() {
 ##
 ## Authoritative: queries the remote via `git ls-remote` rather than
 ## the possibly-stale local tracking ref. Costs one network
-## round-trip per call but catches the concurrent-pusher case.
+## round-trip per call. Does not fully mitigate the concurrent pusher
+## case due to unavoidable TOCTOU issues.
 ##
 ## Arguments: $1 branch name (no refs/heads/), $2 remote name.
 internal_git_diff_remote() {
@@ -77,9 +81,11 @@ internal_git_diff_remote() {
    local_sha="$(git rev-parse --verify --quiet "refs/heads/${branch_name}^{commit}")" || local_sha=''
    [ -n "${local_sha}" ] || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
 
-   log info "git ls-remote --heads --quiet -- '${remote_name}' 'refs/heads/${branch_name}'"
-   if ! ls_remote_output="$(git ls-remote --heads --quiet -- "${remote_name}" "refs/heads/${branch_name}")"; then
-      log warn "'git ls-remote ${remote_name}' failed; assuming push needed. Press enter to continue."
+   ## --heads option to 'git ls-remote' is deprecated, --branches is
+   ## the replacement.
+   log info "git ls-remote --branches --quiet -- '${remote_name}' 'refs/heads/${branch_name}'"
+   if ! ls_remote_output="$(git ls-remote --branches --quiet -- "${remote_name}" "refs/heads/${branch_name}")"; then
+      log warn "'git ls-remote' failed; assuming push needed. Press enter to continue."
       read -r _
       return 0
    fi
@@ -101,6 +107,8 @@ internal_git_diff_remote() {
 
 ## Set DM_GATE_LS_REMOTE=1 to opt in to the authoritative
 ## ls-remote variant; default is the local tracking-ref variant.
+##
+## FIXME: Switch to 'true'/'false' string booleans here, as per R-053.
 internal_git_diff() {
    if [ "${DM_GATE_LS_REMOTE:-0}" = 1 ]; then
       internal_git_diff_remote "$@"

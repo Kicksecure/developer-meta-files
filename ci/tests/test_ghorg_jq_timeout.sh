@@ -49,7 +49,7 @@ elapsed_ms=$(( (end_ms - start_ms) / 1000000 ))
 ## timeout exits 124 on soft-deadline-only kill, 137 on
 ## SIGKILL-after-kill-after. Both are valid pass states.
 case "${rc}" in
-   124|137) : ;;  ## ok
+   124|137) true ;;  ## ok
    0)
       printf '%s\n' "FAIL: ghorg_jq with infinite jq loop returned 0; the timeout did not fire" >&2
       fail=1
@@ -80,7 +80,7 @@ out="$(ghorg_jq -n -- '{a: 1, b: "x"}')" || {
 }
 if ! grep --quiet --fixed-strings -- '"a": 1' <<< "${out}"; then
    printf '%s\n' "FAIL: ghorg_jq trivial output did not contain the expected '\"a\": 1'" >&2
-   printf '%s\n' "got: ${out}" >&2
+   printf '%s\n' "got: '${out}'" >&2
    fail=1
 fi
 

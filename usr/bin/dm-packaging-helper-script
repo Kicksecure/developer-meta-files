@@ -693,7 +693,7 @@ get_package_documentation_info_list() {
    done
 }
 
-## Sets the list of Github remotes for the the current package, as defined in
+## Sets the list of Github remotes for the current package, as defined in
 ## batch_current_package_reponame. See pkg_git_remotes_add for a good
 ## definition of the remotes typically used Kicksecure and Whonix packages.
 ## TODO: Use this function as the single source of truth for most of these
@@ -855,6 +855,8 @@ pkg_readme_creator_do() {
 ## convention; the rest of the AI tool ecosystem reads AGENTS.md. One
 ## file (AGENTS.md) is the source of truth; CLAUDE.md just redirects
 ## to it so we don't have to maintain two parallel docs.
+##
+## TODO: Consider renaming to pkg_claude_md_pointer_create
 pkg_claude_md_pointer_do() {
    if ! [ -f 'AGENTS.md' ]; then
       return 0
@@ -863,7 +865,7 @@ pkg_claude_md_pointer_do() {
    printf '%s\n' \
 '# CLAUDE.md
 
-See [AGENTS.md](AGENTS.md).' > 'CLAUDE.md'
+See [AGENTS.md](AGENTS.md).' | tee -- 'CLAUDE.md'
 
    git add "CLAUDE.md"
    git commit -m "add CLAUDE.md"
@@ -1325,6 +1327,8 @@ pkg_git_diff_and_merge_branch() {
       ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
       git merge "${origin_ref}"
    elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
+      ## TODO: Can't we verify against Claude's SSH key?
+      ## TODO: Is it ever really safe to mass-merge from the AI branches?
       #git verify-commit "${origin_ref}"
       git merge --no-verify-signature "${origin_ref}"
    else
@@ -1370,7 +1374,7 @@ pkg_profile_d_zsh_creator() {
    true
 }
 
-## Updated CONTRIBUTING.md in all repos except derivative-maker, kloak.
+## Updated CONTRIBUTING.md in all repos except derivative-maker and kloak.
 pkg_copy_contributing_file() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'kloak' || return 0
@@ -1726,18 +1730,17 @@ pkg_git_fetch_remotes() {
 
 ## Pushes local changes to all Git remotes for all repos.
 ##
-## Argument $1 selects which gate decides "this branch needs to be
-## pushed":
+## Argument $1 selects what commit hashes to check to determine which
+## repos need to be pushed:
 ##
-##   local   (default)  uses internal_git_diff_local
-##                      tracking ref, no network round-trip
-##   remote              uses internal_git_diff_remote
-##                      authoritative `git ls-remote`, one network
-##                      round-trip per gated branch
+##   local (default): Checks local commit hashes
 ##
-## See git-helpers.bsh for the trade-off. Pass 'remote' when a
-## bounced push (rejected non-fast-forward) is more expensive than
-## the metadata round-trip; otherwise leave the default.
+##   remote:          Uses 'git ls-remote' to check a remote commit
+##                    hash
+##
+## See git-helpers.bsh for details. Pass 'remote' when a bounced push
+## (rejected non-fast-forward) is more expensive than the metadata
+## round-trip. Otherwise, leave the default.
 pkg_git_push_remotes() {
    local mode gate_fn branch_name_list package_remote_item branch_name_item refspec_list
 
@@ -2036,7 +2039,11 @@ pkg_bash_sanity_test() {
       '--exclude=*.yaml'
    )
 
-   if ! grep "${grep_opts[@]}" --quiet -- '#!/bin/bash' ; then
+   ## Not using --quiet, because `man 1 grep` documents:
+   ##
+   ##   ...if the -q or --quiet or --silent is used and a line is selected,
+   ##   the exit status is 0 even if an error occurred.
+   if ! grep "${grep_opts[@]}" -- '#!/bin/bash' >/dev/null 2>&1 ; then
       return 0
    fi
 

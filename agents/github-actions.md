@@ -80,8 +80,6 @@ rejected by the workflow file validator.
     ## WRONG - same failure mode, just with 'vars':
     ##   "Unrecognized named-value: 'vars'.
     ##    Located at position 1 within expression: vars.REUSABLE_OWNER"
-    ## Some community posts claim vars is allowed in uses:; empirically
-    ## the workflow file validator rejects it. Don't use this pattern.
     uses: ${{ vars.REUSABLE_OWNER }}/<repo>/.github/workflows/<file>.yml@<ref>
 
     ## OK - hardcoded owner. This IS the supported pattern.
@@ -103,10 +101,7 @@ the PR.** GitHub uses the BASE branch's workflow definition to
 decide which triggers fire on `pull_request` events. Adding a new
 `pull_request:` trigger in a PR will only take effect after that
 PR merges to the base branch. To validate a new workflow before
-merging, use `workflow_dispatch:` (which is also subject to this
-"must be on default branch" rule for the dispatch endpoint to see
-the workflow), OR merge to a feature branch and use that as the
-base.
+merging, merge to a feature branch and use that as the base.
 
 **G-A-004: Cross-repo `uses:` references the BASE branch of the
 referenced repo by name (`@master`) or commit (`@<sha>`).** SHA

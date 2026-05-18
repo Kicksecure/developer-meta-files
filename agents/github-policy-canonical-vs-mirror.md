@@ -54,13 +54,13 @@ Notes:
   including SOURCE. The canonical disclosure channel for
   Kicksecure / Whonix is the wiki (linked from the SECURITY.md
   committed at `org-ai-assisted/.github/SECURITY.md`, pointing
-  to https://www.kicksecure.com/wiki/Reporting_Bugs#
-  Security_Vulnerabilities and the Vulnerability Disclosure
-  Policy page). Enabling PVR on top of that would split the
-  disclosure inbox between the wiki flow and a parallel
-  GitHub-side flow. `apply_repo_policy` actively DELETEs PVR on
-  every repo unconditionally; there is no PUT-style enable
-  constant in `github-policy-data.bsh`.
+  to
+  https://www.kicksecure.com/wiki/Reporting_Bugs#Security_Vulnerabilities
+  and the Vulnerability Disclosure Policy page). Enabling PVR on top
+  of that would split the disclosure inbox between the wiki flow and a
+  parallel GitHub-side flow. `apply_repo_policy` actively DELETEs PVR
+  on every repo unconditionally; there is no PUT-style enable constant
+  in `github-policy-data.bsh`.
 - Secret scanning + push protection are about local git ops, not
   inbox routing, so they stay on everywhere.
 - Rulesets stay on everywhere; the bypass-actor list and the
@@ -204,7 +204,7 @@ appetite for the friction trade-off.
   MIRROR repos via `PUT /repos/{}/{}/interaction-limits`.
   Issues / discussions are off everywhere on MIRROR so there is
   not much to interact with, but a hostile drive-by PR would be
-  silently rejected at the API instead of opening a noisy issue
+  silently rejected by the API instead of opening a noisy issue
   in the maintainer's queue.
 
 - **Audit flag for private repos** in `audit_org_state`. None

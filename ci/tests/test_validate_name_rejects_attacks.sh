@@ -72,7 +72,7 @@ bad_names=( '' '.git' '..' '.' '-flag' '../etc'
 for bad_name in "${bad_names[@]}"; do
    if ghorg_validate_name "${bad_name}" repo 2>/dev/null; then
       bad_name_q="$(printf '%q' "${bad_name}")"
-      printf '%s\n' "FAIL: accepted bad pattern: ${bad_name_q}" >&2
+      printf '%s\n' "FAIL: accepted bad pattern: '${bad_name_q}'" >&2
       fail=1
    fi
 done

@@ -151,9 +151,8 @@ assumptions about its parsing tools:
 
 ## Conclusion
 
-Don't
-copy assumptions from one model into the other - especially: never
-add SHA-pin ceremony to threat-model-A code on the basis that
+Don't copy assumptions from one model into the other - especially:
+never add SHA-pin ceremony to threat-model-A code on the basis that
 "production code does it"; never accept a branch pin in
 threat-model-B code on the basis that "CI tooling does it." The
 trust roots are different, so the right answer is different.

@@ -45,7 +45,7 @@ out="$(github-org-clone --include-private --dry-run assisted-by-ai \
 
 if grep --quiet -- 'cannot list private repos' <<< "${out}"; then
   printf '%s\n' \
-    'FAIL: did not expect a refusal for the auth user listing their own privates' \
+    'FAIL: did not expect a refusal for the auth user listing their own private repos' \
     "${out}" >&2
   exit 1
 fi

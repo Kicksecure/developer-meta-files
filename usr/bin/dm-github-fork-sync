@@ -15,9 +15,7 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-## R-082: source every helper-scripts file used directly. The lib
-## happens to source these too (transitively) but a future refactor
-## that drops a transitive source must not break this consumer.
+## R-082: source every helper-scripts file used directly.
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
@@ -47,11 +45,8 @@ readonly POLICY_FLAGS=(
    --workflow-perms read
 )
 
-## Whonix and Kicksecure both have '.github' and 'canary'. Forking
-## both lands the second-arriving source on a name already taken by
-## the first - GitHub returns HTTP 422 'name already exists' on the
-## second fork. Kicksecure first wins those two names; skip them on
-## the Whonix iteration.
+## Whonix and Kicksecure both have '.github' and 'canary'. Kicksecure
+## wins those two names; skip the Whonix ones.
 declare -g -A SOURCE_EXCLUDE_RE=(
    ['Whonix']='^(\.github|canary)$'
 )
@@ -74,9 +69,9 @@ Usage (one mode flag is required - no implicit default):
 
 All extra flags are forwarded to github-org-fork.
 
-Auth: ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
-The token must have admin access to the org-ai-assisted org so that
-github-org-fork can create forks under it.
+Auth: ${GITHUB_TOKEN} env var, or ~/.config/github-token with
+permissions 0600. The token must have admin access to the
+org-ai-assisted org so that github-org-fork can create forks under it.
 EOF
 }
 

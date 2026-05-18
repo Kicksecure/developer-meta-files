@@ -118,7 +118,7 @@ esac
 ## pipe-shaped consumer).
 ## R-033: hoist the timestamp; do not inline $(date ...) into the
 ## printf format string.
-report_timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+report_timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}"
 printf '%s\n' ""
 printf '%s\n' "| repo | tool | severity | rule | path | line | message |"
