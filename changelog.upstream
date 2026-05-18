@@ -1,3 +1,29 @@
+commit 577d495a949b2f041ca59c8c0393615843e81d08
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 05:55:23 2026 -0400
+
+    TODO
+
+commit e641b0d27775ff4afd7977563a3ec64522fc0a96
+Merge: 1f166b5 5b95031
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 05:44:02 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 5b9503192e9b79d1f88cfea6b6e8a39dfa4a9037
+Merge: babd7b3 ed8979d
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun May 17 22:52:30 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit 1f166b5a6f4aa96b6c179fa9d083834230e13141
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 17 21:10:35 2026 +0000
+
+    bumped changelog version
+
 commit ed8979d9918bd94d557a786453e27cc0442ccfba
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 17:07:38 2026 -0400
@@ -52,6 +78,12 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 17 16:22:17 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit babd7b399ebb8fd8dcda050786eaf53e21227458
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun May 17 14:14:27 2026 -0400
+
+    Misc fixes, TODOs, FIXMEs
 
 commit 355608529ece605a19cbaa24a8b3fdfa72a879a7
 Merge: edcf50d 7cc1dcd
