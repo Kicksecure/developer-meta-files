@@ -855,9 +855,7 @@ pkg_readme_creator_do() {
 ## convention; the rest of the AI tool ecosystem reads AGENTS.md. One
 ## file (AGENTS.md) is the source of truth; CLAUDE.md just redirects
 ## to it so we don't have to maintain two parallel docs.
-##
-## TODO: Consider renaming to pkg_claude_md_pointer_create
-pkg_claude_md_pointer_do() {
+pkg_claude_md_pointer_create() {
    if ! [ -f 'AGENTS.md' ]; then
       return 0
    fi
@@ -1934,9 +1932,6 @@ pkg_git_commit_packaging() {
    repo_skip 'derivative-maker' || return 0
 
    if nothing_to_commit; then
-      ## TODO: should we just get rid of this `true` call?
-      true "press enter to continue_not"
-      #read -r temp
       return 0
    fi
 

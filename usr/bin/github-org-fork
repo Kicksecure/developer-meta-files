@@ -252,9 +252,8 @@ fork_one() {
   result="$(ghorg_api POST "/repos/${source_owner}/${repo}/forks" "${body}")"
   status="$(ghorg_status_of "${result}")"
   case "${status}" in
-    ## TODO: https://docs.github.com/en/rest/repos/forks?apiVersion=2026-03-10
-    ## does not document 201 as a valid response code for this API.
-    ## Reject?
+    ## Docs document 202 only; 201 is also observed in practice when
+    ## the fork was already in-flight. Accept both.
     202|201)
       log notice "forked: ${source_owner}/${repo} -> ${target_owner}/${repo}"
       ;;
@@ -320,9 +319,8 @@ configure_one() {
       result="$(ghorg_api PUT "/repos/${target_owner}/${repo}/actions/permissions" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
-        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
-        ## does not document 200 as a valid response status code.
-        ## Reject?
+        ## Docs document 204 only; 200 is observed in practice. Accept
+        ## both.
         204|200) [ "${verbose}" = '1' ] && \
           log notice "actions=${actions_state} on ${target_owner}/${repo}" ;;
         *)
@@ -343,9 +341,8 @@ configure_one() {
         "/repos/${target_owner}/${repo}/actions/permissions/workflow" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
-        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
-        ## does not document 200 as a valid response status code.
-        ## Reject?
+        ## Docs document 204 only; 200 is observed in practice. Accept
+        ## both.
         204|200) [ "${verbose}" = '1' ] && \
           log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}" ;;
         *)

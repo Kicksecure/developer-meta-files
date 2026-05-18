@@ -5,8 +5,10 @@
 
 ## AI-Assisted
 
-## Mock-API test: github-org-clone --dry-run lists exactly the
-## non-archived non-fork non-private repos from the source org.
+## Mock-API test: github-org-clone --dry-run lists every non-archived
+## non-private repo from the source org. Forks are included by
+## default (some upstream repos are themselves forks); --exclude-forks
+## flips that.
 
 set -o errexit
 set -o nounset
@@ -31,11 +33,11 @@ export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 ## through log notice / log warn now, all of which go to stderr.
 out="$(github-org-clone --dry-run org-ai-assisted /tmp/clone-dryrun-out 2>&1)"
 
-## Expected: exactly two repos selected (derivative-maker,
-## helper-scripts). The other three (archived/fork/private) must be
-## filtered out by the default flags.
-expected_repos=( derivative-maker helper-scripts )
-unexpected=( old-archived some-fork private-thing )
+## Expected: three repos selected (derivative-maker, helper-scripts,
+## some-fork). The other two (archived/private) are still filtered
+## out by the default flags.
+expected_repos=( derivative-maker helper-scripts some-fork )
+unexpected=( old-archived private-thing )
 
 fail=0
 for repo in "${expected_repos[@]}"; do
@@ -51,8 +53,20 @@ for repo in "${unexpected[@]}"; do
   fi
 done
 
-if ! grep --quiet --fixed-strings -- '2 repos to process under' <<< "${out}"; then
-  printf '%s\n' 'FAIL: expected "2 repos to process" header' >&2
+if ! grep --quiet --fixed-strings -- '3 repos to process under' <<< "${out}"; then
+  printf '%s\n' 'FAIL: expected "3 repos to process" header' >&2
+  fail=1
+fi
+
+## --exclude-forks should drop some-fork from the list.
+out_no_forks="$(github-org-clone --dry-run --exclude-forks \
+  org-ai-assisted /tmp/clone-dryrun-out 2>&1)"
+if grep --quiet -- 'DRY-RUN: clone .*some-fork\.git' <<< "${out_no_forks}"; then
+  printf '%s\n' 'FAIL: --exclude-forks did not drop some-fork' >&2
+  fail=1
+fi
+if ! grep --quiet --fixed-strings -- '2 repos to process under' <<< "${out_no_forks}"; then
+  printf '%s\n' 'FAIL: --exclude-forks: expected "2 repos to process" header' >&2
   fail=1
 fi
 

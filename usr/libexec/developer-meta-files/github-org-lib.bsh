@@ -115,10 +115,7 @@ ghorg_token() {
       log error "'${token_file}' is not readable"
       return 1
     fi
-    ## TODO: There was previously a 'stat -f '%Lp' -- "${token_file}"'
-    ## alternative here, but 'man 1 stat' does not document '%Lp' as being a
-    ## valid format string for 'stat'. '-f' is also used to stat a filesystem,
-    ## which makes little sense here. Investigate.
+    ## GNU stat only; we only support Debian stable.
     mode="$(stat -c '%a' -- "${token_file}" 2>/dev/null || true)"
     if [ -z "${mode}" ]; then
       log error "cannot stat '${token_file}'"
@@ -273,7 +270,10 @@ ghorg_parse_rate_limit_wait() {
       return 0
     fi
   fi
-  ## TODO: We may need 'printf "%s" "0"' here.
+  ## Intentional fall-through with empty stdout: 'no parseable
+  ## signal' is the caller's contract for 'use exponential backoff
+  ## instead'. Do not echo '0' here - that would be read as 'retry
+  ## immediately' and starve the backoff path.
 }
 
 ## Mock-mode dispatcher. When GHORG_MOCK=1, requests are served from

@@ -7,9 +7,9 @@
 
 ## Per-project metadata. Source of truth for description / website /
 ## topics applied across every clone of each project. The apply tool
-## (dm-github-org-metadata-sync, TBD) fans each entry out to wherever
-## the repo actually lives via PATCH /repos/{owner}/{repo} (description
-## + homepage) and PUT /repos/{owner}/{repo}/topics (topics).
+## (dm-github-org-metadata-sync) fans each entry out to wherever the
+## repo actually lives via PATCH /repos/{owner}/{repo} (description +
+## homepage) and PUT /repos/{owner}/{repo}/topics (topics).
 ##
 ## Org layout (the apply tool reads this to decide WHERE to look):
 ##
