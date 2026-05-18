@@ -119,11 +119,13 @@ esac
 ## R-033: hoist the timestamp; do not inline $(date ...) into the
 ## printf format string.
 report_timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-printf '%s\n' \
-   "# Security report - ${report_timestamp} - mode=${mode}" \
-   "" \
-   "| repo | tool | severity | rule | path | line | message |" \
-   "| --- | --- | --- | --- | --- | --- | --- |"
+## Markdown structural blank line between the H1 and the table is
+## required by the renderer; R-031 'embed newlines in one string'
+## keeps the report markdown valid without tripping R-042.
+printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}
+
+| repo | tool | severity | rule | path | line | message |
+| --- | --- | --- | --- | --- | --- | --- |"
 
 total_rows=0
 for org in "${ORGS[@]}"; do

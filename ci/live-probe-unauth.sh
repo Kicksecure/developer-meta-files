@@ -76,9 +76,7 @@ probe_live_unauth_cleanup_out_dir() {
 }
 trap probe_live_unauth_cleanup_out_dir EXIT
 
-printf '%s\n' \
-   "" \
-   "=== github-org-clone --dry-run ${target_org} ==="
+printf '%s\n' "=== github-org-clone --dry-run ${target_org} ==="
 out="$(github-org-clone --dry-run "${target_org}" "${out_dir}/clone" 2>&1)"
 printf '%s\n' "${out}"
 
@@ -93,6 +91,4 @@ if ! grep --quiet -- 'DRY-RUN: clone' <<< "${out}"; then
    exit 1
 fi
 
-printf '%s\n' \
-   "" \
-   'live unauth smoke OK'
+printf '%s\n' 'live unauth smoke OK'
