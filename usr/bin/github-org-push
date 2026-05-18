@@ -262,17 +262,10 @@ push_one() {
         "${resolved_head}:${resolved_head}" \
         || log warn "'${repo_dir}': '${resolved_head}' push to '${remote_name}' failed"
     else
-      ## Validate the user-supplied branch name (same allowlist as
-      ## for repo names) before constructing a fully-qualified ref.
-      ## Blocks ref injection like `master HEAD` and prevents
-      ## tag/branch ambiguity (always refs/heads/...).
-      ##
-      ## FIXME: Create a dedicated 'ref' kind in ghorg_validate_name
-      ## and use it here. Reusing 'repo' is wrong because the repo
-      ## name length and branch name length limits on GitHub are
-      ## different, and very confusing error messages will be printed
-      ## if the name fails validation.
-      if ! ghorg_validate_name "${branch}" repo; then
+      ## Validate the user-supplied branch name before constructing a
+      ## fully-qualified ref. Blocks ref injection like `master HEAD`
+      ## and prevents tag/branch ambiguity (always refs/heads/...).
+      if ! ghorg_validate_name "${branch}" ref; then
         log warn "'${repo_dir}': skipping invalid branch name"
         continue
       fi

@@ -89,4 +89,44 @@ if ghorg_validate_name "${overlong_101chars}" repo 2>/dev/null; then
    fail=1
 fi
 
+## ref kind accepts slashes (feature/foo) and longer names; the
+## existing 'repo' allowlist would reject both.
+for valid_ref in master main feature/foo feature/foo-bar \
+                 claude/review-rule-r141 release/1.2.3 .hidden-branch; do
+   if ! ghorg_validate_name "${valid_ref}" ref 2>/dev/null; then
+      printf '%s\n' "FAIL: ref kind rejected good name: ${valid_ref}" >&2
+      fail=1
+   fi
+done
+
+## ref kind still rejects the same dangerous patterns + ref-specific
+## ones (leading slash, consecutive slashes).
+bad_refs=( '' '.' '..' '.git' '-flag' '/leading-slash' 'feature//double'
+           'foo..bar' 'foo bar' 'foo@{1}' )
+for bad_ref in "${bad_refs[@]}"; do
+   if ghorg_validate_name "${bad_ref}" ref 2>/dev/null; then
+      bad_ref_q="$(printf '%q' "${bad_ref}")"
+      printf '%s\n' "FAIL: ref kind accepted bad pattern: '${bad_ref_q}'" >&2
+      fail=1
+   fi
+done
+
+## ref length cap: 255 OK, 256 reject.
+ok_255chars="$(printf 'a%.0s' {1..255})"
+if ! ghorg_validate_name "${ok_255chars}" ref 2>/dev/null; then
+   printf '%s\n' 'FAIL: ref kind rejected 255-char name' >&2
+   fail=1
+fi
+overlong_256chars="$(printf 'a%.0s' {1..256})"
+if ghorg_validate_name "${overlong_256chars}" ref 2>/dev/null; then
+   printf '%s\n' 'FAIL: ref kind accepted 256-char name (over cap)' >&2
+   fail=1
+fi
+
+## Unknown kind must be refused outright (no silent fallback).
+if ghorg_validate_name foo bogus-kind 2>/dev/null; then
+   printf '%s\n' 'FAIL: unknown kind accepted instead of rejected' >&2
+   fail=1
+fi
+
 exit "${fail}"

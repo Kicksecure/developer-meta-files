@@ -45,6 +45,12 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 ## Per documented GitHub limits.
 GHORG_MAX_REPO_NAME_LEN=100
 GHORG_MAX_USER_LOGIN_LEN=39
+## Filesystem-level ceiling for refs stored as files under .git/refs/;
+## GitHub does not document a hard cap, but ref storage tops out here
+## on any sane filesystem. Deeper validation is left to the downstream
+## 'git check-ref-format' call - this is just the shallow defense-in-
+## depth gate before constructing a fully-qualified refname.
+GHORG_MAX_BRANCH_NAME_LEN=255
 
 GHORG_MAX_DISPLAY_LEN=256
 
@@ -144,8 +150,19 @@ ghorg_require_deps() {
 }
 
 # G-001: see agents/github-org-tools.md
+## Defense-in-depth validator. 'kind' selects the length cap and the
+## character allowlist:
+##   repo / user   ^[A-Za-z0-9._-]+$         (no slashes)
+##   ref           ^[A-Za-z0-9._/-]+$        (slashes allowed for
+##                                            'feature/foo' branches)
+##
+## ref-format details beyond the shallow gate (no '@{', no trailing
+## '.lock', no consecutive '/', etc.) are left to the caller's
+## downstream 'git check-ref-format "refs/heads/${name}"' check; this
+## function only ensures the value is safe to interpolate into argv /
+## URL paths and is shorter than the relevant cap.
 ghorg_validate_name() {
-  local name kind max_len
+  local name kind max_len allowed_re
 
   name="$1"
   kind="${2:-repo}"
@@ -153,14 +170,19 @@ ghorg_validate_name() {
   case "${kind}" in
     repo)
       max_len="${GHORG_MAX_REPO_NAME_LEN}"
+      allowed_re='^[A-Za-z0-9._-]+$'
       ;;
     user)
       max_len="${GHORG_MAX_USER_LOGIN_LEN}"
+      allowed_re='^[A-Za-z0-9._-]+$'
+      ;;
+    ref)
+      max_len="${GHORG_MAX_BRANCH_NAME_LEN}"
+      allowed_re='^[A-Za-z0-9._/-]+$'
       ;;
     *)
-      ## FIXME: Verify that no use of ghorg_validate_name passes an unhandled
-      ## 'kind', then make this branch error out.
-      max_len="${GHORG_MAX_REPO_NAME_LEN}"
+      log error "reject: unknown 'kind' '${kind}' passed to ghorg_validate_name"
+      return 1
       ;;
   esac
 
@@ -172,7 +194,7 @@ ghorg_validate_name() {
     log error "reject: '${kind}' name exceeds '${max_len}' chars: '${name}'"
     return 1
   fi
-  if ! [[ "${name}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  if ! [[ "${name}" =~ ${allowed_re} ]]; then
     log error "reject: '${kind}' name has disallowed chars: '${name}'"
     return 1
   fi
@@ -181,12 +203,12 @@ ghorg_validate_name() {
       log error "reject: reserved '${kind}' name: '${name}'"
       return 1
       ;;
-    '-'*)
-      log error "reject: '${kind}' name starts with dash: '${name}'"
+    '-'*|'/'*)
+      log error "reject: '${kind}' name starts with disallowed char: '${name}'"
       return 1
       ;;
-    *'..'*)
-      log error "reject: '${kind}' name contains \"..\": '${name}'"
+    *'..'*|*'//'*)
+      log error "reject: '${kind}' name contains \"..\" or \"//\": '${name}'"
       return 1
       ;;
   esac
