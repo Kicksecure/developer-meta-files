@@ -56,6 +56,16 @@
 ## org repo-list UI. Not implemented today; the apply tool only
 ## writes description / homepage / topics.
 
+## R-010 strict-mode block. Sourced lib; callers already set these,
+## so these lines are a no-op there. Guarantees strict mode if ever
+## sourced from a non-strict context.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 declare -gA REPO_HOME REPO_DESCRIPTION REPO_WEBSITE REPO_TOPICS
 
 add_repo() {
