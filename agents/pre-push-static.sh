@@ -406,13 +406,8 @@ check_R130_null_command() {
 check_R080_shellcheck_source_path() {
    local hits
 
-   ## R-080: '# shellcheck source=...' directives must use a
-   ## relative source-tree path. Catch absolute paths
-   ## (/usr/libexec/..., /home/..., /tmp/..., etc.) and
-   ## '/dev/null' (also covered by R-081 but easier to catch here).
-   ## Two regex alternatives:
-   ##   1. absolute path immediately after 'source='
-   ##   2. literal '/dev/null'
+   ## R-080: 'source=' must point at a relative source-tree path.
+   ## /dev/null is also covered by R-081 but rejected here too.
    hits="$(grep --line-number --extended-regexp \
       '^[[:space:]]*#[[:space:]]*shellcheck[[:space:]]+source=(/[A-Za-z]|/dev/null\b)' \
       -- "${@}" 2>/dev/null || true)"

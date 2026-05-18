@@ -2789,10 +2789,6 @@ main() {
             shift
             ;;
          --no-batch)
-            ## Skip the per-package batch loop and run the function
-            ## once against the current working directory. Used by
-            ## dm-quickgittagsign to invoke pkg_git_sign_tags on the
-            ## repo the operator is sitting in.
             no_batch='y'
             shift
             ;;

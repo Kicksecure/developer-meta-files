@@ -292,8 +292,6 @@ ghorg_mock_dispatch() {
   method="$1"
   path="$2"
   clean_path="${path%%\?*}"
-  ## 'clean_path' will start with a '/' character, therefore we do not
-  ## need an extra '_' separator after '${method}'.
   key="${method}${clean_path//\//_}"
   fixture="${GHORG_MOCK_DIR}/${key}"
 
@@ -399,11 +397,7 @@ ghorg_api() {
   while true ; do
     true > "${hdr_file}"
     if [ -n "${token}" ]; then
-      ## API token must be passed through stdin to prevent it from
-      ## showing up in the output of 'ps aux'.
-      ##
-      ## '${path}' starts with a '/' character, no extra separator is
-      ## needed after '${GHORG_API}'.
+      ## Token via stdin so it doesn't appear in 'ps aux'.
       result="$(printf '%s\n' "header = \"Authorization: Bearer ${token}\"" \
         | curl "${args[@]}" --config - "${GHORG_API}${path}" || true)"
     else

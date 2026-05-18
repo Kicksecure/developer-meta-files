@@ -453,18 +453,13 @@ build_repo_set() {
   done <<< "${list_text}"
 }
 
-## Poll GET /repos/{owner}/{repo}/commits?per_page=1 until the fork is
-## past the empty-repo state. Per the StackOverflow research linked
-## from the original FIXME, a freshly-POSTed /forks repo returns:
-##   - 404 from /repos lookup       (not yet visible)
-##   - 200 from /repos lookup + 409 from /commits  (created, empty)
-##   - 200 from both                                (ready)
-## We treat 200 on /commits as ready. Bounded wait so a stuck fork
-## doesn't hang the whole batch; on timeout, return non-zero and let
-## the caller's '|| true' move on - the next run picks it up.
-##
-## Backoff schedule: 1, 2, 4, 8, 16, ... capped at 30s; total wait
-## bounded by GHORG_FORK_READY_TIMEOUT_SECONDS (default 300s = 5m).
+## Poll GET /repos/{owner}/{repo}/commits?per_page=1 until the fork
+## is past the empty-repo state (a freshly-POSTed /forks repo
+## returns 200 on /repos lookup but 409 on /commits until the
+## initial mirror finishes). Bounded by
+## GHORG_FORK_READY_TIMEOUT_SECONDS (default 300s); on timeout the
+## caller's '|| true' moves on and the next idempotent run picks
+## the configure up.
 wait_for_fork_ready() {
   local repo result status elapsed wait deadline now timeout_seconds
 
@@ -546,14 +541,6 @@ main() {
     for repo_name in "${missing[@]}"; do
       fork_one "${repo_name}"
     done
-    ## GitHub fork creation is async: POST /forks returns 202 and
-    ## the new repo is published to the API some seconds later. Wait
-    ## for each newly-forked repo to reach the "ready" state (GET
-    ## .../commits returns 200 with at least one commit) before
-    ## handing it to configure_one. Without this wait, PATCH /repos,
-    ## PUT .../actions/permissions, or POST .../merge-upstream can
-    ## hit the not-yet-initialized repo and 404/409/422; the
-    ## downstream '|| true' would then leave drift.
     for repo_name in "${missing[@]}"; do
       wait_for_fork_ready "${repo_name}" || true
     done
