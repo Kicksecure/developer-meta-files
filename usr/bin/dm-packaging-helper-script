@@ -2310,25 +2310,22 @@ pkg_need_version_bump_show() {
       ## 1.2.3-1
 
       if [ -z "${repo_query_output}" ]; then
-         true "${source_pkg}: changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
+         true "${red}${bold}ERROR:${reset} changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
          return 1
       elif [ -z "${reprepro_version}" ]; then
-         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
-         return 1
+         true "INFO: needs build: yes - ${source_pkg}: reprepro absent"
       elif dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
          if is_changelog_bump_commit; then
-            true "INFO: Done. changelog matches reprepro AND the last commit IS the bump that produced it."
+            true "INFO: needs build: no - ${source_pkg}: changelog matches reprepro and the last commit contains the bump message."
             return 0
          else
-            true "INFO: ${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump. Needs build."
+            true "INFO: needs build: yes - ${source_pkg}: matches reprepro but new commits since last bump."
          fi
       elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
-         ## Rare corruption: changelog is BEHIND reprepro. Fail loud
-         ## rather than silently downgrade.
-         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro. Unknown error condition."
+         true "${red}${bold}ERROR:${reset} '${source_pkg}': changelog < reprepro. Changelog is BEHIND reprepro?!?"
          return 1
       elif dpkg --compare-versions "${changelog_version}" gt "${reprepro_version}"; then
-         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro. Needs build."
+         true "INFO: needs build: yes - '${source_pkg}': changelog > reprepro."
       else
          die 1 "${FUNCNAME[0]}: unknown else case."
       fi
