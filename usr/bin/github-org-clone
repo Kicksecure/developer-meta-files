@@ -27,9 +27,6 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 
 include_private='false'
 include_archived='false'
-## Forks default to include: several core upstream repos are
-## themselves forks (e.g. Kicksecure/privleap), so the inverse
-## default would silently drop legitimate sources.
 include_forks='true'
 include_re=''
 exclude_re=''
