@@ -2251,7 +2251,7 @@ pkg_git_sign_tags() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local changelog_version source_pkg reprepro_version repo_query_output source_line
+   local changelog_version source_pkg reprepro_version repo_query_output
 
    batch_current_package_needs_version_bump='n'
 
@@ -2296,15 +2296,9 @@ pkg_need_version_bump_show() {
 
       repo_query_output="$(dist_build_non_interactive=true dm-reprepro-wrapper --architecture source list "${dist_build_apt_codename}" "${source_pkg}" 2>/dev/null || true)"
       ## Example repo_query_output:
-      ## local|main|amd64: sdwdate 1.2.3-1
-      ## local|main|source: sdwdate 1.2.3-1
-      ## local|main|i386: sdwdate 1.2.3-1
-
-      source_line="$(printf '%s\n' "${repo_query_output}" | grep --fixed-strings -- '|source:' || true)"
-      ## Example source_line:
       ## local|main|source: sdwdate 1.2.3-1
 
-      reprepro_version="$(printf '%s\n' "${source_line}" | awk 'NF{print $NF}')"
+      reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}')"
       ## Example reprepro_version:
       ## 1.2.3-1
 
@@ -2322,14 +2316,14 @@ pkg_need_version_bump_show() {
             true "INFO: ${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump. Needs build."
          fi
       elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
-         ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
-         ## the inconsistency rather than silently rolling back.
+         ## Rare corruption: changelog is BEHIND reprepro. Fail loud
+         ## rather than silently downgrade.
          true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro. Unknown error condition."
          return 1
       elif dpkg --compare-versions "${changelog_version}" gt "${reprepro_version}"; then
          true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro. Needs build."
       else
-         die 1 "${FUNCNAME} unknown else case."
+         die 1 "${FUNCNAME[0]}: unknown else case."
       fi
    fi
 
