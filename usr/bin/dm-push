@@ -68,10 +68,11 @@ queue_branch_refspec() {
    fi
 
    log info "'refs/heads/$branch' up-to-date on '$remote': no"
-   ## FIXME: '&>/dev/null' undoes the point of using 'log_run'. If the
-   ## command output should actually be silenced, use 'log info ...',
-   ## then run the command with '&>/dev/null'.
-   log_run info git verify-commit "refs/heads/$branch" &>/dev/null
+   ## Log the intent through log_run for the xtrace/audit line, then
+   ## redirect the command itself: '&>/dev/null' on a log_run call
+   ## would discard log_run's own output and defeat the purpose.
+   log info "git verify-commit refs/heads/$branch"
+   git verify-commit "refs/heads/$branch" &>/dev/null
    refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
 }
 
@@ -88,8 +89,9 @@ queue_tag_refspec() {
    ## has it at the same SHA the server short-circuits with "= up to
    ## date" inside the same atomic push.
    ##
-   ## FIXME: 'log_run' vs. '&>/dev/null' conflict again.
-   log_run info git verify-tag "refs/tags/$tag" &>/dev/null
+   ## Log the intent, then run silently - see queue_branch_refspec.
+   log info "git verify-tag refs/tags/$tag"
+   git verify-tag "refs/tags/$tag" &>/dev/null
    refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
 }
 
