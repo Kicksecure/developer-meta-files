@@ -11,11 +11,11 @@
 ## Safe to source: no top-level side effects beyond function and
 ## constant definitions.
 ##
-## Both variants (FIXME: of what?) compare commit SHAs rather than
-## tree contents: amend, rebased message, or cherry-pick of an
-## already-applied change all produce a new commit SHA with an
-## unchanged tree, and all need to be pushed. Tree-level `git diff`
-## would falsely report "no diff" in those cases.
+## Both variants (internal_git_diff_local and internal_git_diff_remote
+## below) compare commit SHAs rather than tree contents: amend, rebased
+## message, or cherry-pick of an already-applied change all produce a
+## new commit SHA with an unchanged tree, and all need to be pushed.
+## Tree-level `git diff` would falsely report "no diff" in those cases.
 
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
