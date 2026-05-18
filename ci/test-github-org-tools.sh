@@ -56,7 +56,7 @@ if [ ! -r /usr/libexec/developer-meta-files/github-org-lib.bsh ]; then
   exit 1
 fi
 
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source /usr/libexec/helper-scripts/has.sh
 
 ## sanitize-string is a runtime dep of github-org-lib for safe

@@ -38,7 +38,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source /usr/libexec/helper-scripts/has.sh
 
 has sanitize-string \
@@ -46,7 +46,7 @@ has sanitize-string \
       'error: sanitize-string not found on PATH.' \
       '       Install helper-scripts (see .github/actions/install-deps/).' >&2; exit 1; }
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 fail=0
