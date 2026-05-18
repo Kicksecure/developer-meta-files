@@ -332,7 +332,8 @@ ghorg_api_cleanup() {
 
 ghorg_api() {
   local method path body token hdr_file default_token_path
-  local attempt max status result wait body_text attempt_next
+  local attempt max status status_line result wait attempt_next
+  local rate_remaining
   local -a args
 
   method="$1"
@@ -409,29 +410,37 @@ ghorg_api() {
     else
       result="$(curl "${args[@]}" "${GHORG_API}${path}" || true)"
     fi
-    ## FIXME: If we aren't going to validate that the string starts
-    ## with 'HTTP_STATUS:', we don't need to append it as part of
-    ## '--write-out'. If we are going to append it, we should check
-    ## for it too. Do one or the other.
-    status="$(printf '%s\n' "${result}" | tail --lines=1 | sed -- 's/^HTTP_STATUS://')"
+    ## --write-out '\nHTTP_STATUS:%{http_code}' appends the sentinel as
+    ## the last line; require the prefix so a body whose final line
+    ## happens to look numeric cannot impersonate the status.
+    status_line="$(printf '%s\n' "${result}" | tail --lines=1)"
+    case "${status_line}" in
+      HTTP_STATUS:*)
+        status="${status_line#HTTP_STATUS:}"
+        ;;
+      *)
+        log warn "ghorg_api: malformed curl output (no HTTP_STATUS sentinel) for '${method}' '${path}'"
+        break
+        ;;
+    esac
 
     case "${status}" in
       429)
         true "INFO: ghorg_api: HTTP 429 (Too Many Requests) - will retry"
         ;;
       403)
-        ## 403 covers both rate-limit-exceeded (retry) and real
-        ## permission errors (don't retry). Distinguish by body.
-        ##
-        ## FIXME: This is not the correct way to detect a 403 rate
-        ## limit response according to
-        ## https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2026-03-10.
-        ## One should instead check the headers for an
-        ## 'x-ratelimit-remaining' header with a value of 0. Rewrite
-        ## this accordingly.
-        body_text="$(printf '%s\n' "${result}" | sed -- '$d')"
-        if printf '%s' "${body_text}" | grep --quiet --ignore-case -- 'rate limit\|secondary rate'; then
-          true "INFO: ghorg_api: HTTP 403 rate-limit body - will retry"
+        ## Per GitHub's REST rate-limits documentation: a rate-limited
+        ## 403 carries 'x-ratelimit-remaining: 0' for the primary rate
+        ## limit, or a 'retry-after' header for the secondary rate
+        ## limit. Both signals are part of the documented contract;
+        ## the body wording ('rate limit' / 'secondary rate') is not.
+        rate_remaining="$(grep --ignore-case -- '^x-ratelimit-remaining:' "${hdr_file}" 2>/dev/null \
+          | head --lines=1 \
+          | sed -- 's/^[^:]*:[[:space:]]*//' \
+          | tr -d -- '[:cntrl:]' || true)"
+        if [ "${rate_remaining}" = '0' ] \
+          || grep --quiet --ignore-case -- '^retry-after:' "${hdr_file}" 2>/dev/null; then
+          true "INFO: ghorg_api: HTTP 403 rate-limit (x-ratelimit-remaining='${rate_remaining}') - will retry"
         else
           break
         fi
@@ -467,8 +476,17 @@ ghorg_api() {
 }
 
 ghorg_status_of() {
-  ## FIXME: Again, either check for 'HTTP_STATUS:', or get rid of it.
-  printf '%s\n' "$1" | tail --lines=1 | sed -- 's/^HTTP_STATUS://'
+  ## ghorg_api emits the body followed by '\nHTTP_STATUS:NNN'. If the
+  ## sentinel is missing (curl never wrote the trailing line, or the
+  ## caller passed the body only), echo nothing so the consumer's
+  ## "${status}" check fails-closed rather than silently treating the
+  ## last body line as a status.
+  local last
+  last="$(printf '%s\n' "$1" | tail --lines=1)"
+  case "${last}" in
+    HTTP_STATUS:*) printf '%s\n' "${last#HTTP_STATUS:}" ;;
+    *)             ;;
+  esac
 }
 
 ghorg_body_of() {
