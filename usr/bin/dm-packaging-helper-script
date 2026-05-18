@@ -2305,7 +2305,7 @@ pkg_need_version_bump_show() {
       ## Example repo_query_output:
       ## local|main|source: sdwdate 1.2.3-1
 
-      reprepro_version="$(printf '%s\n' "${repo_query_output}" | awk 'NF{print $NF}')"
+      reprepro_version="$(printf '%s\n' "${repo_query_output}" | grep source | awk 'NF{print $NF}')"
       ## Example reprepro_version:
       ## 1.2.3-1
 
