@@ -27,8 +27,8 @@ source /usr/libexec/developer-meta-files/github-policy-data.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 # shellcheck source=/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-# shellcheck source=/usr/libexec/helper-scripts/strings.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.sh
+# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 die_if_not_has github-org-fork
 

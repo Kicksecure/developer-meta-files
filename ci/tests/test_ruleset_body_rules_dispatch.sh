@@ -58,6 +58,12 @@ assert_rules() {
    rules_var="$3"
    expected_types="$4"
 
+   ## R-141: validate before dereferencing via ${!...}.
+   check_variable_name "${rules_var}" || {
+      printf '%s\n' "FAIL[${label}]: invalid rules_var '${rules_var}'" >&2
+      fail=1
+      return
+   }
    body="$("${factory}" "test-name" repo '[]' "${!rules_var}")" || {
       printf '%s\n' "FAIL[${label}]: factory '${factory}' exited non-zero" >&2
       fail=1

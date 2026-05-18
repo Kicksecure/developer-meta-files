@@ -100,7 +100,7 @@ done
 [ -n "${tool}" ] || die_usage 'missing --tool'
 
 ## Default to /dev/null so callers invoke unconditionally.
-[[ -v GITHUB_STEP_SUMMARY ]] || GITHUB_STEP_SUMMARY='/dev/null'
+[ -v GITHUB_STEP_SUMMARY ] || GITHUB_STEP_SUMMARY='/dev/null'
 
 emit() {
    local row key val extra_with_nl

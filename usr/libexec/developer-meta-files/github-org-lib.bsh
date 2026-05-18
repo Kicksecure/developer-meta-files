@@ -25,12 +25,12 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 
 ## API base URL. Override to point at a captured-replay server.
-[[ -v GHORG_API ]] || GHORG_API='https://api.github.com'
+[ -v GHORG_API ] || GHORG_API='https://api.github.com'
 
 ## REST API version pin sent in the X-GitHub-Api-Version header.
 ## https://docs.github.com/en/rest/about-the-rest-api/api-versions
 ## https://docs.github.com/en/rest/about-the-rest-api/breaking-changes
-[[ -v GHORG_API_VERSION ]] || GHORG_API_VERSION='2026-03-10'
+[ -v GHORG_API_VERSION ] || GHORG_API_VERSION='2026-03-10'
 
 ## Per documented GitHub limits.
 GHORG_MAX_REPO_NAME_LEN=100
@@ -41,20 +41,20 @@ GHORG_MAX_DISPLAY_LEN=256
 ## Cap on bytes passed through log() (which pipes through
 ## sanitize-string with LOG_MAX_LEN). Without this, log() defaults to
 ## 'nolimit'.
-[[ -v LOG_MAX_LEN ]] || LOG_MAX_LEN="${GHORG_MAX_DISPLAY_LEN}"
+[ -v LOG_MAX_LEN ] || LOG_MAX_LEN="${GHORG_MAX_DISPLAY_LEN}"
 
-[[ -v GHORG_MAX_RETRIES ]] || GHORG_MAX_RETRIES='3'
+[ -v GHORG_MAX_RETRIES ] || GHORG_MAX_RETRIES='3'
 
 ## Backoff doubles per attempt: 30s, 60s, 120s ...
 ##
 ## Refuse a single sleep longer than this (Retry-After /
 ## X-RateLimit-Reset on a quiet hour boundary can suggest hours).
-[[ -v GHORG_MAX_BACKOFF_SECONDS ]] || GHORG_MAX_BACKOFF_SECONDS='3600'
+[ -v GHORG_MAX_BACKOFF_SECONDS ] || GHORG_MAX_BACKOFF_SECONDS='3600'
 
 ## Cap hostile pager loop.
-[[ -v GHORG_MAX_PAGES ]] || GHORG_MAX_PAGES='100'
+[ -v GHORG_MAX_PAGES ] || GHORG_MAX_PAGES='100'
 
-[[ -v GHORG_MAX_REDIRS ]] || GHORG_MAX_REDIRS='5'
+[ -v GHORG_MAX_REDIRS ] || GHORG_MAX_REDIRS='5'
 
 ## Cap on numeric id length before URL interpolation. ^[0-9]+$ alone
 ## would accept arbitrary length.
@@ -191,6 +191,8 @@ ghorg_compute_backoff_seconds() {
   local attempt seconds
 
   attempt="${1:-0}"
+  ## R-141: validate before arithmetic context.
+  is_whole_number "${attempt}" || return 1
   ## 1 << 62 is the largest positive number possible with Bash
   ## bit-shifting of 1. 1 << 63 is a "large" negative number, 1 << 64
   ## is 1.
