@@ -75,8 +75,8 @@ required=(
 )
 
 ## MIRROR must NOT see SOURCE-only enable DRY-RUN lines. PVR enable
-## also must never appear: PVR is disabled everywhere, so the
-## PUT-style enable constant does not exist.
+## also must never appear; see agents/github-policy-canonical-vs-
+## mirror.md for the policy.
 mirror_dep_pvr_forbidden=(
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot security updates'
