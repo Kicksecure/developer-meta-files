@@ -390,10 +390,11 @@ ghorg_api() {
     args+=( --header 'Content-Type: application/json' --data "${body}" )
   fi
 
-  ## FIXME: Starting 'attempt' at 0 will result in a 0-second wait by
-  ## default the first time a request fails. Verify this is
-  ## intentional, or set 'attempt' to 1 and rework the retry code below
-  ## otherwise.
+  ## attempt starts at 0; ghorg_compute_backoff_seconds returns
+  ## 30 * (1 << attempt) so the first retry waits 30s, then 60s,
+  ## 120s, ... up to GHORG_MAX_BACKOFF_SECONDS. A 0-second sleep
+  ## before the first retry would defeat the rate-limit-respecting
+  ## purpose of the loop.
   attempt=0
   max="${GHORG_MAX_RETRIES:-3}"
 
