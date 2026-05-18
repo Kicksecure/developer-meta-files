@@ -5,11 +5,7 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-org-policy pivots several things on
-## org_kind. The full SOURCE-vs-MIRROR policy table lives once in
-## agents/github-policy-canonical-vs-mirror.md ("Summary of
-## intentional canonical-vs-mirror splits"); this test asserts the
-## resulting fragments appear in --dry-run output for each side.
+## agents/github-policy-canonical-vs-mirror.md
 ##
 ## The org-level ruleset upsert in apply_org_policy is PAID PLAN
 ## ONLY (commented out); not exercised here.
