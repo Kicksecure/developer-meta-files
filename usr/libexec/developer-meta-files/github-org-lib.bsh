@@ -17,6 +17,16 @@
 ## github-org-clone additionally sets GIT_LFS_SKIP_SMUDGE=1 and
 ## protocol.file.allow=never / protocol.ext.allow=never on clone.
 
+## R-010 strict-mode block. Sourced lib; callers already set these,
+## so these lines are a no-op there. Guarantees strict mode if ever
+## sourced from a non-strict context.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 # shellcheck source=/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 # shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
