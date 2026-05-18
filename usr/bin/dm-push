@@ -68,11 +68,7 @@ queue_branch_refspec() {
    fi
 
    log info "'refs/heads/$branch' up-to-date on '$remote': no"
-   ## Log the intent through log_run for the xtrace/audit line, then
-   ## redirect the command itself: '&>/dev/null' on a log_run call
-   ## would discard log_run's own output and defeat the purpose.
-   log info "git verify-commit refs/heads/$branch"
-   git verify-commit "refs/heads/$branch" &>/dev/null
+   log_run_silent_if_success git verify-commit "refs/heads/$branch"
    refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
 }
 
@@ -88,10 +84,7 @@ queue_tag_refspec() {
    ## ls-remote round-trip. Always queue the tag; if the remote already
    ## has it at the same SHA the server short-circuits with "= up to
    ## date" inside the same atomic push.
-   ##
-   ## Log the intent, then run silently - see queue_branch_refspec.
-   log info "git verify-tag refs/tags/$tag"
-   git verify-tag "refs/tags/$tag" &>/dev/null
+   log_run_silent_if_success git verify-tag "refs/tags/$tag"
    refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
 }
 
