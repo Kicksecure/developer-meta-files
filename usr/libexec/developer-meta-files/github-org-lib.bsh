@@ -288,10 +288,12 @@ ghorg_mock_dispatch() {
 ##
 ## Without a token, the request goes anonymously (60/hr per IP).
 
-ghorg_api_cleanup_hdr_file() {
-  ## hdr_file is inherited from ghorg_api.
+ghorg_api_cleanup() {
+  ## Single RETURN trap so every exit path restores xtrace and unlinks
+  ## the header file; hdr_file may be unset on early-return paths.
   # shellcheck disable=SC2154
-  safe-rm --force -- "${hdr_file}"
+  [ -n "${hdr_file:-}" ] && safe-rm --force -- "${hdr_file}"
+  xtrace_restore
 }
 
 ghorg_api() {
@@ -304,13 +306,11 @@ ghorg_api() {
   body="${3:-}"
 
   xtrace_off
-  ## We use a RETURN trap to run ghorg_api_cleanup_hdr_file, so we
-  ## can't use a RETURN trap here.
-  # trap xtrace_restore RETURN
+  hdr_file=''
+  trap ghorg_api_cleanup RETURN
 
   if [ "${GHORG_MOCK:-0}" = '1' ]; then
     ghorg_mock_dispatch "${method}" "${path}"
-    xtrace_restore
     return 0
   fi
 
@@ -328,14 +328,12 @@ ghorg_api() {
       || [ -n "${GHORG_TOKEN_FILE:-}" ] \
       || [ -e "${default_token_path}" ]; then
       log error 'GitHub token configured but invalid'
-      xtrace_restore
       return 1
     fi
     token=''
   fi
 
   hdr_file="$(mktemp)"
-  trap ghorg_api_cleanup_hdr_file RETURN
 
   args=(
     --silent
@@ -432,7 +430,6 @@ ghorg_api() {
   done
 
   printf '%s\n' "${result}"
-  xtrace_restore
 }
 
 ghorg_status_of() {
