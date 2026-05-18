@@ -339,12 +339,22 @@ check_R102_interpreter_prepend() {
    ## Run on shell + yml/yaml files; .md is excluded by caller (the
    ## style guide itself self-cites the bad pattern as an example).
    ## Self-filter strips this script (whose docs cite the pattern).
-   ## FIXME: This won't catch things like "bash my-extensionless-executable".
+   ##
+   ## Two regexes:
+   ##   1. 'bash foo.sh' / 'sh foo.bsh' / etc - explicit extension.
+   ##   2. 'bash foo' / 'sh foo' where 'foo' doesn't look like a
+   ##      flag (no leading '-') and isn't a builtin keyword that
+   ##      commonly follows bash/sh in CI commands ('-c', '-e',
+   ##      '-x', '-l', '-n'). Catches 'bash my-extensionless-script'
+   ##      patterns that the original first regex missed.
    mapfile -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    hits="$(grep --line-number --extended-regexp \
-      '\b(bash|sh)[[:space:]]+[^[:space:]]+\.(sh|bsh|bash)\b' \
-      -- "${fs[@]}" 2>/dev/null || true)"
+      '\b(bash|sh)[[:space:]]+[^-[:space:]][^[:space:]]*\.(sh|bsh|bash)\b|\b(bash|sh)[[:space:]]+\./?[A-Za-z0-9_/-]+(\b|$)' \
+      -- "${fs[@]}" 2>/dev/null \
+      | grep --invert-match --extended-regexp \
+         '\b(bash|sh)[[:space:]]+-[ceilnsxv]+(\b|[[:space:]])' \
+      || true)"
    emit_hits "R-102 interpreter prepend (use shebang)" "${hits}"
 }
 
@@ -358,14 +368,16 @@ check_R120_rm() {
          continue
       fi
       ## Conservative: 'rm' as a word at start-of-line or after
-      ## whitespace, NOT preceded by 'safe-'. Excludes comments
-      ## (lines starting with optional whitespace then '#') and the
-      ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
-      ## remote rm).
-      ## FIXME: `rm` by itself at the beginning of a line will be
-      ## missed by this.
+      ## whitespace, NOT preceded by 'safe-'. Three alternatives in
+      ## the regex catch the cases:
+      ##   1. 'rm' after whitespace later in the line
+      ##   2. 'rm <args>' at start of line followed by whitespace
+      ##   3. bare 'rm' at start of line followed by EOL (or '$')
+      ## Excludes comments (lines starting with optional whitespace
+      ## then '#') and the non-filesystem-rm carve-outs (safe-rm,
+      ## shred, git rm, git remote rm).
       hits="$(grep --line-number --extended-regexp \
-         '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
+         '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]|^[[:space:]]*rm$' \
          -- "${script}" 2>/dev/null \
          | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]|git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]' \
          || true)"
