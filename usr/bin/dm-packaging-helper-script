@@ -2783,12 +2783,22 @@ run_batch() {
 }
 
 main() {
-   local target_cmd arg_list
+   local target_cmd arg_list no_batch
+
+   no_batch='n'
 
    while [ $# -gt 0 ]; do
       case "${1}" in
          --dry-run)
             batch_meta_dry_run='y'
+            shift
+            ;;
+         --no-batch)
+            ## Skip the per-package batch loop and run the function
+            ## once against the current working directory. Used by
+            ## dm-quickgittagsign to invoke pkg_git_sign_tags on the
+            ## repo the operator is sitting in.
+            no_batch='y'
             shift
             ;;
          --*)
@@ -2808,8 +2818,17 @@ main() {
    if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 [--dry-run] function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] [--no-batch] function-name arguments"
       exit 0
+   fi
+
+   if [ "${no_batch}" = 'y' ]; then
+      ## repo_skip and other helpers read batch_current_package_reponame;
+      ## seed it from the cwd so single-repo invocations stay consistent
+      ## with the per-package loop.
+      batch_current_package_reponame="$(basename -- "${PWD}")"
+      "${target_cmd}" "${arg_list[@]}"
+      return
    fi
 
    case "${target_cmd}" in
