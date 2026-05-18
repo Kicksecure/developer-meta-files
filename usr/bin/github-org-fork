@@ -426,18 +426,15 @@ sync_one() {
       ;;
     409)
       log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409)"
-      ## FIXME: Print response body for debugging?
       ;;
     422)
-      ## FIXME: Code 422 here means the branch could not be synced
-      ## "for some other reason", not necessarily just "missing
-      ## branch".
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' branch missing on upstream (HTTP 422)"
-      ## FIXME: Print response body for debugging?
+      ## 422 means 'merge-upstream validation failed' - upstream
+      ## branch missing, target not a fork, target not behind, etc.
+      ## Don't claim a specific cause; let the operator inspect.
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' could not be synced (HTTP 422 validation failed)"
       ;;
     *)
       log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}'"
-      ## FIXME: Print response body for debugging?
       ;;
   esac
 }

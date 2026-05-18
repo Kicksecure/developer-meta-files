@@ -269,8 +269,15 @@ push_one() {
         log warn "'${repo_dir}': skipping invalid branch name"
         continue
       fi
-      ## FIXME: Verify that the branch exists before trying to
-      ## push it.
+      ## Confirm the branch exists locally before constructing the
+      ## refspec; otherwise 'git push' would emit a confusing 'src
+      ## refspec ... does not match any' that is hard to distinguish
+      ## from a network failure in the per-repo warn line.
+      if ! git -C "${repo_dir}" rev-parse --verify --quiet \
+        "refs/heads/${branch}^{commit}" >/dev/null; then
+        log warn "'${repo_dir}': branch '${branch}' does not exist locally, skipping"
+        continue
+      fi
       [ "${verbose}" = '1' ] \
         && log notice "push ${branch} ${repo_dir} -> ${remote_name}"
       git -C "${repo_dir}" push -- "${remote_name}" \
