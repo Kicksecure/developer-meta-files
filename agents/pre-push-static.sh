@@ -20,6 +20,8 @@
 ##   7. R-042 no blank-line printf/log separators
 ##   8. R-051 no inline trap command strings (use named function)
 ##   9. R-070 no ';;' trailing other statements on the same line
+##  10a. R-080 'shellcheck source=...' is a relative source-tree
+##      path (no absolute /usr/..., /home/..., /dev/null)
 ##  10. R-081 no 'shellcheck source=/dev/null'
 ##  11. R-090 'has' not 'command -v' (allowlist for documented
 ##      bootstrap exceptions per R-093)
@@ -401,6 +403,22 @@ check_R130_null_command() {
    emit_hits "R-130 bare ':' no-op" "${hits}"
 }
 
+check_R080_shellcheck_source_path() {
+   local hits
+
+   ## R-080: '# shellcheck source=...' directives must use a
+   ## relative source-tree path. Catch absolute paths
+   ## (/usr/libexec/..., /home/..., /tmp/..., etc.) and
+   ## '/dev/null' (also covered by R-081 but easier to catch here).
+   ## Two regex alternatives:
+   ##   1. absolute path immediately after 'source='
+   ##   2. literal '/dev/null'
+   hits="$(grep --line-number --extended-regexp \
+      '^[[:space:]]*#[[:space:]]*shellcheck[[:space:]]+source=(/[A-Za-z]|/dev/null\b)' \
+      -- "${@}" 2>/dev/null || true)"
+   emit_hits "R-080 shellcheck source= must be relative" "${hits}"
+}
+
 is_yaml_file() {
    case "${1}" in
       *.yml|*.yaml) return 0 ;;
@@ -591,6 +609,7 @@ run_file_checks() {
       check_R042_blank_logline "${shell_files[@]}"
       check_R051_trap_inline "${shell_files[@]}"
       check_R070_double_semi "${shell_files[@]}"
+      check_R080_shellcheck_source_path "${shell_files[@]}"
       check_R081_source_devnull "${shell_files[@]}"
       check_R090_command_v "${shell_files[@]}"
       check_R120_rm "${shell_files[@]}"
