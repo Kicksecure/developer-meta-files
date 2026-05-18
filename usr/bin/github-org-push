@@ -19,7 +19,7 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
-# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 branches='HEAD'
@@ -262,22 +262,19 @@ push_one() {
         "${resolved_head}:${resolved_head}" \
         || log warn "'${repo_dir}': '${resolved_head}' push to '${remote_name}' failed"
     else
-      ## Validate the user-supplied branch name (same allowlist as
-      ## for repo names) before constructing a fully-qualified ref.
-      ## Blocks ref injection like `master HEAD` and prevents
-      ## tag/branch ambiguity (always refs/heads/...).
-      ##
-      ## FIXME: Create a dedicated 'ref' kind in ghorg_validate_name
-      ## and use it here. Reusing 'repo' is wrong because the repo
-      ## name length and branch name length limits on GitHub are
-      ## different, and very confusing error messages will be printed
-      ## if the name fails validation.
-      if ! ghorg_validate_name "${branch}" repo; then
+      if ! ghorg_validate_name "${branch}" ref; then
         log warn "'${repo_dir}': skipping invalid branch name"
         continue
       fi
-      ## FIXME: Verify that the branch exists before trying to
-      ## push it.
+      ## Confirm the branch exists locally before constructing the
+      ## refspec; otherwise 'git push' would emit a confusing 'src
+      ## refspec ... does not match any' that is hard to distinguish
+      ## from a network failure in the per-repo warn line.
+      if ! git -C "${repo_dir}" rev-parse --verify --quiet \
+        "refs/heads/${branch}^{commit}" >/dev/null; then
+        log warn "'${repo_dir}': branch '${branch}' does not exist locally, skipping"
+        continue
+      fi
       [ "${verbose}" = '1' ] \
         && log notice "push ${branch} ${repo_dir} -> ${remote_name}"
       git -C "${repo_dir}" push -- "${remote_name}" \
@@ -304,8 +301,11 @@ main() {
   ## odd bytes survive intact (find -print0 + read -d '').
   candidate_dirs=()
   while IFS= read -r -d '' candidate_dir; do
-    ## TODO: Print the name of skipped directories.
-    [ -e "${candidate_dir}/.git" ] || continue
+    if [ ! -e "${candidate_dir}/.git" ]; then
+      [ "${verbose}" = '1' ] \
+        && log info "skipping '${candidate_dir}': not a git checkout"
+      continue
+    fi
     candidate_dirs+=( "${candidate_dir}" )
   done < <(find "${source_dir}" -mindepth 1 -maxdepth 1 -type d -print0 \
     | sort --zero-terminated --unique)

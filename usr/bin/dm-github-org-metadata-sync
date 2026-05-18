@@ -18,74 +18,20 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-## FIXME: Standardize the shellcheck lines so that they point to
-## development-repo files when in the context of a fully checked out
-## copy of derivative-maker (with all submodules).
-##
-## Good (assuming the script is at
-## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-github-org-metadata-sync):
-##   # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
-##   source /usr/libexec/developer-meta-files/github-org-lib.bsh
-## Why it's good:
-##   - The source tree version of github-org-lib.bsh is included,
-##     making linting as accurate as possible.
-##
-## Bad:
-##   # shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
-##   source /usr/libexec/developer-meta-files/github-org-lib.bsh
-## Why it's bad:
-##   - ShellCheck can already determine where github-org-lib is,
-##     without a ShellCheck 'source' directive. This is therefore
-##     useless noise.
-##   - The system copy of github-org-lib.bsh may differ from the
-##     version present in the derivative-maker source tree. It is
-##     preferable to include the source tree version of the library
-##     here to make linting more accurate.
-##
-## Also bad:
-##   source /usr/libexec/developer-meta-files/github-org-lib.bsh
-## Why it's bad:
-##   - The system copy of github-org-lib.bsh may differ from the
-##     version present in the derivative-maker source tree.
-##
-## Also bad:
-##   # shellcheck source=/home/user/derivative-maker/packages/kicksecure/developer-meta-files/usr/libexec/developer-meta-files/github-org-lib.bsh
-##   source /usr/libexec/developer-meta-files/github-org-lib.bsh
-## Why it's bad:
-##   - The absolute path to the source tree version of the library may
-##     not be the same on all developer machines.
-##
-## Good (assuming the script is at
-## /home/user/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-github-org-metadata-sync):
-##   # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
-##   source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
-## Why it's good:
-##   - The source tree version of strings.bsh is included, making
-##     linting more accurate. It is OK to assume the location of
-##     sibling Git repos in this way because of how derivative-maker's
-##     submodules are organized.
-##
-## Bad:
-##   # shellcheck source=/usr/libexec/helper-scripts/strings.bsh
-##   source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
-## Why it bad:
-##   - The system copy of strings.bsh may differ from the version
-##     present in the derivative-maker source tree.
-
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-data.bsh
 source /usr/libexec/developer-meta-files/github-policy-data.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/repo-metadata.bsh
+# shellcheck source=../libexec/developer-meta-files/repo-metadata.bsh
 source /usr/libexec/developer-meta-files/repo-metadata.bsh
 ## R-082: source every helper-scripts file used directly.
-# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 ## Owner selection. Mirror-side tokens (org-ai-assisted) and
@@ -213,12 +159,12 @@ metadata_topics_json() {
 }
 
 ## Populates the caller-named associative array with one key per repo
-## name from a newline-separated list. Mirrors fork_main_build_repo_set
-## in github-org-fork.
+## name from a newline-separated list. Mirrors build_repo_set in
+## github-org-fork.
 ##
 ## WARNING: The 'set_name' argument MUST be the name of an associative
 ## array, or code injection may result.
-metadata_build_repo_set() {
+build_repo_set() {
    local list_text repo_name
    local -n set_name
 
@@ -378,12 +324,12 @@ main() {
       log notice "=== ${owner} ==="
 
       owner_repos=()
-      repos_text="$(ghorg_list_repos "${owner}" 0 0 1 | sort --unique)" || {
+      repos_text="$(ghorg_list_repos "${owner}" 'false' 'false' 'true' | sort --unique)" || {
          log warn "${owner}: could not list repos; skipping owner"
          policy_warn_seen=1
          continue
       }
-      metadata_build_repo_set owner_repos "${repos_text}"
+      build_repo_set owner_repos "${repos_text}"
 
       absent_count=0
       present_count=0

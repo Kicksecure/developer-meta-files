@@ -17,12 +17,16 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-data.bsh
 source /usr/libexec/developer-meta-files/github-policy-data.bsh
+## R-082: source directly so a future refactor that drops the transitive
+## source through github-policy-lib.bsh does not break check_variable_name.
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 dry_run=0
 verbose=0
@@ -153,25 +157,22 @@ apply_repo_policy() {
       "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
-   ## target_kind also pivots the ruleset rules array:
-   ##   PERSON -> POLICY_RULESET_RULES_PERSON (with
-   ##             required_signatures - maintainer's mirror still
-   ##             enforces signed commits/tags).
-   ##   BOT    -> POLICY_RULESET_RULES_BOT (without
-   ##             required_signatures - bot account pushes via
-   ##             AI-assisted automation without a verifiable GPG key
-   ##             for the bot identity).
+   ## PERSON / BOT ruleset-rules split (required_signatures on /
+   ## off respectively) lives in agents/github-policy-canonical-vs-
+   ## mirror.md.
    rules_var="POLICY_RULESET_RULES_${target_kind^^}"
 
-   policy_upsert_repo_ruleset "${target_user}" "${repo}" \
-      "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo '[]' "${!rules_var}")" \
-      || true
+   if check_variable_name "${rules_var}"; then
+      policy_upsert_repo_ruleset "${target_user}" "${repo}" \
+         "${RULESET_NAME_BRANCH}" \
+         "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo '[]' "${!rules_var}")" \
+         || true
 
-   policy_upsert_repo_ruleset "${target_user}" "${repo}" \
-      "${RULESET_NAME_TAG}" \
-      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo '[]' "${!rules_var}")" \
-      || true
+      policy_upsert_repo_ruleset "${target_user}" "${repo}" \
+         "${RULESET_NAME_TAG}" \
+         "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo '[]' "${!rules_var}")" \
+         || true
+   fi
 
    ## DELIBERATELY DISABLED: Vulnerability alerts + Dependabot
    ## security updates. Personal account is a backup/mirror; enabling
@@ -263,7 +264,7 @@ if [ "${mode}" != 'audit' ]; then
    fi
 fi
 
-repos="$(ghorg_list_repos "${target_user}" 0 0 1 \
+repos="$(ghorg_list_repos "${target_user}" 'false' 'false' 'true' \
    | sort --unique)"
 
 if [ -z "${repos}" ]; then

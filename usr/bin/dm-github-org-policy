@@ -16,19 +16,19 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+# shellcheck source=../libexec/developer-meta-files/github-policy-data.bsh
 source /usr/libexec/developer-meta-files/github-policy-data.bsh
 ## R-082: source every helper-scripts file used directly.
-# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-# shellcheck source=/usr/libexec/helper-scripts/strings.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
 die_if_not_has github-org-fork
 
@@ -484,7 +484,7 @@ audit_org_state() {
    ## org-level Dependabot alerts enabled, repos missing the file
    ## still fail Scorecard.
    log notice '  dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
-   repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
+   repos="$(ghorg_list_repos "${org}" 'false' 'false' 'true' | sort --unique)"
    if [ -z "${repos}" ]; then
       log notice '    (no public non-archived repos)'
    else
@@ -505,27 +505,11 @@ audit_org_state() {
    fi
 }
 
-## Per-repo settings.
-##   1. PATCH /repos/{o}/{r} body (POLICY_REPO_SOURCE / _MIRROR):
-##      has_wiki/has_issues/has_projects/has_discussions,
-##      security_and_analysis (secret scanning + push protection)
-##   2. Dependabot fan-out. SOURCE-only on; MIRROR actively disabled
-##      (mirror would duplicate alerts already raised on canonical
-##      SOURCE repo).
-##   2b. PVR off everywhere. Canonical disclosure is the wiki per
-##       org-ai-assisted/.github/SECURITY.md; PVR would split the
-##       inbox. DELETE /private-vulnerability-reporting runs on both
-##       SOURCE and MIRROR every --apply.
-##   3. Per-repo branch + tag rulesets (bypass actor list AND rules
-##      pivot on org_kind):
-##        SOURCE -> POLICY_RULESET_BYPASS_SOURCE ([], no bypass),
-##                  POLICY_RULESET_RULES_SOURCE (with
-##                  required_signatures).
-##        MIRROR -> POLICY_RULESET_BYPASS_MIRROR ([OrgAdmin]),
-##                  POLICY_RULESET_RULES_MIRROR (without
-##                  required_signatures - the mirror org pushes via
-##                  AI-assisted automation without a verifiable GPG
-##                  key for the bot identity).
+## Per-repo settings. Steps + the SOURCE-vs-MIRROR rationale are
+## documented once in agents/github-policy-canonical-vs-mirror.md;
+## the constants this function reads (POLICY_REPO_*, POLICY_RULESET_
+## BYPASS_*, POLICY_RULESET_RULES_*) are defined in
+## github-policy-data.bsh.
 apply_repo_policy() {
    local owner repo kind bypass_var rules_var
 
@@ -589,7 +573,7 @@ main() {
       ## org-ai-assisted mirror holds 100% forks of upstream
       ## Kicksecure / Whonix repos; excluding forks would silently
       ## no-op the entire per-repo phase against that org.
-      repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
+      repos="$(ghorg_list_repos "${org}" 'false' 'false' 'true' | sort --unique)"
       if [ -z "${repos}" ]; then
          log notice "no repos matched in '${org}'"
          continue

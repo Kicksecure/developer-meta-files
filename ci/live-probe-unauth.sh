@@ -33,7 +33,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source /usr/libexec/helper-scripts/has.sh
 
 ## Small, public, stable. octokit is GitHub's official Octokit org,
@@ -76,7 +76,6 @@ probe_live_unauth_cleanup_out_dir() {
 }
 trap probe_live_unauth_cleanup_out_dir EXIT
 
-printf '%s\n' ""
 printf '%s\n' "=== github-org-clone --dry-run ${target_org} ==="
 out="$(github-org-clone --dry-run "${target_org}" "${out_dir}/clone" 2>&1)"
 printf '%s\n' "${out}"
@@ -92,5 +91,4 @@ if ! grep --quiet -- 'DRY-RUN: clone' <<< "${out}"; then
    exit 1
 fi
 
-printf '%s\n' ""
 printf '%s\n' 'live unauth smoke OK'

@@ -24,10 +24,10 @@ if [ "${CI:-}" != "true" ]; then
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
+FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
 export GHORG_MOCK=1
-export GHORG_MOCK_DIR="${FIXTURE_DIR}"
+export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 ## Capture combined stdout+stderr; the lib routes everything through
 ## log_run_die.sh's stecho >&2.
@@ -74,12 +74,12 @@ required=(
    'DRY-RUN: org-ai-assisted/derivative-maker: upsert ruleset dm-github-org-policy tag protection'
 )
 
-## MIRROR must NOT see SOURCE-only enable DRY-RUN lines.
+## MIRROR must NOT see SOURCE-only enable DRY-RUN lines. PVR enable
+## also must never appear; see agents/github-policy-canonical-vs-
+## mirror.md for the policy.
 mirror_dep_pvr_forbidden=(
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'DRY-RUN: org-ai-assisted/derivative-maker: enable Dependabot security updates'
-   ## FIXME: Isn't Private Vulnerability Reporting disabled everywhere,
-   ## including SOURCE?
    'DRY-RUN: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
 )
 for needle in "${mirror_dep_pvr_forbidden[@]}"; do

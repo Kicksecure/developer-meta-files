@@ -11,13 +11,20 @@
 ## Safe to source: no top-level side effects beyond function and
 ## constant definitions.
 ##
-## Both variants (FIXME: of what?) compare commit SHAs rather than
-## tree contents: amend, rebased message, or cherry-pick of an
-## already-applied change all produce a new commit SHA with an
-## unchanged tree, and all need to be pushed. Tree-level `git diff`
-## would falsely report "no diff" in those cases.
+## Both variants (internal_git_diff_local and internal_git_diff_remote
+## below) compare commit SHAs rather than tree contents: amend, rebased
+## message, or cherry-pick of an already-applied change all produce a
+## new commit SHA with an unchanged tree, and all need to be pushed.
+## Tree-level `git diff` would falsely report "no diff" in those cases.
 
-# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 ## Returns 0 if local branch and tracking ref differ (push needed),
@@ -105,12 +112,10 @@ internal_git_diff_remote() {
    return 0
 }
 
-## Set DM_GATE_LS_REMOTE=1 to opt in to the authoritative
+## Set DM_GATE_LS_REMOTE=true to opt in to the authoritative
 ## ls-remote variant; default is the local tracking-ref variant.
-##
-## FIXME: Switch to 'true'/'false' string booleans here, as per R-053.
 internal_git_diff() {
-   if [ "${DM_GATE_LS_REMOTE:-0}" = 1 ]; then
+   if [ "${DM_GATE_LS_REMOTE:-false}" = 'true' ]; then
       internal_git_diff_remote "$@"
    else
       internal_git_diff_local "$@"

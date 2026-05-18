@@ -24,7 +24,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source /usr/libexec/helper-scripts/has.sh
 
 has shellcheck \
@@ -59,10 +59,12 @@ done < <(find -- "${REPO_ROOT}/ci/tests" -mindepth 1 -maxdepth 1 \
          -type f -name 'test_*.sh' -print0 | sort --zero-terminated)
 
 fail=0
+failed_scripts=()
 for script_path in "${files[@]}"; do
    if [ ! -r "${script_path}" ]; then
       printf '%s\n' "FAIL: not readable: ${script_path}" >&2
       fail=1
+      failed_scripts+=( "${script_path}" )
       continue
    fi
    ## --external-sources lets shellcheck follow the '# shellcheck
@@ -70,10 +72,16 @@ for script_path in "${files[@]}"; do
    ## appears to be unreachable") does not fire for show_help and
    ## similar callbacks invoked indirectly from the policy lib.
    if ! shellcheck --external-sources -- "${script_path}"; then
-      ## FIXME: Print some sort of warning so we know *what* scripts failed
-      ## shellcheck.
       fail=1
+      failed_scripts+=( "${script_path}" )
    fi
 done
+
+if [ "${fail}" -ne 0 ]; then
+   printf '%s\n' '' "FAIL: shellcheck reported issues in:" >&2
+   for failed in "${failed_scripts[@]}"; do
+      printf '  - %s\n' "${failed}" >&2
+   done
+fi
 
 exit "${fail}"

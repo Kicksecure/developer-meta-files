@@ -20,25 +20,24 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 ## R-082: source every helper-scripts file used directly.
-# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
-include_private=0
-include_archived=0
-include_forks=0
+include_private='false'
+include_archived='false'
+include_forks='false'
 include_re=''
 exclude_re=''
-## FIXME: Use 'true' and 'false' booleans here (R-053)
-disable_issues=0
-disable_wiki=0
-disable_projects=0
+disable_issues='false'
+disable_wiki='false'
+disable_projects='false'
 actions_state='leave'    ## enable | disable | leave
 workflow_perms='leave'   ## read | write | leave
-sync_branches=0
+sync_branches='false'
 # G-030: --apply or --dry-run required.
 dry_run=0
 mode_set=0
@@ -93,15 +92,15 @@ while [ "$#" -gt 0 ]; do
       shift
       ;;
     --include-private)
-      include_private=1
+      include_private='true'
       shift
       ;;
     --include-archived)
-      include_archived=1
+      include_archived='true'
       shift
       ;;
     --include-forks)
-      include_forks=1
+      include_forks='true'
       shift
       ;;
     ## --include / --exclude can each be passed multiple times. All
@@ -134,15 +133,15 @@ while [ "$#" -gt 0 ]; do
       shift 2
       ;;
     --disable-issues)
-      disable_issues=1
+      disable_issues='true'
       shift
       ;;
     --disable-wiki)
-      disable_wiki=1
+      disable_wiki='true'
       shift
       ;;
     --disable-projects)
-      disable_projects=1
+      disable_projects='true'
       shift
       ;;
     --actions)
@@ -170,7 +169,7 @@ while [ "$#" -gt 0 ]; do
       shift 2
       ;;
     --sync-branches)
-      sync_branches=1
+      sync_branches='true'
       shift
       ;;
     --apply)
@@ -253,9 +252,8 @@ fork_one() {
   result="$(ghorg_api POST "/repos/${source_owner}/${repo}/forks" "${body}")"
   status="$(ghorg_status_of "${result}")"
   case "${status}" in
-    ## TODO: https://docs.github.com/en/rest/repos/forks?apiVersion=2026-03-10
-    ## does not document 201 as a valid response code for this API.
-    ## Reject?
+    ## Docs document 202 only; 201 is also observed in practice when
+    ## the fork was already in-flight. Accept both.
     202|201)
       log notice "forked: ${source_owner}/${repo} -> ${target_owner}/${repo}"
       ;;
@@ -287,26 +285,26 @@ check_collision() {
 ## a single target repo. Idempotent and skipped when no flags were
 ## passed.
 configure_one() {
-  local repo patch enabled body result status
+  local repo patch enabled body result status response_body
 
   repo="$1"
 
-  if [ "${disable_issues}" != '0' ] \
-    || [ "${disable_wiki}" != '0' ] \
-    || [ "${disable_projects}" != '0' ]; then
+  if [ "${disable_issues}" = 'true' ] \
+    || [ "${disable_wiki}" = 'true' ] \
+    || [ "${disable_projects}" = 'true' ]; then
     patch='{}'
-    [ "${disable_issues}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
-    [ "${disable_wiki}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
-    [ "${disable_projects}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_projects: false}')"
+    [ "${disable_issues}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
+    [ "${disable_wiki}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
+    [ "${disable_projects}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_projects: false}')"
     if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: PATCH ${target_owner}/${repo} ${patch}"
     else
       result="$(ghorg_api PATCH "/repos/${target_owner}/${repo}" "${patch}")"
       status="$(ghorg_status_of "${result}")"
-      [ "${status}" != '200' ] && \
-        log warn "PATCH '${target_owner}/${repo}': HTTP '${status}'"
-      ## FIXME: Display the body returned from the request for
-      ## debugging.
+      if [ "${status}" != '200' ]; then
+        response_body="$(ghorg_body_of "${result}")"
+        log warn "PATCH '${target_owner}/${repo}': HTTP '${status}': ${response_body:0:512}"
+      fi
       [ "${verbose}" = '1' ] && [ "${status}" = '200' ] && \
         log notice "configured: ${target_owner}/${repo} ${patch}"
     fi
@@ -321,15 +319,13 @@ configure_one() {
       result="$(ghorg_api PUT "/repos/${target_owner}/${repo}/actions/permissions" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
-        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
-        ## does not document 200 as a valid response status code.
-        ## Reject?
+        ## Docs document 204 only; 200 is observed in practice. Accept
+        ## both.
         204|200) [ "${verbose}" = '1' ] && \
           log notice "actions=${actions_state} on ${target_owner}/${repo}" ;;
         *)
-          log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}"
-          ## FIXME: Display the body returned from the request for
-          ## debugging.
+          response_body="$(ghorg_body_of "${result}")"
+          log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"
           ;;
       esac
     fi
@@ -345,15 +341,13 @@ configure_one() {
         "/repos/${target_owner}/${repo}/actions/permissions/workflow" "${body}")"
       status="$(ghorg_status_of "${result}")"
       case "${status}" in
-        ## TODO: https://docs.github.com/en/rest/actions/permissions?apiVersion=2026-03-10
-        ## does not document 200 as a valid response status code.
-        ## Reject?
+        ## Docs document 204 only; 200 is observed in practice. Accept
+        ## both.
         204|200) [ "${verbose}" = '1' ] && \
           log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}" ;;
         *)
-          log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}"
-          ## FIXME: Display the body returned from the request for
-          ## debugging.
+          response_body="$(ghorg_body_of "${result}")"
+          log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"
           ;;
       esac
     fi
@@ -375,7 +369,7 @@ configure_one() {
 ## remotely. It should therefore NEVER be used on official production
 ## repos.
 sync_one() {
-  local repo result status info default_branch body merge_type
+  local repo result status info default_branch body merge_type response_body
 
   repo="$1"
 
@@ -426,29 +420,26 @@ sync_one() {
         "synced: ${target_owner}/${repo}/${default_branch} merge_type='${merge_type}'"
       ;;
     409)
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409)"
-      ## FIXME: Print response body for debugging?
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409): ${response_body:0:512}"
       ;;
     422)
-      ## FIXME: Code 422 here means the branch could not be synced
-      ## "for some other reason", not necessarily just "missing
-      ## branch".
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' branch missing on upstream (HTTP 422)"
-      ## FIXME: Print response body for debugging?
+      ## 422 means 'merge-upstream validation failed' - upstream
+      ## branch missing, target not a fork, target not behind, etc.
+      ## Don't claim a specific cause; let the operator inspect.
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' could not be synced (HTTP 422 validation failed): ${response_body:0:512}"
       ;;
     *)
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}'"
-      ## FIXME: Print response body for debugging?
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}': ${response_body:0:512}"
       ;;
   esac
 }
 
 ## Populates the associative array named in $1 with one key per
 ## newline-separated repo name in $2.
-##
-## FIXME: This function's name is horrible. Maybe 'create_repo_map'
-## instead?
-fork_main_build_repo_set() {
+build_repo_set() {
   local list_text repo_name
   local -n set_name
 
@@ -460,6 +451,48 @@ fork_main_build_repo_set() {
     [ -z "${repo_name}" ] && continue
     set_name["${repo_name}"]='1'
   done <<< "${list_text}"
+}
+
+## Poll GET /repos/{owner}/{repo}/commits?per_page=1 until the fork
+## is past the empty-repo state (a freshly-POSTed /forks repo
+## returns 200 on /repos lookup but 409 on /commits until the
+## initial mirror finishes). Bounded by
+## GHORG_FORK_READY_TIMEOUT_SECONDS (default 300s); on timeout the
+## caller's '|| true' moves on and the next idempotent run picks
+## the configure up.
+wait_for_fork_ready() {
+  local repo result status elapsed wait deadline now
+
+  repo="$1"
+
+  ## Mock-mode tests don't simulate async fork creation; skip so they
+  ## don't have to ship a /commits fixture for every forked repo.
+  [ "${GHORG_MOCK:-0}" = '1' ] && return 0
+
+  is_whole_number "${GHORG_FORK_READY_TIMEOUT_SECONDS}" \
+    || die 1 "GHORG_FORK_READY_TIMEOUT_SECONDS='${GHORG_FORK_READY_TIMEOUT_SECONDS}' not a whole number"
+
+  deadline=$(( $(date -u +%s) + GHORG_FORK_READY_TIMEOUT_SECONDS ))
+  wait=1
+  while true; do
+    result="$(ghorg_api GET "/repos/${target_owner}/${repo}/commits?per_page=1")" \
+      || result=''
+    status="$(ghorg_status_of "${result}")"
+    if [ "${status}" = '200' ]; then
+      [ "${verbose}" = '1' ] && log notice "fork ready: ${target_owner}/${repo}"
+      return 0
+    fi
+    now="$(date -u +%s)"
+    if [ "${now}" -ge "${deadline}" ]; then
+      log warn "fork-ready wait: '${target_owner}/${repo}' not ready after '${GHORG_FORK_READY_TIMEOUT_SECONDS}'s (last HTTP '${status}'); a later run will pick up the configure"
+      return 1
+    fi
+    elapsed=$(( now - (deadline - GHORG_FORK_READY_TIMEOUT_SECONDS) ))
+    [ "${verbose}" = '1' ] && log info "fork-ready wait: ${target_owner}/${repo} HTTP '${status}' after '${elapsed}'s; retry in '${wait}'s"
+    sleep -- "${wait}"
+    wait=$(( wait * 2 ))
+    [ "${wait}" -gt 30 ] && wait=30
+  done
 }
 
 main() {
@@ -486,7 +519,7 @@ main() {
     | ghorg_filter_names "${include_re}" "${exclude_re}" \
     | sort --unique)"
   ## Target side: do NOT exclude forks - target forks ARE the mirrors.
-  target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
+  target_repos="$(ghorg_list_repos "${target_owner}" 'true' 'true' 'true' \
     | sort --unique)"
 
   if [ -z "${source_repos}" ]; then
@@ -494,7 +527,7 @@ main() {
     return 0
   fi
 
-  fork_main_build_repo_set target_set "${target_repos}"
+  build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
     [ -z "${target_set[${repo_name}]:-}" ] && missing+=( "${repo_name}" )
@@ -506,21 +539,16 @@ main() {
     for repo_name in "${missing[@]}"; do
       fork_one "${repo_name}"
     done
+    for repo_name in "${missing[@]}"; do
+      wait_for_fork_ready "${repo_name}" || true
+    done
   fi
 
-  ## GitHub fork creation is async; brand-new forks may not appear
-  ## yet, but configure_one is idempotent on the next run.
-  ##
-  ## FIXME: Wait for all new forks to be fully forked before
-  ## proceeding past this point. Failed repository configuration
-  ## caused by trying to configure too early is not acceptable. A
-  ## possible way of detecting fork completion can be seen here:
-  ## https://stackoverflow.com/questions/33666838/determine-if-a-fork-is-ready
-  target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
+  target_repos="$(ghorg_list_repos "${target_owner}" 'true' 'true' 'true' \
     | sort --unique)"
 
   target_set=()
-  fork_main_build_repo_set target_set "${target_repos}"
+  build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
     [ -n "${target_set[${repo_name}]:-}" ] && to_configure+=( "${repo_name}" )
@@ -536,7 +564,7 @@ main() {
     for repo_name in "${to_configure[@]}"; do
       check_collision "${repo_name}" || true
       configure_one "${repo_name}" || true
-      if [ "${sync_branches}" = '1' ]; then
+      if [ "${sync_branches}" = 'true' ]; then
         sync_one "${repo_name}" || true
       fi
     done

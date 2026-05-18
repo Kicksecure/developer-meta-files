@@ -334,19 +334,53 @@ Good:
 
 ## Sourcing helper-scripts
 
-**R-080: `# shellcheck source=<real install path>` directive
-above each source line, paired with a `${HELPER_SCRIPTS_PATH:-}`
-prefix on the actual source.**
+**R-080: Pair every `source` with a `# shellcheck source=<relative
+source-tree path>` directive on the line above; the source line
+itself uses the system install path (with `${HELPER_SCRIPTS_PATH:-}`
+on helper-scripts).** The directive is the lint hint; the source
+line is the runtime resolution.
 
-    # shellcheck source=/usr/libexec/helper-scripts/<file>
+    # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/<file>
     source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/<file>
 
-Why: the empty `${HELPER_SCRIPTS_PATH}` resolves to the system
-install at `/usr/libexec/helper-scripts/`; a caller running with
-helper-scripts as a submodule sets the var to the submodule path.
-shellcheck doesn't expand the prefix at lint time but the
-`source=` directive points it at the absolute path that exists in
-CI.
+    # shellcheck source=../libexec/developer-meta-files/<lib>.bsh
+    source /usr/libexec/developer-meta-files/<lib>.bsh
+
+Why: the canonical context is the `derivative-maker` checkout with
+submodules; the source-tree copy of the lib (next to the consumer)
+may differ from the installed copy (`/usr/libexec/...`). The
+relative `source=` directive points shellcheck at the source-tree
+copy that the operator is actually editing, so lint findings track
+the in-flight state. The runtime `source` keeps the system install
+path so the script works the same on a packaged install.
+
+Forbidden forms:
+
+- `# shellcheck source=/usr/libexec/...` (absolute system path):
+  points at the installed copy, which may drift from the source
+  tree under review.
+- `# shellcheck source=/home/<user>/...` (absolute developer path):
+  not portable across machines / CI.
+- `# shellcheck source=/dev/null`: silences cross-file checks
+  entirely (also covered by R-081).
+- Omitting the directive when shellcheck can resolve the path on
+  its own: works for installed-path sources but doesn't track the
+  source-tree copy; mandate the directive uniformly for predict-
+  ability.
+
+Path conventions by depth (relative to the script's directory):
+
+| Script location | Self-lib | helper-scripts |
+| --- | --- | --- |
+| `usr/bin/<s>` | `../libexec/developer-meta-files/<lib>` | `../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
+| `usr/libexec/developer-meta-files/<lib>` | n/a | `../../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
+| `ci/<s>` | `../usr/libexec/developer-meta-files/<lib>` | `../../helper-scripts/usr/libexec/helper-scripts/<file>` |
+| `ci/tests/<s>` | `../../usr/libexec/developer-meta-files/<lib>` | `../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
+
+In a standalone checkout where helper-scripts is not a sibling,
+shellcheck falls back to SC1091 ("not found") for that line, which
+is acceptable - the in-tree copy of the self-lib is what matters
+for accurate linting.
 
 **R-081: Never fall back to `source=/dev/null`.** That silences
 cross-file checks.

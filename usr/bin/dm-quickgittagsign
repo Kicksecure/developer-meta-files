@@ -1,9 +1,20 @@
 #!/bin/bash
 
-## Copyright (C) 2025 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## Copyright (C) 2025 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-set -e
+## AI-Assisted
 
-## FIXME: run script dm-packaging-helper-script function pkg_git_sign_tags
-exit 1
+## Sign a git tag pointing at HEAD for the repo in the current working
+## directory. Thin wrapper over dm-packaging-helper-script
+## pkg_git_sign_tags invoked via --no-batch (single-repo, no package
+## loop).
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+dm-packaging-helper-script --no-batch pkg_git_sign_tags "$@"

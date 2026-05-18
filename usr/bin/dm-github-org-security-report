@@ -25,9 +25,9 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-# shellcheck source=/usr/libexec/helper-scripts/log_run_die.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 ## Symmetry with dm-github-org-policy's ORGS_OVERRIDE convention so
@@ -119,10 +119,13 @@ esac
 ## R-033: hoist the timestamp; do not inline $(date ...) into the
 ## printf format string.
 report_timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}"
-printf '%s\n' ""
-printf '%s\n' "| repo | tool | severity | rule | path | line | message |"
-printf '%s\n' "| --- | --- | --- | --- | --- | --- | --- |"
+## Markdown structural blank line between the H1 and the table is
+## required by the renderer; R-031 'embed newlines in one string'
+## keeps the report markdown valid without tripping R-042.
+printf '%s\n' "# Security report - ${report_timestamp} - mode=${mode}
+
+| repo | tool | severity | rule | path | line | message |
+| --- | --- | --- | --- | --- | --- | --- |"
 
 total_rows=0
 for org in "${ORGS[@]}"; do

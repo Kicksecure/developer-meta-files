@@ -13,15 +13,8 @@
 ##   POLICY_RULESET_RULES_MIRROR / _BOT     ->  2 rules, NO
 ##                                              required_signatures
 ##
-## Rationale: bot account (BOT_USERS) and bot org (org-ai-assisted,
-## the MIRROR_ORGS entry) push commits via AI-assisted automation
-## without a GPG key matching the bot's GitHub-verified identity.
-## Leaving required_signatures on those roles would block every
-## legitimate bot push. The canonical SOURCE history and the
-## maintainer's PERSON mirror still enforce signed commits.
-##
-## See agents/github-policy-canonical-vs-mirror.md "Summary of
-## intentional canonical-vs-mirror splits" for the policy table.
+## Rationale lives once in agents/github-policy-canonical-vs-
+## mirror.md ("Summary of intentional canonical-vs-mirror splits").
 
 set -o errexit
 set -o nounset
@@ -36,11 +29,11 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-lib.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-policy-lib.bsh
 source /usr/libexec/developer-meta-files/github-policy-lib.bsh
-# shellcheck source=/usr/libexec/developer-meta-files/github-policy-data.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-policy-data.bsh
 source /usr/libexec/developer-meta-files/github-policy-data.bsh
 
 fail=0
@@ -58,6 +51,12 @@ assert_rules() {
    rules_var="$3"
    expected_types="$4"
 
+   ## R-141: validate before dereferencing via ${!...}.
+   check_variable_name "${rules_var}" || {
+      printf '%s\n' "FAIL[${label}]: invalid rules_var '${rules_var}'" >&2
+      fail=1
+      return
+   }
    body="$("${factory}" "test-name" repo '[]' "${!rules_var}")" || {
       printf '%s\n' "FAIL[${label}]: factory '${factory}' exited non-zero" >&2
       fail=1

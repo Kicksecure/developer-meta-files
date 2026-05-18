@@ -41,7 +41,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 fail=0
@@ -119,13 +119,13 @@ esac
 GHORG_JQ_MAX_BYTES=1024
 start_ms="$(date +%s%N)"
 rc=0
-printf '"' > /tmp/long_in_$$
-head -c $((10 * 1024 * 1024)) /dev/zero | tr '\0' a >> /tmp/long_in_$$
-printf '"' >> /tmp/long_in_$$
-ghorg_jq_capped -- '.' </tmp/long_in_$$ >/dev/null 2>&1 || rc=$?
+printf '"' > "/tmp/long_in_$$"
+head -c $((10 * 1024 * 1024)) /dev/zero | tr '\0' a >> "/tmp/long_in_$$"
+printf '"' >> "/tmp/long_in_$$"
+ghorg_jq_capped -- '.' < "/tmp/long_in_$$" >/dev/null 2>&1 || rc=$?
 end_ms="$(date +%s%N)"
 elapsed_ms=$(( (end_ms - start_ms) / 1000000 ))
-rm -f /tmp/long_in_$$
+safe-rm --force -- "/tmp/long_in_$$"
 
 if [ "${elapsed_ms}" -gt 3000 ]; then
    printf '%s\n' "FAIL[longstring]: took ${elapsed_ms}ms on a 10 MB input with 1 KB cap; cap leaked or wrapper hung" >&2
