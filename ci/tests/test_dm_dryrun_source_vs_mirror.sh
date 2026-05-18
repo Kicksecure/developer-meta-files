@@ -5,30 +5,7 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-org-policy pivots three things on
-## org_kind. SOURCE_ORGS entries (Kicksecure, Whonix) and
-## MIRROR_ORGS entries (org-ai-assisted) diverge as follows:
-##
-##   per-repo PATCH body:
-##     SOURCE: 'wiki=off, issues=on, secret-scan on' (issues stay on)
-##     MIRROR: 'wiki/issues/projects/discussions off, secret-scan on'
-##
-##   Dependabot alerts + Dependabot security updates:
-##     SOURCE: enabled per repo (2 PUTs each)
-##     MIRROR: actively disabled per repo (2 DELETEs each, with
-##             security-fixes BEFORE alerts to avoid 422). Every
-##             --apply reconciles - mirror would duplicate every
-##             alert the canonical SOURCE repo already raises.
-##
-##   PVR (Private Vulnerability Reporting):
-##     OFF EVERYWHERE. DELETE /private-vulnerability-reporting
-##     runs on both SOURCE and MIRROR; canonical disclosure is
-##     the wiki per .github/SECURITY.md. PUT enable-side has no
-##     constant in github-policy-data.bsh.
-##
-##   per-repo branch + tag rulesets: applied on both; bypass actor
-##     list pivots on POLICY_RULESET_BYPASS_SOURCE/MIRROR (the
-##     repo-level ruleset upserts work on Free for public repos).
+## agents/github-policy-canonical-vs-mirror.md
 ##
 ## The org-level ruleset upsert in apply_org_policy is PAID PLAN
 ## ONLY (commented out); not exercised here.
@@ -47,10 +24,10 @@ if [ "${CI:-}" != "true" ]; then
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
+FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
 export GHORG_MOCK=1
-export GHORG_MOCK_DIR="${FIXTURE_DIR}"
+export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 fail=0
 
@@ -104,8 +81,7 @@ for needle in "${source_required[@]}"; do
 done
 for needle in "${source_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
-      ## FIXME: This message will be misleading in the "PVR enabled" case.
-      printf '%s\n' "FAIL[SOURCE]: unexpected MIRROR-side fragment present: ${needle}" >&2
+      printf '%s\n' "FAIL[SOURCE]: forbidden fragment present: ${needle}" >&2
       fail=1
    fi
 done
@@ -152,8 +128,7 @@ for needle in "${mirror_required[@]}"; do
 done
 for needle in "${mirror_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_mirror}"; then
-      ## FIXME: This message will be misleading in the "PVR enabled" case.
-      printf '%s\n' "FAIL[MIRROR]: unexpected SOURCE-side fragment present: ${needle}" >&2
+      printf '%s\n' "FAIL[MIRROR]: forbidden fragment present: ${needle}" >&2
       fail=1
    fi
 done

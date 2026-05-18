@@ -22,10 +22,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-## FIXME: The CI scripts are inconsistent with whether they tell shellcheck
-## how to source a file, or whether they tell shellcheck to not warn about a
-## file it can't find.
-# shellcheck disable=SC1091
+# shellcheck source=../../usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 fail=0
@@ -82,22 +79,31 @@ if [ -z "${got}" ] || ! [[ "${got}" =~ ^[0-9]+$ ]]; then
   fail=1
 fi
 
-## Reset already in the past -> empty (caller falls back to backoff).
+## Reset already in the past -> empty stdout + non-zero exit (caller
+## falls back to backoff via 'if ! wait="$(...)"').
 now_seconds="$(date -u +%s)"
 past=$(( now_seconds - 100 ))
 printf '%s\r\n' \
   'HTTP/2 403' \
   "X-RateLimit-Reset: ${past}" \
   '' > "${hdr}"
-parsed_stale="$(ghorg_parse_rate_limit_wait "${hdr}")"
-expect 'parse stale reset' '' "${parsed_stale}"
+parsed_stale=''
+ghorg_parse_rate_limit_wait_rc=0
+parsed_stale="$(ghorg_parse_rate_limit_wait "${hdr}")" \
+  || ghorg_parse_rate_limit_wait_rc=$?
+expect 'parse stale reset stdout' '' "${parsed_stale}"
+expect 'parse stale reset exit'   '1' "${ghorg_parse_rate_limit_wait_rc}"
 
-## No relevant header -> empty.
+## No relevant header -> empty stdout + non-zero exit.
 printf '%s\r\n' \
   'HTTP/2 200' \
   'Server: github.com' \
   '' > "${hdr}"
-parsed_no_hdr="$(ghorg_parse_rate_limit_wait "${hdr}")"
-expect 'parse no rate-limit hdr' '' "${parsed_no_hdr}"
+parsed_no_hdr=''
+ghorg_parse_rate_limit_wait_rc=0
+parsed_no_hdr="$(ghorg_parse_rate_limit_wait "${hdr}")" \
+  || ghorg_parse_rate_limit_wait_rc=$?
+expect 'parse no rate-limit hdr stdout' '' "${parsed_no_hdr}"
+expect 'parse no rate-limit hdr exit'   '1' "${ghorg_parse_rate_limit_wait_rc}"
 
 exit "${fail}"

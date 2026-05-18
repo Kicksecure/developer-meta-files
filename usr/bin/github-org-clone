@@ -19,15 +19,15 @@ shopt -s shift_verbose
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
-# shellcheck source=/usr/libexec/helper-scripts/strings.bsh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 ## Check that 'wc' works (R-083).
-# shellcheck source=/usr/libexec/helper-scripts/wc-test.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/wc-test.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 
-include_private=0
-include_archived=0
-include_forks=0
+include_private='false'
+include_archived='false'
+include_forks='true'
 include_re=''
 exclude_re=''
 shallow=0
@@ -39,8 +39,6 @@ mode_set=0
 verbose=0
 
 show_help() {
-  ## TODO: Do we really want to exclude forks by default? Some of our
-  ## core repos are forks, for instance Kicksecure/privleap.
   cat <<'EOF'
 Clone or update every selected repo of a GitHub user/organization
 into a local directory tree. Idempotent - re-running fetches and
@@ -56,7 +54,7 @@ Usage:
 Options:
   --include-private    include private repos (default: skip)
   --include-archived   include archived repos (default: skip)
-  --include-forks      include fork repos     (default: skip)
+  --exclude-forks      skip fork repos        (default: include)
   --include REGEX      only fork repos whose name matches REGEX
   --exclude REGEX      skip cloning repos whose name matches REGEX
   --shallow            clone with --depth=1
@@ -78,15 +76,15 @@ EOF
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --include-private)
-      include_private=1
+      include_private='true'
       shift
       ;;
     --include-archived)
-      include_archived=1
+      include_archived='true'
       shift
       ;;
-    --include-forks)
-      include_forks=1
+    --exclude-forks)
+      include_forks='false'
       shift
       ;;
     ## --include / --exclude can each be passed multiple times. All

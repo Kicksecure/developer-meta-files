@@ -38,44 +38,64 @@ details_url=''
 extra=''
 declare -a rows=()
 
-## FIXME: This function is named as if it will print usage information, but
-## doesn't.
-die_usage() {
+print_usage() {
+   cat <<'EOF'
+Append a markdown panel to ${GITHUB_STEP_SUMMARY}. Defaults to
+/dev/null when unset so callers can invoke unconditionally.
+
+Usage:
+   ci/step-summary-emit.sh \
+      --tool          'tool-name (run context)' \
+      [--column-header 'outcome'] \
+      [--row 'passed=27'] \
+      [--row 'failed=0']  \
+      [--total 27] \
+      [--details-url 'https://...'] \
+      [--extra 'Failures:|- foo|- bar']
+
+--row repeats; column header defaults to 'item'. --extra is one
+string with '|'-separated lines.
+EOF
+}
+
+die_with_usage() {
    printf '%s\n' "$1" >&2
+   print_usage >&2
    exit 64
 }
 
 while [ "$#" -gt 0 ]; do
    case "$1" in
       --tool)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --tool'
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --tool'
          tool="$2"
          shift 2
          ;;
       --column-header)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --column-header'
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --column-header'
          column_header="$2"
          shift 2
          ;;
       --row)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --row'
-         ## FIXME: Either rename this variable to 'row', or rename the option
-         ## to '--rows', the naming is confusing.
+         ## --row may repeat; each invocation appends one entry to the
+         ## 'rows' array, hence the option name (singular) vs the
+         ## variable name (plural).
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --row'
          rows+=( "$2" )
          shift 2
          ;;
       --total)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --total'
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --total'
          total="$2"
          shift 2
          ;;
       --details-url)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --details-url'
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --details-url'
          details_url="$2"
          shift 2
          ;;
       --extra)
-         [ "$#" -ge 2 ] || die_usage 'missing value for --extra'
+         [ "$#" -ge 2 ] || die_with_usage 'missing value for --extra'
          extra="$2"
          shift 2
          ;;
@@ -84,23 +104,19 @@ while [ "$#" -gt 0 ]; do
          break
          ;;
       -h|--help)
-         ## FIXME: Implement a proper 'print_usage' function that prints a
-         ## string that replaces the comments. Do not extract help information
-         ## from script-embedded comments. Do not duplicate the same text in
-         ## both comments and help text. See Bash style guide R-153.
-         sed --quiet -- 's/^## \{0,1\}//p' "${BASH_SOURCE[0]}"
+         print_usage
          exit 0
          ;;
       *)
-         die_usage "unknown flag: '$1'"
+         die_with_usage "unknown flag: '$1'"
          ;;
    esac
 done
 
-[ -n "${tool}" ] || die_usage 'missing --tool'
+[ -n "${tool}" ] || die_with_usage 'missing --tool'
 
 ## Default to /dev/null so callers invoke unconditionally.
-[[ -v GITHUB_STEP_SUMMARY ]] || GITHUB_STEP_SUMMARY='/dev/null'
+[ -v GITHUB_STEP_SUMMARY ] || GITHUB_STEP_SUMMARY='/dev/null'
 
 emit() {
    local row key val extra_with_nl

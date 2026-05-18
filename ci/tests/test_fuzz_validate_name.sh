@@ -39,31 +39,41 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-# shellcheck source=/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source /usr/libexec/helper-scripts/has.sh
 has sanitize-string \
    || { printf '%s\n' 'error: sanitize-string not on PATH' >&2; exit 1; }
-# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
+# shellcheck source=../../usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 ## Reference oracle: returns 0 if name is valid per the rule set,
 ## 1 otherwise. Mirrors the production validator. Any divergence
 ## means either the validator or the oracle drifted.
 oracle_valid() {
-   local name kind max_len
+   local name kind max_len allowed_re
    name="$1"
    kind="${2:-repo}"
    case "${kind}" in
-      user) max_len="${GHORG_MAX_USER_LOGIN_LEN}" ;;
-      *)    max_len="${GHORG_MAX_REPO_NAME_LEN}" ;;
+      user)
+         max_len="${GHORG_MAX_USER_LOGIN_LEN}"
+         allowed_re='^[A-Za-z0-9._-]+$'
+         ;;
+      ref)
+         max_len="${GHORG_MAX_BRANCH_NAME_LEN}"
+         allowed_re='^[A-Za-z0-9._/-]+$'
+         ;;
+      *)
+         max_len="${GHORG_MAX_REPO_NAME_LEN}"
+         allowed_re='^[A-Za-z0-9._-]+$'
+         ;;
    esac
    [ -n "${name}" ] || return 1
    [ "${#name}" -le "${max_len}" ] || return 1
-   [[ "${name}" =~ ^[A-Za-z0-9._-]+$ ]] || return 1
+   [[ "${name}" =~ ${allowed_re} ]] || return 1
    case "${name}" in
       '.'|'..'|'.git') return 1 ;;
-      '-'*)            return 1 ;;
-      *'..'*)          return 1 ;;
+      '-'*|'/'*)       return 1 ;;
+      *'..'*|*'//'*)   return 1 ;;
    esac
    return 0
 }
@@ -86,10 +96,11 @@ oracle_valid() {
 ## (tr is happy because no downstream pipe), then bash-slice with
 ## '${var:0:N}' for the final length cut.
 gen_input() {
-   local kind="$1" len bytes max_len raw
+   local kind="$1" len bytes max_len raw allowed
    case "${kind}" in
-      user) max_len="${GHORG_MAX_USER_LOGIN_LEN}" ;;
-      *)    max_len="${GHORG_MAX_REPO_NAME_LEN}" ;;
+      user) max_len="${GHORG_MAX_USER_LOGIN_LEN}"; allowed='A-Za-z0-9._-' ;;
+      ref)  max_len="${GHORG_MAX_BRANCH_NAME_LEN}"; allowed='A-Za-z0-9._/-' ;;
+      *)    max_len="${GHORG_MAX_REPO_NAME_LEN}"; allowed='A-Za-z0-9._-' ;;
    esac
    case "$((RANDOM % 5))" in
       0)
@@ -104,7 +115,7 @@ gen_input() {
          ;;
       2)
          len=$(( (RANDOM % max_len) + 1 ))
-         raw="$(head -c $((max_len * 4)) /dev/urandom | LC_ALL=C tr -dc 'A-Za-z0-9._-')"
+         raw="$(head -c $((max_len * 4)) /dev/urandom | LC_ALL=C tr -dc "${allowed}")"
          bytes="${raw:0:${len}}"
          ;;
       3)
@@ -136,9 +147,13 @@ fail=0
 divergences=0
 
 for i in $(seq 1 "${iters}"); do
-   ## Alternate kind to exercise both length caps.
-   kind='repo'
-   [ $((i % 2)) -eq 0 ] && kind='user'
+   ## Rotate over the three kinds to exercise each length cap and
+   ## allowlist.
+   case "$(( i % 3 ))" in
+      0) kind='repo' ;;
+      1) kind='user' ;;
+      2) kind='ref' ;;
+   esac
 
    input="$(gen_input "${kind}")"
 
