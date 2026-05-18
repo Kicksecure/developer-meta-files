@@ -378,7 +378,7 @@ main() {
       log notice "=== ${owner} ==="
 
       owner_repos=()
-      repos_text="$(ghorg_list_repos "${owner}" 0 0 1 | sort --unique)" || {
+      repos_text="$(ghorg_list_repos "${owner}" 'false' 'false' 'true' | sort --unique)" || {
          log warn "${owner}: could not list repos; skipping owner"
          policy_warn_seen=1
          continue

@@ -537,14 +537,11 @@ ghorg_account_type() {
 ##
 ## Args (may be empty strings to skip):
 ##   $1 owner
-##   $2 include_private  (1 = include, 0 = exclude)
-##   $3 include_archived (1 = include, 0 = exclude)
-##   $4 include_forks    (1 = include, 0 = exclude)
+##   $2 include_private  ('true' = include, 'false' = exclude)
+##   $3 include_archived ('true' = include, 'false' = exclude)
+##   $4 include_forks    ('true' = include, 'false' = exclude)
 ##
 ## Output: one repo name per line.
-##
-## FIXME: Refactor to take 'true' and 'false' for the three include
-## arguments, to match our conventions. See Bash style guide R-053.
 ghorg_list_repos() {
   local owner inc_private inc_archived inc_forks
   local account_type api_base auth_user jq_filter
@@ -568,7 +565,7 @@ ghorg_list_repos() {
       ## listed owner equals the authenticated user. Refuse rather
       ## than silently miss private forks - that would break fork
       ## idempotence.
-      if [ "${inc_private}" = '1' ]; then
+      if [ "${inc_private}" = 'true' ]; then
         auth_user="$(ghorg_authenticated_user)" || return 1
         if [ "${owner}" != "${auth_user}" ]; then
           log error "cannot list private repos of user '${owner}'; auth token belongs to '${auth_user}'"
@@ -582,13 +579,13 @@ ghorg_list_repos() {
   esac
 
   jq_clauses=( '.[]' )
-  if [ "${inc_private}" != '1' ]; then
+  if [ "${inc_private}" != 'true' ]; then
     jq_clauses+=( 'select(.private == false)' )
   fi
-  if [ "${inc_archived}" != '1' ]; then
+  if [ "${inc_archived}" != 'true' ]; then
     jq_clauses+=( 'select(.archived == false)' )
   fi
-  if [ "${inc_forks}" != '1' ]; then
+  if [ "${inc_forks}" != 'true' ]; then
     jq_clauses+=( 'select(.fork == false)' )
   fi
   jq_clauses+=( '.name' )

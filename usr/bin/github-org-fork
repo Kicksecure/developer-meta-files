@@ -27,18 +27,17 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 # shellcheck source=/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
-include_private=0
-include_archived=0
-include_forks=0
+include_private='false'
+include_archived='false'
+include_forks='false'
 include_re=''
 exclude_re=''
-## FIXME: Use 'true' and 'false' booleans here (R-053)
-disable_issues=0
-disable_wiki=0
-disable_projects=0
+disable_issues='false'
+disable_wiki='false'
+disable_projects='false'
 actions_state='leave'    ## enable | disable | leave
 workflow_perms='leave'   ## read | write | leave
-sync_branches=0
+sync_branches='false'
 # G-030: --apply or --dry-run required.
 dry_run=0
 mode_set=0
@@ -93,15 +92,15 @@ while [ "$#" -gt 0 ]; do
       shift
       ;;
     --include-private)
-      include_private=1
+      include_private='true'
       shift
       ;;
     --include-archived)
-      include_archived=1
+      include_archived='true'
       shift
       ;;
     --include-forks)
-      include_forks=1
+      include_forks='true'
       shift
       ;;
     ## --include / --exclude can each be passed multiple times. All
@@ -134,15 +133,15 @@ while [ "$#" -gt 0 ]; do
       shift 2
       ;;
     --disable-issues)
-      disable_issues=1
+      disable_issues='true'
       shift
       ;;
     --disable-wiki)
-      disable_wiki=1
+      disable_wiki='true'
       shift
       ;;
     --disable-projects)
-      disable_projects=1
+      disable_projects='true'
       shift
       ;;
     --actions)
@@ -170,7 +169,7 @@ while [ "$#" -gt 0 ]; do
       shift 2
       ;;
     --sync-branches)
-      sync_branches=1
+      sync_branches='true'
       shift
       ;;
     --apply)
@@ -291,13 +290,13 @@ configure_one() {
 
   repo="$1"
 
-  if [ "${disable_issues}" != '0' ] \
-    || [ "${disable_wiki}" != '0' ] \
-    || [ "${disable_projects}" != '0' ]; then
+  if [ "${disable_issues}" = 'true' ] \
+    || [ "${disable_wiki}" = 'true' ] \
+    || [ "${disable_projects}" = 'true' ]; then
     patch='{}'
-    [ "${disable_issues}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
-    [ "${disable_wiki}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
-    [ "${disable_projects}" = '1' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_projects: false}')"
+    [ "${disable_issues}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_issues: false}')"
+    [ "${disable_wiki}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_wiki: false}')"
+    [ "${disable_projects}" = 'true' ] && patch="$(printf '%s' "${patch}" | jq -- '. + {has_projects: false}')"
     if [ "${dry_run}" = '1' ]; then
       log notice "DRY-RUN: PATCH ${target_owner}/${repo} ${patch}"
     else
@@ -486,7 +485,7 @@ main() {
     | ghorg_filter_names "${include_re}" "${exclude_re}" \
     | sort --unique)"
   ## Target side: do NOT exclude forks - target forks ARE the mirrors.
-  target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
+  target_repos="$(ghorg_list_repos "${target_owner}" 'true' 'true' 'true' \
     | sort --unique)"
 
   if [ -z "${source_repos}" ]; then
@@ -516,7 +515,7 @@ main() {
   ## caused by trying to configure too early is not acceptable. A
   ## possible way of detecting fork completion can be seen here:
   ## https://stackoverflow.com/questions/33666838/determine-if-a-fork-is-ready
-  target_repos="$(ghorg_list_repos "${target_owner}" 1 1 1 \
+  target_repos="$(ghorg_list_repos "${target_owner}" 'true' 'true' 'true' \
     | sort --unique)"
 
   target_set=()
@@ -536,7 +535,7 @@ main() {
     for repo_name in "${to_configure[@]}"; do
       check_collision "${repo_name}" || true
       configure_one "${repo_name}" || true
-      if [ "${sync_branches}" = '1' ]; then
+      if [ "${sync_branches}" = 'true' ]; then
         sync_one "${repo_name}" || true
       fi
     done

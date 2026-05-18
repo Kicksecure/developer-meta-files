@@ -484,7 +484,7 @@ audit_org_state() {
    ## org-level Dependabot alerts enabled, repos missing the file
    ## still fail Scorecard.
    log notice '  dependabot.yml presence (Scorecard "Dependency-Update-Tool"):'
-   repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
+   repos="$(ghorg_list_repos "${org}" 'false' 'false' 'true' | sort --unique)"
    if [ -z "${repos}" ]; then
       log notice '    (no public non-archived repos)'
    else
@@ -589,7 +589,7 @@ main() {
       ## org-ai-assisted mirror holds 100% forks of upstream
       ## Kicksecure / Whonix repos; excluding forks would silently
       ## no-op the entire per-repo phase against that org.
-      repos="$(ghorg_list_repos "${org}" 0 0 1 | sort --unique)"
+      repos="$(ghorg_list_repos "${org}" 'false' 'false' 'true' | sort --unique)"
       if [ -z "${repos}" ]; then
          log notice "no repos matched in '${org}'"
          continue

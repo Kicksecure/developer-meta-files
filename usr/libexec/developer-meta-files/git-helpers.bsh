@@ -105,12 +105,10 @@ internal_git_diff_remote() {
    return 0
 }
 
-## Set DM_GATE_LS_REMOTE=1 to opt in to the authoritative
+## Set DM_GATE_LS_REMOTE=true to opt in to the authoritative
 ## ls-remote variant; default is the local tracking-ref variant.
-##
-## FIXME: Switch to 'true'/'false' string booleans here, as per R-053.
 internal_git_diff() {
-   if [ "${DM_GATE_LS_REMOTE:-0}" = 1 ]; then
+   if [ "${DM_GATE_LS_REMOTE:-false}" = 'true' ]; then
       internal_git_diff_remote "$@"
    else
       internal_git_diff_local "$@"

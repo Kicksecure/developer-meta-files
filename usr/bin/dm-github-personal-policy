@@ -269,7 +269,7 @@ if [ "${mode}" != 'audit' ]; then
    fi
 fi
 
-repos="$(ghorg_list_repos "${target_user}" 0 0 1 \
+repos="$(ghorg_list_repos "${target_user}" 'false' 'false' 'true' \
    | sort --unique)"
 
 if [ -z "${repos}" ]; then

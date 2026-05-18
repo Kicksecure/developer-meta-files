@@ -25,9 +25,9 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 # shellcheck source=/usr/libexec/helper-scripts/wc-test.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 
-include_private=0
-include_archived=0
-include_forks=0
+include_private='false'
+include_archived='false'
+include_forks='false'
 include_re=''
 exclude_re=''
 shallow=0
@@ -78,15 +78,15 @@ EOF
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --include-private)
-      include_private=1
+      include_private='true'
       shift
       ;;
     --include-archived)
-      include_archived=1
+      include_archived='true'
       shift
       ;;
     --include-forks)
-      include_forks=1
+      include_forks='true'
       shift
       ;;
     ## --include / --exclude can each be passed multiple times. All
