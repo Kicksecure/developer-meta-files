@@ -17,10 +17,6 @@ shopt -s inherit_errexit
 cd -- "$HOME/derivative-maker"
 
 genmkfile deb-uachl-bumpup-major
-
-make_git_tag_sign_appendix="-developers-only"
-export make_git_tag_sign_appendix
-
 genmkfile deb-uachl-commit-changelog
 
 genmkfile git-commit-verify
