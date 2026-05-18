@@ -235,9 +235,13 @@ ghorg_compute_backoff_seconds() {
 }
 
 ## Parse Retry-After or X-RateLimit-Reset out of a header dump file.
-## Echoes the wait in seconds, or empty string if neither header is
-## parseable. Retry-After is absolute seconds; X-RateLimit-Reset is a
-## unix timestamp from which 'now' is subtracted.
+## On success, echo the wait in seconds and return 0. If neither
+## header is parseable (or the parsed reset already elapsed), echo
+## nothing and return non-zero so the caller can fall back to
+## exponential backoff via 'if ! wait="$(ghorg_parse_rate_limit_wait
+## ...)"; then wait="$(ghorg_compute_backoff_seconds ...)"; fi'.
+## Retry-After is absolute seconds; X-RateLimit-Reset is a unix
+## timestamp from which 'now' is subtracted.
 ##
 ## grep --ignore-case + sed rather than awk's IGNORECASE - the latter
 ## is a gawk extension that mawk (default in many Debian-based CI
@@ -247,7 +251,7 @@ ghorg_parse_rate_limit_wait() {
 
   hdr_file="$1"
 
-  [ -r "${hdr_file}" ] || return 0
+  [ -r "${hdr_file}" ] || return 1
 
   ## '|| true' is necessary as a header may be missing.
   retry_after="$(grep --ignore-case -- '^retry-after:' "${hdr_file}" 2>/dev/null \
@@ -270,10 +274,7 @@ ghorg_parse_rate_limit_wait() {
       return 0
     fi
   fi
-  ## Intentional fall-through with empty stdout: 'no parseable
-  ## signal' is the caller's contract for 'use exponential backoff
-  ## instead'. Do not echo '0' here - that would be read as 'retry
-  ## immediately' and starve the backoff path.
+  return 1
 }
 
 ## Mock-mode dispatcher. When GHORG_MOCK=1, requests are served from
@@ -459,8 +460,7 @@ ghorg_api() {
       break
     fi
 
-    wait="$(ghorg_parse_rate_limit_wait "${hdr_file}")"
-    if [ -z "${wait}" ]; then
+    if ! wait="$(ghorg_parse_rate_limit_wait "${hdr_file}")"; then
       wait="$(ghorg_compute_backoff_seconds "${attempt}")"
     fi
     if [ "${wait}" -gt "${GHORG_MAX_BACKOFF_SECONDS}" ]; then
