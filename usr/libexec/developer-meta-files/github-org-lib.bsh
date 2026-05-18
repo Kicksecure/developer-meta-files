@@ -555,8 +555,7 @@ ghorg_account_type() {
   status="$(ghorg_status_of "${result}")"
   body="$(ghorg_body_of "${result}")"
   if [ "${status}" != '200' ]; then
-    ## FIXME: Shouldn't we log the body here too?
-    log error "account type lookup for '${owner}': HTTP '${status}'"
+    log error "account type lookup for '${owner}': HTTP '${status}': ${body:0:512}"
     return 1
   fi
   type="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output \

@@ -286,7 +286,7 @@ check_collision() {
 ## a single target repo. Idempotent and skipped when no flags were
 ## passed.
 configure_one() {
-  local repo patch enabled body result status
+  local repo patch enabled body result status response_body
 
   repo="$1"
 
@@ -302,10 +302,10 @@ configure_one() {
     else
       result="$(ghorg_api PATCH "/repos/${target_owner}/${repo}" "${patch}")"
       status="$(ghorg_status_of "${result}")"
-      [ "${status}" != '200' ] && \
-        log warn "PATCH '${target_owner}/${repo}': HTTP '${status}'"
-      ## FIXME: Display the body returned from the request for
-      ## debugging.
+      if [ "${status}" != '200' ]; then
+        response_body="$(ghorg_body_of "${result}")"
+        log warn "PATCH '${target_owner}/${repo}': HTTP '${status}': ${response_body:0:512}"
+      fi
       [ "${verbose}" = '1' ] && [ "${status}" = '200' ] && \
         log notice "configured: ${target_owner}/${repo} ${patch}"
     fi
@@ -326,9 +326,8 @@ configure_one() {
         204|200) [ "${verbose}" = '1' ] && \
           log notice "actions=${actions_state} on ${target_owner}/${repo}" ;;
         *)
-          log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}"
-          ## FIXME: Display the body returned from the request for
-          ## debugging.
+          response_body="$(ghorg_body_of "${result}")"
+          log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"
           ;;
       esac
     fi
@@ -350,9 +349,8 @@ configure_one() {
         204|200) [ "${verbose}" = '1' ] && \
           log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}" ;;
         *)
-          log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}"
-          ## FIXME: Display the body returned from the request for
-          ## debugging.
+          response_body="$(ghorg_body_of "${result}")"
+          log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"
           ;;
       esac
     fi
@@ -374,7 +372,7 @@ configure_one() {
 ## remotely. It should therefore NEVER be used on official production
 ## repos.
 sync_one() {
-  local repo result status info default_branch body merge_type
+  local repo result status info default_branch body merge_type response_body
 
   repo="$1"
 
@@ -425,16 +423,19 @@ sync_one() {
         "synced: ${target_owner}/${repo}/${default_branch} merge_type='${merge_type}'"
       ;;
     409)
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409)"
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' diverged from upstream (HTTP 409): ${response_body:0:512}"
       ;;
     422)
       ## 422 means 'merge-upstream validation failed' - upstream
       ## branch missing, target not a fork, target not behind, etc.
       ## Don't claim a specific cause; let the operator inspect.
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' could not be synced (HTTP 422 validation failed)"
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}' could not be synced (HTTP 422 validation failed): ${response_body:0:512}"
       ;;
     *)
-      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}'"
+      response_body="$(ghorg_body_of "${result}")"
+      log warn "sync-branches: '${target_owner}/${repo}/${default_branch}': HTTP '${status}': ${response_body:0:512}"
       ;;
   esac
 }
