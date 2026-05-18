@@ -2842,7 +2842,7 @@ main() {
       ## seed it from the cwd so single-repo invocations stay consistent
       ## with the per-package loop.
       batch_current_package_reponame="$(basename -- "${PWD}")"
-      "${target_cmd}" "${arg_list[@]}"
+      run_batch_command "${target_cmd}"
       return
    fi
 
