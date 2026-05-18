@@ -17,4 +17,4 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-exec dm-packaging-helper-script --no-batch pkg_git_sign_tags "$@"
+dm-packaging-helper-script --no-batch pkg_git_sign_tags "$@"
