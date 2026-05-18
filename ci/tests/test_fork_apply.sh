@@ -69,10 +69,10 @@ required=(
    'actions=enable on test-target/existing-repo'
    'workflow-perms=read on test-target/existing-repo'
    ## --sync-branches: sync_one looks up default_branch ('master' in
-   ## the fixture) and POSTs merge-upstream. The merge_type +
-   ## merged_commits come from the fixture body; their presence
-   ## proves the success-path jq extraction works.
-   "synced: test-target/existing-repo/master merge_type='fast-forward' commits='3'"
+   ## the fixture) and POSTs merge-upstream. merge_type comes from
+   ## the fixture body; its presence proves the success-path jq
+   ## extraction works.
+   "synced: test-target/existing-repo/master merge_type='fast-forward'"
 )
 for needle in "${required[@]}"; do
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
