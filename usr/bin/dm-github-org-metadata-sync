@@ -213,12 +213,12 @@ metadata_topics_json() {
 }
 
 ## Populates the caller-named associative array with one key per repo
-## name from a newline-separated list. Mirrors fork_main_build_repo_set
-## in github-org-fork.
+## name from a newline-separated list. Mirrors build_repo_set in
+## github-org-fork.
 ##
 ## WARNING: The 'set_name' argument MUST be the name of an associative
 ## array, or code injection may result.
-metadata_build_repo_set() {
+build_repo_set() {
    local list_text repo_name
    local -n set_name
 
@@ -383,7 +383,7 @@ main() {
          policy_warn_seen=1
          continue
       }
-      metadata_build_repo_set owner_repos "${repos_text}"
+      build_repo_set owner_repos "${repos_text}"
 
       absent_count=0
       present_count=0

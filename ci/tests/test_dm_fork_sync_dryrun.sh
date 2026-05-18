@@ -38,10 +38,10 @@ if [ "${CI:-}" != "true" ]; then
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
+FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
 export GHORG_MOCK=1
-export GHORG_MOCK_DIR="${FIXTURE_DIR}"
+export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 rc=0
 out="$(dm-github-fork-sync --dry-run 2>&1)" || rc=$?

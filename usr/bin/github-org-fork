@@ -444,10 +444,7 @@ sync_one() {
 
 ## Populates the associative array named in $1 with one key per
 ## newline-separated repo name in $2.
-##
-## FIXME: This function's name is horrible. Maybe 'create_repo_map'
-## instead?
-fork_main_build_repo_set() {
+build_repo_set() {
   local list_text repo_name
   local -n set_name
 
@@ -493,7 +490,7 @@ main() {
     return 0
   fi
 
-  fork_main_build_repo_set target_set "${target_repos}"
+  build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
     [ -z "${target_set[${repo_name}]:-}" ] && missing+=( "${repo_name}" )
@@ -519,7 +516,7 @@ main() {
     | sort --unique)"
 
   target_set=()
-  fork_main_build_repo_set target_set "${target_repos}"
+  build_repo_set target_set "${target_repos}"
   while IFS= read -r repo_name; do
     [ -z "${repo_name}" ] && continue
     [ -n "${target_set[${repo_name}]:-}" ] && to_configure+=( "${repo_name}" )

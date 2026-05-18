@@ -36,10 +36,10 @@ if [ "${CI:-}" != "true" ]; then
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
+FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
 export GHORG_MOCK=1
-export GHORG_MOCK_DIR="${FIXTURE_DIR}"
+export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 ## --verbose forces the lib's POLICY_QUIET_OK=0 path so the per-
 ## step 'ok:' lines this test asserts on are emitted. Without

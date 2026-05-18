@@ -22,10 +22,10 @@ if [ "${CI:-}" != "true" ]; then
 fi
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-FIXTURE_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
+FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
 export GHORG_MOCK=1
-export GHORG_MOCK_DIR="${FIXTURE_DIR}"
+export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 ## Capture stderr too: github-org-clone routes user-facing output
 ## through log notice / log warn now, all of which go to stderr.
