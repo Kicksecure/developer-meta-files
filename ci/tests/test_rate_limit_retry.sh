@@ -22,10 +22,7 @@ if [ "${CI:-}" != "true" ]; then
    exit 1
 fi
 
-## FIXME: The CI scripts are inconsistent with whether they tell shellcheck
-## how to source a file, or whether they tell shellcheck to not warn about a
-## file it can't find.
-# shellcheck disable=SC1091
+# shellcheck source=/usr/libexec/developer-meta-files/github-org-lib.bsh
 source /usr/libexec/developer-meta-files/github-org-lib.bsh
 
 fail=0

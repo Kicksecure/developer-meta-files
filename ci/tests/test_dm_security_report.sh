@@ -94,9 +94,8 @@ done
 ## --- mode-flag-required check ---
 rc=0
 out_nomode="$(dm-github-org-security-report 2>&1)" || rc=$?
-if [ "${rc}" -eq 0 ]; then
-   ## FIXME: Shouldn't we be checking for '-ne 64' here?
-   printf '%s\n' 'FAIL: missing-mode-flag run exited 0; should die 64' >&2
+if [ "${rc}" -ne 64 ]; then
+   printf '%s\n' "FAIL: missing-mode-flag run exited rc='${rc}'; expected 64 (die 64)" >&2
    fail=1
 fi
 if ! grep --quiet -- 'mode flag required' <<< "${out_nomode}"; then
