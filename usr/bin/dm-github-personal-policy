@@ -157,14 +157,9 @@ apply_repo_policy() {
       "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
-   ## target_kind also pivots the ruleset rules array:
-   ##   PERSON -> POLICY_RULESET_RULES_PERSON (with
-   ##             required_signatures - maintainer's mirror still
-   ##             enforces signed commits/tags).
-   ##   BOT    -> POLICY_RULESET_RULES_BOT (without
-   ##             required_signatures - bot account pushes via
-   ##             AI-assisted automation without a verifiable GPG key
-   ##             for the bot identity).
+   ## PERSON / BOT ruleset-rules split (required_signatures on /
+   ## off respectively) lives in agents/github-policy-canonical-vs-
+   ## mirror.md.
    rules_var="POLICY_RULESET_RULES_${target_kind^^}"
 
    if check_variable_name "${rules_var}"; then

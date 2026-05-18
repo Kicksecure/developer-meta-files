@@ -6,16 +6,13 @@
 ## AI-Assisted
 
 ## Shared functions for the github-org-* tools (clone/fork/push).
-
-## THREAT MODEL
-## Every byte returned by the GitHub REST API is treated as untrusted.
-## Identifier sinks pass through ghorg_validate_name or numeric regex
-## + length cap (GHORG_MAX_ID_LEN). Display sinks go through log()
-## which pipes through sanitize-string internally (LOG_MAX_LEN cap).
-## Resource caps below bound damage from hostile pagination, redirect
-## chains, oversized bodies, oversized "numeric" ids.
-## github-org-clone additionally sets GIT_LFS_SKIP_SMUDGE=1 and
-## protocol.file.allow=never / protocol.ext.allow=never on clone.
+##
+## Threat model + identifier/display-sink discipline is documented
+## once in agents/security.md (R-140). This lib implements that
+## contract via ghorg_validate_name (identifier sink) and the log()
+## -> sanitize-string pipeline (display sink). Resource caps
+## (GHORG_MAX_*) below bound damage from hostile pagination,
+## redirect chains, oversized bodies, and oversized "numeric" ids.
 
 ## R-010 strict-mode block. Sourced lib; callers already set these,
 ## so these lines are a no-op there. Guarantees strict mode if ever

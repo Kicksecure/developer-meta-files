@@ -13,15 +13,8 @@
 ##   POLICY_RULESET_RULES_MIRROR / _BOT     ->  2 rules, NO
 ##                                              required_signatures
 ##
-## Rationale: bot account (BOT_USERS) and bot org (org-ai-assisted,
-## the MIRROR_ORGS entry) push commits via AI-assisted automation
-## without a GPG key matching the bot's GitHub-verified identity.
-## Leaving required_signatures on those roles would block every
-## legitimate bot push. The canonical SOURCE history and the
-## maintainer's PERSON mirror still enforce signed commits.
-##
-## See agents/github-policy-canonical-vs-mirror.md "Summary of
-## intentional canonical-vs-mirror splits" for the policy table.
+## Rationale lives once in agents/github-policy-canonical-vs-
+## mirror.md ("Summary of intentional canonical-vs-mirror splits").
 
 set -o errexit
 set -o nounset

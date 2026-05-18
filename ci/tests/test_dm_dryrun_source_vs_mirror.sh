@@ -5,30 +5,11 @@
 
 ## AI-Assisted
 
-## Mock-API test: dm-github-org-policy pivots three things on
-## org_kind. SOURCE_ORGS entries (Kicksecure, Whonix) and
-## MIRROR_ORGS entries (org-ai-assisted) diverge as follows:
-##
-##   per-repo PATCH body:
-##     SOURCE: 'wiki=off, issues=on, secret-scan on' (issues stay on)
-##     MIRROR: 'wiki/issues/projects/discussions off, secret-scan on'
-##
-##   Dependabot alerts + Dependabot security updates:
-##     SOURCE: enabled per repo (2 PUTs each)
-##     MIRROR: actively disabled per repo (2 DELETEs each, with
-##             security-fixes BEFORE alerts to avoid 422). Every
-##             --apply reconciles - mirror would duplicate every
-##             alert the canonical SOURCE repo already raises.
-##
-##   PVR (Private Vulnerability Reporting):
-##     OFF EVERYWHERE. DELETE /private-vulnerability-reporting
-##     runs on both SOURCE and MIRROR; canonical disclosure is
-##     the wiki per .github/SECURITY.md. PUT enable-side has no
-##     constant in github-policy-data.bsh.
-##
-##   per-repo branch + tag rulesets: applied on both; bypass actor
-##     list pivots on POLICY_RULESET_BYPASS_SOURCE/MIRROR (the
-##     repo-level ruleset upserts work on Free for public repos).
+## Mock-API test: dm-github-org-policy pivots several things on
+## org_kind. The full SOURCE-vs-MIRROR policy table lives once in
+## agents/github-policy-canonical-vs-mirror.md ("Summary of
+## intentional canonical-vs-mirror splits"); this test asserts the
+## resulting fragments appear in --dry-run output for each side.
 ##
 ## The org-level ruleset upsert in apply_org_policy is PAID PLAN
 ## ONLY (commented out); not exercised here.
