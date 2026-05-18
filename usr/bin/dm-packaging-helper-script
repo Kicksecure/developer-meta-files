@@ -119,7 +119,7 @@ check_prerequisites() {
       #exit 1
    }
 
-   main pkg_git_check_current_branch
+   main --batch pkg_git_check_current_branch
 
    true
 }
@@ -475,11 +475,11 @@ repo_skip_non_package() {
    repo_skip 'Whonix-Starter' || return 1
 }
 
-## Returns 0 if the current repo is one of the four "special"
-## (non-package) repos. Counterpart to repo_skip_non_package.
+## Returns 0 if the current repo is one of the "special" (non-package)
+## repos. Counterpart to repo_skip_non_package.
 repo_is_special() {
    case "${batch_current_package_reponame}" in
-      qubes-template-kicksecure|qubes-template-whonix|Whonix-Installer|Whonix-Starter)
+      qubes-template-kicksecure|qubes-template-whonix|Whonix-Installer|Whonix-Starter|live-build|grml-debootstrap|grml-debootstraptest)
          return 0
          ;;
    esac
@@ -692,6 +692,64 @@ get_package_documentation_info_list() {
       fi
    done
 }
+
+## Derives all batch_current_* globals from PWD for single-repo --no-batch
+## invocations. Mirrors the per-package assignments run_batch() makes for
+## each iteration. Fails fast if the reponame is unrecognized so the user
+## function doesn't run with empty/garbage context.
+set_batch_context_from_pwd() {
+   local pwd_abs reponame parent grandparent
+   pwd_abs="$(realpath -- "${PWD}")"
+   reponame="$(basename -- "${pwd_abs}")"
+   parent="$(dirname -- "${pwd_abs}")"
+   grandparent="$(basename -- "${parent}")"
+
+   batch_current_package_path="${pwd_abs}"
+   batch_current_package_reponame="${reponame}"
+
+   ## derivative-maker is its own meta-repo category - kept out of
+   ## repo_is_special to preserve batch-mode branching semantics.
+   if [ "${reponame}" = 'derivative-maker' ]; then
+      batch_current_project_name='Kicksecure'
+      batch_current_project_website='kicksecure.com'
+      batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+      return 0
+   fi
+
+   if repo_is_special; then
+      case "${reponame}" in
+         qubes-template-kicksecure|live-build|grml-debootstrap|grml-debootstraptest)
+            batch_current_project_name='Kicksecure'
+            batch_current_project_website='kicksecure.com'
+            batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+            ;;
+         qubes-template-whonix|Whonix-Installer|Whonix-Starter)
+            batch_current_project_name='Whonix'
+            batch_current_project_website='whonix.org'
+            batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+            ;;
+      esac
+      return 0
+   fi
+
+   case "${grandparent}" in
+      kicksecure)
+         batch_current_project_name='Kicksecure'
+         batch_current_project_website='kicksecure.com'
+         batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+         ;;
+      whonix)
+         batch_current_project_name='Whonix'
+         batch_current_project_website='whonix.org'
+         batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+         ;;
+      *)
+         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} ${FUNCNAME[0]}: cannot determine project for reponame='${reponame}' (PWD parent: '${grandparent}'). Run from a package directory under derivative-maker, or add '${reponame}' to repo_is_special."
+         exit 1
+         ;;
+   esac
+}
+
 
 ## Sets the list of Github remotes for the current package, as defined in
 ## batch_current_package_reponame. See pkg_git_remotes_add for a good
@@ -2730,28 +2788,20 @@ run_batch() {
       done
    done
 
-   # Special-case for live-build
+   # Special-case for qubes-template-kicksecure
    batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='live-build'
+   batch_current_package_reponame='qubes-template-kicksecure'
    batch_current_project_website='kicksecure.com'
    batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="live-build"
+   batch_current_package_path="qubes/qubes-template-kicksecure"
    run_batch_command "$@"
 
-   # Special-case for grml-debootstrap
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='grml-debootstrap'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="grml-debootstrap"
-   run_batch_command "$@"
-
-   # Special-case for grml-debootstraptest
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='grml-debootstraptest'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="grml-debootstraptest"
+   # Special-case for qubes-template-whonix
+   batch_current_project_name='Whonix'
+   batch_current_package_reponame='qubes-template-whonix'
+   batch_current_project_website='whonix.org'
+   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
+   batch_current_package_path="qubes/qubes-template-whonix"
    run_batch_command "$@"
 
    # Special-case for Whonix-Installer
@@ -2770,22 +2820,6 @@ run_batch() {
    batch_current_package_path="windows/Whonix-Starter"
    run_batch_command "$@"
 
-   # Special-case for qubes-template-kicksecure
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='qubes-template-kicksecure'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-kicksecure"
-   run_batch_command "$@"
-
-   # Special-case for qubes-template-whonix
-   batch_current_project_name='Whonix'
-   batch_current_package_reponame='qubes-template-whonix'
-   batch_current_project_website='whonix.org'
-   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-whonix"
-   run_batch_command "$@"
-
    # Special-case for derivative-maker
    batch_current_project_name='Kicksecure'
    batch_current_package_reponame='derivative-maker'
@@ -2802,9 +2836,8 @@ run_batch() {
 }
 
 main() {
-   local target_cmd arg_list no_batch
-
-   no_batch='n'
+   local target_cmd arg_list mode post_run_hook
+   mode=''
 
    while [ $# -gt 0 ]; do
       case "${1}" in
@@ -2812,8 +2845,20 @@ main() {
             batch_meta_dry_run='y'
             shift
             ;;
+         --batch)
+            [ -n "${mode}" ] && {
+               printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --batch and --no-batch are mutually exclusive"
+               exit 1
+            }
+            mode='batch'
+            shift
+            ;;
          --no-batch)
-            no_batch='y'
+            [ -n "${mode}" ] && {
+               printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --batch and --no-batch are mutually exclusive"
+               exit 1
+            }
+            mode='no-batch'
             shift
             ;;
          --*)
@@ -2833,16 +2878,21 @@ main() {
    if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 [--dry-run] [--no-batch] function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] (--batch|--no-batch) function-name arguments"
       exit 0
    fi
 
-   if [ "${no_batch}" = 'y' ]; then
-      ## repo_skip and other helpers read batch_current_package_reponame;
-      ## seed it from the cwd so single-repo invocations stay consistent
-      ## with the per-package loop.
-      batch_current_package_reponame="$(basename -- "${PWD}")"
-      run_batch_command "${target_cmd}"
+   if [ -z "${mode}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
+      exit 1
+   fi
+
+   if [ "${mode}" = 'no-batch' ]; then
+      set_batch_context_from_pwd
+      run_batch_command "${target_cmd}" "${arg_list[@]}"
+      for post_run_hook in "${post_run_hook_list[@]}"; do
+         "${post_run_hook}"
+      done
       return
    fi
 
