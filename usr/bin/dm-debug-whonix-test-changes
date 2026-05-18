@@ -13,6 +13,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 build_all_error_handler() {
    : printf '%s\n' "
