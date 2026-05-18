@@ -85,7 +85,7 @@ for needle in "${source_required[@]}"; do
 done
 for needle in "${source_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
-      printf '%s\n' "FAIL[SOURCE]: unexpected MIRROR-side fragment present: ${needle}" >&2
+      printf '%s\n' "FAIL[SOURCE]: forbidden fragment present: ${needle}" >&2
       fail=1
    fi
 done
@@ -132,7 +132,7 @@ for needle in "${mirror_required[@]}"; do
 done
 for needle in "${mirror_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_mirror}"; then
-      printf '%s\n' "FAIL[MIRROR]: unexpected SOURCE-side fragment present: ${needle}" >&2
+      printf '%s\n' "FAIL[MIRROR]: forbidden fragment present: ${needle}" >&2
       fail=1
    fi
 done
