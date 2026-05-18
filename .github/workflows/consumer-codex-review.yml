@@ -1,21 +1,22 @@
----
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 ## AI-Assisted
 
-## Self-consumer wrapper. Calls the Codex Review reusable defined
-## in this same repo via local-path './...' rather than cross-repo
-## '@master' - so a PR that modifies the reusable exercises its
-## own changes during the PR's CI run (dogfooding).
+## Managed by pkg_update_consumer_workflows. Byte-identical
+## across consumers; this file is `cp`-ed from
+## developer-meta-files/consumer-templates/.github/workflows/consumer-codex-review.yml.
+## DO NOT hand-edit this file in the consumer repo - changes
+## will be overwritten on the next propagation pass.
 ##
-## Docs live in the reusable:
-## .github/workflows/reusable-codex-review.yml
+## Reusable docs:
+## https://github.com/org-ai-assisted/developer-meta-files/blob/master/.github/workflows/reusable-codex-review.yml
 
 name: OpenAI Codex Review
 
 on:
   pull_request:
+    branches: [master]
   workflow_dispatch:
     inputs:
       pr_ref:
@@ -37,7 +38,7 @@ concurrency:
 
 jobs:
   review:
-    uses: ./.github/workflows/reusable-codex-review.yml
+    uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-codex-review.yml@master
     with:
       pr-ref: ${{ inputs.pr_ref || '' }}
     secrets:

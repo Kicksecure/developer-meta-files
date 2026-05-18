@@ -97,3 +97,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GHORG_AUDIT_TOKEN }}
         run: dm-github-policy --dry-run
+
+      - name: Emit step summary
+        if: always()
+        ## Minimal panel surfacing pass/fail. The audit / dry-run
+        ## findings themselves stay in the step logs; this is a
+        ## headline indicator for the Actions tab. Template values
+        ## routed through env: per #87 to avoid CodeQL flagging.
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          ./ci/step-summary-emit.sh \
+            --tool 'github-org tools (live policy check)' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "modes=audit + dry-run"

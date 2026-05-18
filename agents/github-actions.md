@@ -12,27 +12,56 @@ the trigger schedule + cron slot + a tiny `jobs.<id>.uses:` line.
 
 ### File-naming convention (G-A-005)
 
-**Reusable filenames carry a `reusable-` prefix; consumer-wrapper
-filenames don't.** Examples:
+**Three filename prefixes mark workflow role: `reusable-`,
+`consumer-`, `local-`.** Examples:
 
-    .github/workflows/reusable-codeql.yml         (reusable)
-    .github/workflows/codeql.yml                  (consumer wrapper)
+    .github/workflows/reusable-codeql.yml           (library)
+    .github/workflows/consumer-codeql-actions.yml   (consumer wrapper)
+    .github/workflows/local-test-build.yml          (repo-private)
 
-This:
+- `reusable-X.yml`: library code called via `uses:`. Lives only in
+  `developer-meta-files/.github/workflows/`. Never propagated. The
+  path is fixed by GitHub Actions' cross-repo `uses:` resolution;
+  the prefix is what disambiguates library from wrapper inside
+  this single directory.
+- `consumer-X.yml`: thin wrapper around a reusable. Single source
+  of truth lives at
+  `developer-meta-files/consumer-templates/.github/workflows/consumer-X.yml`.
+  Propagated byte-identical to every opted-in consumer (including
+  `developer-meta-files` itself, which is a consumer of itself).
+  Hand-editing on the consumer side is wrong - changes get
+  overwritten on the next propagation pass. See
+  [`github-actions-consumer-templates.md`](github-actions-consumer-templates.md)
+  for the architecture spec, including the `cp`-only propagation
+  contract and the runtime-read mechanism for per-repo parameters.
+- `local-X.yml`: workflow that lives only in the repo it is
+  authored for; never propagated. Use this for repo-specific
+  build/test workflows (e.g. `local-firewall-tests.yml` in
+  whonix-firewall, `local-test-build.yml` in derivative-maker)
+  and for hub-private workflows in `developer-meta-files`
+  (`local-org-policy-live-probe.yml`,
+  `local-org-tools-mock-tests.yml`).
 
-- Lets developer-meta-files self-consume its own reusables under
-  the bare consumer name (`scorecard.yml` calls `./.github/
-  workflows/reusable-scorecard.yml`) without inventing per-file
-  workaround suffixes (`-self`, etc.).
-- Makes the consumer / reusable distinction visible in the file
-  list at a glance - critical when a single repo holds both kinds
-  (developer-meta-files does; helper-scripts/kloak/etc. only hold
-  consumers).
+The prefix is a filesystem signal only. GitHub's Actions UI
+sidebar sorts by the workflow's in-file `name:` field, so a file
+named `consumer-codeql-actions.yml` carrying `name: CodeQL Actions`
+shows up in the UI as "CodeQL Actions" with no prefix visible.
 
-This eliminates per-repo duplication of action SHA pins and step
-bodies. Updating an action SHA on the reusable propagates to all
-consumers automatically (when consumers `@master`-track) or via one
-sha-bump PR per consumer (when consumers `@<sha>`-pin).
+The scheme buys two properties:
+
+- One glance at `ls .github/workflows/` tells a contributor which
+  files they can hand-edit (`local-*`) and which are auto-managed
+  by propagation (`consumer-*`) and which are library code called
+  by `uses:` (`reusable-*`).
+- A repo that holds a mix (`developer-meta-files` holds all three;
+  most consumer repos hold `consumer-*` and `local-*` only)
+  presents that mix legibly.
+
+Eliminating per-repo duplication of action SHA pins and step
+bodies is the underlying win. Updating an action SHA on the
+reusable propagates to all consumers automatically (when consumers
+`@master`-track) or via one sha-bump PR per consumer (when
+consumers `@<sha>`-pin).
 
 ### Constraints to remember
 
@@ -82,8 +111,10 @@ per workflow based on how often the reusable changes vs. how
 strict the trust boundary is.
 
 **G-A-006: Concurrency policy - cancellable by default, singleton
-for quota-limited / release-pipeline.** Every workflow declares a
-top-level `concurrency:` block. Two patterns:
+for quota-limited / release-pipeline.** Every top-level workflow
+declares a top-level `concurrency:` block (reusables follow
+different rules - see "Reusable-side concurrency" below). Two
+patterns:
 
 **Cancellable** (default for CI):
 
@@ -95,6 +126,39 @@ Group includes `github.ref` so each branch / PR has its own
 queue; a new push on the same ref cancels the in-flight run.
 Right for lint, test, codeql, cppcheck, bandit, scorecard,
 claude-code-review, codex-review, build matrices.
+
+`github.ref` is unique per PR (`refs/pull/N/merge`) and per tag
+(`refs/tags/<tag>`), so a workflow file that handles both
+`pull_request:` and `push: tags: [...]` triggers gets the right
+isolation for free: different PRs do not cross-cancel, tag
+pushes do not cancel PRs, and new commits on the same PR cancel
+that PR's prior in-flight run. No event-type discriminator in
+the group key is needed for this case.
+
+**Reusable-side concurrency.** `github.workflow` inside a reusable
+resolves to the *caller's* workflow name, so a reusable that
+declares the same `${{ github.workflow }}-${{ github.ref }}` group
+as its caller produces an identical lock name; Actions surfaces
+this as `Canceling since a deadlock was detected for concurrency
+group: ...` and cancels the run. Reusables therefore either omit
+`concurrency:` entirely (the caller's cancellable group covers it
+- see [`reusable-pre-push-static.yml`](../.github/workflows/reusable-pre-push-static.yml),
+[`reusable-secrets-audit.yml`](../.github/workflows/reusable-secrets-audit.yml),
+[`reusable-scorecard.yml`](../.github/workflows/reusable-scorecard.yml),
+[`reusable-bandit.yml`](../.github/workflows/reusable-bandit.yml),
+[`reusable-cppcheck.yml`](../.github/workflows/reusable-cppcheck.yml),
+[`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-code-review.yml),
+[`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml))
+or differentiate the group key with a per-call input the caller
+doesn't replicate ([`reusable-codeql.yml`](../.github/workflows/reusable-codeql.yml)
+adds `${{ inputs.language }}` to a key the caller carries as
+`${{ github.workflow }}-${{ github.ref }}`, so the two locks
+differ). A naive "the reusable adds a PR/issue-number
+disambiguator" pattern does NOT differentiate when the caller's
+key carries the same disambiguator (both sides resolve to the
+same string under `github.workflow` = caller's name); the
+AI-review reusables therefore omit the block and let the
+consumer wrapper own the cancellable lock.
 
 **Singleton** (cancel=false, workflow-only group):
 
@@ -113,41 +177,51 @@ real cost:
   [`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
   inline comment.
 
-Consumers of singleton reusables must NOT set
+Singleton reusables follow the same caller-name resolution rule
+as cancellable reusables (see "Reusable-side concurrency" above):
+`github.workflow` inside the reusable expands to the caller's
+workflow name. A reusable that declares `group: ${{ github.workflow }}`
+would resolve to the caller's group key, which the caller already
+holds; with `cancel-in-progress: false` the reusable would block-
+wait on its own caller's lock and deadlock the run. The singleton
+therefore lives on the **caller's** wrapper, and the reusable
+omits `concurrency:` entirely - see
+[`reusable-coverity.yml`](../.github/workflows/reusable-coverity.yml)
+which carries an explicit comment to that effect, and
+[`consumer-templates/.github/workflows/consumer-coverity.yml`](../consumer-templates/.github/workflows/consumer-coverity.yml)
+which owns the `group: ${{ github.workflow }}` + `cancel-in-progress: false`
+lock. Consumers of singleton reusables must NOT set
 `cancel-in-progress: true` at the wrapper level: a cancelled
-wrapper cancels its called workflow run, defeating the
-reusable's no-cancel guarantee. Either omit `concurrency:` at
-the wrapper level (the reusable's controls), or mirror the
-reusable's `group + cancel=false` policy explicitly.
-
-**Differentiated by event type** (cancel within event-type,
-isolate across event-types):
-
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.event_name == 'push' && 'tag' || 'pr' }}
-      cancel-in-progress: true
-
-Right when one workflow file serves both PR validation AND
-release-tag builds in the same file. PR pushes all share the
-`<workflow>-pr` group (latest PR push cancels older, regardless
-of which PR); tag pushes all share `<workflow>-tag` (newer tag
-supersedes); cross-event runs are isolated. So a tag push
-cannot cancel an in-flight third-party PR validation, and a PR
-push cannot cancel an in-flight 3-hour release build. Live
-example: [`derivative-maker/run_automated_builder.yml`](https://github.com/org-ai-assisted/derivative-maker/blob/master/.github/workflows/run_automated_builder.yml).
+wrapper would cancel the in-flight call, defeating the no-cancel
+guarantee that protects the daily-quota-limited submit.
 
 **Issue-comment & PR-review-comment events** fire on the
 default branch ref, not the PR head ref - so grouping by
 `${{ github.ref }}` would put unrelated PRs into the same
-group. For AI-review workflows that listen on those events,
-the group key includes a PR/issue number disambiguator:
+group. The **consumer wrapper's** group key for AI-review
+workflows therefore includes a PR/issue number disambiguator
+(the disambiguator lives on the caller, not the reusable -
+see "Reusable-side concurrency" above for why):
 
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
 
-See [`reusable-claude-code-review.yml`](../.github/workflows/reusable-claude-code-review.yml)
-and [`reusable-codex-review.yml`](../.github/workflows/reusable-codex-review.yml)
+See [`consumer-templates/.github/workflows/consumer-claude-code.yml`](../consumer-templates/.github/workflows/consumer-claude-code.yml)
+and [`consumer-templates/.github/workflows/consumer-codex-review.yml`](../consumer-templates/.github/workflows/consumer-codex-review.yml)
 for the live example.
 
+
+**G-A-007: Cache poisoning - no broad `restore-keys:`, no
+`pull_request_target` + cache.** `actions/cache` extracts archives
+without integrity checks; an attacker with code-exec on a workflow
+that holds `ACTIONS_RUNTIME_TOKEN` can replace cache entries
+visible to the default branch for ~6h after the run. Mitigations
+in this repo: (1) no `pull_request_target` triggers anywhere,
+(2) fork-PR guard on every PR-triggered reusable, (3) cache keys
+pinned to `hashFiles(<this workflow>)` with no catch-all
+`restore-keys:` fallback, (4) cached payloads are apt `.deb`s
+re-verified by `apt-get install` against fresh `Packages`
+metadata. See
+<https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/>.
 
 ## See also
 

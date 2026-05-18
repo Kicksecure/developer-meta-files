@@ -10,7 +10,7 @@
 ## annotation rather than letting the cov-build download fail with
 ## an opaque server-side error message.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN    - project token from scan.coverity.com
 ##   COVERITY_EMAIL    - notification email registered on the project
 ##   COVERITY_PROJECT  - project name as it appears in the URL
@@ -19,7 +19,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
-## FIXME: Why aren't the shopt settings here?
+shopt -s inherit_errexit
+shopt -s shift_verbose
 
 ## CI guard. The Coverity workflow expects to find token/email/project
 ## in env. There is no sensible local invocation. Refuse outside CI

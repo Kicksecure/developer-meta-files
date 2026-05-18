@@ -1,3 +1,2505 @@
+commit 996af11dc73a329177cb6d9b6b7f82f1302e3d1b
+Merge: 70fc09f cd7e21d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:58:12 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit cd7e21d52b96eeb75dc887ac11177f0987e329a6
+Merge: 70fc09f aa11f96
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 15:27:41 2026 -0400
+
+    Merge pull request #91 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(security): fork-PR guard + DMF_REF env routing for dogfood checkout
+
+commit aa11f961652e979c728b24c1d7e6c0854782184b
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 19:21:25 2026 +0000
+
+    ci(security): route dogfood checkout ref through env (DMF_REF)
+
+    Follow-on to the fork-PR guard. Routes the dogfood-vs-master
+    checkout-ref expression through a job-level env var (DMF_REF) in
+    all six reusables that share the pattern, matching the org-wide
+    env-routing convention already used for JOB_STATUS / BASE_REF /
+    CPPCHECK_PATHS / etc.
+
+    Before:
+
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ github.repository == 'org-ai-assisted/...' && github.sha || 'master' }}
+
+    After:
+
+        env:
+          DMF_REF: ${{ github.repository == 'org-ai-assisted/...' && github.sha || 'master' }}
+        ...
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: ${{ env.DMF_REF }}
+
+    Files (single source of truth, propagated to consumers only via
+    reusable @master tracking - no consumer-side ref changes):
+
+    - reusable-bandit.yml
+    - reusable-codeql.yml
+    - reusable-cppcheck.yml
+    - reusable-pre-push-static.yml
+    - reusable-scorecard.yml
+    - reusable-secrets-audit.yml
+
+    The job-level fork-PR guard added in the previous commit remains
+    the actual mitigation for actions/untrusted-checkout/medium alert
+    #15 - CodeQL's dataflow tracker follows env-var references, so
+    indirection alone doesn't break the source-to-sink path. Env
+    routing is added here for convention consistency and to keep the
+    attacker-influenceable expression out of the with:/ref: site, not
+    because it independently closes the alert.
+
+    YAML still parses; agents/pre-push-static.sh passes; no expression-
+    injection sites regressed (find-expr-injection scan: 0 hits).
+
+commit cfe9646be2b0e4d1e9cf497d4905655a9b4258ac
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 19:11:24 2026 +0000
+
+    ci(security): add fork-PR guard to pre-push-static + secrets-audit
+
+    Closes CodeQL actions/untrusted-checkout/medium alert #15
+    ("Checkout of untrusted code in trusted context") and the same
+    latent pattern in reusable-secrets-audit.yml.
+
+    Both reusables share a dogfood checkout that resolves to
+    ${{ github.sha }} when the caller IS developer-meta-files, falling
+    back to 'master' otherwise. On a pull_request event from a fork
+    that path would run an attacker-controlled script in the runner.
+    Trigger is pull_request (not pull_request_target) and permissions
+    are contents: read only, so the blast radius is bounded - but the
+    guard is the standard org-wide mitigation and the four other
+    reusables that share this pattern (bandit, codeql, scorecard,
+    cppcheck) already carry it.
+
+    Adding:
+
+        if: github.event.pull_request.head.repo.full_name == github.repository
+            || github.event_name != 'pull_request'
+
+    at job level. Net effect:
+
+    - Fork PRs: job skipped (closes the alert path).
+    - Same-repo branch PRs: job runs (dogfooding preserved; org members
+      all have write, trusted by agents/security.md threat model A).
+    - push / workflow_dispatch: job runs (event_name discriminator).
+    - Cross-repo callers (derivative-maker, helper-scripts, ...): job
+      runs and the dogfood ref already resolves to 'master', so no
+      behavior change there.
+
+    YAML still parses; agents/pre-push-static.sh passes.
+
+commit 70fc09facaf4b7a1a08525e605b8291d740b42bc
+Merge: a436fbb 509f0dc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:07:57 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit a436fbb45b5765511a957d78ef563c403c82639d
+Merge: ff8bf9c 650de18
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 15:05:25 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-developer-meta-files-vHKKI'
+
+commit 509f0dcb0a4ae502abff987ae7ab02886ddcf347
+Merge: ff8bf9c 650de18
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 15:04:43 2026 -0400
+
+    Merge pull request #90 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(security): close remaining expression-injection sinks in run: blocks
+
+commit 650de18068bec320e32ccb60c20832d21db71e1b
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 18:59:23 2026 +0000
+
+    ci(security): close remaining expression-injection sinks in run: blocks
+
+    Follow-up to 3add64d2 ("Potential fix for code scanning alert no. 36:
+    Code injection"), which fixed reusable-codeql.yml. Sweep of the
+    remaining workflows turned up 10 more inline ${{ ... }} expressions
+    interpolated into shell args inside run: blocks - the same pattern
+    CodeQL's js/actions/command-injection (a.k.a. actions/expression-
+    injection) query flags regardless of whether the underlying value is
+    server-validated.
+
+    Fix shape mirrors the autofix: route every value through step-level
+    env: and consume with shell-native ${VAR} expansion in run:.
+
+    Files touched:
+    - reusable-bandit.yml         (1 sink: job.status)
+    - reusable-cppcheck.yml       (1 sink: job.status; CPPCHECK_PATHS
+                                   already routed via env)
+    - reusable-scorecard.yml      (3 sinks: job.status, github.server_url,
+                                   github.repository)
+    - reusable-secrets-audit.yml  (5 sinks: 4x conditional 'present'/
+                                   'absent' labels + job.status)
+
+    For reusable-secrets-audit.yml the conditional 'present'/'absent'
+    resolution is hoisted into the env: block - the expression engine
+    evaluates it server-side before the env var is assigned, so the
+    shell only sees a literal string.
+
+    Verified clean by scanning all .github/workflows/*.yml and
+    consumer-templates/.github/workflows/*.yml for the same pattern; 0
+    hits remaining. YAML still parses, agents/pre-push-static.sh passes.
+
+commit ff8bf9c51423d08c42340f2e1b55ad8db476a7be
+Merge: 32d9a4c 3add64d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:52:36 2026 -0400
+
+    Merge remote-tracking branch 'github-kicksecure/alert-autofix-36'
+
+commit 3add64d26fa039c17b71a9716d1bd9ff52e61646
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:51:48 2026 -0400
+
+    Potential fix for code scanning alert no. 36: Code injection
+
+    Co-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>
+
+commit 32d9a4c0d45fba0f6ea371b480be8df98d4152a8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 18:45:58 2026 +0000
+
+    bumped changelog version
+
+commit 26fd0415224658e8e0d01b257218d6dc3196f4aa
+Merge: 32932cc c901cc0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 14:41:37 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit c901cc0117c40ecfca6a1d3869797e79fb75b271
+Merge: 32932cc 9ecdc49
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 14:40:32 2026 -0400
+
+    Merge pull request #89 from org-ai-assisted/claude/review-developer-meta-files-vHKKI
+
+    ci(deps): bump github-actions group (claude-code-action, codeql-action)
+
+commit 32932ccfa69003d99b4c0ab013f7da335f1133f2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 18:38:16 2026 +0000
+
+    bumped changelog version
+
+commit 9ecdc49638114c119a6b4b4178bd3f1e5689ee80
+Author: Claude <noreply@anthropic.com>
+Date:   Fri May 15 18:13:38 2026 +0000
+
+    ci(deps): bump github-actions group (claude-code-action, codeql-action)
+
+    Ports Kicksecure/developer-meta-files#4 (Dependabot grouped update) to
+    the org-ai-assisted mirror, which does not run Dependabot itself per
+    agents/github-policy-canonical-vs-mirror.md.
+
+    - anthropics/claude-code-action: 62238ddb (v1.0.114) -> 51ea8ea7 (v1.0.123)
+    - github/codeql-action/init:        e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+    - github/codeql-action/analyze:     e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+    - github/codeql-action/upload-sarif:e46ed2cb (v4.35.3) -> 9e0d7b8d (v4.35.5)
+
+    All three codeql-action usages move in lockstep to the same SHA so a
+    single run never mixes patch levels.
+
+commit 8b20a8a46629229fee423aea5929e3f7e8f71604
+Merge: 8d288ef 7d473d8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 12:47:36 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 8d288efcd0aa90209b6b84686510c5ed9c0673fa
+Merge: 055af09 150c73a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri May 15 12:34:02 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/update-todo-list-I5jPu'
+
+commit 7d473d8418ddd42f1c4c2940b02d64c32eab55e4
+Merge: 4a1e11a 8e0d17e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:29:08 2026 -0400
+
+    Merge pull request #88 from org-ai-assisted/claude/audit-github-actions-security-vXOos
+
+    ci(actions): emit step summary in dmf local-* workflows
+
+commit 8e0d17eb7e0a16aa90f1673f5012ee566d44e6ce
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:26:54 2026 -0400
+
+    ci(actions): emit step summary in dmf local-* workflows
+
+    Add ci/step-summary-emit.sh calls (if: always(), env-routed
+    template substitutions per #87) to the three result-producing
+    local-* workflows in developer-meta-files:
+
+      local-org-tools-mock-tests.yml  - outcome + trigger event
+      local-org-policy-live-audit.yml - outcome + modes
+      local-org-policy-live-probe.yml - outcome + modes
+
+    Pattern matches the reusable summaries from #87: a single inline
+    call (R-100 compliant), no parsing of the underlying tool output
+    in the workflow itself. Findings still live in the step logs;
+    this panel surfaces the headline result in the Actions tab.
+
+commit 4a1e11a7710b0a719d68f4a14aecf791aa178b0b
+Merge: 04f690b e89cca8
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:18:28 2026 -0400
+
+    Merge pull request #87 from org-ai-assisted/claude/audit-github-actions-security-vXOos
+
+    ci(actions): emit step summary in pre-push-static and coverity reusables
+
+commit e89cca804c364096c6425235e2b64aa88c8e03cd
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:16:35 2026 -0400
+
+    ci(actions): route ${{ ... }} substitutions in new summary steps through env
+
+    CodeQL flagged the new "Emit step summary" steps from the previous
+    commit for inline ${{ ... }} substitution into run: blocks - the
+    exact script-injection antipattern this audit (#80, #84, #86) has
+    been removing elsewhere. Apply the same fix: every template-
+    substituted value goes through env: and is referenced as a shell
+    variable in run:.
+
+    reusable-pre-push-static.yml:
+      + env: JOB_STATUS: ${{ job.status }}
+      - --row "outcome=${{ job.status }}"
+      + --row "outcome=${JOB_STATUS}"
+
+    reusable-coverity.yml: same treatment for JOB_STATUS,
+    gate.outputs.allowed (-> CANONICAL), cfg.outputs.project_name
+    (-> PROJECT_NAME). project_name comes from the consumer's
+    dm-consumer.yml which is PR-author-controllable, so it is the
+    one of the three with real attacker reach; the other two get the
+    same treatment for consistency.
+
+commit 02e2e3ae50f37e1a605aa108f7600b0f594dec0d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:12:30 2026 -0400
+
+    ci(actions): emit step summary in pre-push-static and coverity reusables
+
+    The two reusables not yet using ci/step-summary-emit.sh now do.
+
+    reusable-pre-push-static.yml: appends a panel with outcome +
+    base-ref so the PR Checks tab makes it obvious which ref the
+    gate diffed against. Per-hook FAIL details still live in the
+    gate step's log (no parsing in the workflow, R-100 compliant).
+
+    reusable-coverity.yml: appends a panel with outcome + canonical
+    gate result + dm-consumer.yml project name + dashboard URL.
+    'canonical=false' surfaces clearly on mirror-org runs where the
+    gate skipped the heavy steps. The dashboard URL is the project
+    list page; slug normalisation (slash vs hyphen) is left for the
+    viewer to navigate.
+
+    Both call sites match the minimal pattern already used by
+    reusable-bandit and reusable-secrets-audit: a single
+    step-summary-emit.sh invocation in an 'if: always()' step.
+
+commit 04f690b5a86d75c1a952248724cc92357025cc6f
+Merge: ccb3800 715a944
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:06:44 2026 -0400
+
+    Merge pull request #86 from org-ai-assisted/claude/audit-github-actions-security-vXOos
+
+    ci(coverity): env-array apt install + '--' separators for sudo/apt-get
+
+commit ccb380014e77dfde61893e07b48bc4bdfe516085
+Merge: 3a505d0 46df6ad
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:06:12 2026 -0400
+
+    Merge pull request #85 from org-ai-assisted/claude/audit-github-actions-security-PcwM2
+
+    reusable-codex-review: harden re-enable checklist on secrets schema
+
+commit 715a9448a4e112d269802a60b504a73fd88722af
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:04:33 2026 -0400
+
+    ci(coverity): env-array apt install + '--' separators for sudo/apt-get
+
+    Apply the patterns from #80/#84 to the two apt-get sites in
+    reusable-coverity.yml:
+
+      Install yq:
+        sudo --non-interactive -- apt-get update --error-on=any
+        sudo --non-interactive -- apt-get install ... -- yq
+
+      Install build dependencies (caller-supplied package list):
+        APT_PACKAGES env (already there)
+        + apt_packages=() ; read -r -a apt_packages <<< "$APT_PACKAGES"
+        + sudo --non-interactive -- apt-get install ... -- "${apt_packages[@]}"
+
+    Drops the SC2086 shellcheck suppression. Same observable behavior
+    for every callable dm-consumer.yml apt-packages value (space-
+    separated literals); removes the glob-expansion edge and the
+    sudo/apt-get option-smuggling edges for future edits.
+
+    No exploit today; consistency follow-up to install-deps.
+
+commit 46df6ad81ce6c4b0533a0de0f6816fcc12afdfb8
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 12:04:12 2026 -0400
+
+commit 3a505d041036f7f67766182bb88c0f8e4ea0db39
+Merge: 00adc79 16c3c5d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 08:28:43 2026 -0400
+
+    Merge pull request #83 from org-ai-assisted/claude/audit-github-actions-security-PcwM2
+
+    reusable-{claude,codex}-review: drop self-cancelling concurrency block
+
+commit 00adc79de55aa40a193e73038e81915f7fd72611
+Merge: e57a980 cce1428
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 08:23:36 2026 -0400
+
+    Merge pull request #84 from org-ai-assisted/claude/audit-github-actions-security-vXOos
+
+    ci(actions): add end-of-options '--' to sudo wrapper everywhere
+
+commit 16c3c5d270b5c9fd0536cbe76bfc7d97a7df2073
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 08:22:08 2026 -0400
+
+    agents/github-actions.md: correct G-A-006 singleton ownership
+
+    The doc said singleton reusables own the singleton lock and
+    consumers either omit or mirror it. Same caller-name resolution
+    rule that bites cancellable reusables applies here too: a
+    reusable declaring `group: ${{ github.workflow }}` expands to the
+    caller's workflow name, which the caller already holds. With
+    cancel-in-progress: false the reusable would block-wait on its
+    own caller's lock and deadlock the run (different surface error
+    from the cancellable case but same root cause).
+
+    The actual implementation has always put the singleton on the
+    consumer wrapper (consumer-coverity.yml) and omitted concurrency
+    on the reusable (reusable-coverity.yml even carries an explicit
+    inline comment to that effect). Update the doc to match the code.
+
+    This is purely a doc-vs-code consistency fix - no code changes,
+    but paired with the reusable-claude/codex fixes in this branch
+    it completes the "caller owns concurrency, reusable omits" rule
+    for every G-A-006 pattern (cancellable AND singleton).
+
+commit cce1428e7dacbf467d51a52352ab0a14b89e98bb
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 06:40:51 2026 -0400
+
+    ci(actions): restore +x on .sh files and trim trailing blank in shellcheck/action.yml
+
+    push_files in the prior commit defaulted both install-*.sh files
+    to mode 100644, which the check-shebang-scripts-are-executable
+    hook flagged. Restore 100755 via the git data API. Also drop a
+    trailing blank line in shellcheck/action.yml that
+    end-of-file-fixer wanted gone.
+
+commit d3611fa993061584cfe16efa25ce841ff4d4e84f
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 06:38:01 2026 -0400
+
+    ci(actions): add end-of-options '--' to sudo wrapper everywhere
+
+    Append '--' to the sudo_prefix array at every definition site:
+      - install-deps/action.yml (apt step + install-self step)
+      - install-deps/install-genmkfile.sh
+      - install-deps/install-helper-scripts.sh
+      - shellcheck/action.yml
+
+    After expansion the sudo invocation becomes
+    'sudo --non-interactive -- <command>', explicitly terminating
+    sudo's option parsing before the command name. Today the command
+    arg is always a literal (apt-get, genmkfile, ./usr/bin/genmkfile)
+    so sudo's implicit "stop options at first non-dash arg" rule
+    makes this a no-op. The '--' is defense in depth against a future
+    edit that prepends an attacker-influenced value before the
+    command and accidentally creates a flag-smuggling vector.
+
+    Same idea applied one layer down: the shellcheck composite action
+    also gains '--' before 'shellcheck' in its apt-get install call,
+    matching the install-deps pattern.
+
+commit 0e51677903ccef43c138549cc49278456ed3d1cb
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 06:35:00 2026 -0400
+
+    agents/github-actions.md: correct G-A-006 reusable-side examples
+
+    The doc previously cited reusable-claude-code-review.yml and
+    reusable-codex-review.yml as live examples of "differentiate the
+    group key with a per-call input the caller doesn't replicate".
+    Both reusables' keys carry the SAME PR/issue-number
+    disambiguator as their callers, so under github.workflow = the
+    caller's name (in both contexts) the locks collide. That is the
+    deadlock G-A-006 warns about, not an example of the
+    differentiation pattern.
+
+    This commit:
+
+    - Moves both AI-review reusables from the "differentiate" list
+      to the "omit" list (where they now belong after the companion
+      reusable-side edits in this branch).
+    - Tightens the differentiate-pattern description to spell out
+      WHY codeql's `${{ inputs.language }}` works (the caller's
+      basic `${{ github.workflow }}-${{ github.ref }}` does not
+      carry that token).
+    - Updates the Issue-comment paragraph to point at the consumer
+      templates (not the reusables) as the source of truth for the
+      PR/issue-number disambiguator. Cross-references back to the
+      Reusable-side concurrency rule for the rationale.
+
+commit d4ea9c336b177999c00fc76bec51c42aa9722d90
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 06:34:59 2026 -0400
+
+    reusable-codex-review: drop concurrency block (self-cancel bug)
+
+    Same root cause as the claude reusable: github.workflow inside
+    a reusable expands to the caller's name, so the reusable's
+    concurrency group collides with the caller's. The codex reusable
+    is currently in DISABLED state (`if: false` kill-switch on the
+    active job), but the concurrency block on a re-enable would re-
+    introduce the deadlock. Drop it now so the archived block stays
+    identical-shaped when re-enabled.
+
+    Fix per agents/github-actions.md G-A-006: reusables omit
+    concurrency entirely when the caller's cancellable group covers
+    the call. consumer-codex-review.yml already carries the
+    cancellable group.
+
+    Reusable-side comment replaced; added an explicit "do NOT re-add
+    a concurrency block" note for the re-enable procedure.
+
+commit 671f38b8859704e6c8321d92054daeea028b74b2
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri May 15 06:34:58 2026 -0400
+
+    reusable-claude-code-review: drop concurrency block (self-cancel bug)
+
+    The reusable's concurrency group resolves identically to the
+    caller's because github.workflow inside a reusable expands to
+    the caller's workflow name. With cancel-in-progress: true the
+    reusable cancels its own caller the moment it tries to acquire
+    the slot - Actions logs "Canceling since a deadlock was detected
+    for concurrency group: ..." and the workflow fails before any
+    job registers. consumer-claude-code.yml has logged 40 consecutive
+    failures over three days (100% failure rate since the workflow
+    was created), all with total_count: 0 jobs and 1-2 second
+    duration; the merged consumer-side R3 pre-filter from PR #82 is
+    innocent.
+
+    Fix per agents/github-actions.md G-A-006: reusables omit
+    concurrency entirely when the caller's cancellable group covers
+    the call (the consumer wrapper already carries the PR-
+    disambiguated group required for issue_comment events).
+
+    Reusable-side comment replaced to document why the block is
+    absent and to point at the G-A-006 rule.
+
+commit e57a980951c125d855a11a89166c01ee482c834a
+Merge: e74b2fc 1f775c8
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:48:58 2026 -0400
+
+    Merge pull request #82 from org-ai-assisted/claude/audit-github-actions-security-PcwM2
+
+    consumer-claude-code: pre-filter @claude on comment events
+
+commit 1f775c83e8551091f110f34ed24bbbc4e1e44b06
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:38:30 2026 -0400
+
+    consumer-claude-code: propagate @claude pre-filter to active workflow
+
+    Keeps the byte-identical-across-consumers invariant intact: the
+    canonical template under consumer-templates/ was updated in the
+    previous commit; this propagates the same change to the active
+    workflow that runs on developer-meta-files itself.
+
+commit 2fa3abe9b4b6748010b64e26d8bc0ab51642dff6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:38:12 2026 -0400
+
+    consumer-claude-code: pre-filter @claude on comment events
+
+    Surfaced during a GHA security audit against the patterns in
+    https://securitylab.github.com/resources/github-actions-new-patterns-and-mitigations/.
+
+    issue_comment and pull_request_review_comment triggers fire a runner
+    spin-up on every comment. The reusable workflow's job-level if: then
+    gates the actual work behind a @claude substring check + allowed-users
+    roster. Doing the cheap substring test in the consumer wrapper too
+    prevents the unnecessary runner spin-up for unrelated comments.
+
+    This is an operational fix (saves CI minutes on noisy comment
+    threads), not a security fix; the in-reusable gate already prevents
+    unauthorized execution.
+
+    Edits the canonical template under consumer-templates/. The active
+    workflow under .github/workflows/ is updated in a follow-on commit
+    to keep the byte-identical-across-consumers invariant intact.
+
+commit e74b2fcae1be76b781e4d7128da694a0af90c215
+Merge: 309f925 dcae38b
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:36:49 2026 -0400
+
+    Merge pull request #80 from org-ai-assisted/claude/audit-github-actions-security-vXOos
+
+    ci(actions): route install-deps apt-packages through env, not template
+
+commit dcae38b2da2bca6b79bb39aeeb80d6c65acc30db
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:31:20 2026 -0400
+
+    ci(actions): use quoted array expansion instead of unquoted word-split
+
+    read -r -a splits $APT_PACKAGES into an array on $IFS, and
+    "${apt_packages[@]}" expands each element as a separately quoted
+    argument. Drops the shellcheck SC2086 disable and the theoretical
+    glob-expansion footgun the unquoted form carried (apt names
+    can't contain glob metas so it wasn't reachable, but the array
+    form is well-typed and reads more clearly).
+
+    Same observable behavior for every current caller (space-
+    separated package lists like 'safe-rm moreutils').
+
+commit 309f925470361be0061c4f0aab12487eacb9b444
+Merge: 9e0bc4e e97caf7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:28:19 2026 -0400
+
+    Merge pull request #81 from org-ai-assisted/claude/audit-actions-vulnerability-xsxef
+
+    workflows: env-indirect inputs in step-summary run blocks
+
+commit e97caf73263f680ed6c054ebadc2d039a7b80348
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:17:34 2026 -0400
+
+    workflows: route inputs/outputs through env in step-summary run blocks
+
+    Match the env-indirection pattern already used by the bash -c
+    PREPARE_COMMAND / BUILD_COMMAND blocks. The two step-summary
+    blocks were the last remaining sites where workflow_call inputs
+    (reusable-codeql) and dm-consumer.yml-sourced outputs
+    (reusable-cppcheck) were interpolated directly into a shell
+    command. Server-validated values (github.server_url,
+    github.repository, job.status) stay inline.
+
+    Not a fix for an exploitable bug: fork PRs are already skipped on
+    the consuming jobs, and the in-tree dm-consumer.yml source is
+    trusted. The change removes the only ${{ ... }} -> run: sinks the
+    GitHub Security Lab "Untrusted Input" guidance flags as a refactor
+    hazard.
+
+    https://claude.ai/code/session_01CTEUUpQAzkTxpbep9m7rMQ
+
+commit 8ccd5869500e1c4a67da172e243cc1af2e51a47a
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 14 18:16:15 2026 -0400
+
+    ci(actions): route install-deps apt-packages through env, not template
+
+    Template-substituted ${{ inputs.apt-packages }} into a shell run:
+    block expanded the caller-supplied value as literal text before
+    bash parsed the script. ';', '|', and '$()' would all reinterpret
+    as shell syntax instead of arriving as data. Move the input
+    through env: (matching the shellcheck composite action's pattern)
+    so expansion happens at runtime where the special characters are
+    inert. Unquoted $APT_PACKAGES preserves the space-separated
+    package-list word-splitting the original behavior depended on.
+
+    No exploit today - every current caller passes a literal YAML
+    string. Removes the footgun for the next caller who plumbs a
+    PR-controlled value through.
+
+commit 9e0bc4e432212b4cc3cd43eaaae939691a63ad3b
+Merge: c2a34d5 225c53d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 19:56:20 2026 -0400
+
+    Merge pull request #78 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    github-actions.md G-A-006: drop event-type-differentiated pattern
+
+commit c2a34d5eed8099f85e54c14765014d4172044b67
+Merge: 6749c4e b48cccb
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 19:44:48 2026 -0400
+
+    Merge pull request #75 from org-ai-assisted/claude/update-todo-list-I5jPu
+
+    TODO.md: remove items 7, 10, 12, 13 (landed / documented)
+
+commit b48cccb8acb7f74ccc44be6e7d69ff9d0260404c
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 23:14:23 2026 +0000
+
+    R-120 waiver: script-wide; drop R-074 Why paragraph
+
+    - pre-push-static.sh check_R120_rm: if a script contains
+      'style-ok: no-safe-rm' anywhere, skip R-120 for that whole
+      script. Removes the per-line and preceding-line sed lookups -
+      one grep --quiet at function head replaces them.
+    - bash-style-guide.md R-120 sentence: 'on the same line or the
+      preceding line' becomes 'anywhere in the script'.
+    - bash-style-guide.md R-074: deleted the Why paragraph per user
+      request - rule statement + Bad/Good examples carry the intent.
+
+commit 2e3d7fb55fc8340dcad3873dff22575a548d3461
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 23:03:56 2026 +0000
+
+    simplify R-120 waiver to single '## style-ok: no-safe-rm' keyword
+
+    Replaces the style-disable=R-NNN generic waiver mechanism with a
+    single, rule-specific keyword '## style-ok: no-safe-rm'. The R-120
+    check just greps for the keyword on the offending line or the
+    preceding line and skips if found.
+
+    - pre-push-static.sh: dropped is_style_waived helper and its 35
+      lines of doc comments. R-090 waiver wiring reverted (was
+      speculative; nothing in the tree needed it). R-120 does a
+      simple inline grep for the keyword.
+    - coverity-download.sh: '## style-disable=R-120' becomes
+      '## style-ok: no-safe-rm (safe-rm not pre-installed on hosted
+      runners)' - one line, no surrounding why-paragraph.
+    - bash-style-guide.md: removed Style-guide waivers section
+      (R-160/R-161/R-162) entirely. R-120 gets one extra sentence
+      pointing at the keyword.
+
+    Net: ~105 fewer lines across the three files.
+
+commit 18b99d47909c53c7c79b339a6a577db2bc886b09
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 23:01:55 2026 +0000
+
+    bash-style-guide: add R-074 - no ; next-command chaining
+
+    Generalises R-071 (case-arm: one statement per line) into a
+    codebase-wide rule. Each bash statement gets its own line;
+    bash's syntactic ; (case-arm ;; and C-style for-loop ;-separated
+    clauses) are the only exceptions.
+
+    Why on the line, not just in R-071: 'one statement per line in a
+    case arm' is the narrow form; the user clarified the rule
+    applies everywhere, not only inside case arms. Adjacent to R-070
+    and R-071 since all three are about statement layout.
+
+commit 1a253d866141c59a7d69bb42d44b1136c0b68445
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 22:58:58 2026 +0000
+
+    bash-style-guide: R-160 example uses case-arm not ;-chained rm
+
+    The previous R-160 'multiple rules at once' example showed two
+    rm commands separated by ';' on the same line, then a trailing
+    ';;'. That tripped both R-120 and R-070 naturally - which was the
+    point of the example - but it ALSO implied that semicolon command
+    chaining is a generally-accepted pattern in this style guide.
+    It isn't. Replacing with the case-arm form, which has the same
+    two-rule violation profile (rm + trailing ';;') without
+    normalising '; next-command' as a routine pattern.
+
+commit 0f98c0a08eb7e6e474e8bad533e0d4fd670ddf00
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 21:18:09 2026 +0000
+
+    restore exec bit + fix R-102 regex regression
+
+    The previous push_files commit (e6cc407) inadvertently:
+
+    1. Reset agents/pre-push-static.sh and ci/coverity-download.sh
+       from mode 100755 to 100644, causing the CI runner to abort
+       with exit 126 ('Permission denied: ./agents/pre-push-static.sh').
+       The MCP create_or_update_file / push_files tools both go
+       through GitHub's contents API, which doesn't expose file
+       mode and defaults new files to 100644. The original mode
+       was lost on the rewrite.
+
+    2. Doubled the backslashes in the R-102 regex on line 388 of
+       agents/pre-push-static.sh: '\\b(bash|sh)...\\b' instead
+       of the intended single-backslash '\\b...' word-boundary
+       pattern. Inside a single-quoted bash string, JSON \\\\
+       over-escaped to \\\\ instead of \\. As a regex, \\b
+       matches a literal backslash followed by 'b' rather than the
+       word boundary, so R-102 (no 'bash X.sh' / 'sh X.sh' interpreter
+       prepend) was silently broken.
+
+    Restoring via local commit because (a) the contents API has no
+    file-mode parameter and (b) the local signing helper is returning
+    HTTP 400 from the signing server in this environment - the
+    commit is therefore unsigned (--no-gpg-sign) as a one-off; user
+    authorized this in the conversation thread to unblock CI.
+
+commit 6749c4e12d68e564f9c7bc4f3acf659a1d612dee
+Merge: 20b8cdd 866ba19
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 17:17:16 2026 -0400
+
+    Merge pull request #77 from org-ai-assisted/claude/disable-bot-signed-commits-Q09P9
+
+    dm-github-* policy: drop required_signatures on MIRROR / BOT
+
+commit e6cc4071327af2cf34f72bbb5e7d5e82a8e1962a
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 17:12:30 2026 -0400
+
+    style-guide waivers: add style-disable=R-NNN mechanism
+
+    Resolves the pre-push static gate's R-120 fail on
+    ci/coverity-download.sh by giving the gate a waiver-comment
+    mechanism that the gate honors. User said safe-rm should not be
+    installed just for one cleanup; the gate previously had no way to
+    sanction the deviation, only a hardcoded carve-out list
+    (safe-rm, shred, git rm).
+
+    Changes:
+
+    - agents/pre-push-static.sh:
+      - New is_style_waived(file, line_num, rule_id) helper. Matches
+        'style-disable=R-NNN' on the offending line (inline) or the
+        immediately preceding line. Rule IDs in comma-separated lists
+        match whole-token (R-120 does NOT match R-1200).
+      - check_R120_rm and check_R090_command_v call is_style_waived
+        and emit a 'WAIVED' note instead of fail() for waived hits.
+        Other Tier 1 checks (R-011/R-042/R-051/R-070/R-081/R-102/
+        R-130) still fall through to fail; the helper is in place for
+        them to opt in when needed.
+
+    - ci/coverity-download.sh: replaced the prose-only R-120 comment
+      with the syntactic '## style-disable=R-120' marker the gate
+      recognises, preceded by the why-comment per R-161.
+
+    - agents/bash-style-guide.md: new 'Style-guide waivers' section
+      with R-160 (waiver syntax), R-161 (why-comment required),
+      R-162 (don't waive when a cheap alternative exists).
+
+commit 866ba19d915b4beaed47e210eae064c61ceb0ee6
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 20:37:40 2026 +0000
+
+    test_ruleset_body_rules_dispatch: add R-062 '--' separator on jq + tr
+
+    Style-guide compliance: R-062 requires the '--' end-of-options
+    separator on tool calls that take positional args; jq and tr are
+    both on the verified-supported list.
+
+commit 225c53d591a550e2ca4a17dd77ff15b3bbfe5077
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 20:28:06 2026 +0000
+
+    github-actions.md G-A-006: drop event-type-differentiated pattern
+
+    The 'Differentiated by event type' pattern used a constant
+    event-class string ('pr' or 'tag') as the only discriminator in
+    the concurrency group, collapsing all PRs into one '<workflow>-pr'
+    group. Under cancel-in-progress: true, that caused a new push on
+    PR-2 to cancel the in-flight build on PR-1 - cross-PR cancellation
+    has no defensible semantics.
+
+    The stated motivation (preventing a PR push from cancelling a
+    multi-hour tag build) is already satisfied by the standard
+    per-ref pattern, because github.ref is unique per PR
+    (refs/pull/N/merge) and per tag (refs/tags/<tag>). Tag and PR
+    refs differ, so cancel-in-progress: true cannot cross those
+    boundaries.
+
+    Delete the section and add a one-paragraph note under the
+    Cancellable pattern explaining that per-ref grouping already
+    covers the single-workflow-file-handles-PR-and-tag case.
+
+    The only live use of the broken pattern - derivative-maker
+    local-test-build.yml - is being fixed in a sibling PR.
+
+commit 3f0239cd3928df4d24c384b3b2066d6b753197ae
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:25:45 2026 -0400
+
+    ci/coverity-download.sh: replace safe-rm with rm (no dep needed)
+
+    safe-rm is not pre-installed on GitHub-hosted runners and the
+    reusable-coverity.yml workflow does not install it. Installing
+    the safe-rm Debian package just for this two-file cleanup would
+    add an apt-install step and a cache invalidation; not worth it
+    when the paths involved are script-local and not derived from
+    user-supplied input.
+
+    Replaced with `rm --force --` and a comment naming R-120
+    explicitly so the deviation from the bash style guide is
+    auditable rather than silent.
+
+commit 11c10ac5e172e0e975ff60d76c49a74a0e727722
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:25:29 2026 -0400
+
+    ci/canonical-repos-gate.sh: bash style guide fixes (R-002, R-060)
+
+    - R-002: insert blank line between shebang and copyright header
+      (the rest of the file already followed R-002 - this was a
+      one-line oversight).
+    - R-060: 'grep -F -q --' -> 'grep --fixed-strings --quiet --'.
+      Long flags self-document, survive copy-paste without a man
+      page open, and match the rest of the file's flag style.
+
+commit 8e3d20b8f10042df79df172b69ca80d22a221f42
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:23:18 2026 -0400
+
+    dm-packaging-helper-script: propagate .github/dependabot.yml
+
+    Extends the consumer-template propagation set with .github/
+    dependabot.yml.
+
+    pkg_update_consumer_workflows: refreshes .github/dependabot.yml
+    from consumer-templates/.github/dependabot.yml (UPDATE-if-exists,
+    parallel to the consumer-*.yml loop). Different source path
+    because dependabot.yml lives at .github/ root, not under
+    .github/workflows/.
+
+    pkg_install_dependabot_yml: new INSTALL function modeled on
+    pkg_install_codeql_actions_scan. Bootstraps .github/dependabot.yml
+    in every consumer that already has a .github/workflows/ directory.
+    Idempotent: a re-run after rollout no-ops. Repos with no workflows
+    have no actions for dependabot to bump and are skipped.
+
+    No repo exclusions: the canonical carries both github-actions and
+    docker package-ecosystem blocks; the docker block is a harmless
+    no-op in repos without Dockerfiles, so derivative-maker and
+    developer-meta-files converge to the canonical too.
+
+commit 80b6e8a3ac470b7c7e3abd4a4c9d91bd9e4e1903
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:16:31 2026 -0400
+
+    agents/github-actions-consumer-templates.md: document dependabot.yml propagation
+
+    - Status paragraph mentions .github/dependabot.yml as part of
+      the propagated set sourced from consumer-templates/.
+    - Directory layout shows the new consumer-templates/.github/
+      dependabot.yml canonical.
+    - New section '.github/dependabot.yml propagation' documents:
+      - UPDATE-if-exists via pkg_update_consumer_workflows and
+        INSTALL-if-workflows-exist via pkg_install_dependabot_yml.
+      - Unified canonical with both github-actions and docker
+        package-ecosystem blocks; rationale for the docker block
+        even in repos without Dockerfiles (harmless no-op + uniform
+        template shape + auto-coverage when Dockerfile lands).
+      - Note that dependabot's docker ecosystem does not watch
+        workflow container: image references.
+      - No repo exclusions; the hub commentary that used to live in
+        dmf's own dependabot.yml header is captured here.
+
+commit a1d8c6baf464ad535ceece1223ab52ba40eeac27
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:14:37 2026 -0400
+
+    .github/dependabot.yml: converge dmf to canonical
+
+    developer-meta-files's own .github/dependabot.yml becomes byte-
+    identical with consumer-templates/.github/dependabot.yml. The
+    hub-specific rationale that used to live in this file's header
+    (which repos still need their own etc.) is moved to
+    agents/github-actions-consumer-templates.md in the same PR.
+
+commit 7a832bcf2d80c057bbdb7cf6bd9868f26aa093cf
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 16:14:25 2026 -0400
+
+    consumer-templates: add canonical .github/dependabot.yml
+
+    New byte-identical baseline that pkg_update_consumer_workflows
+    and pkg_install_dependabot_yml propagate to every consumer. Carries
+    both github-actions and docker package-ecosystem blocks; the
+    docker block is a harmless no-op in repos without Dockerfiles.
+
+commit e94efb5ed1ed14e6ff4871f7ad3d7dc130479f0e
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 19:51:54 2026 +0000
+
+    chmod +x dm-github-* + policy libs to satisfy check-shebang gate
+
+    Pre-commit-hooks' check-shebang-scripts-are-executable hook flags
+    every changed text file that has a '#!' shebang but lacks the
+    executable bit. The two dm-github-* scripts and the two policy libs
+    have '#!/bin/bash' but were mode 100644 in the index, so the hook
+    fired on this PR's diff.
+
+      * usr/bin/dm-github-org-policy
+      * usr/bin/dm-github-personal-policy
+        Originally landed as 100755; mode dropped to 100644 in commit
+        9a02558 ('Collapse duplicated rationale comments to G-NNN
+        cites'). That commit pre-dates the consumer-pre-push-static.yml
+        workflow + check-shebang hook (both landed 2026-05-11 via
+        4f2b89e), so it never tripped CI. Restoring 100755 - these are
+        invoked directly as commands and must be executable.
+
+      * usr/libexec/developer-meta-files/github-policy-data.bsh
+      * usr/libexec/developer-meta-files/github-policy-lib.bsh
+        Sourced libs; the shebang is an editor / shellcheck hint, not
+        an invocation contract. Making them 100755 is harmless (the
+        files just declare readonlys / functions and exit if executed
+        directly) and is the minimal-impact fix to satisfy the hook
+        without removing the editor hint.
+
+commit 72f6bfa32073616aa90cf804d018f296f875a3de
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 19:46:20 2026 +0000
+
+    policy libs: add R-010 strict-mode quintet to satisfy gate
+
+    The pre-push static gate's R-010 check flags every changed shell
+    file whose head -100 lacks the 6-line strict-mode block. Both
+    github-policy-data.bsh (pure data) and github-policy-lib.bsh
+    (sourced helper) had zero strict-mode lines because they are
+    sourced rather than executed. Editing them in this PR surfaced
+    the latent gate failure.
+
+    Same fix shape as 34b1afb (which completed the strict-mode block
+    in dm-packaging-helper-script after the same gate fire): add the
+    six lines to the lib header. No behavior change for the existing
+    callers (dm-github-org-policy, dm-github-personal-policy, and the
+    ci/tests/test_*.sh harness all set the same options on themselves
+    before sourcing); for any future non-strict caller the lib now
+    self-enforces strict mode.
+
+commit e3114c943e154874f2b509066e66e62608fa18c3
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 19:41:22 2026 +0000
+
+    dm-github-* policy: drop required_signatures rule on MIRROR / BOT
+
+    The bot account (BOT_USERS, e.g. assisted-by-ai) and the bot org
+    (MIRROR_ORGS = org-ai-assisted) push commits via AI-assisted
+    automation that does not own a GPG key matching the bot's
+    GitHub-verified identity. The ruleset 'required_signatures' rule
+    ("allow only signed commits") therefore blocked every legitimate
+    bot push on those roles.
+
+    Split the per-role rules array the same way bypass actors are
+    already dispatched:
+
+      POLICY_RULESET_RULES_SOURCE / _PERSON  -> includes
+                                                required_signatures
+      POLICY_RULESET_RULES_MIRROR / _BOT     -> omits it
+
+    Wired through policy_branch_ruleset_body / policy_tag_ruleset_body
+    (new 4th arg, defaults to the with-required_signatures variant for
+    back-compat). dm-github-org-policy and dm-github-personal-policy
+    resolve POLICY_RULESET_RULES_${kind^^} alongside the existing
+    POLICY_RULESET_BYPASS_${kind^^} dispatch.
+
+    SOURCE (Kicksecure / Whonix) and PERSON (maintainer's personal
+    mirror) still enforce signed commits/tags. New unit test
+    test_ruleset_body_rules_dispatch.sh pins the rule-types contract
+    per role.
+
+commit 20b8cdd847a65bcf4ce0b490e49b9705967c8edf
+Merge: 1934a86 643d44c
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 15:28:55 2026 -0400
+
+    Merge pull request #76 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    workflow triggers: normalize pull_request to branches: [master]
+
+commit 643d44c55ca347f6da71685d008c63805f296bca
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 19:25:02 2026 +0000
+
+    workflow triggers: normalize pull_request to branches: [master]
+
+    Three universal consumer templates had bare `pull_request:`
+    without a base-branch filter, while the matching push trigger
+    and the other templates (bandit, codeql-actions/cpp/python,
+    cppcheck) use `branches: [master]`. Drift from the standard
+    pattern. Tighten:
+
+    - consumer-claude-code.yml
+    - consumer-codex-review.yml
+    - consumer-pre-push-static.yml
+
+    Each gains `pull_request: branches: [master]`. Other triggers
+    (issue_comment + pull_request_review_comment on claude-code,
+    workflow_dispatch.inputs.pr_ref on codex-review) preserved.
+
+    Practical impact: PRs targeting feature branches stop firing
+    the AI reviews + style gate. PRs targeting master (the typical
+    org pattern) are unaffected. Anyone wanting AI review on a
+    non-master PR can workflow_dispatch manually.
+
+    Canonical + hub-runtime updated in lockstep; consumer repos
+    get the propagated update via pkg_update_consumer_workflows
+    (or via the per-repo PRs that immediately follow this one).
+
+commit 150c73ac4cda467306283ae6887e12f9f4a92ddb
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 15:23:23 2026 -0400
+
+    TODO.md: remove items 7, 10, 12, 13 (landed / documented)
+
+    - #7 PR template: org-ai-assisted/.github/PULL_REQUEST_TEMPLATE.md
+      exists with the required sections.
+    - #10 Container digest pinning: derivative-maker local-lint.yml
+      and helper-scripts local-python-checks.yml now pin every
+      container image by sha256.
+    - #12 Reusable @<sha> vs @master: G-A-004 plus the
+      'sha_pinning_required intentionally OFF' section in
+      agents/github-actions.md document the trade-off and select
+      @master as the default.
+    - #13 Unused-workflow audit / codex-review stub: dropped pending
+      re-prioritization.
+
+    Item numbering preserved (5, 6, 8, 9, 11) so cross-references
+    in commit history and discussions stay stable.
+
+commit 1934a86539896e1b6ff62bb291d7559c0f5f2299
+Merge: 7fc7cb8 44dee7c
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 15:18:53 2026 -0400
+
+    Merge pull request #74 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    ci/reusables: extract dm-consumer.yml loader + Coverity gate (R-100)
+
+commit 44dee7c30922ba8e9bf5d26b6cef1d0c0e78a94a
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 19:16:17 2026 +0000
+
+    ci/reusables: extract dm-consumer.yml loader + Coverity gate to ci/ scripts (R-100)
+
+    R-100 (substantial bash logic in `run: |`) violations from the
+    consumer-template rollout, extracted to ci/ scripts now that the
+    architecture is stable enough to refactor without churn:
+
+    New scripts:
+
+    - ci/dm-consumer-load.sh: generic loader. Takes section name +
+      required-keys-CSV + optional-keys-CSV. Handles missing-file /
+      missing-section / missing-required-key hard-fail; optional
+      empty-default; newline rejection; hyphen-to-underscore output
+      naming.
+    - ci/canonical-repos-gate.sh: Coverity gate step. Emits
+      allowed=true/false based on $CANONICAL_REPOS vs $THIS_REPO.
+    - ci/codeql-load-config.sh: codeql wrapper around dm-consumer-load.sh.
+      Treats build-command as required iff $BUILD_MODE=manual; otherwise
+      optional. Two-line case + exec to the generic loader.
+
+    Reusable refactor:
+
+    - reusable-coverity.yml: Load step (was 41 inline lines with for /
+      case / if) -> 1 line calling dm-consumer-load.sh. Gate step
+      (was 10 inline lines) -> 1 line calling canonical-repos-gate.sh.
+    - reusable-cppcheck.yml: Load step (was 38 inline lines) ->
+      1 line. dmf checkout moved to the top (was if: always at the
+      end; now needed up front for ci/ helpers).
+    - reusable-codeql.yml: Load step (was 53 inline lines, with the
+      conditional build-mode logic) -> 1 line calling
+      codeql-load-config.sh. dmf checkout moved to the top.
+
+    Net: -188 / +41 lines in the three workflow YAML files. ~150 lines
+    of bash moved from YAML-embedded to .sh files where shellcheck
+    sees them.
+
+    R-001/002/010/011/020/030 audit pass on the new scripts; gate
+    runs clean against origin/master.
+
+commit 7fc7cb8900b55de6751d2508950ccd9c23fa8377
+Merge: 4eb0223 0b91c52
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 14:31:47 2026 -0400
+
+    Merge pull request #73 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    pre-push-static: fix fail() one-arg invocation in run_precommit_hook
+
+commit 0b91c521528640c526a2f2d5acffb21be3fba22d
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 18:29:29 2026 +0000
+
+    ci/coverity-*: fix pre-existing R-010 + R-120 violations
+
+    Both surfaced when my previous header-comment edit (commit
+    9637cc2) made these files "changed" and re-exposed them to the
+    pre-push static gate.
+
+    Fixes:
+
+    - R-010 strict-mode quintet: each of coverity-check-secrets.sh,
+      coverity-download.sh, coverity-submit.sh had 4/6 strict-mode
+      lines (errexit/nounset/pipefail/errtrace). Added the missing
+      two:
+        shopt -s inherit_errexit
+        shopt -s shift_verbose
+
+    - R-120 rm not safe-rm: coverity-download.sh line 107
+        rm -f -- cov-analysis-linux64.tgz cov-analysis-linux64.md5
+      switched to safe-rm. The two filenames are produced by the
+      same script earlier (curl downloads); safe-rm is the standard
+      drop-in replacement org-wide.
+
+commit 9637cc2bc3d169b06ad5aca0cc8f836ea0829247
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 18:26:49 2026 +0000
+
+    spec/ci: update directory-layout + ci/ script header refs
+
+    Two small post-rollout cleanups:
+
+    1. spec doc: hub's `.github/workflows/` directory-layout in
+       agents/github-actions-consumer-templates.md now reflects what
+       is actually installed:
+
+       - consumer-scorecard.yml NOT installed (Scorecard org-wide
+         opted-out everywhere except derivative-maker; see PR #71).
+       - consumer-coverity.yml / consumer-cppcheck.yml /
+         consumer-codeql-cpp.yml NOT installed (hub has no C/C++).
+       - consumer-codeql-python.yml ADDED to the layout (was added
+         in PR #64 but not reflected here).
+
+    2. ci/coverity-check-secrets.sh / coverity-submit.sh /
+       coverity-download.sh: header comments referenced
+       "the reusable coverity.yml". Updated to the post-prefix name
+       "reusable-coverity.yml".
+
+commit 0cb638fc1abf34808c9392111e28e4a1b918cdb8
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 18:25:23 2026 +0000
+
+    pre-push-static: fix fail() one-arg invocation in run_precommit_hook
+
+    `fail()` references both $1 (rule tag) and $2 (message). Under
+    `set -o nounset` the line
+
+        "${hook}" "${@}" || fail "${hook}"
+
+    triggers an unbound-variable error when any pre-commit-hook
+    fails, because $2 is unset. Surfaced via the double-quote-
+    string-fixer auto-fixing ci/tests/test_workflow_yaml.py during
+    the consumer-template rollout (see dmf #69 thread for the
+    diagnosis log).
+
+    Fix: pass a placeholder message; the hook itself has already
+    printed its diagnostic to stderr by the time we get here.
+
+    Other 8 fail() callers in this script already pass 2 args; this
+    was the lone offender.
+
+commit 4eb0223c7ba910e173cd9c1f22a6e8478e5400aa
+Merge: 52f6c1c a3d5668
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 13:54:50 2026 -0400
+
+    Merge pull request #72 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    spec: mark implementation status as live; cleanup forward-tense
+
+commit a3d5668f82fa1dd7e30c5b07ad44a8ba99aaeb7f
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 17:52:18 2026 +0000
+
+    spec: mark implementation status as live; cleanup forward-tense
+
+    Architecture is now fully implemented:
+
+    - Three-prefix file-naming convention (reusable- / consumer- /
+      local-) live across every active-CI repo in the org.
+    - consumer-templates/.github/workflows/ canonical source-of-truth
+      directory live.
+    - pkg_update_consumer_workflows does pure-`cp` byte-identical
+      updates of every consumer-*.yml file already present on a
+      consumer's .github/workflows/.
+    - Per-repo overrides in .github/dm-consumer.yml runtime-read by
+      the relevant reusable (coverity / cppcheck / codeql /
+      bandit).
+    - Validated end-to-end on kloak (workflow_dispatch of
+      consumer-coverity.yml: full pipeline through cov-build +
+      scan.coverity.com submission accepted).
+
+    Doc updates:
+
+    - Status section: past-tense ("Implemented"), with a pointer to
+      the validation PR sequence.
+    - Bandit caveat: drop the "current vs target" language. Shebang
+      scan is live; the discovery script lives at
+      ci/bandit-discover-python.sh.
+    - Two "during migration" hedges reworded to "post-rollout" -
+      migration is done; the open questions are about future needs,
+      not the migration window.
+
+commit 52f6c1c6d87e03479ff72c75ca7f28882fed2820
+Merge: ea4a077 b0f036d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 13:48:27 2026 -0400
+
+    Merge pull request #71 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    scorecard: remove consumer-scorecard.yml (org-wide opt-out)
+
+commit b0f036d40ffcc8fb9b22551ebe8ad1ccdbd4f6fc
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 17:45:55 2026 +0000
+
+    scorecard: remove consumer-scorecard.yml (org-wide opt-out)
+
+    Per the consumer-template architecture's opt-in-by-file-presence
+    rule, deleting a consumer-*.yml is the opt-out signal:
+    pkg_update_consumer_workflows refreshes only files that already
+    exist on the consumer side; the next propagation pass will not
+    re-create this.
+
+    Org-wide policy: Scorecard's value-to-noise ratio is low (many
+    false positives, non-actionable signals). Keeping it only in
+    derivative-maker (the canonical baseline) where the org-wide
+    supply-chain signal is most useful.
+
+    Spec:
+    https://github.com/org-ai-assisted/developer-meta-files/blob/master/agents/github-actions-consumer-templates.md
+
+commit ea4a0775bb959d433e86ebafb1d0eb8f8383b097
+Merge: 72dc855 6c20e4d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 12:35:21 2026 -0400
+
+    Merge pull request #70 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    workflows: rename hub-private to local- prefix
+
+commit 6c20e4d51650759fd7e13af9ec08b576669c45e3
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 16:32:44 2026 +0000
+
+    local-: rename hub-private workflows (live / policy-live / mock-tests)
+
+    Per consumer-template architecture (G-A-005, third-prefix): the
+    three hub-private workflows that never propagate carry the
+    `local-` prefix:
+
+    - live.yml -> local-org-policy-live-probe.yml
+      (3-step: unauth probe + audit + dry-run against the real API)
+    - policy-live.yml -> local-org-policy-live-audit.yml
+      (2-step: audit + dry-run; subset of the probe variant)
+    - test-github-org-tools.yml -> local-org-tools-mock-tests.yml
+      (mock-API test suite against canned fixtures)
+
+    Cross-ref updates:
+
+    - local-org-tools-mock-tests.yml's own path-filter triggers
+      (push.paths + pull_request.paths) updated to the new
+      filename.
+    - A comment-only reference to .github/workflows/live.yml inside
+      local-org-tools-mock-tests.yml updated to point at
+      local-org-policy-live-probe.yml.
+
+    agents/github-actions-consumer-templates.md updated to past-
+    tense the rename (was: "become local-*"; now: "are now
+    local-*").
+
+    User-facing `name:` fields unchanged.
+
+commit 72dc855c84ff651c815da1ce03799d96ecc66770
+Merge: 4a7d2cc bf3c2b6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 12:30:08 2026 -0400
+
+    Merge pull request #69 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    reusable-codeql: dm-consumer.yml runtime read + new codeql-cpp wrapper
+
+commit bf3c2b667fee4eaeeb027dca7f67249c5563b733
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 16:27:33 2026 +0000
+
+    test_workflow_yaml.py: single-quote string literals; update allowlist
+
+    Two concerns in one commit:
+
+    1. SECRETS_INHERIT_ALLOWLIST: '.github/workflows/secrets-audit.yml'
+       -> '.github/workflows/consumer-secrets-audit.yml' (the post-
+       rename canonical filename).
+
+    2. double-quote-string-fixer normalization: the pre-commit hook
+       pre-push-static.sh runs converts double-quoted Python string
+       literals to single-quoted. The file pre-dated the hook (or was
+       exempt at the time it was authored); my one-line allowlist
+       edit re-exposes the whole file. Running the fixer once
+       normalizes all literals and brings the file in line with the
+       gate going forward.
+
+    Tangential bug observed but not fixed here: agents/pre-push-static.sh
+    line 452 `fail "${hook}"` passes only 1 arg, but fail() references
+    $2 - under set -u this is an unbound variable error. Surfaces
+    whenever any pre-commit hook fails. Worth a separate fix.
+
+commit dc6c8faab1fa92d89e2a185d04342b3171e9e0c9
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 16:11:58 2026 +0000
+
+    ci: fix R-010 strict-mode quintet in bandit-discover-python.sh
+
+    Per agents/pre-push-static.sh check_R010_strict_quintet:
+    6 lines required, my draft had 3.
+
+    Also: SECRETS_INHERIT_ALLOWLIST in ci/tests/test_workflow_yaml.py
+    must reference the renamed consumer-secrets-audit.yml, not the
+    pre-rename secrets-audit.yml that was already gone.
+
+commit 6800ea3e70da3af65f53b0e13f2592aa5c2f0398
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 16:06:02 2026 +0000
+
+    reusable-bandit: shebang-aware Python discovery; universal wrapper
+
+    Per spec "Parameter ownership" classifications for bandit:
+
+    - paths: removed. Shebang-aware discovery in the reusable
+      finds Python by `.py` extension OR `^#!.*python` first-line
+      match. Catches genmkfile's '*.py#tag' files and Debian-
+      libexec scripts without extension - the org's common case.
+    - severity-level / confidence-level: hardcoded at medium /
+      medium (the previous defaults).
+    - skips: removed. Per-repo suppressions use bandit's
+      `# nosec` inline comments. (Open implementation question
+      per the spec: if a real use case for per-repo skip lists
+      appears, promote `bandit.skips` to dm-consumer.yml.)
+    - prepare-command: removed. The shebang scan eliminates the
+      need for genmkfile-tagged-source symlink hacks
+      (ci/codeql-prepare.sh, ci/python-prepare.sh).
+    - timeout-minutes: hardcoded at 10.
+
+    New files:
+
+    - ci/bandit-discover-python.sh: NUL-separated Python file
+      discovery (extension + shebang). Excludes .git/,
+      .github/dmf/, and submodule paths from .gitmodules.
+    - consumer-templates/.github/workflows/consumer-bandit.yml:
+      byte-identical wrapper, no `with:`.
+    - .github/workflows/consumer-bandit.yml: hub-runtime copy
+      (dmf has Python in ci/ and usr/bin/).
+
+    Reusable changes:
+
+    - workflow_call.inputs block removed entirely - bandit is now
+      a universal template (no per-repo state).
+    - Runs on ubuntu-24.04 for consistency with other refactored
+      reusables.
+    - Bandit invocation: discovery script | xargs -0
+      --no-run-if-empty -- bandit -ll -ii --.
+
+    workflow_list in dm-packaging-helper-script:
+    bandit.yml -> consumer-bandit.yml.
+
+    Hard switch. Consumers (msgcollector, security-misc) still
+    pass `with: paths:` and `with: prepare-command:`; those are
+    silently ignored after this lands. Their next bandit run will
+    scan the whole repo via shebang discovery rather than the
+    previous scoped paths. False positives (if any) need migration
+    to `# nosec` or per-repo migration PRs to add the wrappers
+    themselves.
+
+commit 9e4309309c02213ae7302b2e18b16170ea6488a0
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 15:58:02 2026 +0000
+
+    reusable-codeql: dm-consumer.yml runtime read + add codeql-cpp
+
+    Single-reusable design (one reusable-codeql.yml serves all
+    language wrappers), parameterized by language input and new
+    optional `dm-consumer-section` input that names the section
+    to read per-repo prepare-command / build-command from.
+
+    Spec section naming (per user-confirmed decision 1a):
+
+    - codeql-actions: empty dm-consumer-section -> no runtime read.
+      Universal byte-identical wrapper. No per-repo state.
+    - codeql-python: dm-consumer-section='codeql-python'. Optional
+      prepare-command. Soft-skip if file or section absent.
+    - codeql-cpp:    dm-consumer-section='codeql-cpp'. Optional
+      prepare-command. Required build-command when build-mode=manual;
+      reusable hard-fails on missing key.
+
+    Inputs changed:
+
+    - `prepare-command` removed (replaced by dm-consumer.yml read).
+    - `build-command` removed (replaced by dm-consumer.yml read,
+      required when build-mode=manual).
+    - `timeout-minutes` removed (hardcoded at 30; both python and
+      c-cpp scans on the existing consumers fit in 30 min).
+    - `dm-consumer-section` added (optional, default empty; the
+      source-of-truth for which section to read).
+    - `language`, `build-mode`, `queries` unchanged.
+
+    Hard switch (no backward compat). Consumers passing the old
+    `with: prepare-command:` or `with: build-command:` will have
+    those inputs silently ignored. For c-cpp consumers with
+    build-mode=manual but no codeql-cpp.build-command in
+    dm-consumer.yml, the reusable hard-fails at workflow start.
+    Immediate consumer migration PRs needed for kloak (codeql-cpp),
+    security-misc (codeql-cpp + codeql-python prepare-command), and
+    helper-scripts (codeql-python; no prepare-command needed).
+
+    New files:
+
+    - consumer-templates/.github/workflows/consumer-codeql-cpp.yml
+      (canonical, byte-identical wrapper; NOT installed in this hub
+      since dmf has no C/C++).
+
+    Changed files:
+
+    - consumer-templates/.github/workflows/consumer-codeql-python.yml
+      and the hub-runtime copy: pass `dm-consumer-section:
+      codeql-python` so security-misc's per-repo prepare-command can
+      flow through. Soft-skip for repos without the section (e.g. dmf
+      itself, msgcollector, helper-scripts).
+    - dm-packaging-helper-script: workflow_list adds
+      consumer-codeql-cpp.yml.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit 4a7d2ccaf96a66bb83d51758579c9665c17345f3
+Merge: 4a19d09 97de394
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 11:32:42 2026 -0400
+
+    Merge pull request #68 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    cppcheck hard refactor + coverity deadlock hotfix
+
+commit 97de3949bcd11f21654f931b9b4cb77b4611f01c
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 15:17:25 2026 +0000
+
+    reusable-coverity: drop concurrency block (deadlock hotfix)
+
+    Empirically observed via failed workflow_dispatch on kloak's
+    post-#67 consumer-coverity.yml: GitHub Actions deadlock detector
+    fires when both the consumer wrapper and the reusable declare
+    the same concurrency group ("Canceling since a deadlock was
+    detected for concurrency group: 'Coverity' between a top level
+    workflow and 'coverity'").
+
+    `github.workflow` inside a reusable resolves to the CALLER's
+    workflow name, so the wrapper's `group: ${{ github.workflow }}`
+    ("Coverity") collides with the reusable's identical group.
+    Documented in agents/github-actions.md G-A-006 "Reusable-side
+    concurrency"; reusable-bandit / reusable-cppcheck /
+    reusable-pre-push-static / reusable-scorecard /
+    reusable-secrets-audit all omit concurrency for the same reason.
+
+    Why did this not surface before #67? The pre-#67 reusable had
+    a job-level `if:` (canonical-repos input check). Possibly that
+    evaluation gated lock acquisition; this turn's refactor removed
+    the job-level if (replaced with step-level gate), which may have
+    changed when the concurrency lock is taken. Either way, the
+    fix is the same: remove the duplicate group; the wrapper's
+    singleton suffices.
+
+    Caller contract preserved: the byte-identical wrapper still has
+    `group: ${{ github.workflow }}` + `cancel-in-progress: false`,
+    so the org-wide singleton property holds.
+
+commit 9d01bb6bd962caf88e782519ff28b527a917ed51
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 15:08:34 2026 +0000
+
+    reusable-cppcheck: hard switch to dm-consumer.yml runtime read
+
+    Parallel to the coverity refactor in #67. Mirror changes:
+
+    Inputs removed:
+
+    - paths -> dm-consumer.yml `cppcheck.paths` (required).
+    - prepare-command -> dm-consumer.yml `cppcheck.prepare-command`
+      (optional, empty -> no source-tree prep step).
+    - enable -> hardcoded at "warning,performance,portability".
+    - extra-args -> removed entirely (promote to dm-consumer.yml on
+      first real need).
+    - timeout-minutes -> hardcoded at 15.
+
+    New step structure (no canonical-repos gate - cppcheck has no
+    secrets / rate limit):
+
+    - Install cppcheck + yq.
+    - Load per-repo config from .github/dm-consumer.yml (id: cfg).
+    - Source-tree prep (gated on cfg.prepare_command != '').
+    - cppcheck invocation uses ${CPPCHECK_PATHS} from cfg, hardcoded
+      enable list.
+
+    Plus a new consumer-templates/.github/workflows/consumer-cppcheck.yml
+    canonical wrapper - no `with:` block, byte-identical across
+    consumers.
+
+    Hard switch: consumers still passing `with: paths:` etc. will
+    have those inputs silently ignored after this merges - the
+    reusable schema no longer declares them. helper-scripts /
+    security-misc cppcheck wrappers will need consumer migration
+    PRs (dm-consumer.yml + rename) immediately after this lands.
+
+commit 4a19d09ae92f9f681b410b1953603a3b0effd0bb
+Merge: 3f8cb32 dbdb16f
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 11:04:28 2026 -0400
+
+    Merge pull request #67 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 7 + coverity hard refactor (PoC for parameterized reusables)
+
+commit dbdb16f83e4fbd83a33d1ec654d96ccdb46f2bba
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:57:24 2026 +0000
+
+    batch 7 + coverity hard refactor
+
+    Two things in one PR per the user's "bigger batch sizes" guidance:
+
+    1. batch 7: claude-code consumer-wrapper rename, completing the
+       universal-template prefix sweep for developer-meta-files.
+
+    2. Coverity hard refactor: reusable-coverity.yml drops every
+       workflow_call.input except secrets and switches to runtime
+       read of .github/dm-consumer.yml in the consumer repo. Adds
+       the new consumer-coverity.yml canonical wrapper in
+       consumer-templates/ (not installed in this hub - no C/C++ to
+       scan).
+
+    ## reusable-coverity changes
+
+    Inputs removed (now read from .github/dm-consumer.yml at runtime):
+
+    - apt-packages, build-command, project-name, canonical-repos
+    - timeout-minutes (hardcoded at 30)
+    - dry-run (hardcoded at false; no wrapper override per spec)
+
+    New step structure:
+
+    - Install yq (kislyuk python-yq, pinned to ubuntu-24.04)
+    - Load per-repo config from .github/dm-consumer.yml (id: cfg)
+      - Required keys: project-name, canonical-repos (hard-fail on
+        missing/empty)
+      - Optional keys: apt-packages, build-command (empty -> default
+        behavior)
+      - Hyphenated yml keys translate to underscored $GITHUB_OUTPUT
+        names (GitHub Actions expression parses outputs.foo-bar as
+        subtraction)
+      - Newline-rejection on every value (format injection protection)
+    - Canonical-repos gate (id: gate) - emits allowed=true/false
+      based on cfg.canonical_repos vs github.repository. Strict by
+      design: workflow_dispatch no longer bypasses (the previous
+      reusable allowed that; fork-side manual dispatches burn
+      runner time for nothing since secrets aren't available to forks).
+    - All expensive steps (Sanity check, Prepare apt cache, Cache,
+      Install build deps, Download Coverity, Build, Submit) gated by
+      if: steps.gate.outputs.allowed == 'true'.
+
+    Secret-env placement: COVERITY_TOKEN / COVERITY_EMAIL /
+    COVERITY_PROJECT move out of jobs.<id>.env: and onto the
+    individual gated steps that need them (Sanity check / Download /
+    Submit). Pre-gate steps and non-canonical runs never see secret
+    values - the gate placement is meaningful, not cosmetic.
+
+    Hard switch, not backward-compatible: consumers passing 'with:'
+    inputs (apt-packages, build-command, project-name, canonical-repos)
+    will see those inputs silently ignored after this merges - the
+    reusable schema no longer declares them. Each consumer
+    (helper-scripts, kloak, security-misc) needs an immediate
+    follow-up PR: add .github/dm-consumer.yml with the required keys
+    and rename coverity.yml -> consumer-coverity.yml byte-identical
+    to the canonical template.
+
+    ## claude-code rename
+
+    Standard universal-template prefix sweep. No behavior change.
+
+commit 3f8cb323a12455199c8f789ef0803f67f02eb0b3
+Merge: f8cc94f f2d839d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:54:37 2026 -0400
+
+    Merge pull request #66 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 6: migrate codex-review to consumer-template architecture
+
+commit f2d839df140540cef1531bb3b6e11c7110b02e45
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:45:20 2026 +0000
+
+    batch 6: migrate codex-review to consumer-template architecture
+
+    Renames the OpenAI Codex Review consumer wrapper. No behavior
+    change to the workflow itself.
+
+    Note on the pre-existing 'OpenAI Codex Review' startup_failure
+    observed across recent PRs (#61-#65): that's a reusable-side or
+    secrets-configuration issue independent of the wrapper-filename
+    rename. The wrapper still triggers correctly on pull_request /
+    workflow_dispatch; the failure surfaces inside the reusable's
+    job. Tracking separately.
+
+    Changes:
+
+    - New: consumer-templates/.github/workflows/consumer-codex-review.yml
+      (canonical).
+    - Renamed (git-mv-preserved): .github/workflows/codex-review.yml
+      -> consumer-codex-review.yml. Content updated to canonical.
+    - dm-packaging-helper-script: workflow_list codex-review.yml ->
+      consumer-codex-review.yml.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit f8cc94fa5bafcf7ab075476137d3931ccdd2e48a
+Merge: e780e49 b58cab4
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:44:38 2026 -0400
+
+    Merge pull request #65 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 5: migrate codeql-actions to consumer-template architecture
+
+commit b58cab4afb9d8bc5692dd75ca2e6198f807dcb4a
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:38:59 2026 +0000
+
+    batch 5: migrate codeql-actions to consumer-template architecture
+
+    Renames the 'actions' CodeQL wrapper to follow the prefix
+    convention. No behavior change to the workflow itself.
+
+    Changes:
+
+    - New: consumer-templates/.github/workflows/consumer-codeql-actions.yml
+      (canonical).
+    - Renamed (git-mv-preserved): .github/workflows/codeql-actions.yml
+      -> consumer-codeql-actions.yml. Content updated to canonical.
+    - dm-packaging-helper-script: two updates:
+      1. workflow_list entry codeql-actions.yml ->
+         consumer-codeql-actions.yml.
+      2. pkg_install_codeql_actions_scan() source_path /
+         destination_path / commit message updated to the new name.
+         Function name itself unchanged (renaming would break
+         callers).
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit e780e49f2e03fcb633b6e9ed95750e39eeedd739
+Merge: 818a805 a050fb1
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:37:57 2026 -0400
+
+    Merge pull request #64 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 4: add consumer-codeql-python.yml; clear stuck GHAS check-run
+
+commit a050fb16d65149c80feb063a92d02764d3698fb0
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:35:36 2026 +0000
+
+    batch 4: add consumer-codeql-python.yml; clear stuck GHAS check-run
+
+    New universal-ish template: 'python' CodeQL scan, analogous to
+    the existing 'actions' CodeQL scan. Installed in this hub
+    (developer-meta-files contains Python in usr/bin/dm-* tools,
+    ci/ scripts, libexec/ helpers).
+
+    Functional motivation - this clears a flaky GitHub Advanced
+    Security behavior the previous batches hit on PRs #62, #63:
+
+    - GHAS auto-detects this repo as having Python and speculatively
+      creates a 'CodeQL' check-run on each commit. Without a workflow
+      that submits Python SARIF, GHAS keeps that check-run queued.
+      Sometimes it eventually times out / resolves (PR #61), sometimes
+      it stays queued forever (PR #62, #63). The queued stub flips
+      the PR's mergeable_state to 'unstable' and blocks auto-merge.
+    - Adding this workflow submits a real Python SARIF on every push
+      and PR, which gives GHAS the analysis it expects and clears
+      the stub.
+
+    Architectural motivation - feature parity with codeql-actions:
+
+    - consumer-codeql-actions.yml scans the 'actions' language
+      (workflow YAML security).
+    - consumer-codeql-python.yml scans the 'python' language
+      (security-and-quality suite, default reusable settings).
+
+    Files:
+
+    - New: consumer-templates/.github/workflows/consumer-codeql-python.yml
+      (canonical, per spec).
+    - New: .github/workflows/consumer-codeql-python.yml
+      (hub-runtime copy, byte-identical).
+    - dm-packaging-helper-script: workflow_list adds
+      consumer-codeql-python.yml. Repos without Python should not
+      install this; the file-presence opt-in rule applies.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit 818a8055a90d0c2c01713fc588f0aa715e6b1b1d
+Merge: 8fe2e5b d25d15d
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:31:57 2026 -0400
+
+    Merge pull request #63 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 3: migrate secrets-audit to consumer-template architecture
+
+commit d25d15d439899286b1b5b7f1b131eea172c9b6df
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:26:01 2026 +0000
+
+    batch 3: migrate secrets-audit to consumer-template architecture
+
+    Third pilot, contrasting batches 1 & 2: manual-trigger only
+    (workflow_dispatch), no cron, no PR/push triggers, uses
+    'secrets: inherit' (forwards the full repo+org secret set into
+    the reusable for presence-flag reporting).
+
+    Changes:
+
+    - New: consumer-templates/.github/workflows/consumer-secrets-audit.yml.
+    - Renamed (git-mv-preserved): .github/workflows/secrets-audit.yml
+      -> consumer-secrets-audit.yml. Content updated to canonical.
+    - dm-packaging-helper-script: workflow_list secrets-audit.yml
+      -> consumer-secrets-audit.yml.
+
+    No behavior change. Same trigger (workflow_dispatch only), same
+    secrets: inherit, same reusable, same concurrency group.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit 8fe2e5b17ce24b70158e37fb478fb9d361083c7d
+Merge: 2d8f333 683eaf6
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:25:18 2026 -0400
+
+    Merge pull request #62 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 2: migrate scorecard to consumer-template architecture
+
+commit 683eaf6ec6b748f88b7f705551a3fcf95dd7ef66
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:17:36 2026 +0000
+
+    batch 2: migrate scorecard to consumer-template architecture
+
+    Second-workflow pilot. Picks scorecard.yml as the contrast to
+    batch 1's pre-push-static: cron-bearing, branch_protection_rule
+    trigger, and `security-events: write` permission. Confirms the
+    rename + canonical pattern generalizes across workflow types.
+
+    Changes:
+
+    - New: consumer-templates/.github/workflows/consumer-scorecard.yml.
+      Single source of truth per the spec.
+    - Renamed (git-mv-preserved history): .github/workflows/scorecard.yml
+      -> .github/workflows/consumer-scorecard.yml. Content updated to
+      match the canonical byte-for-byte.
+    - dm-packaging-helper-script: workflow_list entry scorecard.yml
+      -> consumer-scorecard.yml.
+
+    Cron policy change (intentional, per spec
+    "Scheduling in byte-identical templates"):
+
+    - The previous per-repo cron-allocation list
+        derivative-maker:     '0 4 * * 0'
+        helper-scripts:       '30 4 * * 0'
+        kloak:                '0 5 * * 0'
+        security-misc:        '30 5 * * 0'
+        developer-meta-files: '0 6 * * 0'
+      is dropped. Byte-identical propagation forbids per-repo cron
+      rewrites at propagation time.
+    - All consumers will run on '0 6 * * 0' (developer-meta-files's
+      prior slot, chosen to minimize change for this hub). GitHub's
+      cron queue serializes the simultaneous fires; Scorecard's low
+      value-to-noise ratio makes the queue contention acceptable.
+    - Other repos shift to '0 6 * * 0' the next time
+      pkg_update_consumer_workflows lands the new wrapper there.
+      Until then they keep their old per-repo slot - no immediate
+      multi-repo coordination change.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit 2d8f33393195c22a04fce6203ecb7aec86ec7f55
+Merge: 943be7d fc90e6f
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 10:16:21 2026 -0400
+
+    Merge pull request #61 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    batch 1: migrate pre-push-static to consumer-template architecture
+
+commit fc90e6fed064c91371218c62297c43df7a9361ca
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 14:02:33 2026 +0000
+
+    batch 1: migrate pre-push-static to consumer-template architecture
+
+    Single-workflow pilot for the architecture documented in
+    agents/github-actions-consumer-templates.md. Picks
+    pre-push-static.yml as the smallest universal workflow:
+    PR + push triggers (immediate CI feedback on this PR itself),
+    no cron, no per-repo parameters, no secrets.
+
+    Changes:
+
+    - New file: consumer-templates/.github/workflows/consumer-pre-push-static.yml.
+      Single source of truth per the spec.
+    - Renamed: .github/workflows/pre-push-static.yml ->
+      .github/workflows/consumer-pre-push-static.yml. git-mv-preserved
+      history; content updated to match the canonical
+      byte-for-byte. The hub is a consumer of itself for this
+      template.
+    - dm-packaging-helper-script: workflow_list entry
+      pre-push-static.yml -> consumer-pre-push-static.yml. The
+      propagation tool still sources from the hub's
+      .github/workflows/ for now; the source-path migration to
+      consumer-templates/ is deferred to a later batch once the
+      rename pattern is verified across two workflow types.
+
+    Hub's own CI on this PR exercises the renamed workflow
+    (pull_request trigger); the pre-push static gate appearing as
+    "pre-push static gate" in the Actions tab confirms the
+    rename did not break workflow discovery.
+
+    Spec: agents/github-actions-consumer-templates.md.
+
+commit 943be7d9c11ff1804ccf3592c662c46486ae0106
+Merge: 1f8684a 28b34b7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 09:59:43 2026 -0400
+
+    Merge pull request #60 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    agents: clarify consumer-template spec per review (cron, params, gate placement, yq)
+
+commit 28b34b72b709d799c0ac47a361eceade99419fb7
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 13:49:05 2026 +0000
+
+    agents: fifth-round wording nits per review
+
+    Two precision fixes:
+
+    - Replace the `${{ steps.cfg.outputs.<key> }}` placeholder with
+      concrete underscored examples
+      (`steps.cfg.outputs.project_name`,
+      `steps.cfg.outputs.canonical_repos`). The placeholder predated
+      the underscore-naming convention; making the examples explicit
+      reinforces it.
+    - Parameter-ownership table intro reworded from "every existing
+      workflow_call.input on each parameterized reusable" to "every
+      workflow_call.input touched by this architecture", since the
+      table covers reusable-bandit.yml too and bandit's consumer is
+      universal, not parameterized.
+
+commit 0b5e8e7e4846ed39158c4bdc5984293026bc1c86
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 13:39:33 2026 +0000
+
+    agents: fourth-round spec fixes per review
+
+    Four precision fixes addressing the fourth-round review on PR #60:
+
+    - Config-load loader rewritten to translate hyphenated yml keys
+      to underscored $GITHUB_OUTPUT names. GitHub Actions expression
+      syntax parses `outputs.foo-bar` as subtraction, not as a
+      hyphenated property; the hyphen-to-underscore translation
+      happens in the loader via `${key//-/_}`. Downstream steps now
+      use plain `steps.cfg.outputs.project_name` dot syntax rather
+      than the bracket form.
+    - Coverity workflow_dispatch behavior change documented. Today's
+      reusable's job-level `if:` treats workflow_dispatch as an
+      unconditional bypass of canonical-repos; the step-level gate
+      is intentionally stricter. Rationale: a fork-side manual
+      dispatch would burn runner time for nothing (the org's
+      COVERITY_SCAN_TOKEN is not available to forks), and the
+      upstream's quota is now never at risk from cross-fork manual
+      triggers.
+    - yq install comment dropped the "ubuntu-latest is currently
+      Ubuntu 24.04" assumption. Recommendation added that
+      parameterized reusables pin `runs-on: ubuntu-24.04` (not
+      `ubuntu-latest`) so the contract is not silently broken if a
+      future Ubuntu LTS swaps in mikefarah/yq via apt.
+    - Direct-callers clarifier tightened to note that
+      dm-consumer.yml-owned values are removed from
+      workflow_call.inputs entirely, so direct-call from a
+      hand-written local-*.yml can only pass the surviving
+      workflow_call.inputs - not the values that moved to
+      dm-consumer.yml.
+
+commit 443062c02c5fb685d3bd6aac43a7c6ab281e1834
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 13:30:05 2026 +0000
+
+    agents: third-round spec fixes per review
+
+    Six precision fixes addressing the third-round review on PR #60:
+
+    - Config-load example split into required-key and optional-key
+      loops. Required keys (project-name, canonical-repos) hard-fail
+      on missing/empty; optional keys (apt-packages, build-command)
+      use yq's `// ""` default and pass an empty value through to
+      the reusable. Brings the example in line with the
+      required/optional annotations in the parameter table.
+    - yq install comment corrected: Ubuntu 24.04 (which ubuntu-latest
+      currently resolves to) ships kislyuk's python-yq jq-wrapper,
+      not mikefarah's Go yq. The `// ""` and `-r` syntax is for
+      python-yq.
+    - Coverity gate-placement section gains an implementation-detail
+      paragraph: today's reusable sets COVERITY_TOKEN /
+      COVERITY_EMAIL in jobs.<id>.env: at job level (lines 196-199).
+      The rewrite must move those onto the individual gated steps
+      that need them; otherwise the spec's "secrets path is never
+      reached on a non-canonical run" claim is not actually true.
+    - "Scheduling in universal templates" renamed to "Scheduling in
+      byte-identical templates" and expanded: the policy covers both
+      universal and parameterized templates. consumer-coverity.yml
+      added as a third example - its uniform org-wide cron slot is
+      safe because Coverity's per-project daily quota bounds each
+      project independently of the cron concentration.
+    - "Hub is a consumer of itself" bullet rewritten to qualify that
+      the hub opts into only the templates that make sense for it
+      (universal set, no C/C++), rather than implying every template
+      is installed in the hub's .github/workflows/.
+    - Parameter-ownership intro gains a byte-identical-wrapper-
+      contract clarifier: categories describe what consumer-template
+      wrappers do, not whether the reusable's input surface is
+      technically overridable. Direct callers from a hand-written
+      local-*.yml can still pass any workflow_call.input.
+
+commit 83c18d1f1ecea6e83262408b1e2d6dd2cc476df0
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 13:12:46 2026 +0000
+
+    agents: tighten consumer-template spec per second-round review
+
+    Seven precision fixes addressing the second-round review on PR #60:
+
+    - Coverity dry-run reclassified from "kept as reusable input" to
+      "hardcoded in reusable at false". The previous wording promised
+      a wrapper-level override that the byte-identical example did
+      not actually provide. Production runs never submit in dry-run;
+      manual dry-runs happen in a development branch.
+    - Required vs optional annotations added to every dm-consumer.yml
+      key in the parameter-ownership table. The hard-fail validation
+      rule is updated: missing required key is a hard error; missing
+      optional key falls through to the reusable's built-in default
+      behavior.
+    - "Completes neutral" replaced with "completes success with all
+      expensive steps skipped". Actions has no first-class neutral
+      status for a shell-driven gate; the previous wording overstated
+      what the mechanism delivers.
+    - cppcheck.prepare-command wording corrected: source-tree prep,
+      not apt-installed deps. apt installs in prepare-command would
+      be uncached. If a real apt-deps need appears, the right answer
+      is a dedicated cppcheck.apt-packages key with its own cache.
+    - The "workflow_call.inputs goes away" claim is narrowed to
+      apply only to dm-consumer.yml-owned values. Hardcoded-in-wrapper
+      values (codeql's language, build-mode) stay as workflow_call
+      inputs and are passed by byte-identical with: blocks;
+      hardcoded-in-reusable values stay with reusable defaults.
+    - Wrapper-shape example caption fixed: removed "including
+      developer-meta-files itself" which contradicted the
+      directory-layout section saying the hub does not install
+      consumer-coverity.yml.
+    - yq -r added to the example invocation. Note added that Debian
+      ships Mike Farah's Go yq (different from python-yq); the
+      implementation must verify the exact flag set.
+
+commit ff320e1174f14b2df867332bde07480c91c8fa42
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 12:51:49 2026 +0000
+
+    agents: clarify consumer-template spec per review
+
+    Five amendments addressing review feedback on the spec landed in
+    PR #59:
+
+    - Schema wording: top-level dm-consumer.yml keys mirror the
+      consumer-template basename without the 'consumer-' prefix
+      (not the reusable basename - the previous wording was
+      inconsistent with the codeql-cpp example).
+    - New section "Scheduling in universal templates": byte-identical
+      propagation forbids per-repo cron rewrites; resolution is a
+      uniform org-wide cron slot baked into the template. Documents
+      why consumer-codeql-actions.yml is cronless and why
+      consumer-scorecard.yml uses a single slot.
+    - New section "Parameter ownership across reusable inputs":
+      per-workflow classification of every existing
+      workflow_call.input as one of dm-consumer.yml / hardcoded in
+      reusable / hardcoded in wrapper / removed. Avoids accidental
+      feature regressions during the implementation pass.
+    - New subsection "Coverity canonical-repos gate placement":
+      notes that moving canonical-repos into dm-consumer.yml requires
+      the job-level 'if:' gate to become a step-level gate (step
+      outputs are not available to the same job's 'if:'). Calls out
+      the security-relevance and the implementation cost.
+    - yq install step added to the reusable-side runtime-read example
+      (ubuntu-latest does not ship yq).
+
+    Bandit shebang-vs-extension behavior is pinned as target state
+    requiring a reusable-side discovery rewrite.
+
+commit 1f8684a3af8a0d434a5d8266fe251a615d882f8a
+Merge: 055af09 c0c9a52
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 08:28:50 2026 -0400
+
+    Merge pull request #59 from org-ai-assisted/claude/review-github-actions-IQwcy
+
+    agents: add consumer-template architecture spec; expand G-A-005 prefix scheme
+
+commit c0c9a52910f4653d428e1f79d90e8bd8bdec9636
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 12:16:38 2026 +0000
+
+    agents: add consumer-template architecture spec; expand G-A-005 prefix scheme
+
+    G-A-005 grows from a two-way (reusable- vs unprefixed) to a
+    three-way (reusable- / consumer- / local-) filename convention.
+    consumer-X.yml is the new prefix for thin wrappers around
+    reusables; local-X.yml is the new prefix for hub-private or
+    repo-private workflows that never propagate.
+
+    The new agents/github-actions-consumer-templates.md is the
+    companion architecture spec:
+
+    - consumer-templates/.github/workflows/ as the single source of
+      truth for every consumer-*.yml in the org;
+    - pkg_update_consumer_workflows propagation is pure 'cp' - no yml
+      parsing, no yml writing, no manifest, no opt-in/opt-out flags;
+    - opt-in is filesystem-driven (presence of consumer-X.yml in the
+      consumer's .github/workflows/ is the opt-in signal);
+    - per-repo parameters for parameterized templates live in the
+      consumer's .github/dm-consumer.yml and are read by the relevant
+      reusable at workflow runtime, not at propagation time;
+    - the runtime read pattern with hard-fail validation and
+      newline-rejection protection against \$GITHUB_OUTPUT format
+      injection.
+
+    developer-meta-files is documented as a consumer of itself - the
+    same propagation tool maintains the hub's own consumer-*.yml
+    copies. No special-case logic for the hub.
+
+commit 055af09e73e8a8bf618c473ce1b2708883668b90
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 12 06:28:37 2026 -0400
+
+    .
+
+commit c7d69a6acb1b07168e9cb8028d30561c6121f748
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 12 06:24:30 2026 -0400
+
+    .
+
+commit abd8d86e1b6bd531f0412ce6e6c9ba62411cb348
+Merge: 058a41e 2cc40b9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 12 06:16:59 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 2cc40b936fd66b2968b4d4f34c2bdc09baaa1ea4
+Merge: 4ce10eb 5f113b0
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 04:13:00 2026 -0400
+
+    Merge pull request #58 from org-ai-assisted/claude/spread-codeql-actions
+
+    dm-packaging-helper-script: add pkg_install_codeql_actions_scan
+
+commit 5f113b0b531bc5dd59e09844f6cf5870fb9c58f2
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 08:09:37 2026 +0000
+
+    dm-packaging-helper-script: add pkg_install_codeql_actions_scan
+
+    Companion to pkg_update_consumer_workflows but with INSTALL-if-
+    missing semantics for rolling out a NEW shared consumer wrapper to
+    the org. pkg_update_consumer_workflows uses pkg_update_if_exists,
+    which by design skips destinations that don't already carry the
+    file - correct for ongoing UPDATE bumps but wrong for the initial
+    rollout of codeql-actions.yml, where every target repo legitimately
+    lacks the file.
+
+    Behavior:
+    - Source: dmf's canonical .github/workflows/codeql-actions.yml
+      (the one PR #57 just landed).
+    - Skips packages with no .github/workflows/ directory (repos that
+      don't use GitHub Actions at all).
+    - Skips packages that already carry codeql-actions.yml (idempotent;
+      re-runs no-op).
+    - Otherwise: cp the file in, git add, git commit "add ...".
+    - Runs through nothing_to_commit guard before commit.
+
+    Scope it inherits via run_batch: every kicksecure/whonix submodule
+    under packages/*, plus the qubes-template-* and Whonix-Installer /
+    Whonix-Starter / derivative-maker special-cases at the bottom of
+    run_batch (line 2544 for derivative-maker). dmf itself self-skips
+    via the "already carries the file" branch.
+
+    Kept as a separate function rather than folding INSTALL semantics
+    into pkg_update_consumer_workflows because the two contracts differ:
+    - UPDATE-if-exists: idempotent re-sync of canonical content; safe
+      to schedule, never adds files unexpectedly.
+    - INSTALL-if-missing: one-shot rollout of a brand-new wrapper;
+      intentionally adds files.
+
+    Mixing them in one function would risk a future caller accidentally
+    spreading every wrapper in the list to every repo with a
+    .github/workflows/ directory.
+
+commit 4ce10eb5185e5f8a5f796449bcda1b1bff56dd48
+Merge: b96c03f c457acf
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 04:04:21 2026 -0400
+
+    Merge pull request #57 from org-ai-assisted/claude/codeql-actions-scan
+
+    codeql-actions: enable 'actions' language CodeQL scan for dev-meta-files
+
+commit c457acfc05b7f7b19ae06d64627efa00daab70c2
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 07:56:16 2026 +0000
+
+    codeql-actions.yml: add 'actions' language CodeQL scan for dev-meta-files
+
+    Enables CodeQL's GitHub Actions workflow security analysis (GA April
+    2025, https://github.blog/changelog/2025-04-22-...): script-injection
+    in run blocks, missing-workflow-permissions, dangerous-unverified
+    inputs, unversioned-immutable-action, etc. dev-meta-files itself
+    ships the reusable workflows the org consumes, so this is the
+    highest-value target - a finding here propagates to every downstream
+    caller.
+
+    New file: .github/workflows/codeql-actions.yml
+    - Self-consumer wrapper around reusable-codeql.yml with
+      language: actions
+    - Same @master 'normal consumer' form as the other dmf wrappers
+    - Triggers: push to master, pull_request, workflow_dispatch.
+      No cron (see below).
+    - Standard top-level concurrency block (cancel in-progress on
+      superseding push)
+    - security-events: write at the job level for SARIF upload
+
+    Why a new file rather than baking actions-scan into reusable-codeql:
+    the reusable's contract is one (language, build-mode) pair per call,
+    and the concurrency key already uses inputs.language as a
+    disambiguator. Folding a second language in would muddy that,
+    waste scan minutes on every c-cpp / python call, and still
+    wouldn't cover the repos that have no codeql.yml at all. A
+    small standalone consumer wrapper is easier to propagate
+    byte-identically.
+
+    Why cronless: the same file is intended to land in every consumer
+    repo via pkg_update_consumer_workflows (see helper-script change in
+    this commit). Per-repo cron slots would force a post-cp rewrite -
+    push/PR/dispatch triggers cover scan-on-change adequately, and
+    rule-refresh re-scans can be triggered manually from the Actions
+    tab when needed.
+
+    Helper-script change:
+    - pkg_update_consumer_workflows workflow_list: drop codeql.yml,
+      add codeql-actions.yml. codeql.yml was never actually safe to
+      propagate (kloak: language=c-cpp + manual build; helper-scripts:
+      language=python; each has a unique cron slot - copying one over
+      the other would silently break the destination repo's scan).
+      codeql-actions.yml is genuinely byte-identical across repos so
+      it belongs in the list; codeql.yml stays per-repo.
+
+commit b96c03f849ac3de56acf4dfb2aba4c8fedaa25e3
+Merge: 4bb0ae0 e996c70
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 12 03:38:41 2026 -0400
+
+    Merge pull request #56 from org-ai-assisted/claude/review-cache-poisoning-YSpkm
+
+    github-actions: harden caches against poisoning; doc G-A-007
+
+commit e996c707bd303ae2329e2ff16cfc3ae1e92ca038
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 07:24:08 2026 +0000
+
+    reusable-coverity: drop 'bash' interpreter prepend (R-102)
+
+    Pre-existing R-102 violations surfaced when the cache-hardening
+    commit put reusable-coverity.yml in the diff. Scripts are +x with
+    '#!/bin/bash' shebangs; direct invocation matches the established
+    pattern in reusable-secrets-audit.yml:52.
+
+commit 1bff421f146a9c1ba8ea04c5b098f737e7c50b34
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 12 07:21:28 2026 +0000
+
+    github-actions: harden caches against poisoning; doc G-A-007
+
+    Drop the catch-all 'restore-keys:' fallbacks in reusable-bandit,
+    reusable-cppcheck, and reusable-coverity. The primary key already
+    binds to hashFiles(<this workflow>); the fallback prefix matched
+    any historical entry for the OS and is the foothold pattern called
+    out in
+    https://adnanthekhan.com/2024/05/06/the-monsters-in-your-build-cache-github-actions-cache-poisoning/
+
+    Cost: cache miss when the reusable workflow file itself changes
+    (rare; apt re-downloads .debs - cheap).
+
+    Doc: add G-A-007 to agents/github-actions.md summarising the
+    attack and the four mitigations already in place in this repo.
+
+commit 4bb0ae05e3e043b4e7c45f9ed459b172c0020cf9
+Merge: 058a41e dee0233
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 11 18:53:58 2026 -0400
+
+    Merge pull request #55 from org-ai-assisted/claude/fix-codeql-build-mode-ecXv3
+
+    scorecard/bandit/cppcheck concurrency + pkg_update_if_exists helper + gate carve-outs
+
+commit dee023339946798f85aaa2050f629783cead5009
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:47:33 2026 +0000
+
+    self-consumers: switch from './' to '@master' for canonical-source consistency
+
+    Drops the dev-meta-files self-consumer asymmetry. Each of the five
+    self-consumer wrappers now references the reusable the same way a
+    cross-repo consumer does:
+
+      uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-X.yml@master
+
+    instead of the previous './.github/workflows/reusable-X.yml'.
+
+    Side effect this enables: dev-meta-files's own .github/workflows
+    becomes a drop-in canonical_workflows_dir for the new
+    pkg_update_consumer_workflows helper - the cross-repo wrappers
+    propagated to submodules are now byte-identical to the wrappers
+    that live here, no rewrite step.
+
+    Tradeoff: a PR that modifies a reusable's workflow YAML no longer
+    exercises its own changes during the PR's CI run (with '@master',
+    the PR's scorecard.yml etc. invoke master's reusable, not the
+    PR's). The dual-checkout pattern in reusable-pre-push-static.yml
+    and reusable-secrets-audit.yml still dogfoods the bash scripts
+    those reusables invoke - only the workflow YAML itself loses
+    PR-CI coverage. Acceptable given the canonical-source benefit;
+    post-merge scheduled / dispatched runs continue to verify
+    end-to-end behavior.
+
+    Updated wrappers:
+    - claude-code.yml
+    - codex-review.yml
+    - pre-push-static.yml
+    - scorecard.yml
+    - secrets-audit.yml
+
+    Docstrings trimmed to drop the now-obsolete 'self-consumer
+    dogfoods via local path' framing; each one points at the reusable
+    on GitHub the same way the cross-repo wrappers do.
+
+commit 9e2cefefdd022f008791a5d06412208d39ad242c
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:38:40 2026 +0000
+
+    dm-packaging-helper-script: add pkg_update_consumer_workflows
+
+    Bulk caller of pkg_update_if_exists for the cross-repo consumer
+    wrapper set (bandit, claude-code, codeql, codex-review, coverity,
+    cppcheck, pre-push-static, scorecard, secrets-audit). Iterates the
+    fixed list; for each, sources from <canonical_workflows_dir>/<name>
+    (passed as the batch-command argument), targets
+    ${batch_current_package_path}/.github/workflows/<name>. Source
+    absence is logged and skipped (a package may not carry every
+    consumer wrapper); destination absence is silently skipped by
+    pkg_update_if_exists's "if exists" semantic, so brand-new repos
+    without a given wrapper are no-op'd.
+
+    Caller-supplied canonical_workflows_dir lets the user point at a
+    templates dir of cross-repo wrappers; dev-meta-files's own
+    .github/workflows is NOT suitable (self-consumer wrappers use a
+    local "./" uses: path).
+
+commit 2ba97f444643e36b918feeefd49f9e845a4d6aa4
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:22:47 2026 +0000
+
+    trim repetitive comments per bash-style-guide
+
+    Three places where the prior commits on this branch said the same
+    thing the canonical doc already says:
+
+    - reusable-scorecard.yml, reusable-bandit.yml, reusable-cppcheck.yml:
+      the 8-line inline rationale for the missing concurrency block
+      duplicated what agents/github-actions.md G-A-006 now spells out.
+      Collapsed each to a single-line pointer to G-A-006.
+    - usr/bin/dm-packaging-helper-script: pkg_update_if_exists carried
+      an 18-line docstring including a redundant Usage block. The
+      function body already shows the parameter list and validation.
+      Trimmed to 4 lines matching extract_description_from_debian_control's
+      density.
+    - agents/pre-push-static.sh: the R-120 carve-out expansion spelled
+      out what 'git rm' and 'shred' are; trimmed to just list them.
+
+commit 34b1afbc2b78ab726f0fda5145e404eed9234015
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:19:14 2026 +0000
+
+    pre-push-static: carve out 'git rm' from R-120; complete strict-mode in dm-packaging-helper-script
+
+    Two pre-existing gate violations surfaced when this PR first
+    touched usr/bin/dm-packaging-helper-script (the file-level R-010
+    and R-120 checks only scan files in the change set).
+
+    R-010 strict-mode quintet: script header was missing the sixth
+    strict-mode line. Added 'shopt -s shift_verbose' to the existing
+    block alongside inherit_errexit. No behavior change beyond a
+    diagnostic log line when 'shift' runs past argv end.
+
+    R-120 'rm not safe-rm': false-positive hits on two real git
+    subcommands -
+
+      usr/bin/dm-packaging-helper-script:1169
+        git remote rm origin || true
+      usr/bin/dm-packaging-helper-script:1368
+        git rm -- "debian/compat" || true
+
+    Neither is a filesystem 'rm' invocation; both touch git's index
+    or remote config. Extended the existing carve-out alongside the
+    'safe-rm' and 'shred' exclusions to match
+    'git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]'. Inline
+    comment block documents the rationale for each carve-out (parallel
+    treatment with shred's explicit-overwrite semantics).
+
+    Gate now passes on this branch with the pkg_update_if_exists
+    helper added in the previous commit.
+
+commit 6210a4a4e86c6591d405e472f641ca559534d658
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:13:25 2026 +0000
+
+    dm-packaging-helper-script: add pkg_update_if_exists helper
+
+    Reusable Utility function for the common pattern of "drop an
+    updated copy of a template/config file into packages that already
+    ship it, leave the rest alone." Stages the file, skips the commit
+    on no-op runs via the existing nothing_to_commit guard, and uses
+    "update <basename>" as the default commit message (overrideable
+    via optional third arg).
+
+    Usage:
+      pkg_update_if_exists <source_path> <destination_path> [<commit_msg>]
+
+      source_path       - full path to the canonical version (typically
+                          under "${derivative_maker_source_code_dir}/...")
+      destination_path  - full path inside the current package
+      commit_msg        - optional; defaults to
+                          "update <basename-of-destination>"
+
+    Style matches extract_description_from_debian_control: required-
+    parameter validation in the multi-elif printf '%s\n' "${red}${bold}
+    FATAL ERROR..." pattern, locals declared at the top of the
+    function, 'true "INFO: ..."' diagnostic messages (R-130), '--'
+    end-of-options on cp / git invocations (R-062).
+
+commit b29bf79f779030f7d0652146d5dbbb989b490baa
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 22:03:53 2026 +0000
+
+    reusables: drop wrapper-colliding concurrency in bandit/cppcheck/scorecard
+
+    The previous commit on this branch removed concurrency from the
+    scorecard self-consumer wrapper. That's the wrong direction: this
+    repo's established precedent is to omit 'concurrency:' inside the
+    reusable (see reusable-pre-push-static.yml and reusable-secrets-audit.yml,
+    both of which carry an explicit "would deadlock" comment), because
+    'github.workflow' inside a called reusable resolves to the caller's
+    workflow name and produces an identical group key to the wrapper's.
+
+    This commit aligns three reusables with that precedent:
+
+    - reusable-scorecard.yml: drop concurrency block (was the deadlock
+      source), add the precedent-style explanation comment, revert the
+      docstring "do NOT add wrapper-level concurrency" paragraph that
+      the previous commit introduced.
+    - reusable-bandit.yml: same fix - same '${{ github.workflow }}-${{ github.ref }}'
+      group key would deadlock against cross-repo bandit.yml wrappers.
+    - reusable-cppcheck.yml: same fix - same collision pattern.
+    - scorecard.yml self-consumer wrapper: restore the concurrency
+      block the previous commit removed; the wrapper is the
+      unambiguous owner of the group key.
+    - agents/github-actions.md: clarify G-A-006 with a new
+      "Reusable-side concurrency" paragraph documenting the two safe
+      patterns (omit; or differentiate group key with a per-call
+      input).
+
+    Net effect against origin/master: 3 reusables drop their
+    concurrency block; documentation now explains why. Cross-repo
+    consumer wrappers in other repos that already carry a top-level
+    concurrency block (kloak, helper-scripts, etc.) stop deadlocking
+    without any change on their side.
+
+    Reusables left alone because their group key already differentiates
+    (no deadlock risk): reusable-codeql.yml (inputs.language),
+    reusable-claude-code-review.yml + reusable-codex-review.yml
+    (PR/issue-number disambiguator), reusable-coverity.yml
+    (intentional singleton).
+
+commit 8183b3c4d201e9159f8c0c8ba9e3f968b3159ae3
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 11 21:50:53 2026 +0000
+
+    scorecard: drop wrapper-level concurrency to fix deadlock with reusable
+
+    Both reusable-scorecard.yml and the self-consumer wrapper declared
+    the same cancellable group ('${{ github.workflow }}-${{ github.ref }}').
+    Inside a called reusable github.workflow and github.ref resolve to
+    the caller's values, so the two locks have identical names. Actions
+    detects this as a deadlock and cancels the run with:
+
+      Canceling since a deadlock was detected for concurrency group:
+      'Scorecard-refs/heads/master' between a top level workflow and
+      'scorecard'
+
+    reusable-codeql.yml sidesteps this by including inputs.language in
+    its group; scorecard has no analogous per-call differentiator, so
+    the wrapper omits its block and lets the reusable own the policy.
+
+    Cross-repo consumer wrappers (kloak, helper-scripts, derivative-maker,
+    tb-updater, whonix-firewall, genmkfile) still carry the duplicate
+    concurrency block and remain affected; those will be updated
+    separately per the docstring warning added here.
+
+commit 058a41e06087c2f4e964bb4ad38ab064052e89c9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 11 21:23:15 2026 +0000
+
+    bumped changelog version
+
 commit 1e50bc5c73eced3bf99d162ac22dc2d8d4ade38f
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 11 17:22:42 2026 -0400

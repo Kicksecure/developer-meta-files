@@ -144,16 +144,15 @@ on:
 permissions:
   contents: read
 
-## Concurrency key explicitly includes the PR/issue number for
-## comment-triggered runs because GitHub documents 'issue_comment'
-## and 'pull_request_review_comment' as running on the default-
-## branch ref. Without the PR number in the key, every comment-
-## triggered run on every PR would share one group, and 'cancel-
-## in-progress: true' would silently cancel an in-flight Claude
-## review on PR #A the moment a comment lands on PR #B.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
-  cancel-in-progress: true
+## No reusable-side concurrency block. Per agents/github-actions.md
+## G-A-006: github.workflow inside a reusable resolves to the
+## caller's workflow name, so a reusable that declares a group key
+## the caller cannot disambiguate produces an identical lock to the
+## caller's and self-cancels (Actions surfaces this as "Canceling
+## since a deadlock was detected for concurrency group: ..."). The
+## caller's lock lives in consumer-claude-code.yml and carries the
+## PR/issue-number disambiguator required for issue_comment events;
+## that lock covers this reusable's runs.
 
 jobs:
   review:
@@ -198,7 +197,7 @@ jobs:
           persist-credentials: false
 
       - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@62238ddb33772a079b0a6d8665a1ff3043583067  # v1
+        uses: anthropics/claude-code-action@51ea8ea73a139f2a74ff649e3092c25a904aed7e  # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           ## Note: the action no longer accepts an 'allowed_users'

@@ -288,7 +288,7 @@ check_R051_trap_inline() {
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    ## Bad pattern: trap followed by a single-quoted inline command.
    ## Named-function form is: trap NAME SIG (no leading quote).
-   hits="$(grep --line-number --extended-regexp "\btrap[[:space:]]+'" -- "${fs[@]}" 2>/dev/null || true)"
+   hits="$(grep --line-number --extended-regexp "\\btrap[[:space:]]+'" -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-051 trap inline command" "${hits}"
 }
 
@@ -352,15 +352,22 @@ check_R120_rm() {
    local script hits line
 
    for script in "${@}"; do
+      ## Script-wide waiver: '## style-ok: no-safe-rm' anywhere in
+      ## the file disables R-120 for that file.
+      if grep --quiet --fixed-strings 'style-ok: no-safe-rm' -- "${script}"; then
+         continue
+      fi
       ## Conservative: 'rm' as a word at start-of-line or after
       ## whitespace, NOT preceded by 'safe-'. Excludes comments
-      ## (lines starting with optional whitespace then '#').
+      ## (lines starting with optional whitespace then '#') and the
+      ## non-filesystem-rm carve-outs (safe-rm, shred, git rm, git
+      ## remote rm).
       ## FIXME: `rm` by itself at the beginning of a line will be
       ## missed by this.
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]' \
          -- "${script}" 2>/dev/null \
-         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]' \
+         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]|git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]' \
          || true)"
       if [ -z "${hits}" ]; then
          continue
@@ -450,7 +457,7 @@ run_precommit_hook() {
    if [ "$#" -eq 0 ]; then
       return 0
    fi
-   "${hook}" "${@}" || fail "${hook}"
+   "${hook}" "${@}" || fail "${hook}" "exited non-zero (hook output printed above)"
 }
 
 check_precommit_hooks() {

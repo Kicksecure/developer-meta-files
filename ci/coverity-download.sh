@@ -28,7 +28,7 @@
 ##      second host with a different token) before committing.
 ##   4. Commit it to .coverity-tool-sha256.expected.
 ##
-## Expected env (from the reusable coverity.yml):
+## Expected env (from reusable-coverity.yml):
 ##   COVERITY_TOKEN
 ##   COVERITY_PROJECT
 ##
@@ -41,7 +41,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 set -o errtrace
-## FIXME: Why aren't the shopt settings here?
+shopt -s inherit_errexit
+shopt -s shift_verbose
 
 ## CI guard. Downloads a token-gated binary and writes it to disk.
 ## Refuse outside CI unless ALLOW_LOCAL=true is set explicitly.
@@ -105,4 +106,5 @@ else
 fi
 
 tar -xzf cov-analysis-linux64.tgz -C cov-analysis --strip-components=1 --
-rm -f -- cov-analysis-linux64.tgz cov-analysis-linux64.md5
+## style-ok: no-safe-rm (safe-rm not pre-installed on hosted runners)
+rm --force -- cov-analysis-linux64.tgz cov-analysis-linux64.md5

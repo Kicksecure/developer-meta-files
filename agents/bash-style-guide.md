@@ -313,6 +313,24 @@ expanding a `|`-separated string.
           ;;
     esac
 
+**R-074: No `; next-command` chaining.** Each statement gets its
+own line. Bash's syntactic `;` (case-arm `;;`, C-style for-loop
+`for ((i=0; i<N; i++))`) is the only exception; using `;` to
+glue two arbitrary commands onto one line is prohibited.
+
+Bad:
+
+    cd "${dir}"; ls --long
+    foo --quiet; bar --verbose
+
+Good:
+
+    cd "${dir}"
+    ls --long
+
+    foo --quiet
+    bar --verbose
+
 
 ## Sourcing helper-scripts
 
@@ -469,7 +487,9 @@ exit." Inside a function that should return rather than exit, use
 ## File deletion
 
 **R-120: `safe-rm`, not `rm`.** Long-flag form: `safe-rm --force --`
-or `safe-rm --recursive --force --`.
+or `safe-rm --recursive --force --`. To deviate (rare), put
+`## style-ok: no-safe-rm` anywhere in the script; the pre-push
+gate skips R-120 script-wide when it finds that marker.
 
 Why: `safe-rm` consults a blocklist before deleting (paths like
 `/`, `/usr`, `~`).

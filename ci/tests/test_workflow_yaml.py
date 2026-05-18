@@ -57,14 +57,14 @@ import sys
 try:
     import yaml
 except ImportError:
-    print("error: PyYAML not installed (apt: python3-yaml)", file=sys.stderr)
+    print('error: PyYAML not installed (apt: python3-yaml)', file=sys.stderr)
     sys.exit(2)
 
 
 ## 'secrets: inherit' is permitted only on these specific
 ## workflows. Path is relative to repo_root.
 SECRETS_INHERIT_ALLOWLIST = {
-    ".github/workflows/secrets-audit.yml",
+    '.github/workflows/consumer-secrets-audit.yml',
 }
 
 ## First-party owners are exempt from SHA-pin (G-A-004 in
@@ -73,56 +73,56 @@ SECRETS_INHERIT_ALLOWLIST = {
 ## 'github' (GitHub-owned) are NOT in this set: even GitHub's own
 ## marketplace actions must be SHA-pinned per supply-chain hygiene.
 FIRST_PARTY_OWNERS = {
-    "org-ai-assisted",
-    "Kicksecure",
-    "Whonix",
+    'org-ai-assisted',
+    'Kicksecure',
+    'Whonix',
 }
 
 ## Deprecated action refs and syntax. Map of substring -> reason.
 DEPRECATED_MARKERS = {
-    "::set-output": "use $GITHUB_OUTPUT instead (set-output deprecated 2022)",
-    "::save-state": "use $GITHUB_STATE instead (save-state deprecated 2022)",
-    "::set-env": "banned for security reasons (CVE-2020-15228)",
-    "actions/upload-artifact@v3": "v3 deprecated 2024; use @v4 or @v7 SHA-pinned",
-    "actions/download-artifact@v3": "v3 deprecated 2024; use @v4 SHA-pinned",
-    "actions/cache@v2": "v2 EOL; use @v4 SHA-pinned",
-    "actions/cache@v3": "v3 deprecated; use @v4 SHA-pinned",
+    '::set-output': 'use $GITHUB_OUTPUT instead (set-output deprecated 2022)',
+    '::save-state': 'use $GITHUB_STATE instead (save-state deprecated 2022)',
+    '::set-env': 'banned for security reasons (CVE-2020-15228)',
+    'actions/upload-artifact@v3': 'v3 deprecated 2024; use @v4 or @v7 SHA-pinned',
+    'actions/download-artifact@v3': 'v3 deprecated 2024; use @v4 SHA-pinned',
+    'actions/cache@v2': 'v2 EOL; use @v4 SHA-pinned',
+    'actions/cache@v3': 'v3 deprecated; use @v4 SHA-pinned',
 }
 
-SHA40 = re.compile(r"^[0-9a-f]{40}$")
+SHA40 = re.compile(r'^[0-9a-f]{40}$')
 
 RULE_LEGEND = [
-    ("W-001 TIMEOUT",              "job missing timeout-minutes"),
-    ("W-002 CONCURRENCY",          "workflow missing top-level concurrency:"),
-    ("W-003 SECRETS-INHERIT",      "secrets: inherit outside allowlist"),
-    ("W-004 SHA-PIN",              "third-party uses: not pinned to 40-char SHA"),
-    ("W-005 PERMISSIONS-CHECKOUT", "job-level permissions drop contents: read while using actions/checkout"),
-    ("W-006 DEPRECATED",           "deprecated GitHub Actions syntax / action version"),
-    ("W-007 DEPENDABOT-MISSING",   "direct third-party SHAs but no .github/dependabot.yml"),
-    ("W-YAML",                     "YAML parse error"),
+    ('W-001 TIMEOUT',              'job missing timeout-minutes'),
+    ('W-002 CONCURRENCY',          'workflow missing top-level concurrency:'),
+    ('W-003 SECRETS-INHERIT',      'secrets: inherit outside allowlist'),
+    ('W-004 SHA-PIN',              'third-party uses: not pinned to 40-char SHA'),
+    ('W-005 PERMISSIONS-CHECKOUT', 'job-level permissions drop contents: read while using actions/checkout'),
+    ('W-006 DEPRECATED',           'deprecated GitHub Actions syntax / action version'),
+    ('W-007 DEPENDABOT-MISSING',   'direct third-party SHAs but no .github/dependabot.yml'),
+    ('W-YAML',                     'YAML parse error'),
 ]
 
 
 def emit(findings, path, repo_root, rule, message):
     rel = os.path.relpath(path, repo_root)
-    findings.append(f"{rel}:{rule}:{message}")
+    findings.append(f'{rel}:{rule}:{message}')
 
 
 def is_workflow_call(parsed):
-    on = parsed.get("on")
+    on = parsed.get('on')
     if on is None:
         ## 'on' parses as Python True under YAML 1.1.
         on = parsed.get(True)
     if not isinstance(on, dict):
         return False
-    return "workflow_call" in on
+    return 'workflow_call' in on
 
 
 def is_composite_action(parsed):
-    runs = parsed.get("runs")
+    runs = parsed.get('runs')
     if not isinstance(runs, dict):
         return False
-    return runs.get("using") == "composite"
+    return runs.get('using') == 'composite'
 
 
 def find_uses_lines(text):
@@ -133,7 +133,7 @@ def find_uses_lines(text):
     """
     out = []
     for i, line in enumerate(text.splitlines(), 1):
-        m = re.match(r"^\s*-?\s*uses:\s*([^\s#]+)(\s*#\s*(.+))?", line)
+        m = re.match(r'^\s*-?\s*uses:\s*([^\s#]+)(\s*#\s*(.+))?', line)
         if m:
             tag = m.group(3).strip() if m.group(3) else None
             out.append((i, m.group(1), tag))
@@ -146,10 +146,10 @@ def check_workflow(path, repo_root, findings):
     try:
         parsed = yaml.safe_load(text)
     except yaml.YAMLError as e:
-        emit(findings, path, repo_root, "W-YAML", f"invalid YAML: {e}")
+        emit(findings, path, repo_root, 'W-YAML', f'invalid YAML: {e}')
         return
     if not isinstance(parsed, dict):
-        emit(findings, path, repo_root, "W-YAML", "top-level is not a mapping")
+        emit(findings, path, repo_root, 'W-YAML', 'top-level is not a mapping')
         return
 
     ## Composite action files (.github/actions/*/action.yml) only
@@ -158,11 +158,11 @@ def check_workflow(path, repo_root, findings):
     ## uses: lines below.
     if not is_composite_action(parsed):
         is_reusable = is_workflow_call(parsed)
-        jobs = parsed.get("jobs") or {}
+        jobs = parsed.get('jobs') or {}
 
         ## W-002 CONCURRENCY (reusables exempt)
-        if not is_reusable and "concurrency" not in parsed:
-            emit(findings, path, repo_root, "W-002", "missing top-level concurrency: block")
+        if not is_reusable and 'concurrency' not in parsed:
+            emit(findings, path, repo_root, 'W-002', 'missing top-level concurrency: block')
 
         if isinstance(jobs, dict):
             for job_id, job in jobs.items():
@@ -174,13 +174,13 @@ def check_workflow(path, repo_root, findings):
     for line_no, uses, tag_comment in find_uses_lines(text):
         for marker, reason in DEPRECATED_MARKERS.items():
             if marker in uses:
-                emit(findings, path, repo_root, "W-006",
+                emit(findings, path, repo_root, 'W-006',
                      f"line {line_no}: '{uses}' - {reason}")
                 break
 
-        if uses.startswith("./") or uses.startswith("docker://"):
+        if uses.startswith('./') or uses.startswith('docker://'):
             continue  ## local composite or docker ref
-        m = re.match(r"^([^/@]+)/[^@]+@(.+)$", uses)
+        m = re.match(r'^([^/@]+)/[^@]+@(.+)$', uses)
         if not m:
             continue
         owner = m.group(1)
@@ -188,34 +188,34 @@ def check_workflow(path, repo_root, findings):
         if owner in FIRST_PARTY_OWNERS:
             continue
         if not SHA40.match(ref):
-            emit(findings, path, repo_root, "W-004",
+            emit(findings, path, repo_root, 'W-004',
                  f"line {line_no}: '{uses}' - third-party action must pin to 40-char SHA, not '@{ref}'")
             continue
         ## SHA pinned. Now require a '# v<digit>...' provenance comment.
-        if not tag_comment or not re.match(r"^v?\d", tag_comment):
-            emit(findings, path, repo_root, "W-004",
+        if not tag_comment or not re.match(r'^v?\d', tag_comment):
+            emit(findings, path, repo_root, 'W-004',
                  f"line {line_no}: '{uses}' - SHA pinned but missing '# v<tag>' provenance comment "
-                 f"(found: {tag_comment!r})")
+                 f'(found: {tag_comment!r})')
 
 
 def check_job(path, repo_root, findings, job_id, job):
     ## W-001 TIMEOUT: standalone jobs (with steps) must have
     ## timeout-minutes. Wrapper jobs (only 'uses:') are governed
     ## by the called reusable's timeout.
-    if "steps" in job and "timeout-minutes" not in job:
-        emit(findings, path, repo_root, "W-001",
+    if 'steps' in job and 'timeout-minutes' not in job:
+        emit(findings, path, repo_root, 'W-001',
              f"job '{job_id}' missing timeout-minutes")
 
     ## W-003 SECRETS-INHERIT
-    if job.get("secrets") == "inherit":
+    if job.get('secrets') == 'inherit':
         rel = os.path.relpath(path, repo_root)
         if rel not in SECRETS_INHERIT_ALLOWLIST:
-            emit(findings, path, repo_root, "W-003",
+            emit(findings, path, repo_root, 'W-003',
                  f"job '{job_id}' uses 'secrets: inherit'; replace with explicit map "
-                 f"(or add to SECRETS_INHERIT_ALLOWLIST if intentional)")
+                 f'(or add to SECRETS_INHERIT_ALLOWLIST if intentional)')
 
     ## W-005 PERMISSIONS-CHECKOUT
-    perms = job.get("permissions")
+    perms = job.get('permissions')
     ## Skip if perms is not a non-empty mapping. 'permissions: {}'
     ## (empty) is a deliberate "zero permissions" hardening signal;
     ## strings like 'read-all' / 'write-all' also bypass.
@@ -225,37 +225,37 @@ def check_job(path, repo_root, findings, job_id, job):
     ## 'with.repository:' override. Cross-repo public-anonymous
     ## clone does not need 'contents:' permission on THIS repo.
     uses_same_repo_checkout = False
-    for s in (job.get("steps") or []):
+    for s in (job.get('steps') or []):
         if not isinstance(s, dict):
             continue
-        s_uses = s.get("uses", "")
+        s_uses = s.get('uses', '')
         if not isinstance(s_uses, str):
             continue
-        if not s_uses.startswith("actions/checkout@"):
+        if not s_uses.startswith('actions/checkout@'):
             continue
-        w = s.get("with") or {}
-        if not w.get("repository"):
+        w = s.get('with') or {}
+        if not w.get('repository'):
             uses_same_repo_checkout = True
             break
-    if uses_same_repo_checkout and "contents" not in perms:
-        emit(findings, path, repo_root, "W-005",
+    if uses_same_repo_checkout and 'contents' not in perms:
+        emit(findings, path, repo_root, 'W-005',
              f"job '{job_id}' has job-level permissions but no 'contents:' entry "
-             f"AND uses actions/checkout on the current repo. Job-level permissions "
-             f"REPLACE top-level (not merge), so checkout has no contents access.")
+             f'AND uses actions/checkout on the current repo. Job-level permissions '
+             f'REPLACE top-level (not merge), so checkout has no contents access.')
 
 
 def collect_target_files(repo_root):
     """Workflows + composite-action definitions."""
     targets = []
-    workflows_dir = os.path.join(repo_root, ".github", "workflows")
+    workflows_dir = os.path.join(repo_root, '.github', 'workflows')
     if os.path.isdir(workflows_dir):
         for entry in sorted(os.listdir(workflows_dir)):
-            if entry.endswith(".yml") or entry.endswith(".yaml"):
+            if entry.endswith('.yml') or entry.endswith('.yaml'):
                 targets.append(os.path.join(workflows_dir, entry))
-    actions_dir = os.path.join(repo_root, ".github", "actions")
+    actions_dir = os.path.join(repo_root, '.github', 'actions')
     if os.path.isdir(actions_dir):
         for action_name in sorted(os.listdir(actions_dir)):
-            for filename in ("action.yml", "action.yaml"):
+            for filename in ('action.yml', 'action.yaml'):
                 p = os.path.join(actions_dir, action_name, filename)
                 if os.path.isfile(p):
                     targets.append(p)
@@ -268,19 +268,19 @@ def check_dependabot(repo_root, targets, findings):
     Pure '@master'-to-dmf-reusable wrappers (zero direct refs)
     are exempt - dmf's single Dependabot covers them.
     """
-    dependabot_path = os.path.join(repo_root, ".github", "dependabot.yml")
+    dependabot_path = os.path.join(repo_root, '.github', 'dependabot.yml')
     if os.path.isfile(dependabot_path):
         return
-    if os.path.isfile(os.path.join(repo_root, ".github", "dependabot.yaml")):
+    if os.path.isfile(os.path.join(repo_root, '.github', 'dependabot.yaml')):
         return
 
     has_direct = False
     for t in targets:
         with open(t) as f:
             for _, uses, _ in find_uses_lines(f.read()):
-                if uses.startswith("./") or uses.startswith("docker://"):
+                if uses.startswith('./') or uses.startswith('docker://'):
                     continue
-                m = re.match(r"^([^/@]+)/[^@]+@(.+)$", uses)
+                m = re.match(r'^([^/@]+)/[^@]+@(.+)$', uses)
                 if not m:
                     continue
                 if m.group(1) not in FIRST_PARTY_OWNERS:
@@ -291,7 +291,7 @@ def check_dependabot(repo_root, targets, findings):
 
     if has_direct:
         findings.append(
-            f".github/dependabot.yml:W-007:repo has direct third-party action SHA pins "
+            f'.github/dependabot.yml:W-007:repo has direct third-party action SHA pins '
             f"but no .github/dependabot.yml; SHA bumps won't be tracked"
         )
 
@@ -299,7 +299,7 @@ def check_dependabot(repo_root, targets, findings):
 def main(repo_root):
     targets = collect_target_files(repo_root)
     if not targets:
-        print(f"workflow yaml validator: no workflow / composite-action files; nothing to validate")
+        print(f'workflow yaml validator: no workflow / composite-action files; nothing to validate')
         return 0
 
     findings = []
@@ -309,22 +309,22 @@ def main(repo_root):
     n_files = len(targets)
 
     if not findings:
-        print(f"workflow yaml validator: 0 findings across {n_files} files")
+        print(f'workflow yaml validator: 0 findings across {n_files} files')
         return 0
 
-    print(f"workflow yaml validator: {len(findings)} finding(s):")
-    print("----")
+    print(f'workflow yaml validator: {len(findings)} finding(s):')
+    print('----')
     for f in findings:
         print(f)
-    print("----")
-    print("Rules:")
+    print('----')
+    print('Rules:')
     for rule, desc in RULE_LEGEND:
-        print(f"  {rule:<27} {desc}")
+        print(f'  {rule:<27} {desc}')
     return 1
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("usage: test_workflow_yaml.py <repo_root>", file=sys.stderr)
+        print('usage: test_workflow_yaml.py <repo_root>', file=sys.stderr)
         sys.exit(2)
     sys.exit(main(sys.argv[1]))

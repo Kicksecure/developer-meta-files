@@ -43,6 +43,18 @@
 ##
 ## github-org-lib.bsh must be sourced before this file.
 
+## R-010 strict-mode quintet. Sourced lib; the callers
+## (dm-github-org-policy, dm-github-personal-policy, and the
+## ci/tests/test_*.sh harness) already set these on themselves, so
+## these lines are a no-op there. They guarantee strict mode if
+## the lib is ever sourced from a non-strict context.
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
 # shellcheck source=/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
@@ -336,12 +348,17 @@ policy_skip_ui_repo() {
 ##   $1 - ruleset name
 ##   $2 - 'org' or 'repo'
 ##   $3 - bypass_actors JSON array (default '[]')
+##   $4 - rules JSON array (default POLICY_RULESET_RULES_SOURCE - the
+##        with-required_signatures variant; callers on roles that
+##        omit required_signatures pass POLICY_RULESET_RULES_MIRROR
+##        or POLICY_RULESET_RULES_BOT here).
 policy_branch_ruleset_body() {
-   local name scope bypass body
+   local name scope bypass rules body
 
    name="$1"
    scope="${2:-repo}"
    bypass="${3:-[]}"
+   rules="${4:-${POLICY_RULESET_RULES_SOURCE}}"
 
    ## PAID PLAN ONLY: scope=org needs POLICY_BRANCH_RULESET_BODY_ORG,
    ## commented out in github-policy-data.bsh because
@@ -357,16 +374,21 @@ policy_branch_ruleset_body() {
    fi
    body="${POLICY_BRANCH_RULESET_BODY_REPO}"
 
-   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
+   ghorg_jq -n \
+      --arg name "${name}" \
+      --argjson bypass "${bypass}" \
+      --argjson rules "${rules}" \
+      -- "${body}"
 }
 
 ## Tag ruleset body. Args: same as policy_branch_ruleset_body.
 policy_tag_ruleset_body() {
-   local name scope bypass body
+   local name scope bypass rules body
 
    name="$1"
    scope="${2:-repo}"
    bypass="${3:-[]}"
+   rules="${4:-${POLICY_RULESET_RULES_SOURCE}}"
 
    ## PAID PLAN ONLY: see policy_branch_ruleset_body note above.
    # if [ "${scope}" = 'org' ]; then
@@ -380,7 +402,11 @@ policy_tag_ruleset_body() {
    fi
    body="${POLICY_TAG_RULESET_BODY_REPO}"
 
-   ghorg_jq -n --arg name "${name}" --argjson bypass "${bypass}" -- "${body}"
+   ghorg_jq -n \
+      --arg name "${name}" \
+      --argjson bypass "${bypass}" \
+      --argjson rules "${rules}" \
+      -- "${body}"
 }
 
 ## ============================================================================

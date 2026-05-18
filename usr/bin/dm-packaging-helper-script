@@ -55,6 +55,8 @@ test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files
 # shellcheck source=/usr/libexec/developer-meta-files/git-helpers.bsh
 source "$git_helpers_lib"
 
+canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/workflows"
+
 ## BEGIN Initialization functions {
 
 check_prerequisites() {
@@ -473,6 +475,17 @@ repo_skip_non_package() {
    repo_skip 'Whonix-Starter' || return 1
 }
 
+## Returns 0 if the current repo is one of the four "special"
+## (non-package) repos. Counterpart to repo_skip_non_package.
+repo_is_special() {
+   case "${batch_current_package_reponame}" in
+      qubes-template-kicksecure|qubes-template-whonix|Whonix-Installer|Whonix-Starter)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
 ## Resets all batch_meta_* global state variables to default values.
 reset_batch_meta_globals() {
    batch_meta_category_list=()
@@ -492,6 +505,22 @@ reset_batch_meta_globals() {
    ## `declare -A -g name` would leave it unset and any `${name[@]}`
    ## access (count, iterate) would error.
    declare -A -g batch_meta_file_header_done_list=()
+}
+
+## Returns 0 if the current HEAD commit subject is the sentinel
+## 'bumped changelog version' message produced by
+## `genmkfile deb-uachl-commit-changelog`. Marks an in-progress
+## bump-and-build that may not yet have completed reprepro-add.
+is_changelog_bump_commit() {
+   [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
+}
+
+dry_run_or_run() {
+   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*"
+      return 0
+   fi
+   "$@"
 }
 
 ## XXX: Duplicated.
@@ -676,6 +705,54 @@ set_batch_current_package_remote_list() {
    if [ "${batch_current_package_reponame}" = 'derivative-maker' ]; then
       batch_current_package_remote_list+=( 'github-whonix' )
    fi
+}
+
+## Replaces the destination file with the source file only if the
+## destination already exists. Skips silently when absent. Stages
+## and commits with "update <basename>" as the default message; the
+## optional third arg overrides it.
+pkg_update_if_exists() {
+   local source_path destination_path commit_msg destination_basename
+
+   source_path="${1:-}"
+   destination_path="${2:-}"
+   commit_msg="${3:-}"
+
+   if [ -z "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty source_path parameter provided!${reset}"
+      exit 1
+   elif [ -z "${destination_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: Empty destination_path parameter provided!${reset}"
+      exit 1
+   elif ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: source_path '${source_path}' does not exist!${reset}"
+      exit 1
+   fi
+
+   if ! [ -f "${destination_path}" ]; then
+      true "INFO: '${destination_path}' does not exist; skipping update."
+      return 0
+   fi
+
+   cp --verbose -- "${source_path}" "${destination_path}"
+
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: '${destination_path}' already up to date; nothing to commit."
+      return 0
+   fi
+
+   #git diff --cached
+
+   if [ -z "${commit_msg}" ]; then
+      destination_basename="${destination_path##*/}"
+      commit_msg="update ${destination_basename}"
+   fi
+
+   git commit -m "${commit_msg}"
+
+   true
 }
 
 ## internal_git_diff_local and internal_git_diff_remote are defined
@@ -1293,6 +1370,7 @@ pkg_profile_d_zsh_creator() {
       fi
       printf '%s\n' "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
    done
+
    true
 }
 
@@ -1302,8 +1380,169 @@ pkg_copy_contributing_file() {
    repo_skip 'kloak' || return 0
 
    cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
+
    git add -- "${batch_current_package_path}/CONTRIBUTING.md"
    git commit -m "update"
+
+   true
+}
+
+## True if .github/dependabot.yml carries the
+## "## propagation: manual" opt-out marker.
+dependabot_yml_is_manual() {
+   local target_path
+
+   target_path="${batch_current_package_path}/.github/dependabot.yml"
+
+   if ! [ -f "${target_path}" ]; then
+      return 1
+   fi
+
+   if grep --quiet --extended-regexp '^## propagation: manual$' "${target_path}"; then
+      return 0
+   fi
+
+   return 1
+}
+
+## Bulk variant of pkg_update_if_exists: iterates a fixed set of
+## consumer-wrapper filenames against canonical_workflows_dir, and
+## also refreshes .github/dependabot.yml from the canonical at
+## consumer-templates/.github/dependabot.yml. dependabot.yml
+## refresh honours "## propagation: manual".
+pkg_update_consumer_workflows() {
+   local workflow_name source_path destination_path
+   local dependabot_source dependabot_destination
+   local -a workflow_list
+
+   test -d "${canonical_workflows_dir}"
+
+   workflow_list=(
+      consumer-bandit.yml
+      consumer-claude-code.yml
+      consumer-codeql-actions.yml
+      consumer-codeql-cpp.yml
+      consumer-codeql-python.yml
+      consumer-codex-review.yml
+      consumer-coverity.yml
+      consumer-cppcheck.yml
+      consumer-pre-push-static.yml
+      consumer-scorecard.yml
+      consumer-secrets-audit.yml
+   )
+
+   for workflow_name in "${workflow_list[@]}"; do
+      source_path="${canonical_workflows_dir}/${workflow_name}"
+      test -f "${source_path}"
+      destination_path="${batch_current_package_path}/.github/workflows/${workflow_name}"
+      pkg_update_if_exists \
+         "${source_path}" \
+         "${destination_path}" \
+         "update .github/workflows/${workflow_name}"
+   done
+
+   dependabot_source="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
+   dependabot_destination="${batch_current_package_path}/.github/dependabot.yml"
+
+   test -f "${dependabot_source}"
+
+   ## Unconditionally install dependabot.yml if missing.
+   pkg_install_dependabot_yml
+
+   if dependabot_yml_is_manual; then
+      true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping update."
+   else
+      pkg_update_if_exists \
+         "${dependabot_source}" \
+         "${dependabot_destination}" \
+         "update .github/dependabot.yml"
+   fi
+
+   true
+}
+
+## Installs the canonical .github/dependabot.yml into every repo
+## that uses GitHub Actions (has .github/workflows/) and doesn't
+## already carry the file. INSTALL semantic, parallel to
+## pkg_install_codeql_actions_scan. Idempotent. Honours
+## "## propagation: manual".
+pkg_install_dependabot_yml() {
+   local source_path destination_dir destination_path
+
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
+   destination_dir="${batch_current_package_path}/.github"
+   destination_path="${destination_dir}/dependabot.yml"
+
+   if ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+      exit 1
+   fi
+
+   if ! [ -d "${batch_current_package_path}/.github/workflows" ]; then
+      true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if dependabot_yml_is_manual; then
+      true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping install."
+      return 0
+   fi
+
+   if [ -f "${destination_path}" ]; then
+      true "INFO: ${batch_current_package_reponame}: dependabot.yml already present; skipping."
+      return 0
+   fi
+
+   cp --verbose -- "${source_path}" "${destination_path}"
+
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: ${FUNCNAME[0]}: nothing to commit"
+      return 0
+   fi
+
+   git commit -m "add .github/dependabot.yml" || true
+
+   true
+}
+
+## Installs the canonical consumer-codeql-actions.yml consumer wrapper into
+## every repo that uses GitHub Actions (has .github/workflows/) and
+## doesn't already carry the file. INSTALL semantic, in contrast to
+## pkg_update_consumer_workflows's UPDATE-if-exists. Idempotent:
+## a re-run after rollout no-ops everywhere.
+pkg_install_codeql_actions_scan() {
+   local source_path destination_dir destination_path
+
+   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/.github/workflows/consumer-codeql-actions.yml"
+   destination_dir="${batch_current_package_path}/.github/workflows"
+   destination_path="${destination_dir}/consumer-codeql-actions.yml"
+
+   if ! [ -f "${source_path}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+      exit 1
+   fi
+
+   if ! [ -d "${destination_dir}" ]; then
+      true "INFO: ${batch_current_package_reponame}: no .github/workflows/ directory; skipping."
+      return 0
+   fi
+
+   if [ -f "${destination_path}" ]; then
+      true "INFO: ${batch_current_package_reponame}: consumer-codeql-actions.yml already present; skipping."
+      return 0
+   fi
+
+   cp -- "${source_path}" "${destination_path}"
+   git add -- "${destination_path}"
+
+   if nothing_to_commit; then
+      true "INFO: ${FUNCNAME[0]}: nothing to commit"
+      return 0
+   fi
+
+   git commit -m "add .github/workflows/consumer-codeql-actions.yml"
 
    true
 }
@@ -1526,6 +1765,18 @@ pkg_git_push_remotes() {
       branch_name_list=( "master" )
    fi
 
+   ## Development.
+   #if [ "$batch_current_package_reponame" = "developer-meta-files" ]; then
+      #return 0
+   #fi
+
+   if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
+      ## Manual tag creation when deemed ready.
+      dry_run_or_run genmkfile git-commit-verify >/dev/null
+   else
+      dry_run_or_run genmkfile git-verify >/dev/null
+   fi
+
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
       refspec_list=()
       for branch_name_item in "${branch_name_list[@]}"; do
@@ -1540,7 +1791,7 @@ pkg_git_push_remotes() {
          ##   Single-ref pushes are unaffected.
          ## --porcelain: one machine-readable line per ref so failures
          ##   in wait_for_git_processes are diagnosable beyond exit code.
-         log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
+         dry_run_or_run log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
          git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
       fi
    done
@@ -1558,7 +1809,7 @@ pkg_git_push_tags() {
    ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
+      dry_run_or_run git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
       git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
    done
 
@@ -1976,58 +2227,28 @@ pkg_git_packages_git_log_writer() {
    true
 }
 
-## Signs git tags for all repos except derivative-maker using genmkfile.
+## Signs git tags for all repos except derivative-maker. The
+## special-vs-regular dispatch lives in genmkfile make_git_tag_sign.
 pkg_git_sign_tags() {
+   local prefix
+   prefix="${cyan}${batch_current_package_reponame}${reset}: pkg_git_sign_tags"
+
    repo_skip 'derivative-maker' || return 0
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 TODO"
-   genmkfile git-commit-verify
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 1/4 done"
+   ## Step 1/3: HEAD commit must be signed.
+   true "${prefix} 1/3 verify HEAD commit signed"
+   genmkfile git-commit-verify  >/dev/null
 
-   true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 TODO"
-   if ! genmkfile git-verify 2>/dev/null ; then
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 2/4 done"
-
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 TODO"
-      genmkfile git-tag-sign
-      true "${cyan}batch_current_package_reponame: ${under}${batch_current_package_reponame}${eunder}${reset} 3/4 done"
+   ## Step 2/3: HEAD must have a signed tag pointing at it; sign one if not.
+   true "${prefix} 2/3 verify HEAD tag signed, sign if absent"
+   if ! genmkfile git-tag-verify 2>/dev/null; then
+      dry_run_or_run genmkfile git-tag-sign >/dev/null
    fi
 
-   genmkfile git-verify
-
-   true
-}
-
-## Verifies that the head commit of all repos is signed.
-pkg_verify_signed_commit() {
-   local cmd
-   ## XXX: hardcoded
-   [ -n "${sq_git_trust_root:-}" ] || sq_git_trust_root="HEAD"
-   ## XXX: hardcoded
-   [ -n "${sq_git_policy_file:-}" ] || sq_git_policy_file="${derivative_maker_source_code_dir}/buildconfig.d/openpgp-policy.toml"
-   #git verify-commit HEAD
-   sq-git log --policy-file "${sq_git_policy_file}" --trust-root "${sq_git_trust_root}" -- "HEAD"
-}
-
-# pkg_resign_with_sq() {
-#    if pkg_verify_signed_commit; then
-#       return 0
-#    fi
-#    printf '%s\n' "" >> README.md
-#    git add README.md
-#    git commit -a -m "signed commit"
-# }
-
-## Verifies that the head commit and tag of all repos except derivative-maker
-## is signed. Uses genmkfile.
-pkg_verify_signed_commit_and_tag() {
-   repo_skip 'derivative-maker' || return 0
-
-   ## TODO: broken for qubes-template-kicksecure, qubes-template-whonix, windows folder,
-   ##       because these by design to not have a debian/control file.
-
-   genmkfile git-verify
-   true
+   ## Step 3/3: full sanity-check (commit + tag).
+   ## Wrapped in dry-run because step 2's sign was a no-op in dry-run.
+   true "${prefix} 3/3 sanity check"
+   dry_run_or_run genmkfile git-verify >/dev/null
 }
 
 ## Finds packages that have modifications made to them since the last version
@@ -2037,19 +2258,85 @@ pkg_verify_signed_commit_and_tag() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local last_log_entry
+   local changelog_version source_pkg reprepro_version repo_query_output source_line
 
    batch_current_package_needs_version_bump='n'
 
    repo_skip 'derivative-maker' || return 0
 
-   last_log_entry="$(git log --format=%s -1)"
+   ## Bash syntax check for every special and regular repo every
+   ## batch iteration, independent of whether a bump is needed -
+   ## catches script breakage even when no commits are pending.
+   pkg_bash_sanity_test
 
-   if [ 'bumped changelog version' = "${last_log_entry}" ]; then
-      if [ "$batch_meta_force_version_bump" = "y" ]; then
-         true "Forced version bump."
-      else
+   if repo_is_special; then
+      ## Special (non-package) repos have no debian/changelog to bump.
+      ## "needs version bump" here means "HEAD commit is signed but no
+      ## signed tag points at HEAD". The downstream pkg_git_sign_tags
+      ## will create one via dm-quickgittagsign.
+      if ! nothing_to_commit; then
+         true "uncommitted changes in special repo"
+         return 1
+      fi
+      genmkfile git-commit-verify >/dev/null
+      if genmkfile git-verify &>/dev/null; then
          return 0
+      fi
+      batch_current_package_needs_version_bump='y'
+      printf '%s\n' "${bold}${batch_current_package_reponame}${reset}"
+      return 0
+   fi
+
+   ## Forced bump: skip the reprepro query entirely and fall straight
+   ## through to the bump+build pipeline. The bump-already-done guard
+   ## in pkg_upstream_and_debian_changelog_bump is also force-aware,
+   ## so a forced run with last commit == "bumped changelog version"
+   ## bumps to the next version as expected.
+   if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
+      true "${batch_current_package_reponame}: forced version bump - skipping reprepro version check."
+   else
+      changelog_version="$(dpkg-parsechangelog --show-field Version)"
+      source_pkg="$(dpkg-parsechangelog --show-field Source)"
+
+      ## dm-reprepro-wrapper reads derivative_repository_name from env.
+      export derivative_repository_name="${batch_current_project_name,,}"
+
+      repo_query_output="$(dist_build_non_interactive=true dm-reprepro-wrapper --architecture source list "${dist_build_apt_codename}" "${source_pkg}" 2>/dev/null || true)"
+      ## Example repo_query_output:
+      ## local|main|amd64: sdwdate 1.2.3-1
+      ## local|main|source: sdwdate 1.2.3-1
+      ## local|main|i386: sdwdate 1.2.3-1
+
+      source_line="$(printf '%s\n' "${repo_query_output}" | grep --fixed-strings -- '|source:' || true)"
+      ## Example source_line:
+      ## local|main|source: sdwdate 1.2.3-1
+
+      reprepro_version="$(printf '%s\n' "${source_line}" | awk 'NF{print $NF}')"
+      ## Example reprepro_version:
+      ## 1.2.3-1
+
+      if [ -z "${repo_query_output}" ]; then
+         true "${source_pkg}: changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
+         return 1
+      elif [ -z "${reprepro_version}" ]; then
+         true "${source_pkg}: changelog ${changelog_version} vs reprepro ${reprepro_version:-<absent>} - needs build."
+         return 1
+      elif dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
+         if is_changelog_bump_commit; then
+            true "INFO: Done. changelog matches reprepro AND the last commit IS the bump that produced it."
+            return 0
+         else
+            true "INFO: ${source_pkg}: ${changelog_version} matches reprepro but new commits since last bump. Needs build."
+         fi
+      elif dpkg --compare-versions "${changelog_version}" lt "${reprepro_version}"; then
+         ## Rare: changelog is BEHIND reprepro. Let reprepro-add surface
+         ## the inconsistency rather than silently rolling back.
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' < reprepro. Unknown error condition."
+         return 1
+      elif dpkg --compare-versions "${changelog_version}" gt "${reprepro_version}"; then
+         true "${red}${bold}WARNING:${reset} '${source_pkg}': changelog '${changelog_version}' > reprepro. Needs build."
+      else
+         die 1 "${FUNCNAME} unknown else case."
       fi
    fi
 
@@ -2059,9 +2346,7 @@ pkg_need_version_bump_show() {
    fi
 
    ## Verify that the commit prior the next changelog commit is signed.
-   pkg_verify_signed_commit
-
-   pkg_bash_sanity_test
+   genmkfile git-commit-verify >/dev/null
 
    batch_current_package_needs_version_bump='y'
 
@@ -2074,6 +2359,29 @@ pkg_need_version_bump_show() {
 ## functions when necessary, calling this directly is probably a bad idea.
 pkg_upstream_and_debian_changelog_bump() {
    repo_skip 'derivative-maker' || return 0
+
+   ## No debian/changelog in special repos - nothing to bump. The
+   ## tag-creation step happens in pkg_git_sign_tags via
+   ## dm-quickgittagsign, downstream of this no-op.
+   if repo_is_special; then
+      return 0
+   fi
+
+   ## Forced re-bump bypasses the idempotency guard below: a forced
+   ## run with last commit == "bumped changelog version" should bump
+   ## to the next version, not skip.
+   if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
+      true "${batch_current_package_reponame}: forced version bump - bumping despite last commit."
+   elif is_changelog_bump_commit; then
+      ## Idempotency for resumed interrupted builds: if the last
+      ## commit is already the bump, pkg_need_version_bump_show let
+      ## us through because reprepro is behind (changelog >
+      ## reprepro). Re-bumping here would produce a useless second
+      ## bump with no intervening changes - skip and let the
+      ## downstream build+reprepro-add steps resume.
+      true "${batch_current_package_reponame}: changelog already bumped; skipping re-bump (resuming interrupted build)."
+      return 0
+   fi
 
    ## version_numbers_by_upstream is set by make-helper-overrides.bsh by
    ## individual packages.
@@ -2096,12 +2404,12 @@ pkg_upstream_and_debian_changelog_bump() {
    ## refuse adding it.
    if [ "${version_numbers_by_upstream:-}" = "true" ]; then
       ## XXX: manual
-      genmkfile deb-uachl-bumpup-manual
+      dry_run_or_run genmkfile deb-uachl-bumpup-manual
    else
-      genmkfile deb-uachl-bumpup-major
+      dry_run_or_run genmkfile deb-uachl-bumpup-major
    fi
 
-   genmkfile deb-uachl-commit-changelog
+   dry_run_or_run genmkfile deb-uachl-commit-changelog
 
    true
 }
@@ -2120,11 +2428,11 @@ pkg_need_version_bump_do() {
       return 0
    fi
 
-   printf '%s\n' "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
+   true "INFO: ${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_upstream_and_debian_changelog_bump
    ## Verify that the changelog bump commit is signed.
-   pkg_verify_signed_commit
+   genmkfile git-commit-verify
 
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
@@ -2148,7 +2456,18 @@ pkg_need_version_bump_do() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
-   repo_skip_non_package || return 0
+   repo_skip 'derivative-maker' || return 0
+
+   ## Special (non-package) repos: tag-and-push only. No manpages,
+   ## no debinstfile, no Debian build, no reprepro - none of those
+   ## apply to repos without debian/* files. pkg_need_version_bump_do
+   ## dispatches internally on repo_is_special; see
+   ## pkg_need_version_bump_show, pkg_upstream_and_debian_changelog_bump,
+   ## and pkg_git_sign_tags.
+   if repo_is_special; then
+      pkg_need_version_bump_do
+      return 0
+   fi
 
    #if [ "${batch_current_package_reponame}" = "kloak" ]; then
    #   continue_yes=true
@@ -2164,7 +2483,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
       return 0
    fi
 
-   printf '%s\n' "${FUNCNAME[0]}: needs version bump: '${batch_current_package_reponame}'"
+   true "INFO: ${FUNCNAME[0]}: needs version bump: ${batch_current_package_reponame}"
 
    pkg_git_manpages
    pkg_git_debinstfile
@@ -2189,10 +2508,10 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
-   genmkfile reprepro-remove
-   genmkfile reprepro-add
-   genmkfile deb-cleanup
+   dry_run_or_run genmkfile deb-pkg
+   dry_run_or_run genmkfile reprepro-remove
+   dry_run_or_run genmkfile reprepro-add
+   dry_run_or_run genmkfile deb-cleanup
 
    true
 }
@@ -2203,7 +2522,7 @@ pkg_only_build_all() {
 
    export make_lintian=true
    export make_use_cowbuilder=true
-   genmkfile deb-pkg
+   dry_run_or_run genmkfile deb-pkg
 
    true
 }
@@ -2213,7 +2532,7 @@ pkg_only_reprepro_add() {
    repo_skip_non_package || return 0
 
    export make_use_cowbuilder=true
-   genmkfile reprepro-add
+   dry_run_or_run genmkfile reprepro-add
 
    true
 }
@@ -2475,6 +2794,22 @@ run_batch() {
 main() {
    local target_cmd arg_list
 
+   while [ $# -gt 0 ]; do
+      case "${1}" in
+         --dry-run)
+            batch_meta_dry_run='y'
+            shift
+            ;;
+         --*)
+            printf '%s\n' "${red}${bold}FATAL ERROR:${reset} unknown flag '${1}'"
+            exit 1
+            ;;
+         *)
+            break
+            ;;
+      esac
+   done
+
    target_cmd="${1:-}"
    shift || true
    arg_list=( "$@" )
@@ -2482,7 +2817,7 @@ main() {
    if [ "$target_cmd" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] function-name arguments"
       exit 0
    fi
 
@@ -2546,6 +2881,7 @@ batch_meta_relative_file_name=''
 batch_meta_repo_web_link=''
 batch_meta_workstation_only='n'
 batch_meta_force_version_bump='n'
+batch_meta_dry_run='n'
 
 declare -A -g batch_meta_file_header_done_list=()
 batch_run_counter=0

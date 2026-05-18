@@ -77,9 +77,7 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+## No 'concurrency:' block - see agents/github-actions.md G-A-006.
 
 jobs:
   analysis:
@@ -100,6 +98,15 @@ jobs:
       ## Intentionally NOT 'id-token: write'. That is only needed for
       ## publish_results: true; keep us off the OSSF public transparency
       ## log unless the project opts in (one-way commitment).
+
+    env:
+      ## Dogfood ref: caller's commit when developer-meta-files is its
+      ## own caller (so a PR that modifies the script under test gets
+      ## exercised); 'master' for every other caller. Routed through
+      ## env for the org-wide env-routing convention (same shape as
+      ## JOB_STATUS). The job-level fork-PR guard above is the actual
+      ## mitigation for actions/untrusted-checkout.
+      DMF_REF: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
 
     steps:
       - name: Checkout repository
@@ -122,28 +129,31 @@ jobs:
           retention-days: 14
 
       - name: Upload to GitHub code scanning
-        uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7  # v4.35.3
+        uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba  # v4.35.5
         with:
           sarif_file: results.sarif
 
       - name: Checkout developer-meta-files (step-summary helper)
-        if: always()
+        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
 
       - name: Emit step summary
         if: always()
+        ## Route values through env and consume with shell-native
+        ## expansion inside run: to avoid expression interpolation
+        ## in shell arguments (CodeQL js/actions/command-injection).
         env:
           JOB_STATUS: ${{ job.status }}
-          GH_SERVER_URL: ${{ github.server_url }}
-          GH_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'OpenSSF Scorecard' \
             --column-header field \
             --row "outcome=${JOB_STATUS}" \
-            --details-url "${GH_SERVER_URL}/${GH_REPOSITORY}/security/code-scanning?tool_name=Scorecard"
+            --details-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/security/code-scanning?tool_name=Scorecard"

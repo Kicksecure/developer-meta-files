@@ -1,4 +1,3 @@
----
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
@@ -6,8 +5,8 @@
 
 ## Reusable workflow: bandit security-focused Python static analysis.
 ##
-## Free open-source local-runnable alternative to the Python side of
-## Coverity Scan. Complements pyflakes / pylint (those focus on
+## Free open-source local-runnable alternative to the Python side
+## of Coverity Scan. Complements pyflakes / pylint (those focus on
 ## correctness / style) by surfacing security-relevant patterns:
 ## hardcoded passwords, shell=True subprocess, weak crypto, eval(),
 ## etc.
@@ -18,103 +17,87 @@
 ## archive; apt-installed by name. No GitHub Marketplace action
 ## used.
 ##
+## ## Python discovery
+##
+## bandit's stock discovery is by '.py' extension. This org names
+## many Python sources without a '.py' extension (Debian-libexec
+## convention, genmkfile package-tag naming '*.py#tag'); a stock
+## bandit invocation would silently miss them. The reusable
+## therefore discovers Python files by `.py` extension PLUS first-
+## line shebang `^#!.*python` via
+## ci/bandit-discover-python.sh, and feeds the explicit file list
+## to bandit. See agents/github-actions-consumer-templates.md
+## "Parameter ownership across reusable inputs" for the broader
+## bandit-as-universal-template rationale.
+##
+## ## No per-repo configuration
+##
+## bandit is a universal consumer template - no
+## .github/dm-consumer.yml section needed. severity-level,
+## confidence-level, and timeout-minutes are hardcoded here at
+## the previous defaults (medium / medium / 10 min). Per-repo
+## suppressions use bandit's `# nosec` inline comment, not a
+## workflow-side `skips:` list. If a real use case for per-repo
+## skip lists appears during migration, promote `bandit.skips`
+## to dm-consumer.yml at that point (see spec parameter table).
+##
 ## ## Caller responsibilities
 ##
 ## - Define the trigger schedule. Schedule cannot live in
 ##   workflow_call per G-A-002.
 ## - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
 ##
-## ## Inputs
-##
-## - paths             (optional)  Space-separated list of paths
-##                                 to scan. Default '.' (whole repo,
-##                                 recursive).
-## - severity-level    (optional)  Minimum severity ('low' | 'medium'
-##                                 | 'high'). Default 'medium' to
-##                                 reduce style/lint-flavor noise.
-## - confidence-level  (optional)  Minimum confidence (same scale).
-##                                 Default 'medium'.
-## - skips             (optional)  Comma-separated bandit test IDs
-##                                 to skip globally (e.g.
-##                                 'B101,B404'). Default empty. Per-
-##                                 line suppression with '# nosec'
-##                                 comments is preferred over this
-##                                 input.
-## - prepare-command   (optional)  Bash run AFTER checkout but BEFORE
-##                                 bandit. Use for source-tree prep
-##                                 (e.g. ci/codeql-prepare.sh-style
-##                                 symlinks for genmkfile-tagged
-##                                 '*.py#tag' files - bandit
-##                                 discovers Python files by '.py'
-##                                 extension and would otherwise
-##                                 miss them).
-## - timeout-minutes   (optional)  Job timeout. Default 10.
-##
-## ## Caller example
+## ## Caller example - byte-identical consumer wrapper
 ##
 ##   name: bandit
 ##   on:
-##     pull_request:
-##       branches: [master]
 ##     push:
 ##       branches: [master]
+##     pull_request:
+##       branches: [master]
+##     workflow_dispatch:
 ##   permissions:
 ##     contents: read
 ##   jobs:
 ##     bandit:
-##       uses: org-ai-assisted/developer-meta-files/.github/workflows/bandit.yml@master
-##       with:
-##         paths: usr/lib/python3/dist-packages
+##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-bandit.yml@master
 ##       permissions:
 ##         contents: read
+##
+## Note: no 'with:' block on the reusable call. Per-repo state is
+## not used.
 
 name: bandit (reusable)
 
 on:
   workflow_call:
-    inputs:
-      paths:
-        required: false
-        type: string
-        default: "."
-      severity-level:
-        required: false
-        type: string
-        default: "medium"
-      confidence-level:
-        required: false
-        type: string
-        default: "medium"
-      skips:
-        required: false
-        type: string
-        default: ""
-      prepare-command:
-        required: false
-        type: string
-        default: ""
-      timeout-minutes:
-        required: false
-        type: number
-        default: 10
 
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+## No 'concurrency:' block - see agents/github-actions.md G-A-006.
 
 jobs:
   bandit:
     name: bandit
-    runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.timeout-minutes }}
+    ## Pinned to ubuntu-24.04 for consistency with the other
+    ## parameterized reusables.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
 
     permissions:
       contents: read
+
+    env:
+      ## Dogfood ref: caller's commit when developer-meta-files is its
+      ## own caller (so a PR that modifies the script under test gets
+      ## exercised); 'master' for every other caller. Routed through
+      ## env for the org-wide env-routing convention (same shape as
+      ## JOB_STATUS / BASE_REF). The job-level fork-PR guard above is
+      ## the actual mitigation for actions/untrusted-checkout.
+      DMF_REF: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
 
     steps:
       - name: Checkout repository
@@ -122,81 +105,52 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Prepare apt cache directory
-        run: |
-          sudo mkdir -p /var/cache/apt/archives
-          sudo chown -R "$(id -u):$(id -g)" /var/cache/apt/archives
-
-      - name: Cache apt packages
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-bandit-
-
       - name: Install bandit
-        run: |
-          sudo --non-interactive apt-get update --error-on=any
-          sudo --non-interactive apt-get install --yes --no-install-recommends \
-            bandit
+        uses: org-ai-assisted/developer-meta-files/.github/actions/apt-install-with-cache@master
+        with:
+          packages: 'bandit'
+          cache-key: ${{ runner.os }}-apt-bandit-${{ hashFiles('.github/workflows/reusable-bandit.yml') }}
 
-      - name: Prepare source tree
-        if: inputs.prepare-command != ''
-        run: ${{ inputs.prepare-command }}
-        shell: bash
-
-      - name: bandit
-        ## bandit exits 0 if no issues at the configured severity /
-        ## confidence threshold; non-zero otherwise. -r recurses; -ll
-        ## maps the severity-level word to flags (low/medium/high
-        ## map to -l / -ll / -lll respectively); same for -ii.
-        env:
-          INPUT_PATHS: ${{ inputs.paths }}
-          INPUT_SEVERITY_LEVEL: ${{ inputs.severity-level }}
-          INPUT_CONFIDENCE_LEVEL: ${{ inputs.confidence-level }}
-          INPUT_SKIPS: ${{ input.skips }}
-        run: |
-          set -- ${INPUT_PATHS}
-          case "${INPUT_SEVERITY_LEVEL}" in
-            low)    sev_flag="-l"   ;;
-            medium) sev_flag="-ll"  ;;
-            high)   sev_flag="-lll" ;;
-            *)      echo "::error::invalid severity-level"; exit 64 ;;
-          esac
-          case "${INPUT_CONFIDENCE_LEVEL}" in
-            low)    conf_flag="-i"   ;;
-            medium) conf_flag="-ii"  ;;
-            high)   conf_flag="-iii" ;;
-            *)      echo "::error::invalid confidence-level"; exit 64 ;;
-          esac
-          skip_args=()
-          if [ -n "${INPUT_SKIPS}" ]; then
-            skip_args=(--skip "${INPUT_SKIPS}")
-          fi
-          bandit -r "${sev_flag}" "${conf_flag}" "${skip_args[@]}" -- "$@"
-
-      - name: Checkout developer-meta-files (step-summary helper)
-        if: always()
+      - name: Checkout developer-meta-files (discovery + step-summary helpers)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/developer-meta-files
-          ref: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+          ref: ${{ env.DMF_REF }}
           path: .github/dmf
           persist-credentials: false
 
+      - name: bandit
+        ## Shebang-aware discovery via dmf helper. Feeds explicit
+        ## NUL-separated file list to bandit via xargs -0.
+        ##
+        ## -ll  severity threshold >= medium
+        ## -ii  confidence threshold >= medium
+        ## --   end of options (defensive; file list may begin
+        ##      with names like './-foo.py' that would otherwise
+        ##      be parsed as options).
+        ##
+        ## --no-run-if-empty: bandit exits 0 with no files (the
+        ## "no Python in this repo" case).
+        run: |
+          set -o errexit
+          set -o nounset
+          set -o pipefail
+          .github/dmf/ci/bandit-discover-python.sh \
+            | xargs -0 --no-run-if-empty -- bandit -ll -ii --
+
       - name: Emit step summary
         if: always()
+        ## Route values through env and consume with shell-native
+        ## expansion inside run: to avoid expression interpolation
+        ## in shell arguments (CodeQL js/actions/command-injection).
         env:
           JOB_STATUS: ${{ job.status }}
-          INPUT_PATHS: ${{ inputs.paths }}
-          INPUT_SEVERITY_LEVEL: ${{ inputs.severity-level }}
-          INPUT_CONFIDENCE_LEVEL: ${{ inputs.confidence-level }}
         run: |
           .github/dmf/ci/step-summary-emit.sh \
             --tool 'bandit' \
             --column-header field \
             --row "outcome=${JOB_STATUS}" \
-            --row "paths=${INPUT_PATHS}" \
-            --row "severity=${INPUT_SEVERITY_LEVEL}" \
-            --row "confidence=${INPUT_CONFIDENCE_LEVEL}"
+            --row "severity=medium" \
+            --row "confidence=medium" \
+            --row "discovery=.py extension + shebang scan"

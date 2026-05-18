@@ -129,7 +129,7 @@ readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 [ "${verbose}" = '1' ] || POLICY_QUIET_OK=1
 
 apply_repo_policy() {
-   local repo pages_endpoint
+   local repo pages_endpoint rules_var
 
    repo="$1"
 
@@ -153,14 +153,24 @@ apply_repo_policy() {
       "${POLICY_PAGES_DELETE_EXTRA_OK_STATUS}" \
       || true
 
+   ## target_kind also pivots the ruleset rules array:
+   ##   PERSON -> POLICY_RULESET_RULES_PERSON (with
+   ##             required_signatures - maintainer's mirror still
+   ##             enforces signed commits/tags).
+   ##   BOT    -> POLICY_RULESET_RULES_BOT (without
+   ##             required_signatures - bot account pushes via
+   ##             AI-assisted automation without a verifiable GPG key
+   ##             for the bot identity).
+   rules_var="POLICY_RULESET_RULES_${target_kind^^}"
+
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_BRANCH}" \
-      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo)" \
+      "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo '[]' "${!rules_var}")" \
       || true
 
    policy_upsert_repo_ruleset "${target_user}" "${repo}" \
       "${RULESET_NAME_TAG}" \
-      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo)" \
+      "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo '[]' "${!rules_var}")" \
       || true
 
    ## DELIBERATELY DISABLED: Vulnerability alerts + Dependabot
