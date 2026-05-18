@@ -2738,12 +2738,13 @@ ${end_text}
 
 ## BEGIN Main logic {
 
+## Caller owns cwd: pushd into the target repo before invoking, so
+## set_batch_context_from_pwd (which derives batch_current_* from PWD)
+## stays the single source of truth for both --batch and --no-batch.
 run_batch_command() {
-   local batch_command arg_list
-
-   batch_command="$1"
-   shift
-   arg_list=( "$@" )
+   local batch_command
+   batch_command="${1:-}"
+   shift || true
 
    [ -z "${batch_command}" ] && {
       printf '%s\n' "${red}${bold}FATAL ERROR: No command provided to ${FUNCNAME[0]}!${reset}"
@@ -2759,77 +2760,42 @@ run_batch_command() {
 
    set_batch_current_package_remote_list
 
-   pushd -- "${batch_current_package_path}" >/dev/null
    "${batch_command}" "$@"
-   popd >/dev/null
 }
 
 run_batch() {
-   local derivative_name post_run_hook
+   local repo_path post_run_hook
 
-   for derivative_name in "${derivative_name_list[@]}" ; do
-      for batch_current_package_path in "${derivative_maker_source_code_dir}/packages/${derivative_name}"/*; do
-         if [ "${derivative_name}" = 'kicksecure' ]; then
-            batch_current_project_name='Kicksecure'
-            batch_current_project_website='kicksecure.com'
-          elif [ "${derivative_name}" = 'whonix' ]; then
-             batch_current_project_name='Whonix'
-             batch_current_project_website='whonix.org'
-          else
-             printf '%s\n' 'ERROR: Project name detection failed!'
-             exit 1
-          fi
-          if ! [ -d "${batch_current_package_path}" ]; then
-             continue
-          fi
-          batch_current_package_changelog="${announcements_drafts_dir}/${batch_current_project_name,,}_giant_git_log.txt"
-          batch_current_package_reponame="$(basename -- "${batch_current_package_path}")"
-          run_batch_command "$@"
-      done
+   ## Regular packages.
+   for repo_path in "${derivative_maker_source_code_dir}/packages"/*/*; do
+      [ -d "${repo_path}" ] || continue
+      pushd -- "${repo_path}" >/dev/null
+      set_batch_context_from_pwd
+      run_batch_command "$@"
+      popd >/dev/null
    done
 
-   # Special-case for qubes-template-kicksecure
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='qubes-template-kicksecure'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-kicksecure"
-   run_batch_command "$@"
+   ## Top-level repos outside packages/ (matches repo_is_special plus
+   ## the derivative-maker meta-repo). Order is significant: meta-repo
+   ## last so per-package writes (e.g. pkg_git_submodule_file_writer)
+   ## have run first.
+   for repo_path in \
+      "${derivative_maker_source_code_dir}/live-build" \
+      "${derivative_maker_source_code_dir}/grml-debootstrap" \
+      "${derivative_maker_source_code_dir}/grml-debootstraptest" \
+      "${derivative_maker_source_code_dir}/qubes/qubes-template-kicksecure" \
+      "${derivative_maker_source_code_dir}/qubes/qubes-template-whonix" \
+      "${derivative_maker_source_code_dir}/windows/Whonix-Installer" \
+      "${derivative_maker_source_code_dir}/windows/Whonix-Starter" \
+      "${derivative_maker_source_code_dir}"
+   do
+      [ -d "${repo_path}" ] || continue
+      pushd -- "${repo_path}" >/dev/null
+      set_batch_context_from_pwd
+      run_batch_command "$@"
+      popd >/dev/null
+   done
 
-   # Special-case for qubes-template-whonix
-   batch_current_project_name='Whonix'
-   batch_current_package_reponame='qubes-template-whonix'
-   batch_current_project_website='whonix.org'
-   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-whonix"
-   run_batch_command "$@"
-
-   # Special-case for Whonix-Installer
-   batch_current_project_name='Whonix'
-   batch_current_package_reponame='Whonix-Installer'
-   batch_current_project_website='whonix.org'
-   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
-   batch_current_package_path="windows/Whonix-Installer"
-   run_batch_command "$@"
-
-   # Special-case for Whonix-Starter
-   batch_current_project_name='Whonix'
-   batch_current_package_reponame='Whonix-Starter'
-   batch_current_project_website='whonix.org'
-   batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
-   batch_current_package_path="windows/Whonix-Starter"
-   run_batch_command "$@"
-
-   # Special-case for derivative-maker
-   batch_current_project_name='Kicksecure'
-   batch_current_package_reponame='derivative-maker'
-   batch_current_project_website='kicksecure.com'
-   batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="${derivative_maker_source_code_dir}"
-   run_batch_command "$@"
-
-   # Post-run hooks
-   # Note that this does nothing if post_run_hook_list is empty.
    for post_run_hook in "${post_run_hook_list[@]}"; do
       "${post_run_hook}"
    done
