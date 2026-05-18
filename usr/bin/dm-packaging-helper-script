@@ -2735,7 +2735,7 @@ run_batch() {
    batch_current_package_reponame='live-build'
    batch_current_project_website='kicksecure.com'
    batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-kicksecure"
+   batch_current_package_path="live-build"
    run_batch_command "$@"
 
    # Special-case for grml-debootstrap
@@ -2743,7 +2743,7 @@ run_batch() {
    batch_current_package_reponame='grml-debootstrap'
    batch_current_project_website='kicksecure.com'
    batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-kicksecure"
+   batch_current_package_path="grml-debootstrap"
    run_batch_command "$@"
 
    # Special-case for grml-debootstraptest
@@ -2751,7 +2751,7 @@ run_batch() {
    batch_current_package_reponame='grml-debootstraptest'
    batch_current_project_website='kicksecure.com'
    batch_current_package_changelog="${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-   batch_current_package_path="qubes/qubes-template-kicksecure"
+   batch_current_package_path="grml-debootstraptest"
    run_batch_command "$@"
 
    # Special-case for Whonix-Installer
