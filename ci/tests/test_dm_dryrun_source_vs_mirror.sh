@@ -104,7 +104,6 @@ for needle in "${source_required[@]}"; do
 done
 for needle in "${source_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_source}"; then
-      ## FIXME: This message will be misleading in the "PVR enabled" case.
       printf '%s\n' "FAIL[SOURCE]: unexpected MIRROR-side fragment present: ${needle}" >&2
       fail=1
    fi
@@ -152,7 +151,6 @@ for needle in "${mirror_required[@]}"; do
 done
 for needle in "${mirror_forbidden[@]}"; do
    if grep --quiet --fixed-strings -- "${needle}" <<< "${out_mirror}"; then
-      ## FIXME: This message will be misleading in the "PVR enabled" case.
       printf '%s\n' "FAIL[MIRROR]: unexpected SOURCE-side fragment present: ${needle}" >&2
       fail=1
    fi

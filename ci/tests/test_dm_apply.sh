@@ -105,12 +105,12 @@ required=(
 
 ## MIRROR must NOT see SOURCE-only enable ok lines (those would
 ## indicate apply_repo_policy fell through the kind=='source'
-## branch incorrectly).
+## branch incorrectly). PVR enable also must never appear: PVR is
+## disabled everywhere (the wiki is the canonical disclosure
+## channel), so the PUT-style enable constant does not exist.
 mirror_dep_pvr_forbidden=(
    'ok: org-ai-assisted/derivative-maker: enable Dependabot alerts'
    'ok: org-ai-assisted/derivative-maker: enable Dependabot security updates'
-   ## FIXME: Isn't Private Vulnerability Reporting disabled everywhere,
-   ## including SOURCE?
    'ok: org-ai-assisted/derivative-maker: enable private vulnerability reporting'
 )
 for needle in "${mirror_dep_pvr_forbidden[@]}"; do
