@@ -1,3 +1,37 @@
+commit 0a305a3b6a7dbdd3c86c3167233d0384bd0f3679
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 06:41:07 2026 -0400
+
+    .
+
+commit 684fd5d193d59456eaaaf2a144dd0776e1797fff
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 06:32:10 2026 -0400
+
+    .
+
+commit 44ddec9cae7462a92d8ba8443211febb17be7c3f
+Merge: 3b7c28f 677d0d5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 06:24:36 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 677d0d5d427dfb7ca3a9383e0b7f2aae8eeb46f5
+Merge: 3b7c28f 5b4cfa7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 18 06:19:48 2026 -0400
+
+    Merge pull request #107 from org-ai-assisted/claude/document-special-repos-9nUfg
+
+    pkg_need_version_bump_show: drop dead grep, fix drifted comment
+
+commit 3b7c28f78ef0ed46d6b5697060d70a1749d3295a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 10:02:30 2026 +0000
+
+    bumped changelog version
+
 commit 577d495a949b2f041ca59c8c0393615843e81d08
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 05:55:23 2026 -0400
@@ -10,6 +44,28 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 05:44:02 2026 -0400
 
     Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 5b4cfa79a31bdd6f44af7f62fad65809a68255c0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 09:03:49 2026 +0000
+
+    pkg_need_version_bump_show: drop dead grep, fix drifted comment
+
+    Since `dm-reprepro-wrapper --architecture source` filters at the
+    reprepro level, the downstream
+    `grep --fixed-strings -- '|source:'` post-filter became dead code
+    - repo_query_output already contains only the source line. Drop:
+
+      - the source_line= grep step
+      - the local source_line declaration
+      - the multi-arch example output block (no longer produced)
+      - the now-vacuous "Example source_line:" preview
+
+    The "Rare: changelog is BEHIND reprepro. Let reprepro-add surface
+    the inconsistency rather than silently rolling back." comment was
+    left over from when the branch warned-and-continued. The current
+    code `return 1`s. Update the comment to match the new fail-loud
+    behaviour.
 
 commit 5b9503192e9b79d1f88cfea6b6e8a39dfa4a9037
 Merge: babd7b3 ed8979d
