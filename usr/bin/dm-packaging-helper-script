@@ -937,7 +937,7 @@ pkg_readme_creator_do() {
 
    dry_run_or_run append "${readme_file}" $'\n' >/dev/null
 
-   dry_run_or_run append "${readme_file}" "$(<"${generic_readme_template_file}")" >/dev/null
+   cat -- "${generic_readme_template_file}" | dry_run_or_run tee --append -- "${readme_file}" >/dev/null
 
    search_str='%%project_clearnet%%'
    replace_str="${batch_current_project_website}"
@@ -1200,7 +1200,7 @@ pkg_descr_merger() {
                merge_file_reset_list["${merged_file}"]='y'
             fi
 
-            dry_run_or_run append "${merged_file}" "$(<"${file_name_full_path}")" >/dev/null
+            cat -- "${file_name_full_path}" | dry_run_or_run tee --append -- "${merged_file}" >/dev/null
          done
       done
    done
@@ -1246,7 +1246,7 @@ pkg_descr_merge_all() {
                dry_run_or_run append "${all_merged_file}" '= Shared by Whonix-Gateway and Whonix-Workstation =' >/dev/null
             fi
 
-            dry_run_or_run append "${all_merged_file}" "$(<"${file_name_full_path}")" >/dev/null
+            cat -- "${file_name_full_path}" | dry_run_or_run tee --append -- "${all_merged_file}" >/dev/null
          done
       done
    done
