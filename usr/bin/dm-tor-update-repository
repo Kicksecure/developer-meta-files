@@ -47,15 +47,22 @@ dm_tor_update_repository() {
   dist_build_multiarch_package_item="$dist_build_target_arch"
   set_cowbuilder_folders
 
+  ## Sanity test.
+  test -d "${base_folder}"
+
   ## Copy the Tor repository sources and key into the chroot. Fix permissions on both files.
   $SUDO_TO_ROOT cp -- "${dist_build_sources_list_torproject}" "${base_folder}/etc/apt/sources.list.d/torproject.sources"
   $SUDO_TO_ROOT chmod -- 644 "${base_folder}/etc/apt/sources.list.d/torproject.sources"
   $SUDO_TO_ROOT cp -- "${derivative_maker_source_code_dir}/packages/kicksecure/anon-shared-build-apt-sources-tpo/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d/torprojectarchive.asc" "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
   $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
 
+  ## Sanity test.
+  printf "%s\n" "$APTGETOPT_SERIALIZED"
+  printf "%s\n" "$SUDO_TO_ROOT"
+
   ## Update the apt sources within the chroot.
   $SUDO_TO_ROOT \
-    $COWBUILDER_PREFIX \
+    ${COWBUILDER_PREFIX:-} \
       cowbuilder \
         --architecture "$dist_build_multiarch_package_item" \
         --configfile "$dist_build_pbuilder_config_file" \
