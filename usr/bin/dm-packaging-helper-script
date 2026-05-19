@@ -78,6 +78,8 @@ check_prerequisites() {
 
    has safe-rm
    has sq-git
+   has append
+   has overwrite
 
    if ! "${MYDIR}/dm-check-unicode"; then
       printf '%s\n' "FATAL ERROR: derivative_maker_source_code_dir '${derivative_maker_source_code_dir}' contains Unicode or is mislocated."
@@ -515,7 +517,16 @@ is_changelog_bump_commit() {
 
 dry_run_or_run() {
    if [ "${batch_meta_dry_run:-n}" = "y" ]; then
-      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*"
+      ## WOULD goes to stderr so it survives `>/dev/null` on the
+      ## caller (needed when wrapping commands like `tee` that echo
+      ## their input on stdout in live mode).
+      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*" >&2
+      ## When called as the receiving end of a pipe (e.g.
+      ## `printf '...' | dry_run_or_run tee -- file`), drain stdin so
+      ## the upstream producer doesn't SIGPIPE under errexit+pipefail.
+      ## `-p` is true only for actual pipes, so non-piped callers and
+      ## heredoc inputs are unaffected.
+      [ -p /dev/stdin ] && cat >/dev/null
       return 0
    fi
    "$@"
@@ -581,17 +592,17 @@ extract_description_from_debian_control() {
                headline="${headline:1}"
             fi
             headline_template="${headline_template//'XXX_REPLACE_ME_XXX'/"${headline}"}"
-            printf '%s\n' "${headline_template}" | tee -a -- "${target_file}" >/dev/null
-            printf '%s\n' '' | tee -a -- "${target_file}" >/dev/null
+            dry_run_or_run append "${target_file}" "${headline_template}" >/dev/null
+            dry_run_or_run append "${target_file}" $'\n' >/dev/null
             headline_written='y'
             continue
          fi
          if [ "${line}" = ' .' ]; then
-            printf '%s\n' '' | tee -a -- "${target_file}" >/dev/null
+            dry_run_or_run append "${target_file}" $'\n' >/dev/null
          else
             # Strip all leading whitespace
             read -r line <<< "${line}"
-            printf '%s\n' "${line}" | tee -a -- "${target_file}" >/dev/null
+            dry_run_or_run append "${target_file}" "${line}" >/dev/null
          fi
       fi
    done < "${source_file}"
@@ -616,10 +627,10 @@ internal_descr_writer() {
 
             touch -- "${description_file}"
 
-            printf '%s\n' "== ${batch_current_package_reponame} ==" | tee -a -- "${description_file}"
-            printf '%s\n' '' | tee -a -- "${description_file}" >/dev/null
-            printf '%s\n' "* ${batch_meta_repo_web_link}" | tee -a -- "${description_file}" >/dev/null
-            printf '%s\n' "* [${batch_meta_debian_control_web_link} debian/control]" | tee -a -- "${description_file}" >/dev/null
+            dry_run_or_run append "${description_file}" "== ${batch_current_package_reponame} =="
+            dry_run_or_run append "${description_file}" $'\n' >/dev/null
+            dry_run_or_run append "${description_file}" "* ${batch_meta_repo_web_link}" >/dev/null
+            dry_run_or_run append "${description_file}" "* [${batch_meta_debian_control_web_link} debian/control]" >/dev/null
 
             extract_description_from_debian_control "${control_file}" "${description_file}" '=== XXX_REPLACE_ME_XXX ==='
 
@@ -630,20 +641,20 @@ internal_descr_writer() {
          fi
 
          if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]:-}" = 'y' ]; then
-            printf '%s\n' "=== ${batch_meta_file_name_without_reponame} ===" | tee -a -- "${description_file}" >/dev/null
-            printf '%s\n' '' | tee -a -- "${description_file}" >/dev/null
-            printf '%s\n' "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_gateway_only}" = 'y' ] && printf '%s\n' '* gateway only<!--gateway-only-->' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_workstation_only}" = 'y' ] && printf '%s\n' '* workstation only<!--workstation-only-->' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && printf '%s\n' '* Non-Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_qubes_whonix_only}" = 'y' ] && printf '%s\n' '* Qubes-Whonix only' | tee -a -- "${description_file}" >/dev/null
-            [ "${batch_meta_installed_by_default}" = 'n' ] && printf '%s\n' '* Not installed by default.' | tee -a -- "${description_file}" >/dev/null
-            printf '%s\n' '' | tee -a -- "${description_file}" >/dev/null
+            dry_run_or_run append "${description_file}" "=== ${batch_meta_file_name_without_reponame} ===" >/dev/null
+            dry_run_or_run append "${description_file}" $'\n' >/dev/null
+            dry_run_or_run append "${description_file}" "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" >/dev/null
+            [ "${batch_meta_gateway_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* gateway only<!--gateway-only-->' >/dev/null
+            [ "${batch_meta_workstation_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* workstation only<!--workstation-only-->' >/dev/null
+            [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* Non-Qubes-Whonix only' >/dev/null
+            [ "${batch_meta_qubes_whonix_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* Qubes-Whonix only' >/dev/null
+            [ "${batch_meta_installed_by_default}" = 'n' ] && dry_run_or_run append "${description_file}" '* Not installed by default.' >/dev/null
+            dry_run_or_run append "${description_file}" $'\n' >/dev/null
 
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
 
-         printf '%s\n' "$*" | tee -a -- "${description_file}" >/dev/null
+         dry_run_or_run append "${description_file}" "$*" >/dev/null
       done
    done
 }
@@ -823,9 +834,9 @@ pkg_update_if_exists() {
       return 0
    fi
 
-   cp --verbose -- "${source_path}" "${destination_path}"
+   dry_run_or_run cp --verbose -- "${source_path}" "${destination_path}"
 
-   git add -- "${destination_path}"
+   dry_run_or_run git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: '${destination_path}' already up to date; nothing to commit."
@@ -839,7 +850,7 @@ pkg_update_if_exists() {
       commit_msg="update ${destination_basename}"
    fi
 
-   git commit -m "${commit_msg}"
+   dry_run_or_run git commit -m "${commit_msg}"
 
    true
 }
@@ -873,15 +884,15 @@ pkg_readme_creator_commit() {
       readme_file='README.md'
    fi
 
-   git add -- "${readme_file}" || true
+   dry_run_or_run git add -- "${readme_file}" || true
 
    if nothing_to_commit; then
       return 0
    fi
 
-   git diff --cached
+   dry_run_or_run git diff --cached
 
-   git commit -m 'readme' || true
+   dry_run_or_run git commit -m 'readme' || true
 }
 
 ## Regenerates the README files for all projects except derivative-maker and
@@ -920,13 +931,13 @@ pkg_readme_creator_do() {
    description_found='n'
    headline_written='n'
 
-   safe-rm --force -- "${readme_file}"
+   dry_run_or_run safe-rm --force -- "${readme_file}"
 
    extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
 
-   printf '%s\n' "" | tee -a -- "${readme_file}" >/dev/null
+   dry_run_or_run append "${readme_file}" $'\n' >/dev/null
 
-   cat -- "${generic_readme_template_file}" | tee -a -- "${readme_file}" >/dev/null
+   dry_run_or_run append "${readme_file}" "$(<"${generic_readme_template_file}")" >/dev/null
 
    search_str='%%project_clearnet%%'
    replace_str="${batch_current_project_website}"
@@ -949,13 +960,12 @@ pkg_claude_md_pointer_create() {
       return 0
    fi
 
-   printf '%s\n' \
-'# CLAUDE.md
+   dry_run_or_run overwrite 'CLAUDE.md' '# CLAUDE.md
 
-See [AGENTS.md](AGENTS.md).' | tee -- 'CLAUDE.md'
+See [AGENTS.md](AGENTS.md).' >/dev/null
 
-   git add "CLAUDE.md"
-   git commit -m "add CLAUDE.md"
+   dry_run_or_run git add "CLAUDE.md"
+   dry_run_or_run git commit -m "add CLAUDE.md"
 }
 
 ## Harvests metadata from individual files under all projects except
@@ -980,7 +990,7 @@ pkg_descr_creator() {
    )
 
    if [ "${batch_func_init_done}" = 'n' ]; then
-      safe-rm -f -- "${package_documentation_dir}"/*.mediawiki
+      dry_run_or_run safe-rm -f -- "${package_documentation_dir}"/*.mediawiki
       batch_func_init_done='y'
    fi
 
@@ -1186,11 +1196,11 @@ pkg_descr_merger() {
             merged_file="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
 
             if ! [ "${merge_file_reset_list["${merged_file}"]:-}" = 'y' ] ; then
-               safe-rm -f -- "${merged_file}"
+               dry_run_or_run safe-rm -f -- "${merged_file}"
                merge_file_reset_list["${merged_file}"]='y'
             fi
 
-            cat -- "${file_name_full_path}" | tee -a -- "${merged_file}" >/dev/null
+            dry_run_or_run append "${merged_file}" "$(<"${file_name_full_path}")" >/dev/null
          done
       done
    done
@@ -1215,7 +1225,7 @@ pkg_descr_merge_all() {
    for project in "${project_list[@]}"; do
       for category in "${category_list[@]}"; do
          all_merged_file="${package_documentation_dir}/${category}_${project}.allmerged.mediawiki"
-         safe-rm -f -- "${all_merged_file}"
+         dry_run_or_run safe-rm -f -- "${all_merged_file}"
 
          for machine in "${machine_list[@]}"; do
             file_name_full_path="${package_documentation_dir}/${machine}_${category}_${project}.merged.mediawiki"
@@ -1227,16 +1237,16 @@ pkg_descr_merge_all() {
             true "all_merged_file: ${all_merged_file}"
 
             if [ "${machine}" = 'all' ]; then
-               printf '%s\n' '= Kicksecure =' | tee -a -- "${all_merged_file}" >/dev/null
+               dry_run_or_run append "${all_merged_file}" '= Kicksecure =' >/dev/null
             elif [ "${machine}" = 'gateway' ]; then
-               printf '%s\n' '= Whonix-Gateway =' | tee -a -- "${all_merged_file}" >/dev/null
+               dry_run_or_run append "${all_merged_file}" '= Whonix-Gateway =' >/dev/null
             elif [ "${machine}" = 'workstation' ]; then
-               printf '%s\n' '= Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+               dry_run_or_run append "${all_merged_file}" '= Whonix-Workstation =' >/dev/null
             elif [ "${machine}" = 'shared' ]; then
-               printf '%s\n' '= Shared by Whonix-Gateway and Whonix-Workstation =' | tee -a -- "${all_merged_file}" >/dev/null
+               dry_run_or_run append "${all_merged_file}" '= Shared by Whonix-Gateway and Whonix-Workstation =' >/dev/null
             fi
 
-            cat -- "${file_name_full_path}" | tee -a -- "${all_merged_file}" >/dev/null
+            dry_run_or_run append "${all_merged_file}" "$(<"${file_name_full_path}")" >/dev/null
          done
       done
    done
@@ -1276,38 +1286,38 @@ pkg_links_open() {
 
 ## Sets up standard Git remotes for all repos.
 pkg_git_remotes_add() {
-   git remote rm origin || true
+   dry_run_or_run git remote rm origin || true
 
    ## Mirror org (DM_GITHUB_MIRROR) - holds forks of every package repo.
-   git remote add     "${DM_GITHUB_MIRROR}" \
+   dry_run_or_run git remote add     "${DM_GITHUB_MIRROR}" \
       "git@github.com:${DM_GITHUB_MIRROR}/${batch_current_package_reponame}.git" || true
-   git remote set-url "${DM_GITHUB_MIRROR}" \
+   dry_run_or_run git remote set-url "${DM_GITHUB_MIRROR}" \
       "git@github.com:${DM_GITHUB_MIRROR}/${batch_current_package_reponame}.git" || true
 
-   git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
-   git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
 
-   git remote add     ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
-   git remote set-url ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote add     ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote set-url ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
 
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
-      git remote add     github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
-      git remote set-url github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote add     github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote set-url github-whonix     "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
 
       #git remote add     gitlab-whonix     "git@gitlab.com:whonix/${batch_current_package_reponame}.git" || true
       #git remote set-url gitlab-whonix     "git@gitlab.com:whonix/${batch_current_package_reponame}.git" || true
    elif [ "${batch_current_project_name,,}" = "kicksecure" ]; then
-      git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
-      git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
 
       #git remote add     gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
       #git remote set-url gitlab-kicksecure "git@gitlab.com:kicksecure/${batch_current_package_reponame}.git" || true
    elif [ "${batch_current_project_name,,}" = "derivative-maker" ]; then
-      git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
-      git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote add     github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote set-url github-kicksecure "git@github.com:Kicksecure/${batch_current_package_reponame}.git" || true
 
-      git remote add     github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
-      git remote set-url github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote add     github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
+      dry_run_or_run git remote set-url github-whonix "git@github.com:Whonix/${batch_current_package_reponame}.git" || true
    else
       printf '%s\n' "ERROR: batch_current_project_name wrong! (1)"
    fi
@@ -1337,25 +1347,25 @@ pkg_git_check_current_branch() {
 
 ## Creates a 'trixie' branch for all repos.
 pkg_git_branch_trixie() {
-   git branch trixie || true
+   dry_run_or_run git branch trixie || true
    true
 }
 
 ## Checks out the 'master' branch of all repos.
 pkg_git_branch_checkout_master() {
-   git switch master
+   dry_run_or_run git switch master
    true
 }
 
 ## Checks out the 'bullseye' branch of all repos.
 pkg_git_branch_checkout_bullseye() {
-   git switch bullseye
+   dry_run_or_run git switch bullseye
    true
 }
 
 ## Checks out the 'trixie' branch of all repos.
 pkg_git_branch_checkout_trixie() {
-   git switch trixie
+   dry_run_or_run git switch trixie
    true
 }
 
@@ -1367,7 +1377,7 @@ pkg_git_branch_fetch_all() {
    #origin_name_list=( "ArrayBolt3" )
 
    for package_remote_item in "${origin_name_list[@]}"; do
-      git fetch -- "${package_remote_item}" &
+      dry_run_or_run git fetch -- "${package_remote_item}" &
       git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
 
@@ -1404,20 +1414,20 @@ pkg_git_diff_and_merge_branch() {
 
    printf '%s\n' "${batch_current_package_reponame}"
    check-ref-commits-for-unicode "${origin_ref}"
-   git --no-pager diff -C --stat ..."${origin_ref}"
-   git --no-pager diff -C ..."${origin_ref}"
-   git --no-pager kdiff -C ..."${origin_ref}"
+   dry_run_or_run git --no-pager diff -C --stat ..."${origin_ref}"
+   dry_run_or_run git --no-pager diff -C ..."${origin_ref}"
+   dry_run_or_run git --no-pager kdiff -C ..."${origin_ref}"
 
    if [ "${origin_branch}" = "ArrayBolt3/arraybolt3/trixie" ]; then
       ## 'git verify-commit' passes through debug output by 'sq-git-wrapper'.
       git verify-commit "${origin_ref}"
       ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
-      git merge "${origin_ref}"
+      dry_run_or_run git merge "${origin_ref}"
    elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
       ## TODO: Can't we verify against Claude's SSH key?
       ## TODO: Is it ever really safe to mass-merge from the AI branches?
       #git verify-commit "${origin_ref}"
-      git merge --no-verify-signature "${origin_ref}"
+      dry_run_or_run git merge --no-verify-signature "${origin_ref}"
    else
       die 1 "UNKNOWN origin_branch: '${origin_branch}'"
    fi
@@ -1455,7 +1465,7 @@ pkg_profile_d_zsh_creator() {
             continue
          fi
       fi
-      printf '%s\n' "${symlink_config_entry}" | tee -a -- "${package_links_file}" >/dev/null
+      dry_run_or_run append "${package_links_file}" "${symlink_config_entry}" >/dev/null
    done
 
    true
@@ -1466,10 +1476,10 @@ pkg_copy_contributing_file() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'kloak' || return 0
 
-   cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
+   dry_run_or_run cp -- "${derivative_maker_source_code_dir}/CONTRIBUTING.md" "${batch_current_package_path}/CONTRIBUTING.md"
 
-   git add -- "${batch_current_package_path}/CONTRIBUTING.md"
-   git commit -m "update"
+   dry_run_or_run git add -- "${batch_current_package_path}/CONTRIBUTING.md"
+   dry_run_or_run git commit -m "update"
 
    true
 }
@@ -1580,16 +1590,16 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
-   cp --verbose -- "${source_path}" "${destination_path}"
+   dry_run_or_run cp --verbose -- "${source_path}" "${destination_path}"
 
-   git add -- "${destination_path}"
+   dry_run_or_run git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: ${FUNCNAME[0]}: nothing to commit"
       return 0
    fi
 
-   git commit -m "add .github/dependabot.yml" || true
+   dry_run_or_run git commit -m "add .github/dependabot.yml" || true
 
    true
 }
@@ -1621,15 +1631,15 @@ pkg_install_codeql_actions_scan() {
       return 0
    fi
 
-   cp -- "${source_path}" "${destination_path}"
-   git add -- "${destination_path}"
+   dry_run_or_run cp -- "${source_path}" "${destination_path}"
+   dry_run_or_run git add -- "${destination_path}"
 
    if nothing_to_commit; then
       true "INFO: ${FUNCNAME[0]}: nothing to commit"
       return 0
    fi
 
-   git commit -m "add .github/workflows/consumer-codeql-actions.yml"
+   dry_run_or_run git commit -m "add .github/workflows/consumer-codeql-actions.yml"
 
    true
 }
@@ -1639,7 +1649,7 @@ pkg_compat_delete() {
    ## `|| true` so re-runs in repos where the file was already
    ## removed do not abort the whole batch with a fatal `pathspec
    ## did not match any files`.
-   git rm -- "debian/compat" || true
+   dry_run_or_run git rm -- "debian/compat" || true
 
    true
 }
@@ -1780,7 +1790,7 @@ pkg_packaging_files_diff() {
 #          cp "$HOME/derivative-maker/COPYING" "${batch_current_package_path}/debian/copyright"
 #       else
 #          ## TODO: delete /tmp/list-of-packages
-#          printf '%s\n' "${batch_current_package_reponame}" | tee -a -- /tmp/list-of-packages >/dev/null
+#          dry_run_or_run append /tmp/list-of-packages "${batch_current_package_reponame}" >/dev/null
 #          mousepad "${batch_current_package_path}/COPYING"
 #          mousepad "${batch_current_package_path}/debian/copyright"
 #       fi
@@ -1809,7 +1819,7 @@ pkg_git_fetch_remotes() {
    local package_remote_item
 
    for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      git fetch -- "${package_remote_item}" &
+      dry_run_or_run git fetch -- "${package_remote_item}" &
       git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
    true
@@ -1905,7 +1915,7 @@ pkg_git_push_tags() {
 
 ## Checks out the changelog.upstream file of all repos.
 git_reset_changelog_upstream() {
-   git checkout -- changelog.upstream
+   dry_run_or_run git checkout -- changelog.upstream
 }
 
 ## Commits changes to the readme files of all repos.
@@ -1913,30 +1923,30 @@ pkg_git_commit_readme() {
    local msg
 
    if [ -f 'README_generic.md' ]; then
-      git add -- 'README_generic.md'
+      dry_run_or_run git add -- 'README_generic.md'
    elif [ -f 'README.md' ]; then
-      git add -- 'README.md'
+      dry_run_or_run git add -- 'README.md'
    elif [ -f 'README.mediawiki' ]; then
-      git add -- 'README.mediawiki'
+      dry_run_or_run git add -- 'README.mediawiki'
    fi
 
    #git diff --cached
    msg='readme'
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
 }
 
 ## Commits changes to the changelog files of all repos.
 pkg_git_commit_changelog() {
    local msg
 
-   git add -- 'debian/changelog'
+   dry_run_or_run git add -- 'debian/changelog'
    if [ -f 'changelog.upstream' ]; then
-      git add -- 'changelog.upstream'
+      dry_run_or_run git add -- 'changelog.upstream'
    fi
    msg='bumped changelog version'
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
    true
 }
 
@@ -1944,23 +1954,23 @@ pkg_git_commit_changelog() {
 pkg_git_commit_copyright() {
    local msg
 
-   git add -- 'debian/copyright'
+   dry_run_or_run git add -- 'debian/copyright'
    if [ -f 'COPYING' ]; then
-      git add -- 'COPYING'
+      dry_run_or_run git add -- 'COPYING'
    fi
    msg='copyright'
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
    true
 }
 
 pkg_git_commit_debian_control() {
    local msg
 
-   git add -- 'debian/control'
+   dry_run_or_run git add -- 'debian/control'
    msg='bumped Standards-Version'
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
    true
 }
 
@@ -1970,9 +1980,9 @@ pkg_git_commit_debian_control() {
 pkg_git_commit_all() {
    printf '%s\n' TODO
    exit 1
-   git add -A
-   git commit -m "${git_commit_all_msg}" || true
-   git status
+   dry_run_or_run git add -A
+   dry_run_or_run git commit -m "${git_commit_all_msg}" || true
+   dry_run_or_run git status
    true
 }
 
@@ -1984,13 +1994,13 @@ pkg_git_manpages() {
       return 0
    fi
 
-   genmkfile manpages
+   dry_run_or_run genmkfile manpages
 
    msg='re-generate man pages (generated using "genmkfile manpages")'
-   git add -- 'man'/* || true
-   git add -- 'auto-generated-man-pages'/* || true
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git add -- 'man'/* || true
+   dry_run_or_run git add -- 'auto-generated-man-pages'/* || true
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
    true
 }
 
@@ -2003,13 +2013,13 @@ pkg_git_debinstfile() {
    ## Skipped because the install file for corridor is maintained manually.
    repo_skip 'corridor' || return 0
 
-   genmkfile debinstfile
+   dry_run_or_run genmkfile debinstfile
 
    msg='add debian install file (generated using "genmkfile debinstfile")'
    printf '%s\n' "PWD: '$PWD'"
-   git add -- "debian/${batch_current_package_reponame}.install" || true
-   git commit -m "${msg}" || true
-   git status
+   dry_run_or_run git add -- "debian/${batch_current_package_reponame}.install" || true
+   dry_run_or_run git commit -m "${msg}" || true
+   dry_run_or_run git status
    true
 }
 
@@ -2029,11 +2039,11 @@ pkg_git_commit_packaging() {
    #git add 'debian/changelog'
    #git add 'changelog.upstream'
    #git add 'debian'/*'.install'
-   git add -- 'debian/control'
+   dry_run_or_run git add -- 'debian/control'
    #git add -A
    msg='trixie'
-   git commit -m "${msg}"
-   git status
+   dry_run_or_run git commit -m "${msg}"
+   dry_run_or_run git status
    true
 }
 
@@ -2047,9 +2057,9 @@ pkg_add_dh_changelogs_override_to_debian_rules() {
       return 0
     fi
 
-   printf '%s\n' "
+   dry_run_or_run append "debian/rules" "
 override_dh_installchangelogs:
-  dh_installchangelogs changelog.upstream upstream" | tee -a -- "debian/rules" >/dev/null
+  dh_installchangelogs changelog.upstream upstream" >/dev/null
    true
 }
 
@@ -2057,8 +2067,8 @@ override_dh_installchangelogs:
 pkg_git_reset() {
    repo_skip 'derivative-maker' || return 0
    repo_skip 'developer-meta-files' || return 0
-   git reset --hard
-   git clean -dff
+   dry_run_or_run git reset --hard
+   dry_run_or_run git clean -dff
 }
 
 ## Does a git diff followed by a git commit on all repos with changes, except
@@ -2077,15 +2087,15 @@ pkg_git_diff_and_commit() {
       return 0
    fi
 
-   git add -A
-   git diff --cached
+   dry_run_or_run git add -A
+   dry_run_or_run git diff --cached
 
    true "press enter to continue"
    #read -r temp
 
-   git add -A
+   dry_run_or_run git add -A
    ## TODO
-   git commit -m "typo"
+   dry_run_or_run git commit -m "typo"
 
    if nothing_to_commit; then
       true "press enter to continue_not"
@@ -2143,9 +2153,9 @@ pkg_git_submodule_file_writer() {
    repo_skip 'derivative-maker' || return 0
 
    if [ "${batch_func_init_done}" = 'n' ]; then
-      safe-rm -- "${derivative_maker_source_code_dir}/.gitmodules"
+      dry_run_or_run safe-rm -- "${derivative_maker_source_code_dir}/.gitmodules"
       batch_func_init_done='y'
-      printf '%s\n' '## This file is autogenerated by:
+      dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" '## This file is autogenerated by:
 ## autogenerated by dm-packaging-helper-script function pkg_git_submodule_file_writer
 
 ## BEGIN hardcoded part BEGIN ##
@@ -2185,21 +2195,19 @@ pkg_git_submodule_file_writer() {
         url  = https://github.com/Whonix/qubes-template-whonix.git
         #url = https://gitlab.com/Whonix/qubes-template-whonix.git
 
-## END hardcoded part END ##
-' | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
+## END hardcoded part END ##' >/dev/null
    fi
 
    url="\
         url = https://github.com/${batch_current_project_name}/${batch_current_package_reponame}.git
         #url = https://gitlab.com/${batch_current_project_name,,}/${batch_current_package_reponame}.git"
 
-   printf '%s\n' "\
+   dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" "\
 [submodule \"${batch_current_package_reponame}\"]
         path = packages/${batch_current_project_name,,}/${batch_current_package_reponame}
-$url" \
-         | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
+$url" >/dev/null
 
-   printf '%s\n' "" | tee -a -- "${derivative_maker_source_code_dir}/.gitmodules" >/dev/null
+   dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" $'\n' >/dev/null
 }
 
 ## Generates a release announcement.
@@ -2210,9 +2218,9 @@ pkg_git_packages_git_log_writer() {
 
    if [ "${batch_func_init_done}" = 'n' ]; then
       post_run_hook_list+=( 'generate_announcement' )
-      safe-rm -f -- "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
-      safe-rm -f -- "${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
-      safe-rm -f -- "${announcements_drafts_dir}/whonix_giant_git_log.txt"
+      dry_run_or_run safe-rm -f -- "${announcements_drafts_dir}/derivative-maker_giant_git_log.txt"
+      dry_run_or_run safe-rm -f -- "${announcements_drafts_dir}/kicksecure_giant_git_log.txt"
+      dry_run_or_run safe-rm -f -- "${announcements_drafts_dir}/whonix_giant_git_log.txt"
       batch_func_init_done='y'
    fi
 
@@ -2296,16 +2304,16 @@ pkg_git_packages_git_log_writer() {
       log_msg+="${credit_msg}"
 
       if [ "${package_header_written}" = 'n' ]; then
-         printf '%s\n' "* ${batch_current_package_reponame}:" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+         dry_run_or_run append "${batch_current_package_changelog}" "* ${batch_current_package_reponame}:" >/dev/null
          package_header_written='y'
       fi
 
-      printf '%s\n' "  * ${log_msg}" | tee -a -- "${batch_current_package_changelog}" >/dev/null
+      dry_run_or_run append "${batch_current_package_changelog}" "  * ${log_msg}" >/dev/null
    done <<< "${commit_msg_short_list}"
 
    if [ "${package_header_written}" = 'y' ]; then
       ## Add newline but only if there were actually changelog lines.
-      printf '%s\n' '' | tee -a -- "${batch_current_package_changelog}" >/dev/null
+      dry_run_or_run append "${batch_current_package_changelog}" $'\n' >/dev/null
    fi
 
    true
@@ -2632,11 +2640,11 @@ pkg_git_commit_lintian_watch_gpg_override() {
 
    repo_skip_non_package || return 0
 
-   git add -- './debian/source/lintian-overrides' || true
+   dry_run_or_run git add -- './debian/source/lintian-overrides' || true
    msg="\
 added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning
 https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124"
-   git commit -m "${msg}" || true
+   dry_run_or_run git commit -m "${msg}" || true
    true
 }
 
@@ -2644,18 +2652,18 @@ https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signatu
 debian_watch_file_create() {
    local msg
 
-   printf '%s\n' "\
+   dry_run_or_run overwrite "${batch_current_package_path}/debian/watch" "\
 ## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
 version=4
 opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/${batch_current_package_reponame}-\$1\.tar\.gz/ \\
-  https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/tags .*/v?(\d\S+)\.tar\.gz" > "${batch_current_package_path}/debian/watch"
+  https://github.com/${batch_current_project_name}/${batch_current_package_reponame}/tags .*/v?(\d\S+)\.tar\.gz" >/dev/null
 
-   git add -- "${batch_current_package_path}/debian/watch" || true
+   dry_run_or_run git add -- "${batch_current_package_path}/debian/watch" || true
    msg="\
 fix debian/watch lintian warning debian-watch-contains-dh_make-template"
-   git commit -m "${msg}" || true
+   dry_run_or_run git commit -m "${msg}" || true
    true
 }
 
@@ -2716,7 +2724,7 @@ https://www.${project_website}/wiki/Download
          error "invalid derivative_release_type!"
       fi
 
-      printf '%s\n' "\
+      dry_run_or_run overwrite "${announcements_drafts_dir}/${project_name}.txt" "\
 ${project_name} ${derivative_version_new_main_short} - ${release_type_long}!
 
 ${header_text}
@@ -2760,8 +2768,7 @@ ${changelog_file}
 ----
 
 ${end_text}
-" | \
-      tee -- "${announcements_drafts_dir}/${project_name}.txt" >/dev/null
+" >/dev/null
    done
 }
 
@@ -2874,8 +2881,10 @@ parse_args() {
       esac
    done
 
-   parsed_target="${1:-}"
-   shift || true
+   if [ "$#" -gt 0 ]; then
+      parsed_target="${1}"
+      shift
+   fi
    parsed_args=( "$@" )
 }
 
@@ -2885,6 +2894,26 @@ main() {
    parse_args "$@"
    batch_meta_dry_run="${parsed_dry_run}"
 
+   ## --repo implies --no-batch (and rejects --batch downstream).
+   if [ -n "${parsed_repo}" ] && [ -z "${parsed_mode}" ]; then
+      parsed_mode='no-batch'
+   fi
+
+   if [ -z "${parsed_mode}" ] && [ "${parsed_target}" != '' ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
+      exit 1
+   fi
+
+   if [ -n "${parsed_repo}" ] && [ "${parsed_mode}" = 'batch' ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo and --batch are mutually exclusive"
+      exit 1
+   fi
+
+   if [ "${parsed_target}" = '' ] && [ -n "${parsed_repo}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo ${parsed_repo}: missing function name. Syntax: ./$0 [--dry-run] --repo NAME function-name [arguments]"
+      exit 1
+   fi
+
    if [ "${parsed_target}" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
@@ -2892,32 +2921,22 @@ main() {
       exit 0
    fi
 
-   ## --repo selects a single repo by name (resolved under
-   ## derivative-maker); implies --no-batch and is incompatible with
-   ## --batch (which already iterates everything).
    if [ -n "${parsed_repo}" ]; then
-      if [ "${parsed_mode}" = 'batch' ]; then
-         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo is not compatible with --batch"
-         exit 1
-      fi
-      parsed_mode='no-batch'
-      if ! repo_path="$(resolve_repo_path "${parsed_repo}")"; then
+      repo_path="$(resolve_repo_path "${parsed_repo}")" || {
          printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo: unknown repo '${parsed_repo}' (searched derivative-maker root, qubes/, windows/, packages/kicksecure/, packages/whonix/)"
          exit 1
-      fi
+      }
       cd -- "${repo_path}"
    fi
 
    if [ "${parsed_mode}" = 'no-batch' ]; then
       set_batch_context_from_pwd
-      ## Pre-flight branch check + user-target, both on the single repo.
       run_batch_command pkg_git_check_current_branch
       run_batch_command "${parsed_target}" "${parsed_args[@]}"
       for post_run_hook in "${post_run_hook_list[@]}"; do
          "${post_run_hook}"
       done
    elif [ "${parsed_mode}" = 'batch' ]; then
-      ## Pre-flight branch check across every iterated repo.
       run_batch pkg_git_check_current_branch
       case "${parsed_target}" in
          'commit_filter')
@@ -2938,7 +2957,7 @@ main() {
             ;;
       esac
    else
-      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} ${FUNCNAME[0]}: unexpected parsed_mode='${parsed_mode}'"
       exit 1
    fi
 }
