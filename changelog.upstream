@@ -1,3 +1,276 @@
+commit d5bb6ee07b5d54c950b998d0dd45ba0aca793af1
+Merge: 06b143ff 40d2cd17
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 19 14:29:29 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-rule-r141-coORj'
+
+commit 40d2cd174a903312e5a0b93dc0b3a4f1ae8a5333
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 19 18:00:37 2026 +0000
+
+    dm-packaging-helper-script: cat-to-file concat via tee --append (not append)
+
+    The earlier conversion of all tee calls to append/overwrite forced
+    file-to-file concatenation through `append FILE "$(<SRC)"`, which:
+
+    - relies on the bash-arcane $(<file) form;
+    - loads file content into argv (memory + no-NUL-byte limits);
+    - strips trailing newlines.
+
+    `append` is naturally string-content. File-to-file concat is a
+    different operation. Revert the 3 cat-pipe sites to use the natural
+    cat | tee --append pattern, with `dry_run_or_run` wrapping `tee` for
+    dry-run coverage. The hardened dry_run_or_run drains piped stdin on
+    dry-run so large-file cat won't SIGPIPE under errexit+pipefail
+    (verified with a 143MB file).
+
+    Affected:
+    - pkg_readme_creator_do: template -> readme
+    - pkg_descr_merger: per-package mediawiki -> merged
+    - pkg_descr_merge_all: merged -> allmerged
+
+commit 06b143ff594d2a68a5c34617e6d6d8f4d637aedc
+Merge: e40cf5ee 0b93c546
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 19 14:24:38 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-rule-r141-coORj'
+
+commit 0b93c546c3161f9424502e153963c502f7fdc6ca
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 19 18:00:37 2026 +0000
+
+    dm-packaging-helper-script: parse_args + --repo, full dry-run via append/overwrite
+
+    Two user-reported bugs and an end-to-end dry-run coverage pass.
+
+    Bug fixes:
+
+    - shift_verbose ("shift count out of range") leaked to stderr on any
+      invocation without a function-name positional. `shift || true` only
+      swallows the exit code; replaced with a $# guard so shift only runs
+      when there's something to shift.
+    - `--no-batch --repo NAME` without a function name silently fell
+      through to the list-functions-and-exit-0 path (--repo consumed the
+      intended function name as its NAME value). Now fails fast with a
+      clear "missing function name" error and shows the correct syntax.
+
+    main()/parse_args restructure:
+
+    - parse_args() extracted as a pure parser writing parsed_* globals;
+      flag-shape knowledge in one place.
+    - Mode validation hoisted to a standalone early check
+      ([ -z parsed_mode ] && [ parsed_target != '' ] -> fatal). Bare
+      invocation with no flags and no target still lists.
+    - --repo selects a single repo by name; implies --no-batch and is
+      rejected with --batch.
+    - --no-batch + --repo resolution + cd via resolve_repo_path; flat
+      guard-clauses, defensive else for unexpected parsed_mode.
+
+    Dry-run coverage (--dry-run / batch_meta_dry_run='y'):
+
+    Phase 1 - wrapped every mechanical git mutation: pkg_git_reset,
+    pkg_git_diff_and_commit, pkg_git_diff_and_merge_branch, all
+    pkg_git_branch_*, pkg_git_remotes_add (16 sites), pkg_compat_delete,
+    git_reset_changelog_upstream, all pkg_git_commit_*, pkg_git_manpages,
+    pkg_git_debinstfile, pkg_install_*, pkg_copy_contributing_file,
+    pkg_update_if_exists, pkg_readme_creator_commit,
+    pkg_claude_md_pointer_create, debian_watch_file_create.
+
+    Phase 3 - wrapped fetch / status / diff per user direction. mkdir in
+    prepare_system kept live.
+
+    dry_run_or_run hardened: WOULD message goes to stderr (survives
+    >/dev/null on stdout); piped stdin is drained on dry-run so upstream
+    producers don't SIGPIPE under errexit+pipefail.
+
+    tee migration to append/overwrite from helper-scripts:
+
+    All tee/tee --append pipelines replaced with append/overwrite calls
+    through dry_run_or_run. Patterns:
+
+    - printf '%s\n' "X" | tee --append -- "F"   ->   append "F" "X"
+    - printf '%s\n' '' | tee --append -- "F"    ->   append "F" $'\n'
+    - cat -- "SRC" | tee --append -- "DST"      ->   append "DST" "$(<"SRC")"
+    - printf '...' | tee -- "F"                 ->   overwrite "F" "..."
+
+    All safe-rm sites wrapped too. Function-level early-returns dropped
+    where per-statement wrapping makes them redundant.
+
+    check_prerequisites: argless again (no main() recursion), structural
+    checks only. Added `has append` and `has overwrite`.
+
+    repo_is_special expanded: live-build, grml-debootstrap,
+    grml-debootstraptest now part of the iterated set; pick up the same
+    tag-and-push flow as qubes-template-*, Whonix-Installer, Whonix-Starter.
+
+    run_batch collapsed to two pushd + set_batch_context_from_pwd +
+    run_batch_command + popd loops (packages first, then top-level
+    specials, derivative-maker last).
+
+    run_batch_command: dropped inner pushd/popd; caller owns cwd.
+
+    set_batch_context_from_pwd: parameter expansion instead of
+    basename/dirname subshells (~50% faster per call).
+
+commit e40cf5eed77ce992219f3f63b499d2e36ef94a05
+Merge: 56695e97 e3e2f16f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 19 06:22:52 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-rule-r141-coORj'
+
+commit e3e2f16f229c34d21227c6a08d95b764f6d58ef8
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 19 09:42:58 2026 +0000
+
+    dm-packaging-helper-script: mandatory --batch/--no-batch, single-repo --repo, refactor
+
+    Batch mode and --no-batch previously took divergent paths. Batch set
+    batch_current_project_name / website / changelog / path / remote_list
+    per iteration; --no-batch only set batch_current_package_reponame from
+    $(basename "$PWD") and called the target directly. Functions that read
+    the other globals silently saw empty/garbage state in --no-batch.
+    run_batch itself had ~70 lines split between an outer if/elif loop for
+    packages/{kicksecure,whonix}/* and five hardcoded special-case blocks
+    restating the same assignments. check_prerequisites recursively called
+    main --batch pkg_git_check_current_branch as a pre-flight, forcing a
+    full-batch pre-flight even under --no-batch.
+
+    Changes:
+
+    - parse_args(): new pure parser. Writes parsed_mode, parsed_repo,
+      parsed_target, parsed_args, parsed_dry_run. Single source of truth
+      for flag-shape knowledge.
+    - main(): calls parse_args, resolves --repo, dispatches via explicit
+      if/elif/else: --no-batch runs pre-flight + user-target on the single
+      repo with one post-hook pass; --batch runs pre-flight via run_batch
+      then user-target dispatch. else = defensive "missing mode" error.
+    - check_prerequisites: argless again, structural checks only. No more
+      main() recursion, no forwarding loop.
+    - set_batch_context_from_pwd(): new helper that derives all
+      batch_current_* from PWD. derivative-maker meta-repo handled
+      explicitly; repo_is_special covers the top-level non-package
+      submodules (qubes-template-{ks,wx}, Whonix-{Installer,Starter}, plus
+      live-build, grml-debootstrap, grml-debootstraptest); regular packages
+      detected via parent-dir match. Fail-fast on unrecognized.
+    - repo_is_special: expanded from 4 to 7 entries. live-build /
+      grml-debootstrap / grml-debootstraptest were not iterated by run_batch
+      before this PR; they are now, picking up the same tag-and-push flow
+      the other special-cases follow.
+    - run_batch(): collapsed to two pushd + set_batch_context_from_pwd +
+      run_batch_command + popd loops (regular packages first via
+      packages/*/* glob, then top-level specials, derivative-maker last
+      so per-package writes have run before pkg_git_submodule_file_writer
+      re-runs on the meta-repo).
+    - run_batch_command: dropped inner pushd/popd. Caller owns cwd, set
+      via set_batch_context_from_pwd; both --batch and --no-batch paths
+      enter the target repo before invoking.
+    - resolve_repo_path(): new helper for --repo NAME. Tries
+      derivative-maker root, qubes/, windows/, packages/kicksecure/,
+      packages/whonix/ in that order. Rejects names containing '/' or
+      starting with '.' as path-traversal guards.
+    - --repo implies --no-batch; --batch + --repo is rejected with a clear
+      error. Mutex check for --batch / --no-batch deduplicated by
+      collapsing the case arms via mode="${1#--}".
+
+    In-tree caller audit: dm-quickgittagsign already passes --no-batch.
+    check_prerequisites updated. Wiki-doc references (out-of-tree backups)
+    still show the no-flag form; deferred to a separate doc update.
+
+    Side-note: set_batch_context_from_pwd uses parameter expansion
+    (${pwd_abs##*/}, ${pwd_abs%/*}) instead of basename/dirname subshells;
+    ~50% faster per call.
+
+commit 56695e979616711649c5872895af71cef6e635e3
+Merge: 01ef5d57 6a511401
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 19:15:27 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/review-rule-r141-coORj'
+
+commit 6a5114011382ae1f900a30ff992669eb24a806a0
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 23:09:15 2026 +0000
+
+    dm-packaging-helper-script: collapse run_batch via set_batch_context_from_pwd
+
+    run_batch had ~70 lines split between an outer if/elif loop for the
+    regular packages/{kicksecure,whonix}/* iteration and five hardcoded
+    special-case blocks at the tail. Every block restated the same
+    batch_current_* assignments that set_batch_context_from_pwd already
+    derives from PWD.
+
+    Collapse to two loops: one globbing packages/*/* (project derived from
+    parent dir), one over an explicit list of top-level repos (special-cases
+    recognized via repo_is_special / explicit derivative-maker case).
+    Iteration order preserved (regular packages first, derivative-maker
+    last so per-package writes have run before pkg_git_submodule_file_writer
+    re-runs over the meta-repo).
+
+    run_batch_command: drop the inner pushd/popd. Caller now owns cwd
+    (--batch path pushd's per iteration; --no-batch path is already in the
+    target repo when main() invokes it after set_batch_context_from_pwd).
+
+    Side-effect: batch mode now iterates live-build, grml-debootstrap,
+    grml-debootstraptest. These are in repo_is_special (added in #110) and
+    follow the same tag-and-push flow as the other special-cases; batch
+    runs now apply auto-sign / version-bump-check to them too.
+
+commit 01ef5d57d14b233b964001c0f594b683dece4a7f
+Merge: f0bafdc6 1b615661
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 18:59:21 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 1b6156614f796dcf14c0e37c674be00b3f22ecf5
+Merge: f0bafdc6 e03fee38
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon May 18 18:56:15 2026 -0400
+
+    Merge pull request #110 from org-ai-assisted/claude/review-rule-r141-coORj
+
+    dm-packaging-helper-script: make --batch/--no-batch mandatory, unify both modes
+
+commit e03fee38d9c43bcdb728d482fc01da9d8babadce
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 18 22:43:43 2026 +0000
+
+    dm-packaging-helper-script: make --batch/--no-batch mandatory, share machinery
+
+    Background: batch mode and --no-batch took divergent paths. Batch set
+    project_name/website/changelog/path/remote_list per iteration and ran
+    post_run_hook_list afterward; --no-batch only set
+    batch_current_package_reponame from $(basename "$PWD") and called the
+    target directly. Functions reading the other globals silently saw
+    empty/garbage state in --no-batch.
+
+    Changes:
+    - main(): require exactly one of --batch or --no-batch; error otherwise.
+    - set_batch_context_from_pwd(): new helper that derives all
+      batch_current_* globals from PWD (special-case repos via
+      repo_is_special, regular packages via packages/{kicksecure,whonix}/
+      parent-dir match, derivative-maker handled explicitly to preserve
+      batch-mode semantics, fail-fast otherwise).
+    - --no-batch branch now routes through run_batch_command +
+      post_run_hook_list, matching batch mode's per-package invocation.
+    - repo_is_special: add live-build, grml-debootstrap,
+      grml-debootstraptest (top-level non-package submodules; not iterated
+      by run_batch so batch-mode behavior is unchanged).
+    - check_prerequisites: pass --batch when self-invoking via main.
+
+    In-tree caller audit: dm-quickgittagsign already passes --no-batch.
+    Wiki-doc references (out-of-tree backup snapshots) still show the
+    no-flag form and are deferred to a separate doc update.
+
+commit f0bafdc6c4c5f9c0f89cbb2ea93c28ac8e30a939
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 18 22:47:51 2026 +0000
+
+    bumped changelog version
+
 commit 7210fe7485a8d07d08944558d7517cee92d63418
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon May 18 18:24:31 2026 -0400
