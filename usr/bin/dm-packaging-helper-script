@@ -119,8 +119,6 @@ check_prerequisites() {
       #exit 1
    }
 
-   main --batch pkg_git_check_current_branch
-
    true
 }
 
@@ -693,6 +691,39 @@ get_package_documentation_info_list() {
    done
 }
 
+## Resolves a repo NAME (--repo argument) to its filesystem path under
+## derivative-maker. Echoes the resolved path on stdout, returns 1 if no
+## candidate exists. Mirrors the iteration set run_batch() covers.
+resolve_repo_path() {
+   local name candidate
+   name="$1"
+
+   if [[ "${name}" == */* ]] || [[ "${name}" == .* ]] || [ -z "${name}" ]; then
+      return 1
+   fi
+
+   if [ "${name}" = 'derivative-maker' ]; then
+      printf '%s\n' "${derivative_maker_source_code_dir}"
+      return 0
+   fi
+
+   for candidate in \
+      "${derivative_maker_source_code_dir}/${name}" \
+      "${derivative_maker_source_code_dir}/qubes/${name}" \
+      "${derivative_maker_source_code_dir}/windows/${name}" \
+      "${derivative_maker_source_code_dir}/packages/kicksecure/${name}" \
+      "${derivative_maker_source_code_dir}/packages/whonix/${name}"
+   do
+      if [ -d "${candidate}" ]; then
+         printf '%s\n' "${candidate}"
+         return 0
+      fi
+   done
+
+   return 1
+}
+
+
 ## Derives all batch_current_* globals from PWD for single-repo --no-batch
 ## invocations. Mirrors the per-package assignments run_batch() makes for
 ## each iteration. Fails fast if the reponame is unrecognized so the user
@@ -700,9 +731,9 @@ get_package_documentation_info_list() {
 set_batch_context_from_pwd() {
    local pwd_abs reponame parent grandparent
    pwd_abs="$(realpath -- "${PWD}")"
-   reponame="$(basename -- "${pwd_abs}")"
-   parent="$(dirname -- "${pwd_abs}")"
-   grandparent="$(basename -- "${parent}")"
+   reponame="${pwd_abs##*/}"
+   parent="${pwd_abs%/*}"
+   grandparent="${parent##*/}"
 
    batch_current_package_path="${pwd_abs}"
    batch_current_package_reponame="${reponame}"
@@ -2801,31 +2832,37 @@ run_batch() {
    done
 }
 
-main() {
-   local target_cmd arg_list mode post_run_hook
-   mode=''
+## Pure command-line parser: writes the parsed_* globals declared near
+## the bottom of the script. Kept separate from main() so the flag-shape
+## knowledge lives in one place.
+parse_args() {
+   parsed_mode=''
+   parsed_repo=''
+   parsed_target=''
+   parsed_args=()
+   parsed_dry_run='n'
 
    while [ $# -gt 0 ]; do
       case "${1}" in
          --dry-run)
-            batch_meta_dry_run='y'
+            parsed_dry_run='y'
             shift
             ;;
-         --batch)
-            [ -n "${mode}" ] && {
+         --batch|--no-batch)
+            [ -n "${parsed_mode}" ] && {
                printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --batch and --no-batch are mutually exclusive"
                exit 1
             }
-            mode='batch'
+            parsed_mode="${1#--}"
             shift
             ;;
-         --no-batch)
-            [ -n "${mode}" ] && {
-               printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --batch and --no-batch are mutually exclusive"
+         --repo)
+            if [ -z "${2:-}" ]; then
+               printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo requires an argument"
                exit 1
-            }
-            mode='no-batch'
-            shift
+            fi
+            parsed_repo="${2}"
+            shift 2
             ;;
          --*)
             printf '%s\n' "${red}${bold}FATAL ERROR:${reset} unknown flag '${1}'"
@@ -2837,49 +2874,73 @@ main() {
       esac
    done
 
-   target_cmd="${1:-}"
+   parsed_target="${1:-}"
    shift || true
-   arg_list=( "$@" )
+   parsed_args=( "$@" )
+}
 
-   if [ "$target_cmd" = '' ]; then
+main() {
+   local post_run_hook repo_path
+
+   parse_args "$@"
+   batch_meta_dry_run="${parsed_dry_run}"
+
+   if [ "${parsed_target}" = '' ]; then
       true "INFO: Available functions..."
       typeset -f | awk '/ \(\) $/ && !/^main / {print $1}' | grep -E "^pkg_*"
-      true "INFO: syntax: ./$0 [--dry-run] (--batch|--no-batch) function-name arguments"
+      true "INFO: syntax: ./$0 [--dry-run] (--batch|--no-batch [--repo NAME]) function-name arguments"
       exit 0
    fi
 
-   if [ -z "${mode}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
-      exit 1
+   ## --repo selects a single repo by name (resolved under
+   ## derivative-maker); implies --no-batch and is incompatible with
+   ## --batch (which already iterates everything).
+   if [ -n "${parsed_repo}" ]; then
+      if [ "${parsed_mode}" = 'batch' ]; then
+         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo is not compatible with --batch"
+         exit 1
+      fi
+      parsed_mode='no-batch'
+      if ! repo_path="$(resolve_repo_path "${parsed_repo}")"; then
+         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo: unknown repo '${parsed_repo}' (searched derivative-maker root, qubes/, windows/, packages/kicksecure/, packages/whonix/)"
+         exit 1
+      fi
+      cd -- "${repo_path}"
    fi
 
-   if [ "${mode}" = 'no-batch' ]; then
+   if [ "${parsed_mode}" = 'no-batch' ]; then
       set_batch_context_from_pwd
-      run_batch_command "${target_cmd}" "${arg_list[@]}"
+      ## Pre-flight branch check + user-target, both on the single repo.
+      run_batch_command pkg_git_check_current_branch
+      run_batch_command "${parsed_target}" "${parsed_args[@]}"
       for post_run_hook in "${post_run_hook_list[@]}"; do
          "${post_run_hook}"
       done
-      return
+   elif [ "${parsed_mode}" = 'batch' ]; then
+      ## Pre-flight branch check across every iterated repo.
+      run_batch pkg_git_check_current_branch
+      case "${parsed_target}" in
+         'commit_filter')
+            [ -z "${parsed_args[0]:-}" ] && {
+               printf '%s\n' "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
+               exit 1
+            }
+            commit_filter "${parsed_args[@]}"
+            ;;
+         'pkg_descr_merger')
+            pkg_descr_merger
+            ;;
+         'pkg_descr_merge_all')
+            pkg_descr_merge_all
+            ;;
+         *)
+            run_batch "${parsed_target}"
+            ;;
+      esac
+   else
+      printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
+      exit 1
    fi
-
-   case "${target_cmd}" in
-      'commit_filter')
-         [ -z "${arg_list[0]:-}" ] && {
-            printf '%s\n' "${red}${bold}FATAL ERROR: commit_filter requires an argument${reset}"
-            exit 1
-         }
-         commit_filter "${arg_list[@]}"
-         ;;
-      'pkg_descr_merger')
-         pkg_descr_merger
-         ;;
-      'pkg_descr_merge_all')
-         pkg_descr_merge_all
-         ;;
-      *)
-         run_batch "${target_cmd}"
-         ;;
-   esac
 }
 
 ## . END Main logic }
