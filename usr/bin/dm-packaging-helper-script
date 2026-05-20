@@ -868,6 +868,16 @@ pkg_update_if_exists() {
 # NOTE: Commands may assume that $PWD is the directory in which they should
 # make changes, unless they are excluded from the batch processing mechanism.
 
+pkg_upstream_changelog_regenerate() {
+   if ! [ -f 'changelog.upstream' ]; then
+      return 0
+   fi
+   genmkfile uch
+   git add "changelog.upstream"
+   git commit -m "genmkfile uch"
+   git status
+}
+
 ## Commits changes to all project README files.
 pkg_readme_creator_commit() {
    local readme_file
