@@ -12,10 +12,6 @@ shopt -s inherit_errexit
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-dist_build_source_run="true"
-dist_build_one_parsed="true"
-dist_build_target_arch='amd64'
-
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
@@ -41,10 +37,9 @@ dm_tor_update_repository() {
   #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor source
 
   ## Create a fresh chroot to work in.
-  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source
+  "${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
 
   true 'INFO: Setting cowbuilder file variables.'
-  dist_build_multiarch_package_item="$dist_build_target_arch"
   set_cowbuilder_folders
 
   ## Sanity test.
@@ -57,8 +52,8 @@ dm_tor_update_repository() {
   $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
 
   ## Sanity test.
-  printf "%s\n" "$APTGETOPT_SERIALIZED"
-  printf "%s\n" "$SUDO_TO_ROOT"
+  test -n "$APTGETOPT_SERIALIZED"
+  test -n "$SUDO_TO_ROOT"
 
   ## Update the apt sources within the chroot.
   $SUDO_TO_ROOT \
