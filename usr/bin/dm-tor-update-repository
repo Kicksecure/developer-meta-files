@@ -24,7 +24,6 @@ else
 fi
 
 source "$derivative_maker_source_code_dir/help-steps/pre"
-source "$derivative_maker_source_code_dir/help-steps/variables"
 
 source "/usr/libexec/helper-scripts/strings.bsh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
@@ -66,7 +65,7 @@ dm_tor_update_repository() {
         --buildplace "$cow_folder" \
         --save-after-login \
           -- \
-          /usr/bin/apt-get "${APTGETOPT[@]}" update
+          apt-get "${APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
   true 'INFO: Extracting local Tor version number from apt list files...'
