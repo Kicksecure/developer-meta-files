@@ -40,7 +40,7 @@ main() {
    "$dist_source_help_steps_folder/create-local-temp-apt-repo" "$@"
 
    ## Reading local repository containing Whonix's packages.
-   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
+   chroot_run apt-get "${DIST_APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -o APT::Get::List-Cleanup="0" update
 
    if [ "${pkg:-}" = "" ]; then
       ## TODO: only the `*-kde` flavors are recognised here, so any
@@ -71,9 +71,9 @@ main() {
       fi
    fi
 
-   chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
+   chroot_run apt-get "${DIST_APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts --yes install $pkg
 
-   #chroot_run apt-get "${APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
+   #chroot_run apt-get "${DIST_APTGETOPT[@]}" $apt_sourcelist_empty $apt_sourceparts -f install
 
    "$dist_source_help_steps_folder/remove-local-temp-apt-repo" "$@"
 

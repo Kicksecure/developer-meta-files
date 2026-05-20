@@ -51,7 +51,7 @@ dm_tor_update_repository() {
   $SUDO_TO_ROOT chmod 644 -- "${base_folder}/etc/apt/trusted.gpg.d/torprojectarchive.asc"
 
   ## Sanity test.
-  test -n "$APTGETOPT_SERIALIZED"
+  test -n "$DIST_APTGETOPT_SERIALIZED"
   test -n "$SUDO_TO_ROOT"
 
   ## Update the apt sources within the chroot.
@@ -65,7 +65,7 @@ dm_tor_update_repository() {
         --buildplace "$cow_folder" \
         --save-after-login \
           -- \
-          apt-get "${APTGETOPT[@]}" update
+          apt-get "${DIST_APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
   true 'INFO: Extracting local Tor version number from apt list files...'
