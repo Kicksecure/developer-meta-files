@@ -36,7 +36,7 @@ dm_tor_update_repository() {
   #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor source
 
   ## Create a fresh chroot to work in.
-  "${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
+  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
 
   true 'INFO: Setting cowbuilder file variables.'
   set_cowbuilder_folders
