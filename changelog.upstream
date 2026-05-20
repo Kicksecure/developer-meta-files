@@ -1,3 +1,33 @@
+commit fba43ea7a8551cfa60af2c9fab12f557225b775b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 15:10:34 2026 -0400
+
+    .
+
+commit 16a6cc26cfa2b1c6308282dc1ba4bfdf25d6d277
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 15:10:06 2026 -0400
+
+    fix
+
+commit 4a5d71e9894ac6c044ff88eb347758b60fda3d1d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 15:07:28 2026 -0400
+
+    .
+
+commit 632b53f5958041b02fec7af611e40180b4c4d1c9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 19 16:15:23 2026 -0400
+
+    .
+
+commit cb5e59c83ca49c6b9aed5ae263d444e2368c0e05
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 19 20:01:18 2026 +0000
+
+    bumped changelog version
+
 commit d5bb6ee07b5d54c950b998d0dd45ba0aca793af1
 Merge: 06b143ff 40d2cd17
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -5911,35 +5941,35 @@ Date:   Sun May 10 14:31:16 2026 -0400
 
     ## What changed
 
-    - `usr/libexec/developer-meta-files/github-policy-data.bsh` —
-    `DEPENDABOT_FIXES_OFF` preamble → one-line G-035 cite.
+    - `usr/libexec/developer-meta-files/github-policy-data.bsh` _
+    `DEPENDABOT_FIXES_OFF` preamble _ one-line G-035 cite.
     - `usr/bin/dm-github-org-policy`
-    - `apply_repo_policy` "Order on the disable side matters…" block →
+    - `apply_repo_policy` "Order on the disable side matters_" block _
     one-line G-035 cite.
-    - `apply_code_security_config` 16-line PAID-PLAN-ONLY re-derivation →
+    - `apply_code_security_config` 16-line PAID-PLAN-ONLY re-derivation _
     cite + the Free-compatible field list (kept because it's not in the
     doc).
-    - `usr/libexec/developer-meta-files/github-org-lib.bsh` —
-    `ghorg_validate_name` 17-line docstring restating G-001 → one-line G-001
+    - `usr/libexec/developer-meta-files/github-org-lib.bsh` _
+    `ghorg_validate_name` 17-line docstring restating G-001 _ one-line G-001
     cite.
     - `usr/bin/github-org-clone`, `usr/bin/github-org-fork`,
-    `usr/bin/github-org-push` — 3-line "Mode is mutually exclusive…"
-    preamble → one-line G-030 cite.
+    `usr/bin/github-org-push` _ 3-line "Mode is mutually exclusive_"
+    preamble _ one-line G-030 cite.
 
     ## What the commit message overstates (audit was off)
 
-    For full transparency — three bullets in the commit message describe
+    For full transparency _ three bullets in the commit message describe
     edits that **did not happen** because the audit's claims didn't match
     the current file state:
 
-    1. **`github-org-fork` clone-hardening block** — file does not contain
+    1. **`github-org-fork` clone-hardening block** _ file does not contain
     any `GIT_LFS_SKIP_SMUDGE` / `protocol.file.allow` rationale; it does API
     forks, not git clones. Nothing to cite.
-    2. **`dm-github-fork-sync` mode-flag preamble** — no such block. The
+    2. **`dm-github-fork-sync` mode-flag preamble** _ no such block. The
     mode comment that exists is wrapper-specific (explains why the wrapper
     checks too) and is a real gotcha, so left alone.
     3. **`ghorg_jq_capped` / `GHORG_JQ_MAX_BYTES` inline reminders at call
-    sites** — none exist. The helper name is already used self-documenting
+    sites** _ none exist. The helper name is already used self-documenting
     at call sites.
 
     ## Out of scope (deliberately left)
@@ -5956,7 +5986,7 @@ Date:   Sun May 10 14:31:16 2026 -0400
 
     ## Test plan
 
-    - [ ] CI passes (no code changed, so test suite should be unaffected —
+    - [ ] CI passes (no code changed, so test suite should be unaffected _
     change is comment-only).
     - [ ] `shellcheck` clean on the 6 modified files.
     - [ ] Confirm collapsed cites still resolve (G-001, G-020/021, G-030,
