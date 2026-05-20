@@ -1,3 +1,52 @@
+commit 195ae91e9f26da3ba161e835d6b584f406a23467
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 17:08:41 2026 -0400
+
+    .
+
+commit 4730d15b15cf729ffcf5a4f22ff7072cd21ad224
+Merge: 09e3aa0f 75b78bce
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 17:00:33 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/refactor-apt-variables-MPyww'
+
+commit 09e3aa0fb30e3a97afb94c2a64bfafa24dc3c023
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 16:56:46 2026 -0400
+
+    genmkfile uch
+
+commit 75b78bceae2ccc2a99be694141be3b10e00ae64d
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 20 20:39:36 2026 +0000
+
+    Make changed files pass the pre-push static gate (R-001, R-010)
+
+    - changelog.upstream: transliterate Unicode punctuation (em-dash, arrow,
+      ellipsis) from a prior changelog entry to ASCII, satisfying R-001.
+    - dm-install/tor-update/upgrade-from-local-repository: add the missing
+      'shopt -s shift_verbose' so the strict-mode block is 6/6 per R-010.
+      None of these scripts use 'shift', so it is a runtime no-op.
+
+    These files entered the gate's changed-set via the APTGETOPT->DIST_APTGETOPT
+    rename; the violations were pre-existing and unrelated to it.
+
+    https://claude.ai/code/session_015NXhWb2m9F7wnHKtkedtKS
+
+commit b1ca9332c0a2b7d135d7244a31ec1e3821ea91f5
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 20 20:28:04 2026 +0000
+
+    Rename APTGETOPT to DIST_APTGETOPT to avoid pbuilder collision
+
+    The APTGETOPT / APTGETOPT_SERIALIZED names collide with pbuilder/cowbuilder's
+    own APTGETOPT array variable. The dm-*-from-local-repository helpers consume
+    the array passed by derivative-maker; rename in lockstep with derivative-maker,
+    genmkfile and usability-misc.
+
+    https://claude.ai/code/session_015NXhWb2m9F7wnHKtkedtKS
+
 commit 964f8cce979d0727f17898a4f3b54790aa03ce47
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 20 16:49:06 2026 -0400
