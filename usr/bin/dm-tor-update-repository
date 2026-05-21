@@ -13,6 +13,9 @@ shopt -s shift_verbose
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
+## TODO
+exit 0
+
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
@@ -39,6 +42,7 @@ dm_tor_update_repository() {
   ## Create a fresh chroot to work in.
   #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
 
+  ## TODO: broken
   true 'INFO: Setting cowbuilder file variables.'
   set_cowbuilder_folders
 
