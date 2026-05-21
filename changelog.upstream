@@ -1,3 +1,40 @@
+commit bd5016165f3e51ad7f76c54dcac22552d9fbc9f6
+Merge: f39dd6a5 fa8d2770
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 21 12:08:51 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit fa8d2770118b60fbaeb95707a0b7a7e095a50336
+Merge: f39dd6a5 55e97aef
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 21 10:26:34 2026 -0400
+
+    Merge pull request #114 from org-ai-assisted/claude/refactor-apt-variables-MPyww
+
+    dm-packaging-helper-script: drop redundant non-interactive prefix
+
+commit 55e97aef7b29bbb811c8f92846b51ef93fa086d0
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 21 00:21:21 2026 +0000
+
+    dm-packaging-helper-script: drop redundant non-interactive prefix
+
+    dm-reprepro-wrapper sources help-steps/pre, whose interactivity resolver
+    auto-detects non-interactive when stdout is not a TTY. This query runs inside
+    $(), so stdout is a captured pipe and the resolver already selects
+    non-interactive; the explicit prefix was redundant. (dm-packaging-helper-script
+    does not source pre and is not run from the main build, so the variable is unset
+    here and auto-detect applies.)
+
+    https://claude.ai/code/session_015NXhWb2m9F7wnHKtkedtKS
+
+commit f39dd6a510dadd7d71f855b45e105d32a35ed772
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 20 22:01:48 2026 +0000
+
+    bumped changelog version
+
 commit 195ae91e9f26da3ba161e835d6b584f406a23467
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 20 17:08:41 2026 -0400
