@@ -30,6 +30,8 @@ source "${git_helpers_lib}"
 log_level=info
 
 readonly DM_GITHUB_MIRROR='org-ai-assisted'
+readonly DM_GITHUB_BOT='assisted-by-ai'
+readonly DM_DEV='adrelanos'
 
 ## Drop `--always` so describe fails (instead of silently returning a
 ## SHA) when there is no tag; the tag-push branch then runs only when
@@ -90,7 +92,7 @@ queue_tag_refspec() {
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 
-for git_remote in github-kicksecure github-whonix adrelanos "$DM_GITHUB_MIRROR" ; do
+for git_remote in github-kicksecure github-whonix "$DM_DEV" "$DM_GITHUB_MIRROR" "$DM_GITHUB_BOT" ; do
    if ! git remote get-url -- "${git_remote}" &>/dev/null ; then
       continue
    fi
