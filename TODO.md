@@ -1,29 +1,5 @@
 # TODO (developer-meta-files)
 
-Tracker for the workflow / CI hardening ideas not yet started or
-in-progress. Done items live in commit history; this file lists
-what's queued. Discuss + decide scope per item before opening PRs.
-
-
-## Tier 2 - medium value, medium effort
-
-### 5. Org-wide `dependabot.yml` consistency
-
-Some repos bundle action bumps into one grouped PR per cycle
-(kloak landed this pattern earlier); others have no
-`dependabot.yml` at all; some have divergent schedules and
-allow-lists. Standardize either via a `.github/dependabot.yml`
-baseline applied to each repo, or a validator check that flags
-divergence.
-
-### 6. `$GITHUB_STEP_SUMMARY` for rich PR status
-
-Workflows like coverity / codeql / shellcheck could emit a one-
-line summary table to `$GITHUB_STEP_SUMMARY`, which renders as a
-markdown panel under the run. Currently zero workflows use it.
-Useful surface for "5 issues found / 0 errors / 3 warnings / 2
-info" in the PR check UI.
-
 ### 8. Workflow trigger normalization
 
 Some workflows trigger on push to master only, some on every
@@ -37,9 +13,6 @@ builders only on tags) and audit for compliance.
 `codex-review.yml` accepts a `pr_ref` input but doesn't validate
 format. Adversarial values could affect downstream behavior.
 Validate in the reusable.
-
-
-## Tier 3 - lower priority / requires consensus
 
 ### 11. `workflow_run` cascade for diagnostics
 
