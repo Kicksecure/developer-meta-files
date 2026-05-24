@@ -50,9 +50,9 @@ shows up in the UI as "CodeQL Actions" with no prefix visible.
 The scheme buys two properties:
 
 - One glance at `ls .github/workflows/` tells a contributor which
-  files they can hand-edit (`local-*`) and which are auto-managed
-  by propagation (`consumer-*`) and which are library code called
-  by `uses:` (`reusable-*`).
+  files they can hand-edit (`local-*`), which are auto-managed by
+  propagation (`consumer-*`) and which are library code called by
+  `uses:` (`reusable-*`).
 - A repo that holds a mix (`developer-meta-files` holds all three;
   most consumer repos hold `consumer-*` and `local-*` only)
   presents that mix legibly.

@@ -192,9 +192,8 @@ Three current examples:
   cases, and rule-refresh re-scans are kicked manually.
 - `consumer-scorecard.yml` carries a single org-wide cron slot.
   Scorecard's value-to-noise ratio is low (many false positives,
-  non-actionable signals); concentrating the runs at one time
-  is not worth the per-repo-rewrite complexity it would take to
-  spread them.
+  non-actionable signals); the per-repo-rewrite complexity it would
+  take to spread them is not worth it.
 - `consumer-coverity.yml` (parameterized) carries a single
   org-wide cron slot plus tag-push triggers. Coverity's free
   public tier rate-limits to one build per day per project, so
@@ -342,6 +341,8 @@ surface is technically overridable.
   default (15).
 
 ### `reusable-codeql.yml` (consumer-codeql-cpp.yml and consumer-codeql-actions.yml)
+
+TODO: consumer-codeql-python.yml isn't taken into account here
 
 - `language`: **hardcoded in wrapper**.
   `consumer-codeql-cpp.yml` passes `"c-cpp"`;

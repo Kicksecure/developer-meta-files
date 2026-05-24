@@ -373,7 +373,7 @@ Path conventions by depth (relative to the script's directory):
 | Script location | Self-lib | helper-scripts |
 | --- | --- | --- |
 | `usr/bin/<s>` | `../libexec/developer-meta-files/<lib>` | `../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
-| `usr/libexec/developer-meta-files/<lib>` | n/a | `../../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
+| `usr/libexec/developer-meta-files/<lib>` | `./<other-lib>` | `../../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
 | `ci/<s>` | `../usr/libexec/developer-meta-files/<lib>` | `../../helper-scripts/usr/libexec/helper-scripts/<file>` |
 | `ci/tests/<s>` | `../../usr/libexec/developer-meta-files/<lib>` | `../../../helper-scripts/usr/libexec/helper-scripts/<file>` |
 

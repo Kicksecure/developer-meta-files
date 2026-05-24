@@ -467,6 +467,8 @@ wait_for_fork_ready() {
 
   ## Mock-mode tests don't simulate async fork creation; skip so they
   ## don't have to ship a /commits fixture for every forked repo.
+  ## FIXME: A 'true'/'false' string boolean should be used for
+  ## GHORG_MOCK also.
   [ "${GHORG_MOCK:-0}" = '1' ] && return 0
 
   is_whole_number "${GHORG_FORK_READY_TIMEOUT_SECONDS}" \
