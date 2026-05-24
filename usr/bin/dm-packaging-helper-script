@@ -1527,7 +1527,7 @@ pkg_update_consumer_workflows() {
    test -d "${canonical_workflows_dir}"
 
    ## TODO: Can we autodetect this? Perhaps something like:
-   ## 
+   ##
    ## shopt -s nullglob
    ## workflow_list=( "${canonical_workflows_dir}"/* )
    ## shopt -u nullglob
