@@ -92,7 +92,7 @@ queue_tag_refspec() {
 
 ## TODO: qubes-template-kicksecure qubes-template-whonix
 
-for git_remote in github-kicksecure github-whonix "$DM_DEV" "$DM_GITHUB_MIRROR" "$DM_GITHUB_BOT" ; do
+for git_remote in github-kicksecure github-whonix "$DM_DEV" "$DM_GITHUB_MIRROR" ; do
    if ! git remote get-url -- "${git_remote}" &>/dev/null ; then
       continue
    fi
