@@ -64,6 +64,9 @@ find . -type f "${exclude_args[@]}" -name '*.py' -print0
 ## Stage 2: files without .py extension whose first line matches
 ## a python shebang. Read only the first 256 bytes to avoid
 ## scanning large binaries.
+##
+## WARNING: Loop runs in a subshell due to having information piped
+## into it.
 find . -type f "${exclude_args[@]}" -not -name '*.py' -print0 \
    | while IFS= read -r -d '' f; do
       first_line=$(head -c 256 -- "${f}" 2>/dev/null | head -n 1 || true)

@@ -510,7 +510,7 @@ reset_batch_meta_globals() {
 ## Returns 0 if the current HEAD commit subject is the sentinel
 ## 'bumped changelog version' message produced by
 ## `genmkfile deb-uachl-commit-changelog`. Marks an in-progress
-## bump-and-build that may not yet have completed reprepro-add.
+## bump-and-build that may have not yet completed reprepro-add.
 is_changelog_bump_commit() {
    [ "$(git log --format=%s -1)" = 'bumped changelog version' ]
 }
@@ -740,11 +740,11 @@ resolve_repo_path() {
 ## each iteration. Fails fast if the reponame is unrecognized so the user
 ## function doesn't run with empty/garbage context.
 set_batch_context_from_pwd() {
-   local pwd_abs reponame parent grandparent
+   local pwd_abs reponame parent parent_basename
    pwd_abs="$(realpath -- "${PWD}")"
    reponame="${pwd_abs##*/}"
    parent="${pwd_abs%/*}"
-   grandparent="${parent##*/}"
+   parent_basename="${parent##*/}"
 
    batch_current_package_path="${pwd_abs}"
    batch_current_package_reponame="${reponame}"
@@ -770,11 +770,13 @@ set_batch_context_from_pwd() {
             batch_current_project_website='whonix.org'
             batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
             ;;
+         ## TODO: Add an error message here for repos caught by
+         ## repo_is_special but not handled here?
       esac
       return 0
    fi
 
-   case "${grandparent}" in
+   case "${parent_basename}" in
       kicksecure)
          batch_current_project_name='Kicksecure'
          batch_current_project_website='kicksecure.com'
@@ -786,7 +788,7 @@ set_batch_context_from_pwd() {
          batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
          ;;
       *)
-         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} ${FUNCNAME[0]}: cannot determine project for reponame='${reponame}' (PWD parent: '${grandparent}'). Run from a package directory under derivative-maker, or add '${reponame}' to repo_is_special."
+         printf '%s\n' "${red}${bold}FATAL ERROR:${reset} ${FUNCNAME[0]}: cannot determine project for reponame='${reponame}' (PWD parent: '${parent_basename}'). Run from a package directory under derivative-maker, or add '${reponame}' to repo_is_special."
          exit 1
          ;;
    esac
@@ -1515,8 +1517,8 @@ dependabot_yml_is_manual() {
 ## Bulk variant of pkg_update_if_exists: iterates a fixed set of
 ## consumer-wrapper filenames against canonical_workflows_dir, and
 ## also refreshes .github/dependabot.yml from the canonical at
-## consumer-templates/.github/dependabot.yml. dependabot.yml
-## refresh honours "## propagation: manual".
+## developer-meta-files/consumer-templates/.github/dependabot.yml.
+## dependabot.yml refresh honours "## propagation: manual".
 pkg_update_consumer_workflows() {
    local workflow_name source_path destination_path
    local dependabot_source dependabot_destination
@@ -1524,6 +1526,14 @@ pkg_update_consumer_workflows() {
 
    test -d "${canonical_workflows_dir}"
 
+   ## TODO: Can we autodetect this? Perhaps something like:
+   ## 
+   ## shopt -s nullglob
+   ## workflow_list=( "${canonical_workflows_dir}"/* )
+   ## shopt -u nullglob
+   ##
+   ## And then rework the code below to handle workflow_list
+   ## containing full paths.
    workflow_list=(
       consumer-bandit.yml
       consumer-claude-code.yml
@@ -1548,6 +1558,8 @@ pkg_update_consumer_workflows() {
          "update .github/workflows/${workflow_name}"
    done
 
+   ## FIXME: Make dependabot_source into a global variable and reuse
+   ## it everywhere.
    dependabot_source="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
    dependabot_destination="${batch_current_package_path}/.github/dependabot.yml"
 
@@ -1590,6 +1602,8 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
+   ## TODO: This is entirely redundant with the -f check below, is the
+   ## difference in messaging worth it?
    if dependabot_yml_is_manual; then
       true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping install."
       return 0
@@ -1611,6 +1625,8 @@ pkg_install_dependabot_yml() {
 
    dry_run_or_run git commit -m "add .github/dependabot.yml" || true
 
+   ## TODO: Should we replace trailing 'true' at the end of functions
+   ## with 'return 0'?
    true
 }
 
@@ -2407,14 +2423,16 @@ pkg_need_version_bump_show() {
       ## Example repo_query_output:
       ## local|main|source: sdwdate 1.2.3-1
 
+      if [ -z "${repo_query_output}" ]; then
+         true "${red}${bold}ERROR:${reset} changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
+         return 1
+      fi
+
       reprepro_version="$(printf '%s\n' "${repo_query_output}" | grep source | awk 'NF{print $NF}')"
       ## Example reprepro_version:
       ## 1.2.3-1
 
-      if [ -z "${repo_query_output}" ]; then
-         true "${red}${bold}ERROR:${reset} changelog ${changelog_version} vs repo_query_output $repo_query_output is empty"
-         return 1
-      elif [ -z "${reprepro_version}" ]; then
+      if [ -z "${reprepro_version}" ]; then
          true "INFO: needs build: yes - ${source_pkg}: reprepro absent"
       elif dpkg --compare-versions "${changelog_version}" eq "${reprepro_version}"; then
          if is_changelog_bump_commit; then
@@ -2464,7 +2482,7 @@ pkg_upstream_and_debian_changelog_bump() {
    ## run with last commit == "bumped changelog version" should bump
    ## to the next version, not skip.
    if [ "${batch_meta_force_version_bump:-n}" = "y" ]; then
-      true "${batch_current_package_reponame}: forced version bump - bumping despite last commit."
+      true "${batch_current_package_reponame}: forced version bump - bumping regardless of last commit."
    elif is_changelog_bump_commit; then
       ## Idempotency for resumed interrupted builds: if the last
       ## commit is already the bump, pkg_need_version_bump_show let
@@ -2786,9 +2804,8 @@ ${end_text}
 
 ## BEGIN Main logic {
 
-## Caller owns cwd: pushd into the target repo before invoking, so
-## set_batch_context_from_pwd (which derives batch_current_* from PWD)
-## stays the single source of truth for both --batch and --no-batch.
+## The caller pushd's into the target repo and runs
+## set_batch_context_from_pwd before invoking.
 run_batch_command() {
    local batch_command
    batch_command="${1:-}"
@@ -2852,6 +2869,9 @@ run_batch() {
 ## Pure command-line parser: writes the parsed_* globals declared near
 ## the bottom of the script. Kept separate from main() so the flag-shape
 ## knowledge lives in one place.
+##
+## FIXME: None of the parsed_* globals are declared near the bottom of
+## the script.
 parse_args() {
    parsed_mode=''
    parsed_repo=''
@@ -2905,11 +2925,12 @@ main() {
    batch_meta_dry_run="${parsed_dry_run}"
 
    ## --repo implies --no-batch (and rejects --batch downstream).
+   ## FIXME: Integrate this into parse_args to keep similar logic together.
    if [ -n "${parsed_repo}" ] && [ -z "${parsed_mode}" ]; then
       parsed_mode='no-batch'
    fi
 
-   if [ -z "${parsed_mode}" ] && [ "${parsed_target}" != '' ]; then
+   if [ -z "${parsed_mode}" ] && [ -n "${parsed_target}" ]; then
       printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"
       exit 1
    fi
@@ -2919,7 +2940,7 @@ main() {
       exit 1
    fi
 
-   if [ "${parsed_target}" = '' ] && [ -n "${parsed_repo}" ]; then
+   if [ -z "${parsed_target}" ] && [ -n "${parsed_repo}" ]; then
       printf '%s\n' "${red}${bold}FATAL ERROR:${reset} --repo ${parsed_repo}: missing function name. Syntax: ./$0 [--dry-run] --repo NAME function-name [arguments]"
       exit 1
    fi
