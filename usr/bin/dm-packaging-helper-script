@@ -1625,8 +1625,7 @@ pkg_install_dependabot_yml() {
 
    dry_run_or_run git commit -m "add .github/dependabot.yml" || true
 
-   ## TODO: Should we replace trailing 'true' at the end of functions
-   ## with 'return 0'?
+   ## TODO: Replace trailing 'true' at the end of functions with 'return 0'
    true
 }
 
