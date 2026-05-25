@@ -520,7 +520,7 @@ dry_run_or_run() {
       ## WOULD goes to stderr so it survives `>/dev/null` on the
       ## caller (needed when wrapping commands like `tee` that echo
       ## their input on stdout in live mode).
-      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*" >&2
+      log notice "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: $*" >&2
       ## When called as the receiving end of a pipe (e.g.
       ## `printf '...' | dry_run_or_run tee -- file`), drain stdin so
       ## the upstream producer doesn't SIGPIPE under errexit+pipefail.
@@ -1363,7 +1363,7 @@ pkg_git_branch_fetch_all() {
 
    #origin_name_list=( "github-${batch_current_project_name,,}" )
    origin_name_list=( "${DM_GITHUB_MIRROR}" )
-   origin_name_list=( "ArrayBolt3" )
+   #origin_name_list=( "ArrayBolt3" )
 
    for package_remote_item in "${origin_name_list[@]}"; do
       dry_run_or_run git fetch -- "${package_remote_item}" &
@@ -1378,7 +1378,7 @@ pkg_git_diff_and_merge_branch() {
 
    #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="${DM_GITHUB_MIRROR}/master"
-   origin_branch="ArrayBolt3/arraybolt3/trixie"
+   #origin_branch="ArrayBolt3/arraybolt3/trixie"
 
    ## Use the fully qualified remote-tracking ref to avoid name
    ## collision with same-named tags.
@@ -1802,7 +1802,7 @@ pkg_git_push_atomic() {
    dry_run_or_run genmkfile git-verify >/dev/null
 
    if [ "${batch_meta_dry_run:-n}" = "y" ]; then
-      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: pkg_git_push_atomic" >&2
+      log notice "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: pkg_git_push_atomic" >&2
       return 0
    fi
 
@@ -2282,7 +2282,7 @@ pkg_git_qubes_template_sync_trixie() {
    ## (because the switch above was dry-runned) and reporting a
    ## misleading "trixie" state. One WOULD line instead.
    if [ "${batch_meta_dry_run:-n}" = "y" ]; then
-      true "${prefix} [DRY-RUN] WOULD: switch to trixie, ff-merge ${master_head}, sign tag if absent, switch back"
+      log notice "${prefix} [DRY-RUN] WOULD: switch to trixie, ff-merge ${master_head}, sign tag if absent, switch back"
       return 0
    fi
 
