@@ -38,7 +38,7 @@ fi
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 
-export GHORG_MOCK=1
+export GHORG_MOCK=true
 export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 ## --verbose forces the lib's POLICY_QUIET_OK=0 path so the per-

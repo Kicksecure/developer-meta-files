@@ -13,11 +13,9 @@ shopt -s shift_verbose
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-## Production mirror target: the GitHub org that holds forks of every
-## Kicksecure/Whonix package repo. Declared here so it can be updated
-## in one place; referenced in pkg_git_remotes_add and
-## set_batch_current_package_remote_list.
-readonly DM_GITHUB_MIRROR='org-ai-assisted'
+## DM_GITHUB_MIRROR is declared (readonly) in git-helpers.bsh, sourced
+## a few lines below; pkg_git_remotes_add references it once that
+## source has run.
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -37,6 +35,7 @@ source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/u
 source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/share/genmkfile/make-helper-one.bsh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/log_run_die.sh"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/git.sh"
 
 log_level=info
 
@@ -56,6 +55,7 @@ test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files
 source "$git_helpers_lib"
 
 canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/workflows"
+canonical_dependabot_yml="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
 
 ## BEGIN Initialization functions {
 
@@ -121,7 +121,7 @@ check_prerequisites() {
       #exit 1
    }
 
-   true
+   return 0
 }
 
 ## Ensures that the system is prepared to run the script (right now this just
@@ -532,18 +532,6 @@ dry_run_or_run() {
    "$@"
 }
 
-## XXX: Duplicated.
-nothing_to_commit() {
-   local nothing_to_commit_msg_one git_status_last_line
-   nothing_to_commit_msg_one="nothing to commit, working tree clean"
-
-   git_status_last_line="$(git status | tail -n1)" || true
-   if [ "${git_status_last_line}" = "${nothing_to_commit_msg_one}" ]; then
-      return 0
-   fi
-   return 1
-}
-
 ## Extracts a package description from a debian/control file, writing it to
 ## the specified file using a special template for the headline. The template
 ## can be an arbitrary string, but must contain the string XXX_REPLACE_ME_XXX
@@ -586,8 +574,11 @@ extract_description_from_debian_control() {
          fi
          if [ "${headline_written}" = 'n' ]; then
             headline="$(awk -F':' '{ print $2 }' <<< "${line}")"
-            ## Strip off the one leading space if it exists. TODO: Is there
-            ## ever a situation where this doesn't exist?
+            ## Debian policy 5.6.13 mandates exactly one space between
+            ## 'Description:' and the synopsis, so the strip below is
+            ## effectively unconditional; the leading-space guard is
+            ## purely defensive against a hand-edited control file that
+            ## omits the space.
             if [ "${headline:0:1}" = ' ' ]; then
                headline="${headline:1}"
             fi
@@ -770,8 +761,9 @@ set_batch_context_from_pwd() {
             batch_current_project_website='whonix.org'
             batch_current_package_changelog="${announcements_drafts_dir}/whonix_giant_git_log.txt"
             ;;
-         ## TODO: Add an error message here for repos caught by
-         ## repo_is_special but not handled here?
+         *)
+            die 1 "${FUNCNAME[0]}: '${reponame}' is in repo_is_special but no case arm here maps it to a project; add it to one of the arms above (or remove it from repo_is_special)."
+            ;;
       esac
       return 0
    fi
@@ -795,11 +787,10 @@ set_batch_context_from_pwd() {
 }
 
 
-## Sets the list of Github remotes for the current package, as defined in
-## batch_current_package_reponame. See pkg_git_remotes_add for a good
-## definition of the remotes typically used Kicksecure and Whonix packages.
-## TODO: Use this function as the single source of truth for most of these
-## remote names, rather than duplicating info.
+## Per-package fetch-remote list (consumed by pkg_git_fetch_remotes).
+## Project-aware; intentionally narrower than the push universe in
+## DM_PUSH_REMOTES_UNIVERSE (git-helpers.bsh). Remote URLs live in
+## pkg_git_remotes_add.
 set_batch_current_package_remote_list() {
    batch_current_package_remote_list=( "github-${batch_current_project_name,,}" "${DM_GITHUB_MIRROR}" )
 
@@ -854,14 +845,8 @@ pkg_update_if_exists() {
 
    dry_run_or_run git commit -m "${commit_msg}"
 
-   true
+   return 0
 }
-
-## internal_git_diff_local and internal_git_diff_remote are defined
-## in /usr/libexec/developer-meta-files/git-helpers.bsh (sourced
-## above). pkg_git_push_remotes selects between them via its
-## 'local' | 'remote' mode argument.
-
 
 ## . END Utility functions }
 
@@ -1334,51 +1319,43 @@ pkg_git_remotes_add() {
       printf '%s\n' "ERROR: batch_current_project_name wrong! (1)"
    fi
 
-   true
+   return 0
 }
 
 pkg_git_check_current_branch() {
-   local current_branch expected_branch
+   local current_branch
    current_branch="$(git branch --show-current)"
 
-   if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
-      expected_branch="trixie"
-   elif [ "$batch_current_package_reponame" = "qubes-template-whonix" ]; then
-      expected_branch="trixie"
-   else
-      expected_branch="master"
-   fi
-
-   if [ "$current_branch" = "$expected_branch" ]; then
+   if [ "$current_branch" = "master" ]; then
       return 0
    fi
 
-   printf '%s\n' "unexpected branch! batch_current_package_reponame: '$batch_current_package_reponame' | current_branch: '$current_branch'"
+   printf '%s\n' "unexpected branch! batch_current_package_reponame: '$batch_current_package_reponame' | current_branch: '$current_branch' | expected: 'master'"
    return 1
 }
 
 ## Creates a 'trixie' branch for all repos.
 pkg_git_branch_trixie() {
    dry_run_or_run git branch trixie || true
-   true
+   return 0
 }
 
 ## Checks out the 'master' branch of all repos.
 pkg_git_branch_checkout_master() {
    dry_run_or_run git switch master
-   true
+   return 0
 }
 
 ## Checks out the 'bullseye' branch of all repos.
 pkg_git_branch_checkout_bullseye() {
    dry_run_or_run git switch bullseye
-   true
+   return 0
 }
 
 ## Checks out the 'trixie' branch of all repos.
 pkg_git_branch_checkout_trixie() {
    dry_run_or_run git switch trixie
-   true
+   return 0
 }
 
 pkg_git_branch_fetch_all() {
@@ -1393,7 +1370,7 @@ pkg_git_branch_fetch_all() {
       git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
 
-   true
+   return 0
 }
 
 pkg_git_diff_and_merge_branch() {
@@ -1480,7 +1457,7 @@ pkg_profile_d_zsh_creator() {
       dry_run_or_run append "${package_links_file}" "${symlink_config_entry}" >/dev/null
    done
 
-   true
+   return 0
 }
 
 ## Updated CONTRIBUTING.md in all repos except derivative-maker and kloak.
@@ -1493,7 +1470,7 @@ pkg_copy_contributing_file() {
    dry_run_or_run git add -- "${batch_current_package_path}/CONTRIBUTING.md"
    dry_run_or_run git commit -m "update"
 
-   true
+   return 0
 }
 
 ## True if .github/dependabot.yml carries the
@@ -1520,50 +1497,30 @@ dependabot_yml_is_manual() {
 ## developer-meta-files/consumer-templates/.github/dependabot.yml.
 ## dependabot.yml refresh honours "## propagation: manual".
 pkg_update_consumer_workflows() {
-   local workflow_name source_path destination_path
-   local dependabot_source dependabot_destination
-   local -a workflow_list
+   local workflow_source_path workflow_basename destination_path
+   local dependabot_destination
+   local -a workflow_source_list
 
    test -d "${canonical_workflows_dir}"
 
-   ## TODO: Can we autodetect this? Perhaps something like:
-   ##
-   ## shopt -s nullglob
-   ## workflow_list=( "${canonical_workflows_dir}"/* )
-   ## shopt -u nullglob
-   ##
-   ## And then rework the code below to handle workflow_list
-   ## containing full paths.
-   workflow_list=(
-      consumer-bandit.yml
-      consumer-claude-code.yml
-      consumer-codeql-actions.yml
-      consumer-codeql-cpp.yml
-      consumer-codeql-python.yml
-      consumer-codex-review.yml
-      consumer-coverity.yml
-      consumer-cppcheck.yml
-      consumer-pre-push-static.yml
-      consumer-scorecard.yml
-      consumer-secrets-audit.yml
-   )
+   ## nullglob so an empty consumer-templates/.github/workflows yields
+   ## a 0-element array instead of the literal '*.yml' pattern.
+   shopt -s nullglob
+   workflow_source_list=( "${canonical_workflows_dir}"/*.yml )
+   shopt -u nullglob
 
-   for workflow_name in "${workflow_list[@]}"; do
-      source_path="${canonical_workflows_dir}/${workflow_name}"
-      test -f "${source_path}"
-      destination_path="${batch_current_package_path}/.github/workflows/${workflow_name}"
+   for workflow_source_path in "${workflow_source_list[@]}"; do
+      workflow_basename="${workflow_source_path##*/}"
+      destination_path="${batch_current_package_path}/.github/workflows/${workflow_basename}"
       pkg_update_if_exists \
-         "${source_path}" \
+         "${workflow_source_path}" \
          "${destination_path}" \
-         "update .github/workflows/${workflow_name}"
+         "update .github/workflows/${workflow_basename}"
    done
 
-   ## FIXME: Make dependabot_source into a global variable and reuse
-   ## it everywhere.
-   dependabot_source="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
    dependabot_destination="${batch_current_package_path}/.github/dependabot.yml"
 
-   test -f "${dependabot_source}"
+   test -f "${canonical_dependabot_yml}"
 
    ## Unconditionally install dependabot.yml if missing.
    pkg_install_dependabot_yml
@@ -1572,12 +1529,12 @@ pkg_update_consumer_workflows() {
       true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping update."
    else
       pkg_update_if_exists \
-         "${dependabot_source}" \
+         "${canonical_dependabot_yml}" \
          "${dependabot_destination}" \
          "update .github/dependabot.yml"
    fi
 
-   true
+   return 0
 }
 
 ## Installs the canonical .github/dependabot.yml into every repo
@@ -1586,14 +1543,13 @@ pkg_update_consumer_workflows() {
 ## pkg_install_codeql_actions_scan. Idempotent. Honours
 ## "## propagation: manual".
 pkg_install_dependabot_yml() {
-   local source_path destination_dir destination_path
+   local destination_dir destination_path
 
-   source_path="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
    destination_dir="${batch_current_package_path}/.github"
    destination_path="${destination_dir}/dependabot.yml"
 
-   if ! [ -f "${source_path}" ]; then
-      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${source_path}' absent!${reset}"
+   if ! [ -f "${canonical_dependabot_yml}" ]; then
+      printf '%s\n' "${red}${bold}FATAL ERROR: canonical '${canonical_dependabot_yml}' absent!${reset}"
       exit 1
    fi
 
@@ -1602,19 +1558,16 @@ pkg_install_dependabot_yml() {
       return 0
    fi
 
-   ## TODO: This is entirely redundant with the -f check below, is the
-   ## difference in messaging worth it?
-   if dependabot_yml_is_manual; then
-      true "INFO: ${batch_current_package_reponame}: .github/dependabot.yml carries '## propagation: manual'; skipping install."
-      return 0
-   fi
-
+   ## INSTALL semantic: only acts when the file is missing. Any existing
+   ## file (including ones carrying '## propagation: manual') is left
+   ## alone here; the manual-marker check matters only for the UPDATE
+   ## path in pkg_update_consumer_workflows.
    if [ -f "${destination_path}" ]; then
       true "INFO: ${batch_current_package_reponame}: dependabot.yml already present; skipping."
       return 0
    fi
 
-   dry_run_or_run cp --verbose -- "${source_path}" "${destination_path}"
+   dry_run_or_run cp --verbose -- "${canonical_dependabot_yml}" "${destination_path}"
 
    dry_run_or_run git add -- "${destination_path}"
 
@@ -1625,8 +1578,7 @@ pkg_install_dependabot_yml() {
 
    dry_run_or_run git commit -m "add .github/dependabot.yml" || true
 
-   ## TODO: Replace trailing 'true' at the end of functions with 'return 0'
-   true
+   return 0
 }
 
 ## Installs the canonical consumer-codeql-actions.yml consumer wrapper into
@@ -1666,7 +1618,7 @@ pkg_install_codeql_actions_scan() {
 
    dry_run_or_run git commit -m "add .github/workflows/consumer-codeql-actions.yml"
 
-   true
+   return 0
 }
 
 ## Gets rid of all 'debian/compat' files in all repos.
@@ -1676,7 +1628,7 @@ pkg_compat_delete() {
    ## did not match any files`.
    dry_run_or_run git rm -- "debian/compat" || true
 
-   true
+   return 0
 }
 
 ## Updates all packages that ship systemd services and Build-Depend on
@@ -1694,7 +1646,7 @@ pkg_build_depends_systemd() {
    replace='Build-Depends: debhelper (>= 13.11.6)'
    str_replace "${search}" "${replace}" "${batch_current_package_path}/debian/control"
 
-   true
+   return 0
 }
 
 ## Previously was used to do mass package changes for porting packages from
@@ -1810,16 +1762,6 @@ pkg_packaging_files_diff() {
       ## This is useful to manually enable sometimes.
       #diff "${compare_with_full_path}/COPYING" "${batch_current_package_path}/COPYING"
 
-#       if diff ~/old-copying "${batch_current_package_path}/COPYING" &>/dev/null ; then
-#          cp "$HOME/derivative-maker/COPYING" "${batch_current_package_path}/COPYING"
-#          cp "$HOME/derivative-maker/COPYING" "${batch_current_package_path}/debian/copyright"
-#       else
-#          ## TODO: delete /tmp/list-of-packages
-#          dry_run_or_run append /tmp/list-of-packages "${batch_current_package_reponame}" >/dev/null
-#          mousepad "${batch_current_package_path}/COPYING"
-#          mousepad "${batch_current_package_path}/debian/copyright"
-#       fi
-
    fi
 
    check_file_list=(
@@ -1836,7 +1778,7 @@ pkg_packaging_files_diff() {
       fi
    done
 
-   true
+   return 0
 }
 
 ## Fetches remote changes from all Git remotes for all repos.
@@ -1847,95 +1789,24 @@ pkg_git_fetch_remotes() {
       dry_run_or_run git fetch -- "${package_remote_item}" &
       git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
    done
-   true
+   return 0
 }
 
-## Pushes local changes to all Git remotes for all repos.
-##
-## Argument $1 selects what commit hashes to check to determine which
-## repos need to be pushed:
-##
-##   local (default): Checks local commit hashes
-##
-##   remote:          Uses 'git ls-remote' to check a remote commit
-##                    hash
-##
-## See git-helpers.bsh for details. Pass 'remote' when a bounced push
-## (rejected non-fast-forward) is more expensive than the metadata
-## round-trip. Otherwise, leave the default.
-pkg_git_push_remotes() {
-   local mode gate_fn branch_name_list package_remote_item branch_name_item refspec_list
-
-   mode="${1:-local}"
-   case "${mode}" in
-      local)
-         gate_fn=internal_git_diff_local
-         ;;
-      remote)
-         gate_fn=internal_git_diff_remote
-         ;;
-      *)
-         die 1 "${FUNCNAME[0]}: unknown mode '${mode}'; expected 'local' or 'remote'"
-         ;;
-   esac
-
-   if [ "$batch_current_package_reponame" = "qubes-template-kicksecure" ]; then
-      branch_name_list=( "master" "bookworm" "trixie" )
-   elif [ "$batch_current_package_reponame" = "qubes-template-whonix" ]; then
-      branch_name_list=( "master" "bookworm" "trixie" )
-   else
-      branch_name_list=( "master" )
-   fi
-
-   ## Development.
-   #if [ "$batch_current_package_reponame" = "developer-meta-files" ]; then
-      #return 0
-   #fi
-
-   if [ "$batch_current_package_reponame" = "derivative-maker" ]; then
-      ## Manual tag creation when deemed ready.
+pkg_git_push_atomic() {
+   repo_skip 'derivative-maker' || {
+      ## Tags created manually when deemed ready; verify only.
       dry_run_or_run genmkfile git-commit-verify >/dev/null
-   else
-      dry_run_or_run genmkfile git-verify >/dev/null
+      return 0
+   }
+
+   dry_run_or_run genmkfile git-verify >/dev/null
+
+   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+      printf '%s\n' "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: pkg_git_push_atomic" >&2
+      return 0
    fi
 
-   for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      refspec_list=()
-      for branch_name_item in "${branch_name_list[@]}"; do
-         if "${gate_fn}" "${branch_name_item}" "${package_remote_item}"; then
-            refspec_list+=( "refs/heads/${branch_name_item}:refs/heads/${branch_name_item}" )
-         fi
-      done
-      if [ "${#refspec_list[@]}" -gt 0 ]; then
-         ## --atomic: all listed refs succeed-together-or-fail-together
-         ##   on the remote, avoiding mixed-state outcomes when a Qubes
-         ##   template repo pushes master + bookworm + trixie at once.
-         ##   Single-ref pushes are unaffected.
-         ## --porcelain: one machine-readable line per ref so failures
-         ##   in wait_for_git_processes are diagnosable beyond exit code.
-         dry_run_or_run log_run info git push --atomic --porcelain -- "${package_remote_item}" "${refspec_list[@]}" &
-         git_pid_label[$!]="push branches [${refspec_list[*]}] -> ${package_remote_item} (${batch_current_package_reponame})"
-      fi
-   done
-
-   true
-}
-
-## Pushes the most recent tag for all Git repos to all Git remotes of each
-## repo.
-pkg_git_push_tags() {
-   local git_tag_latest package_remote_item
-
-   git_tag_latest="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
-
-   ## https://stackoverflow.com/questions/72375239/git-offline-check-if-git-tag-was-already-pushed-to-remote
-
-   for package_remote_item in "${batch_current_package_remote_list[@]}"; do
-      dry_run_or_run git push --porcelain -- "${package_remote_item}" "refs/tags/${git_tag_latest}:refs/tags/${git_tag_latest}" &
-      git_pid_label[$!]="push tag ${git_tag_latest} -> ${package_remote_item} (${batch_current_package_reponame})"
-   done
-
-   true
+   internal_git_push_atomic_all_remotes
 }
 
 ## Checks out the changelog.upstream file of all repos.
@@ -1972,7 +1843,7 @@ pkg_git_commit_changelog() {
    msg='bumped changelog version'
    dry_run_or_run git commit -m "${msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Creates a new commit called 'copyright' for all repos.
@@ -1986,7 +1857,7 @@ pkg_git_commit_copyright() {
    msg='copyright'
    dry_run_or_run git commit -m "${msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 pkg_git_commit_debian_control() {
@@ -1996,7 +1867,7 @@ pkg_git_commit_debian_control() {
    msg='bumped Standards-Version'
    dry_run_or_run git commit -m "${msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Commits all changes to all repos with a tunable-set message.
@@ -2008,7 +1879,7 @@ pkg_git_commit_all() {
    dry_run_or_run git add -A
    dry_run_or_run git commit -m "${git_commit_all_msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Regenerate and commit manpages for all repos.
@@ -2026,7 +1897,7 @@ pkg_git_manpages() {
    dry_run_or_run git add -- 'auto-generated-man-pages'/* || true
    dry_run_or_run git commit -m "${msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Generate and commit debian install files for all repos.
@@ -2045,7 +1916,7 @@ pkg_git_debinstfile() {
    dry_run_or_run git add -- "debian/${batch_current_package_reponame}.install" || true
    dry_run_or_run git commit -m "${msg}" || true
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Commits packaging-related files for all repos. TODO: Perhaps don't hardcode
@@ -2069,7 +1940,7 @@ pkg_git_commit_packaging() {
    msg='trixie'
    dry_run_or_run git commit -m "${msg}"
    dry_run_or_run git status
-   true
+   return 0
 }
 
 ## Add a dh_installchangelogs entry to all packages that don't already have
@@ -2085,7 +1956,7 @@ pkg_add_dh_changelogs_override_to_debian_rules() {
    dry_run_or_run append "debian/rules" "
 override_dh_installchangelogs:
   dh_installchangelogs changelog.upstream upstream" >/dev/null
-   true
+   return 0
 }
 
 ## Hard-reset all repos except for derivative-maker and developer-meta-files.
@@ -2128,14 +1999,14 @@ pkg_git_diff_and_commit() {
       return 0
    fi
 
-   true
+   return 0
 }
 
 ## Opens the debian/control file of all repos in Mousepad.
 pkg_debian_control_open() {
    mousepad "${batch_current_package_path}/debian/control" &
 
-   true
+   return 0
 }
 
 ## Finds all Bash scripts in all repos and syntax-checks them.
@@ -2168,7 +2039,7 @@ pkg_bash_sanity_test() {
 
    grep "${grep_opts[@]}" -- '#!/bin/bash' | xargs -n 1 bash -n --
 
-   true
+   return 0
 }
 
 ## Rewrites the Git submodules file for the derivative-maker repo.
@@ -2341,7 +2212,7 @@ pkg_git_packages_git_log_writer() {
       dry_run_or_run append "${batch_current_package_changelog}" $'\n' >/dev/null
    fi
 
-   true
+   return 0
 }
 
 ## Signs git tags for all repos except derivative-maker. The
@@ -2366,6 +2237,58 @@ pkg_git_sign_tags() {
    ## Wrapped in dry-run because step 2's sign was a no-op in dry-run.
    true "${prefix} 3/3 sanity check"
    dry_run_or_run genmkfile git-verify >/dev/null
+
+   pkg_git_qubes_template_sync_trixie
+}
+
+## derivative-maker submodules for these two repos are pinned at master
+## tip locally, but trixie is still published and must carry a tag at
+## its tip so a shallow submodule clone doesn't flag it as untagged.
+## Idempotent; no-op for any other repo.
+pkg_git_qubes_template_sync_trixie() {
+   local master_head current_branch
+   local prefix
+   prefix="${cyan}${batch_current_package_reponame}${reset}: ${FUNCNAME[0]}"
+
+   case "${batch_current_package_reponame}" in
+      qubes-template-kicksecure|qubes-template-whonix) ;;
+      *) return 0 ;;
+   esac
+
+   current_branch="$(git branch --show-current)"
+   if [ "${current_branch}" != "master" ]; then
+      die 1 "${prefix} expected HEAD on master, got '${current_branch}'"
+   fi
+
+   master_head="$(git rev-parse --verify 'HEAD^{commit}')"
+
+   if ! git show-ref --verify --quiet -- "refs/heads/trixie"; then
+      true "${prefix} 'trixie' branch missing locally, nothing to sync"
+      return 0
+   fi
+
+   ## Ancestry check runs in both live and dry-run so divergence
+   ## surfaces before any destructive op.
+   if ! git merge-base --is-ancestor "refs/heads/trixie" "${master_head}"; then
+      die 1 "${prefix} 'trixie' has commits not on master; ff-only sync would fail - reconcile manually"
+   fi
+
+   ## Dry-run short-circuit: a per-step dry_run_or_run wrap leaves the
+   ## live 'genmkfile git-tag-verify' below running against master HEAD
+   ## (because the switch above was dry-runned) and reporting a
+   ## misleading "trixie" state. One WOULD line instead.
+   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+      true "${prefix} [DRY-RUN] WOULD: switch to trixie, ff-merge ${master_head}, sign tag if absent, switch back"
+      return 0
+   fi
+
+   git switch trixie
+   git merge --ff-only -- "${master_head}"
+   if ! genmkfile git-tag-verify 2>/dev/null; then
+      genmkfile git-tag-sign >/dev/null
+   fi
+   genmkfile git-verify >/dev/null
+   git switch master
 }
 
 ## Finds packages that have modifications made to them since the last version
@@ -2461,7 +2384,7 @@ pkg_need_version_bump_show() {
    batch_current_package_needs_version_bump='y'
 
    printf '%s\n' "${batch_current_package_reponame}"
-   true
+   return 0
 }
 
 ## Bumps the debian/changelog version and rewrites the changelog.upstream file
@@ -2521,7 +2444,7 @@ pkg_upstream_and_debian_changelog_bump() {
 
    dry_run_or_run genmkfile deb-uachl-commit-changelog
 
-   true
+   return 0
 }
 
 ## Does changelog bumps on all repos that need it except derivative-maker,
@@ -2547,10 +2470,9 @@ pkg_need_version_bump_do() {
    ## Includes "genmkfile git-commit-verify".
    pkg_git_sign_tags
 
-   pkg_git_push_remotes local
-   pkg_git_push_tags
+   pkg_git_push_atomic
 
-   true
+   return 0
 }
 
 ## For all packages that have modifications since the last changelog bump:
@@ -2623,7 +2545,7 @@ pkg_need_version_bump_and_pkg_build_and_reprepro_add() {
    dry_run_or_run genmkfile reprepro-add
    dry_run_or_run genmkfile deb-cleanup
 
-   true
+   return 0
 }
 
 ## Builds all packages.
@@ -2634,7 +2556,7 @@ pkg_only_build_all() {
    export make_use_cowbuilder=true
    dry_run_or_run genmkfile deb-pkg
 
-   true
+   return 0
 }
 
 ## Adds all packages to a reprepro repository.
@@ -2644,7 +2566,7 @@ pkg_only_reprepro_add() {
    export make_use_cowbuilder=true
    dry_run_or_run genmkfile reprepro-add
 
-   true
+   return 0
 }
 
 ## Creates a lintian-overrides file for all repositories, ignoring
@@ -2672,7 +2594,7 @@ pkg_git_commit_lintian_watch_gpg_override() {
 added debian/source/lintian-overrides with debian-watch-does-not-check-openpgp-signature to fix lintian warning
 https://forums.whonix.org/t/genmkfile-lintian-debian-watch-may-check-gpg-signature-build-issue/19124"
    dry_run_or_run git commit -m "${msg}" || true
-   true
+   return 0
 }
 
 ## Creates debian/watch files for all repos.
@@ -2691,7 +2613,7 @@ opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/${batch_current_package_reponame}-\
    msg="\
 fix debian/watch lintian warning debian-watch-contains-dh_make-template"
    dry_run_or_run git commit -m "${msg}" || true
-   true
+   return 0
 }
 
 ## . END Commands }
@@ -2865,12 +2787,9 @@ run_batch() {
    done
 }
 
-## Pure command-line parser: writes the parsed_* globals declared near
-## the bottom of the script. Kept separate from main() so the flag-shape
+## Pure command-line parser: initializes and writes the parsed_*
+## globals listed below. Kept separate from main() so the flag-shape
 ## knowledge lives in one place.
-##
-## FIXME: None of the parsed_* globals are declared near the bottom of
-## the script.
 parse_args() {
    parsed_mode=''
    parsed_repo=''
@@ -2915,6 +2834,11 @@ parse_args() {
       shift
    fi
    parsed_args=( "$@" )
+
+   ## --repo implies --no-batch (and rejects --batch downstream).
+   if [ -n "${parsed_repo}" ] && [ -z "${parsed_mode}" ]; then
+      parsed_mode='no-batch'
+   fi
 }
 
 main() {
@@ -2922,12 +2846,6 @@ main() {
 
    parse_args "$@"
    batch_meta_dry_run="${parsed_dry_run}"
-
-   ## --repo implies --no-batch (and rejects --batch downstream).
-   ## FIXME: Integrate this into parse_args to keep similar logic together.
-   if [ -n "${parsed_repo}" ] && [ -z "${parsed_mode}" ]; then
-      parsed_mode='no-batch'
-   fi
 
    if [ -z "${parsed_mode}" ] && [ -n "${parsed_target}" ]; then
       printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"

@@ -174,7 +174,7 @@ arg without the dispatcher.
 ## Mock-API tests
 
 **G-040: Every test under `ci/tests/test_*.sh` is hermetic.**
-`GHORG_MOCK=1` + `GHORG_MOCK_DIR=ci/fixtures` route every API
+`GHORG_MOCK=true` + `GHORG_MOCK_DIR=ci/fixtures` route every API
 call to a local fixture file. No network, no real tokens.
 
 **G-041: Capture stderr too via `2>&1`.** All user-facing output

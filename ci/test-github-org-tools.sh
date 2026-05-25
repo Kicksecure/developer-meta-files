@@ -6,7 +6,7 @@
 ## AI-Assisted
 
 ## Runs every executable test_*.sh in ci/tests/. Each test is
-## hermetic: GHORG_MOCK=1 + GHORG_MOCK_DIR=ci/fixtures route every
+## hermetic: GHORG_MOCK=true + GHORG_MOCK_DIR=ci/fixtures route every
 ## API call to a local fixture file. No network, no real tokens.
 ##
 ## A test passes if it exits 0; fails on any non-zero exit. Output is
