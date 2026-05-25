@@ -46,5 +46,5 @@ readonly upstream_url="https://github.com/${upstream_owner}/genmkfile.git"
 
 git clone --depth=1 --no-tags --branch=master -- "${upstream_url}" "${clone_dir}"
 cd -- "${clone_dir}"
-GENMKFILE_DEBUG=1 "${sudo_prefix[@]}" ./usr/bin/genmkfile deb-all-dep
-GENMKFILE_DEBUG=1 "${sudo_prefix[@]}" ./usr/bin/genmkfile install
+"${sudo_prefix[@]}" ./usr/bin/genmkfile deb-all-dep
+"${sudo_prefix[@]}" ./usr/bin/genmkfile install
