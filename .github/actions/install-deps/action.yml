@@ -29,9 +29,13 @@ inputs:
     required: false
     default: 'true'
   install-self:
-    description: 'Run sudo genmkfile install in the caller repo checkout (i.e. install the caller package).'
+    description: 'Run sudo genmkfile in the caller repo checkout (i.e. install the caller package). Mode controlled by install-self-mode.'
     required: false
     default: 'false'
+  install-self-mode:
+    description: 'genmkfile target to run when install-self=true. "install" = file-copy install (fast, no postinst). "deb-icup" = build .deb + apt-install (production-fidelity, runs postinst).'
+    required: false
+    default: 'install'
   helper-scripts-owner:
     description: 'GitHub org to clone helper-scripts from. Default: github.repository_owner (org-aware mirror clone). Set to Kicksecure to pin to canonical upstream.'
     required: false
@@ -103,11 +107,6 @@ runs:
     - name: Install caller repo via genmkfile
       if: ${{ inputs.install-self == 'true' }}
       shell: bash
-      run: |
-        ## Trailing '--' in the array terminates sudo's option parsing
-        ## (defense in depth - see "Install apt pre-reqs" step above).
-        sudo_prefix=()
-        if [ "$(id -u)" -ne 0 ]; then
-          sudo_prefix=(sudo --non-interactive --)
-        fi
-        "${sudo_prefix[@]}" genmkfile install
+      env:
+        INSTALL_SELF_MODE: ${{ inputs.install-self-mode }}
+      run: "$GITHUB_ACTION_PATH/install-self.sh"
