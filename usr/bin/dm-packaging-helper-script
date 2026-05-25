@@ -1919,8 +1919,6 @@ pkg_git_debinstfile() {
    return 0
 }
 
-## Commits packaging-related files for all repos. TODO: Perhaps don't hardcode
-## the word 'trixie' here? Could be broken out into a tunable
 pkg_git_commit_packaging() {
    local msg
 
@@ -1937,7 +1935,7 @@ pkg_git_commit_packaging() {
    #git add 'debian'/*'.install'
    dry_run_or_run git add -- 'debian/control'
    #git add -A
-   msg='trixie'
+   msg='update debian/control'
    dry_run_or_run git commit -m "${msg}"
    dry_run_or_run git status
    return 0
