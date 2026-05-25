@@ -6,6 +6,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 source /usr/libexec/helper-scripts/strings.bsh
 
@@ -30,11 +31,6 @@ mirror_list="
 ## https://quantum-mirror.hu/mirrors/pub/whonix/ova
 ## https://mirrors.gigenet.com/whonix/ova
 
-## TODO: remove
-# mirror_list="
-#    https://download.whonix.org/ova/
-# "
-
 adduser --quiet --system --group checkmirrors || true
 
 as_user="sudo --non-interactive -u checkmirrors"
@@ -54,8 +50,6 @@ for mirror_item in $mirror_list ; do
    stecho "link: $link"
 
    curl_exit_code=0
-
-   ## TODO: --max-time
 
    ## 2> /home/checkmirrors/stderr.txt \
 

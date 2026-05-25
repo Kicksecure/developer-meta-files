@@ -276,7 +276,7 @@ ghorg_parse_rate_limit_wait() {
   return 1
 }
 
-## Mock-mode dispatcher. When GHORG_MOCK=1, requests are served from
+## Mock-mode dispatcher. When GHORG_MOCK=true, requests are served from
 ## fixture files in ${GHORG_MOCK_DIR}. Fixture filenames encode method
 ## and path:
 ##
@@ -342,7 +342,7 @@ ghorg_api() {
   hdr_file=''
   trap ghorg_api_cleanup RETURN
 
-  if [ "${GHORG_MOCK:-0}" = '1' ]; then
+  if [ "${GHORG_MOCK:-false}" = 'true' ]; then
     ghorg_mock_dispatch "${method}" "${path}"
     return 0
   fi

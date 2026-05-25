@@ -9,6 +9,7 @@ set -o nounset
 set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
+shopt -s shift_verbose
 
 init_variables() {
   #derivative_version="17"
@@ -28,26 +29,17 @@ init_variables() {
 }
 
 git_tag_pushed_sanity_test() {
-  ## XXX: hardcoded path
-  cd -- "$HOME/derivative-maker/qubes/qubes-template-kicksecure"
-  git switch master
-  ## TODO: Debian 14 / forky
-  git merge refs/heads/trixie
-  dm-quickgittagsign
-  dm-push
-  git switch trixie
-  dm-quickgittagsign
-  dm-push
+  local repo_path
 
   ## XXX: hardcoded path
-  cd -- "$HOME/derivative-maker/qubes/qubes-template-whonix"
-  ## TODO: Debian 14 / forky
-  git merge refs/heads/trixie
-  dm-quickgittagsign
-  dm-push
-  git switch trixie
-  dm-quickgittagsign
-  dm-push
+  for repo_path in \
+      "$HOME/derivative-maker/qubes/qubes-template-kicksecure" \
+      "$HOME/derivative-maker/qubes/qubes-template-whonix" ; do
+    cd -- "${repo_path}"
+    git switch master
+    dm-quickgittagsign
+    dm-push
+  done
 }
 
 init_variables

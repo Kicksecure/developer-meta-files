@@ -127,7 +127,3 @@ main "$@"
 derivative_name_item=kicksecure
 upload_location="root@kicksecure.com:/var/rsync/developer-meta-files/internal"
 main "$@"
-
-# derivative_name_item=XXX
-# upload_location="adrelanos,developer-meta-files@frs.sourceforge.net:/home/frs/project/developer-meta-files/internal"
-# main "$@"

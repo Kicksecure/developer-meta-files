@@ -1,9 +1,13 @@
 #!/bin/bash
 
-## Copyright (C) 2025 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## Copyright (C) 2025 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-#set -x
+## AI-Assisted
+
+## Atomic per-remote push of every existing branch + every tip tag
+## to every locally-configured mirror remote.
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -13,15 +17,6 @@ shopt -s shift_verbose
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/parallel.bsh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/parallel.bsh
-
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
-
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-
 git_helpers_lib="${MYDIR}/../libexec/developer-meta-files/git-helpers.bsh"
 test -r "${git_helpers_lib}" || git_helpers_lib="/usr/libexec/developer-meta-files/git-helpers.bsh"
 # shellcheck source=../libexec/developer-meta-files/git-helpers.bsh
@@ -29,103 +24,6 @@ source "${git_helpers_lib}"
 
 log_level=info
 
-readonly DM_GITHUB_MIRROR='org-ai-assisted'
-readonly DM_GITHUB_BOT='assisted-by-ai'
-readonly DM_DEV='adrelanos'
-
-## Drop `--always` so describe fails (instead of silently returning a
-## SHA) when there is no tag; the tag-push branch then runs only when
-## a real tag exists.
-git_tag_nearest=""
-git_tag_nearest="$(git describe --abbrev=0 2>/dev/null)" || git_tag_nearest=""
-
-## Map each backgrounded push's PID to a human-readable label so a
-## failure can be reported as e.g. "main -> github-kicksecure" rather
-## than "at least one push failed".
-## Note: `declare -A push_label` alone leaves the array "unset" for
-## nounset purposes; the explicit `=()` marks it set so `${#arr[@]}`
-## works on the empty case (no eligible remotes / branches).
-declare -A push_label=()
-
-queue_branch_refspec() {
-   local branch="$1"
-   local remote="$2"
-   local -n refspecs_ref
-
-   check_variable_name "$3" || return 1
-   refspecs_ref="$3"
-
-   if ! git rev-parse --verify "refs/heads/$branch" &>/dev/null ; then
-      #log info "'refs/heads/$branch' existing: no"
-      return 0
-   fi
-   #log info "'refs/heads/$branch' existing: yes"
-
-   ## internal_git_diff chooses between the local (tracking-ref)
-   ## and remote (ls-remote) gate based on DM_GATE_LS_REMOTE; in both
-   ## variants 0 = differs (push needed), 1 = identical (skip).
-   if ! internal_git_diff "$branch" "$remote" ; then
-      log info "'refs/heads/$branch' up-to-date on '$remote': yes"
-      return 0
-   fi
-
-   log info "'refs/heads/$branch' up-to-date on '$remote': no"
-   log_run_silent_if_success git verify-commit "refs/heads/$branch"
-   refspecs_ref+=( "refs/heads/$branch:refs/heads/$branch" )
-}
-
-queue_tag_refspec() {
-   local tag="$1"
-   local -n refspecs_ref
-
-   check_variable_name "$2" || return 1
-   refspecs_ref="$2"
-
-   ## Tags live in the global refs/tags/ namespace, not per-remote, so
-   ## there is no local remote-tracking ref to gate against without an
-   ## ls-remote round-trip. Always queue the tag; if the remote already
-   ## has it at the same SHA the server short-circuits with "= up to
-   ## date" inside the same atomic push.
-   log_run_silent_if_success git verify-tag "refs/tags/$tag"
-   refspecs_ref+=( "refs/tags/$tag:refs/tags/$tag" )
-}
-
-## TODO: qubes-template-kicksecure qubes-template-whonix
-
-for git_remote in github-kicksecure github-whonix "$DM_DEV" "$DM_GITHUB_MIRROR" ; do
-   if ! git remote get-url -- "${git_remote}" &>/dev/null ; then
-      continue
-   fi
-
-   log info "--------"
-
-   refspec_list=()
-
-   queue_branch_refspec main "${git_remote}" refspec_list
-   queue_branch_refspec master "${git_remote}" refspec_list
-   ## TODO: Debian 14 / forky
-   queue_branch_refspec trixie "${git_remote}" refspec_list
-
-   if [ -n "$git_tag_nearest" ]; then
-      queue_tag_refspec "$git_tag_nearest" refspec_list
-   fi
-
-   if [ "${#refspec_list[@]}" -eq 0 ]; then
-      continue
-   fi
-
-   ## --atomic: branch and tag pushes to the same remote succeed
-   ##   together or fail together; no mixed-state outcomes.
-   ## --porcelain: per-ref machine-readable status lines for
-   ##   diagnosable failures via parallel_failures.
-   log_run info git push --atomic --porcelain -- "${git_remote}" "${refspec_list[@]}" &
-   push_label[$!]="${refspec_list[*]} -> ${git_remote}"
-done
-
-if ! parallel_wait push_label ; then
-   log error "failed pushes:"
-   log error "${parallel_failures[*]}"
-   exit 1
-fi
+internal_git_push_atomic_all_remotes
 
 log notice "OK."

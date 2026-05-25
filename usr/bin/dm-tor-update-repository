@@ -3,6 +3,11 @@
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
+## File-level disable: the script body below the early `exit 0` (TODO
+## stub, see comment near the top) is intentionally dead. Drop the
+## directive and the `exit 0` when the script is finished.
+# shellcheck disable=SC2317
+
 set -x
 set -o errexit
 set -o nounset
