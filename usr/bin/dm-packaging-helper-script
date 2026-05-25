@@ -2246,11 +2246,17 @@ pkg_git_sign_tags() {
 pkg_git_qubes_template_sync_trixie() {
    local master_head current_branch
    local prefix
+
    prefix="${cyan}${batch_current_package_reponame}${reset}: ${FUNCNAME[0]}"
 
    case "${batch_current_package_reponame}" in
-      qubes-template-kicksecure|qubes-template-whonix) ;;
-      *) return 0 ;;
+      qubes-template-kicksecure|qubes-template-whonix)
+         true "INFO: pkg_git_qubes_template_sync_trixie: yes"
+         ;;
+      *)
+         true "INFO: pkg_git_qubes_template_sync_trixie: no"
+         return 0
+         ;;
    esac
 
    current_branch="$(git branch --show-current)"
@@ -2287,6 +2293,8 @@ pkg_git_qubes_template_sync_trixie() {
    fi
    genmkfile git-verify >/dev/null
    git switch master
+
+   return 0
 }
 
 ## Finds packages that have modifications made to them since the last version
