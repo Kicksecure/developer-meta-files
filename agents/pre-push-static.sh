@@ -324,6 +324,14 @@ check_R090_command_v() {
             continue
             ;;
       esac
+      ## Script-wide waiver: '## style-ok: no-has' anywhere in the
+      ## file disables R-090 for that file. Same shape as the
+      ## 'style-ok: no-safe-rm' waiver below for R-120; used by
+      ## bootstrap scripts that run before helper-scripts is on the
+      ## system but aren't part of the R-093 hard-coded allowlist.
+      if grep --quiet --fixed-strings 'style-ok: no-has' -- "${script}"; then
+         continue
+      fi
       hits="$(grep --line-number 'command -v' -- "${script}" 2>/dev/null || true)"
       if [ -z "${hits}" ]; then
          continue

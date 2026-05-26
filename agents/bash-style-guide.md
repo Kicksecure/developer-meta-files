@@ -416,7 +416,13 @@ producing an empty count.
        || die 1 "'github-org-fork' not on PATH"
 
 Why: `has` verifies the result is executable and guards against
-aliases/functions; `command -v` matches any of those.
+aliases/functions; `command -v` matches any of those. To deviate
+(rare, typically bootstrap scripts that run before helper-scripts
+is installed and aren't on the R-093 allowlist), put
+`## style-ok: no-has` anywhere in the script; the pre-push gate
+skips R-090 script-wide when it finds that marker. Prefer a path
+test (`[ -x /usr/sbin/foo ]`) over the waiver where the binary's
+install location is fixed.
 
 **R-091: Pre-flight checks at the top, not scattered.** A tool's
 runtime command dependencies are checked once, near the top of
