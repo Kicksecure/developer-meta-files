@@ -1411,12 +1411,16 @@ pkg_git_diff_and_merge_branch() {
       ## 'git verify-commit' passes through debug output by 'sq-git-wrapper'.
       git verify-commit "${origin_ref}"
       ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
-      dry_run_or_run git merge "${origin_ref}"
+      ## '--no-ff' so the maintainer-signed merge commit authenticates
+      ## the drive-by commits below it (sq-git policy).
+      dry_run_or_run git merge --no-ff "${origin_ref}"
    elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
       ## TODO: Can't we verify against Claude's SSH key?
       ## TODO: Is it ever really safe to mass-merge from the AI branches?
       #git verify-commit "${origin_ref}"
-      dry_run_or_run git merge --no-verify-signature "${origin_ref}"
+      ## '--no-ff': same sq-git policy rationale as above; maintainer
+      ## merge commit authenticates the AI-generated commits below it.
+      dry_run_or_run git merge --no-ff --no-verify-signature "${origin_ref}"
    else
       die 1 "UNKNOWN origin_branch: '${origin_branch}'"
    fi
