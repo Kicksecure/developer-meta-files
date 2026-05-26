@@ -1793,11 +1793,14 @@ pkg_git_fetch_remotes() {
 }
 
 pkg_git_push_atomic() {
-   repo_skip 'derivative-maker' || {
+   ## repo_skip could technically be used here, but it's confusing in
+   ## code and prints a confusing message.
+   if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
       ## Tags created manually when deemed ready; verify only.
+      true "Detected package 'derivative-maker', verifying Git commit signature and returning."
       dry_run_or_run genmkfile git-commit-verify >/dev/null
       return 0
-   }
+   fi
 
    dry_run_or_run genmkfile git-verify >/dev/null
 
@@ -2280,7 +2283,7 @@ pkg_git_qubes_template_sync_trixie() {
    ## Dry-run short-circuit: a per-step dry_run_or_run wrap leaves the
    ## live 'genmkfile git-tag-verify' below running against master HEAD
    ## (because the switch above was dry-runned) and reporting a
-   ## misleading "trixie" state. One WOULD line instead.
+   ## misleading "trixie" state. Print one WOULD line instead.
    if [ "${batch_meta_dry_run:-n}" = "y" ]; then
       true "${prefix} [DRY-RUN] WOULD: switch to trixie, ff-merge ${master_head}, sign tag if absent, switch back"
       return 0
@@ -2935,6 +2938,8 @@ make_cowbuilder_dist_dir="${derivative_maker_source_code_dir}/genmkfile-packages
 package_documentation_dir="${derivative_binary_dir}/package_documentation"
 
 ## Global state variables, do not adjust
+## FIXME: All of these 'y' and 'n' booleans should be replaced with
+## standard 'true' and 'false' string booleans.
 batch_current_package_changelog=''
 batch_current_package_needs_version_bump='n'
 batch_current_package_path=''

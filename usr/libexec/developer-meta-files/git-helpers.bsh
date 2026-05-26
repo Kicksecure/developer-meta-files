@@ -198,6 +198,17 @@ internal_git_known_push_remotes() {
 }
 
 ## log_run_silent_if_success: keep successes quiet, surface failure output.
+##
+## TODO: The signing situations here is very confusing. 'git verify-*'
+## uses GnuPG, which we're trying to port away from. 'genmkfile' has
+## functions that claim to verify commits and tags with sq-git, but
+## sq-git in Trixie cannot verify tags, and the genmkfile function
+## that claims to verify a tag (make_git_tag_verify) actually verifies
+## the commit a tag points to (it's unclear if this is intentional or
+## not). Port this to Sequoia-PGP, fixing genmkfile if necessary.
+## 'derivative-maker/help-steps/git_sanity_test' function
+## 'classify_tag' may be useful inspiration (maybe refactor that
+## function into a tag-verifying script).
 internal_git_verify_ref() {
    local ref
    ref="$1"
@@ -240,6 +251,9 @@ internal_git_compute_refspecs_for_remote() {
    shift 2
 
    branch_name_list=()
+   ## FIXME: Use some argument other than '--' as the separator. '--'
+   ## is an end-of-options separator by convention, not a way to
+   ## separate lists of positional arguments. '|' might work?
    while [ "$#" -gt 0 ] && [ "$1" != '--' ]; do
       branch_name_list+=( "$1" )
       shift
@@ -252,7 +266,7 @@ internal_git_compute_refspecs_for_remote() {
    refspecs_out_ref=()
 
    for branch_item in "${branch_name_list[@]}"; do
-      git rev-parse --verify "refs/heads/${branch_item}" &>/dev/null || continue
+      git rev-parse --verify --end-of-options "refs/heads/${branch_item}" &>/dev/null || continue
       internal_git_diff "${branch_item}" "${remote_name}" || continue
       refspecs_out_ref+=( "refs/heads/${branch_item}:refs/heads/${branch_item}" )
    done
@@ -272,7 +286,9 @@ internal_git_verify_refspecs() {
    done
 }
 
-## --atomic: a tag for an unpushed commit cannot land ahead of its branch tip.
+## --atomic: all listed refs succeed or fail together on the remote.
+##   This prevents a tag from being successfully pushed if the tagged
+##   commit can't be pushed.
 ## --porcelain: per-ref machine-readable status for parallel_failures.
 internal_git_push_refspecs() {
    local remote_name="$1"
