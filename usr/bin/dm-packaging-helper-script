@@ -516,7 +516,7 @@ is_changelog_bump_commit() {
 }
 
 dry_run_or_run() {
-   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+   if [ "${batch_meta_dry_run}" = "y" ]; then
       ## WOULD goes to stderr so it survives `>/dev/null` on the
       ## caller (needed when wrapping commands like `tee` that echo
       ## their input on stdout in live mode).
@@ -1804,7 +1804,7 @@ pkg_git_push_atomic() {
 
    dry_run_or_run genmkfile git-verify >/dev/null
 
-   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+   if [ "${batch_meta_dry_run}" = "y" ]; then
       log notice "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: pkg_git_push_atomic" >&2
       return 0
    fi
@@ -2284,7 +2284,7 @@ pkg_git_qubes_template_sync_trixie() {
    ## live 'genmkfile git-tag-verify' below running against master HEAD
    ## (because the switch above was dry-runned) and reporting a
    ## misleading "trixie" state. Print one WOULD line instead.
-   if [ "${batch_meta_dry_run:-n}" = "y" ]; then
+   if [ "${batch_meta_dry_run}" = "y" ]; then
       log notice "${prefix} [DRY-RUN] WOULD: switch to trixie, ff-merge ${master_head}, sign tag if absent, switch back"
       return 0
    fi
