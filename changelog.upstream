@@ -1,3 +1,334 @@
+commit 39e310a55fe7683727a2db96d9466552cfa87ec1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 18:35:07 2026 -0400
+
+    .
+
+commit bfb49118fb1b44bb5f971bf97cea33b1ec2fad8c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 18:24:24 2026 -0400
+
+    .
+
+commit f842aa2ca53bb8666ec009d37058f1e95423408c
+Merge: 5e893406 db496ec3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 17:47:33 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/loving-fermat-ZeNGB'
+
+commit db496ec34d1b30209b7877abbacfcceafca07039
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 21:42:22 2026 +0000
+
+    github-policy: add OrgAdmin bypass on SOURCE; drop required_signatures on PERSON
+
+    Unblocks pushes against unsigned historical commits without giving up
+    the rule entirely.
+
+    SOURCE (Kicksecure / Whonix): rule stays on; org owner bypasses via
+    the same OrganizationAdmin actor MIRROR already uses. Non-admin
+    contributors are still blocked from unsigned commits.
+
+    PERSON (adrelanos): rule dropped. GitHub's bypass-actor list on
+    user-owned repos is essentially DeployKey only - no clean way to
+    express "the repo owner can bypass" - so the rule has to go on
+    PERSON to unblock pushes.
+
+    MIRROR / BOT: unchanged (rule was already off).
+
+    Test pin and canonical-vs-mirror doc updated.
+
+    https://claude.ai/code/session_01GUPFaPsw673d33HL5jbCbW
+
+commit 5e893406fa7006fb3c1966b0ce1b9bb1873bae6e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 17:05:27 2026 -0400
+
+    .
+
+commit 52cac10712850631643662d340ddae629ace5b86
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 15:46:35 2026 -0400
+
+    .
+
+commit 83f98bfe73c82dcbed49182803b6a79c45e267f3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 15:45:37 2026 -0400
+
+    .
+
+commit b76a5043d621d9dd0bb49d29cbe16cf4ba8de99f
+Merge: 17a375b9 f945bc3d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 14:52:14 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/confident-archimedes-2KQwy'
+
+commit f945bc3d39d72386e4863109b1f915c5531b7f1d
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 18:38:09 2026 +0000
+
+    dm-packaging-helper-script: leverage parallel_wait per-job logging in wait_for_git_processes
+
+    helper-scripts parallel_wait now log-error's each failure
+    individually with label+pid+exit. The hand-rolled summary in
+    wait_for_git_processes (header line + bulleted list of labels
+    via printf+ANSI) duplicates that per-job output and is hard to
+    grep for.
+
+    Replace with one consolidated 'log error' summary line that
+    names the count + failed labels in a single grep-friendly
+    string, matching the pattern used in genmkfile's atomic-push
+    caller. The per-failure detail is already in the
+    parallel_wait log lines above.
+
+    Also drops the manual ANSI-color printf in favour of log()
+    (which adds the ERROR prefix + colour itself), tightening
+    the function to four lines of logic.
+
+commit 17a375b9835ae780444f7021d17aa921cddb8abf
+Merge: 5531d2e8 c2f7a28e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 13:56:58 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit c2f7a28e477658b3e64b9e410bacc3bab4245100
+Merge: cbefa5e3 f38bf93e
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed May 27 13:45:37 2026 -0400
+
+    Merge pull request #120 from org-ai-assisted/claude/kind-fermi-od4IG
+
+    git-helpers.bsh: delegate atomic push to genmkfile git-tag-push
+
+commit f38bf93e48cfb8e5d568c4a155b7a72b9777f1df
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 17:45:14 2026 +0000
+
+    git-helpers.bsh: delegate atomic push to genmkfile git-tag-push
+
+    Collapse internal_git_push_atomic_all_remotes to a per-repo
+    filter (DM_PUSH_BRANCHES_UNIVERSE + DM_PUSH_REMOTES_UNIVERSE
+    intersected with refs that exist locally) + an exec of
+    'genmkfile git-tag-push' with make_git_push_branches /
+    make_git_push_remotes set in the call's environment.
+
+    All push mechanics (atomic --porcelain, parallel per remote,
+    strict missing-branch / missing-tag / missing-remote errors,
+    skip-already-pushed cache) now live in genmkfile's
+    make_git_tag_push. See org-ai-assisted/genmkfile#23.
+
+    Signed-release trust boundary stays in dmf: internal_git_verify_ref
+    (only ref-verification helper restored; the rest stay removed
+    since genmkfile owns push mechanics) is called for every branch
+    tip + dedup'd tip tag before delegating, covering both the
+    dm-push direct path and the branch tips that dm-packaging-
+    helper-script's HEAD-only pre-verify misses.
+
+    Removed (no callers outside this file; grep clean across dmf,
+    derivative-maker, helper-scripts):
+      - internal_git_diff / internal_git_diff_local / internal_git_diff_remote
+      - internal_git_tags_at_branch_tips
+      - internal_git_verify_and_push_to_remote
+      - internal_git_compute_refspecs_for_remote
+      - internal_git_verify_refspecs
+      - internal_git_push_refspecs
+
+    Added:
+      - DM_PUSH_BRANCHES_UNIVERSE constant ('main master trixie')
+
+    Net: git-helpers.bsh shrinks from 325 lines to ~105.
+
+    dm-packaging-helper-script: exports
+    make_git_tag_push_cache_dir="${derivative_binary_dir}/git-tag-push-cache"
+    once at script init. Every dm-push / pkg_git_push_atomic
+    invocation in a run inherits the env var and opts in to
+    genmkfile's skip-already-pushed cache.
+
+    github-org-push: XXX comment marking 'git push --tags' as
+    intentionally not migrated (bulk push-all-tags semantics don't
+    fit the per-tag cache; intentional for mass-mirror-to-fork).
+
+    Unchanged public surface: internal_git_push_atomic_all_remotes
+    (called by dm-push + pkg_git_push_atomic) and
+    internal_git_known_push_remotes stay in place with same
+    signatures.
+
+commit 5531d2e8828ddbc956d5b0d15f25885b8a77d36e
+Merge: 637de06a cbefa5e3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 13:09:27 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit cbefa5e3e4a4ab9eca2421859981726041c8057e
+Merge: 5d93e854 3c3da0cf
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed May 27 12:54:05 2026 -0400
+
+    dm-github-org-policy: clearer audit hints + per-repo dependabot.yml display (#119)
+
+    dm-github-org-policy: clearer audit hints + per-repo dependabot.yml display
+
+commit 637de06a5dc34ccb543ebc5ce8a27b90ad67f158
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 08:15:20 2026 -0400
+
+    .
+
+commit 3c3da0cf0a90b05cdd9bef9a2fb46a1b3651d3c9
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 12:07:56 2026 +0000
+
+    test_dm_audit: add 4-space prefix to 'summary:' needle for consistency
+
+    CodeRabbit nitpick on the earlier commit: the sibling needles
+    '    yes: ...' and '    no:  ...' include the 4-space indent that
+    the audit script emits, but 'summary: have=1, missing=2' did not.
+    Substring match would still pass either way, but matching the
+    script's exact output is more precise and consistent.
+
+commit ee996164677fa3e8da0282e07d13b4e932c0f817
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 11:58:37 2026 +0000
+
+    dm-github-org-policy: comment out paid-plan-only and App-only audit blocks
+
+    Two audit subsections never returned data under our actual setup
+    (Free-plan org, classic PAT auth):
+
+    - 'existing rulesets named ...' walks GET /orgs/{org}/rulesets,
+      which 403s on Free with body "Upgrade to GitHub Team to enable
+      this feature." Apply uses repo-level rulesets (Free-compatible)
+      via policy_upsert_repo_ruleset, so this listing block carries
+      no Free-plan operational value.
+
+    - 'fine-grained PAT activity:' walks two GitHub-App-only endpoints
+      (personal-access-token-requests + personal-access-tokens).
+      Classic and fine-grained PATs are rejected regardless of scope
+      with HTTP 404 + empty x-accepted-oauth-scopes. The org's
+      PAT-restriction policy toggle does not change this.
+      dm-github-org-policy is entirely PAT-authenticated via
+      ghorg_api, so the block could not return data.
+
+    Both blocks are commented out (not deleted) in the established
+    'PAID PLAN ONLY' style of apply_code_security_config(): re-enable
+    by uncommenting if either constraint changes (plan upgrade, or
+    addition of an App-token code path). Unused local var
+    declarations (ruleset_body, ruleset_name, ids, id, pending,
+    approved) removed alongside.
+
+    ci/tests/test_dm_audit.sh: drop the corresponding required[]
+    entries with a comment pointing back at the matching commented
+    block in the script.
+
+commit 85c2faf012a8de5bfbc994f06cd637740bd9d36a
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 11:27:00 2026 +0000
+
+    dm-github-org-policy: GitHub-App-only hint for PAT endpoints; order-preserving audit test
+
+    PAT-endpoint hints
+    ==================
+    The two endpoints under 'fine-grained PAT activity':
+
+      GET /orgs/{org}/personal-access-token-requests
+      GET /orgs/{org}/personal-access-tokens
+
+    are GitHub-App-only per docs.github.com:
+
+      "Only GitHub Apps can use this endpoint."
+
+    A classic PAT with admin:org gets HTTP 404 with an empty
+    'x-accepted-oauth-scopes' response header (no OAuth scope grants
+    access). A fine-grained PAT gets the same. The org's
+    PAT-restriction policy toggle does NOT change this - it controls
+    whether PATs may be USED to access org resources, not whether a
+    REST client can ENUMERATE such tokens.
+
+    Prior hint text claimed 'token may lack admin:org / PAT
+    restriction policy not enforced', which sent operators chasing
+    fixes that cannot resolve the 404 under PAT auth. Replace with
+    '(endpoint accepts GitHub App tokens only, not PATs)' and add a
+    block comment near the call sites documenting why.
+
+    Order-preserving audit test
+    ===========================
+    ci/tests/test_dm_audit.sh used substring-only assertions. A
+    silent section reorder (e.g. PAT activity printed before
+    code-security defaults) would pass: every substring is still
+    present in the output. That kind of regression is invisible to
+    substring matches but does change the meaning a maintainer reads
+    off the report.
+
+    Replace the per-needle 'grep --fixed-strings' loop with a
+    one-pass walker that advances through required[] monotonically:
+    required[i] must appear at or after the line where required[i-1]
+    matched. Missing-entirely and out-of-order failures are reported
+    separately so the diagnostic points at the right thing.
+
+    Adversarial verified locally:
+    - Replace one needle with a string the script never emits ->
+      'FAIL: missing expected fragment: <needle>' (existing semantic).
+    - Swap two needles in required[] -> 'FAIL: out-of-order
+      fragment: <needle>' on each cascade entry (new semantic).
+
+commit 8244359a4e2a32a53a89935311639299dcd01ffe
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 11:04:42 2026 +0000
+
+    test_dm_audit: update fixture assertions for new dependabot.yml format
+
+    Audit output for the dependabot.yml section switched from
+    '- <repo>' (missing only) plus 'have=N, missing=M' to per-repo
+    'yes:'/'no:' lines plus 'summary: have=N, missing=M'. Update the
+    required-substring list to match: drop the bare-dash forms and
+    assert on 'yes: derivative-maker' (only repo in the fixture
+    that has the file), 'no:  helper-scripts', 'no:  some-fork',
+    and 'summary: have=1, missing=2'.
+
+commit 21256926dcc1f14abffcbd962ceb7b81d8314976
+Author: Claude <noreply@anthropic.com>
+Date:   Wed May 27 11:02:59 2026 +0000
+
+    dm-github-org-policy: clearer audit hints + per-repo dependabot.yml display
+
+    Three small audit-output fixes surfaced while running --audit
+    against a Free-plan org with a fully-scoped classic PAT:
+
+    1. 'rulesets list: HTTP 403' was reported as '(token may lack
+       admin:org)' when the actual cause is plan-gating: org-level
+       rulesets are GitHub Team+ only. Free-plan orgs always get
+       403 here regardless of scope. The script itself documents
+       this (line 80-84: "PAID PLAN ONLY"); the audit hint did not.
+       Now reads '(paid plan only / token may lack admin:org)'.
+
+    2. 'approved tokens endpoint: HTTP 404' was reported as
+       '(token may lack admin:org)' when the cause is more often
+       that the org has not enabled the PAT restriction policy.
+       Mirrors the wording of the parallel 'requests endpoint'
+       hint two cases above. Now reads '(token may lack admin:org
+       / PAT restriction policy not enforced)'.
+
+    3. dependabot.yml audit listed only the missing repos and a
+       have/missing summary at the end. Useful for spotting which
+       repos lack the file, but not for confirming the ones that
+       should have it actually do. Now emits 'yes:' / 'no:'
+       per repo and a 'summary:' line. Propagating dependabot.yml
+       to every repo is not the goal - many repos (apt sources,
+       meta-packages, base files, ...) have no language deps and
+       would just produce empty Dependabot runs - so the audit's
+       value is visibility, not a checklist of TODOs.
+
+commit 83e91b7a90674b765c04d0f1652ac9171afb0b84
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 10:47:52 2026 +0000
+
+    bumped changelog version
+
 commit 23bbc27e4ebed8b936e3e82f0b23fbb3ae0c5a68
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 27 06:43:47 2026 -0400
@@ -10,11 +341,69 @@ Date:   Wed May 27 06:22:20 2026 -0400
 
     .
 
+commit 5d93e8541d04522a448ab30d9ee7207eea16f44d
+Merge: 12ab2d9f aeef1e36
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 26 12:57:31 2026 -0400
+
+    dm-packaging-helper-script: use 'git merge --no-ff' for branch merges (#118)
+
+    dm-packaging-helper-script: use 'git merge --no-ff' for branch merges
+
+commit aeef1e363639da4d42c25b3b10a59c8ea19c388a
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 26 16:56:44 2026 +0000
+
+    dm-packaging-helper-script: use 'git merge --no-ff' for branch merges
+
+    sq-git authenticates a chain by walking from a trust root and
+    validating each commit against openpgp-policy.toml. Drive-by
+    contributors (Aaron's trixie branch, AI mirror branches) are
+    deliberately NOT in the policy file. The sanctioned way to land
+    their work is a '--no-ff' merge: the maintainer-signed merge
+    commit authenticates the unsigned commits below it.
+
+    Plain 'git merge' fast-forwards when possible, leaving drive-by
+    commits on the first-parent chain with no authorizing merge
+    commit. sq-git log then refuses them and the chain breaks.
+
+    'pkg_git_qubes_template_sync_trixie' keeps '--ff-only'
+    intentionally: 'trixie' there is a strict mirror of master and
+    must not diverge.
+
 commit 9232e85f76b83901989cce145769bb8e5afefbea
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue May 26 12:08:45 2026 -0400
 
     do not guard variables that do not need it
+
+commit 12ab2d9f18e57de4807f62b0a52ab9c877a25dc7
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue May 26 08:15:40 2026 -0400
+
+    R-090: add 'style-ok: no-has' script-wide waiver (#117)
+
+    R-090 already had a hard-coded R-093 carve-out for two specific scripts that run before helper-scripts is reachable, but other bootstrap-time scripts in the same situation had no escape hatch except switching to a fixed-path test. Mirror the existing R-120 '## style-ok: no-safe-rm' waiver: '## style-ok: no-has' anywhere in a script disables R-090 for that file. bash-style-guide.md documents both the waiver and the preferred alternative (path test where the install location is stable), so the waiver stays the rare-case escape rather than the lazy default.
+
+commit 255f5e1cdd8a38e4e1e55e23f2c66e3de9113c8c
+Author: Claude <noreply@anthropic.com>
+Date:   Tue May 26 11:45:56 2026 +0000
+
+    R-090: add 'style-ok: no-has' script-wide waiver
+
+    R-090 already had an R-093 carve-out for two specific scripts
+    (install-helper-scripts.sh, pre-push-static.sh) hard-coded into
+    the gate, but other bootstrap-time scripts that run before
+    helper-scripts is on the system had no escape hatch except a path
+    test. Mirror the existing R-120 'style-ok: no-safe-rm' waiver
+    shape: '## style-ok: no-has' anywhere in a script disables R-090
+    for that file.
+
+    Documentation in bash-style-guide.md now describes both the
+    waiver and the preferred alternative (a fixed-path test like
+    '[ -x /usr/sbin/foo ]') for binaries whose install location is
+    stable, so the waiver remains the rare-case escape it's meant to
+    be rather than the easy default.
 
 commit 6bf16acf87ee26f70090bbfe197e6e3746b87c63
 Merge: 949ddd44 2921b3c8
