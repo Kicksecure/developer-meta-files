@@ -56,10 +56,12 @@ required=(
    ## After dm-github-org-policy switched to inc_forks=1, the fork
    ## repo (some-fork) is also enumerated by the dependabot.yml
    ## audit. Fixture has the file for derivative-maker only;
-   ## helper-scripts AND some-fork register as missing.
-   'have=1, missing=2'
-   '    - org-ai-assisted/helper-scripts'
-   '    - org-ai-assisted/some-fork'
+   ## helper-scripts AND some-fork register as missing. Output
+   ## format is per-repo 'yes:' / 'no:' lines + a 'summary:' line.
+   'summary: have=1, missing=2'
+   '    yes: org-ai-assisted/derivative-maker'
+   '    no:  org-ai-assisted/helper-scripts'
+   '    no:  org-ai-assisted/some-fork'
 )
 
 for needle in "${required[@]}"; do
