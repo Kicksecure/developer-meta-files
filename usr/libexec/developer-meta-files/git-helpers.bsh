@@ -328,7 +328,7 @@ internal_git_push_atomic_all_remotes() {
    for remote_item in "${remote_list[@]}"; do
       log info "--------"
       internal_git_verify_and_push_to_remote "${remote_item}" "${all_branches[@]}" -- "${collected_tags[@]}" &
-      push_label[$!]="[${all_branches[*]}] [${collected_tags[*]}] -> ${remote_item}"
+      push_label[$!]="[${batch_current_package_reponame}] [${all_branches[*]}] [${collected_tags[*]}] -> ${remote_item}"
    done
 
    if [ "${#push_label[@]}" -eq 0 ]; then
