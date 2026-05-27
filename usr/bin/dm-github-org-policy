@@ -289,8 +289,8 @@ audit_org_state() {
    local org result status body count names
    local actions_result actions_status actions_body
    local allowed_actions enabled_repos
-   local ruleset_body ruleset_name ids id member
-   local pending approved installs install_line total no_secret
+   local member
+   local installs install_line total no_secret
    local repos repo missing_count have_count
    local private_names private_count
 
@@ -359,57 +359,78 @@ audit_org_state() {
       log notice "    HTTP ${status} (need admin:org / Members read scope)"
    fi
 
-   result="$(ghorg_api GET "/orgs/${org}/rulesets?per_page=100")" || true
-   status="$(ghorg_status_of "${result}")"
-   if [ "${status}" = '200' ]; then
-      ruleset_body="$(ghorg_body_of "${result}")"
-      for ruleset_name in "${RULESET_NAME_BRANCH}" "${RULESET_NAME_TAG}"; do
-         log notice "  existing rulesets named \"${ruleset_name}\":"
-         ids="$(printf '%s' "${ruleset_body}" \
-            | ghorg_jq_capped -r --arg name "${ruleset_name}" -- \
-              '.[] | select(.name == $name) | .id' || true)"
-         if [ -z "${ids}" ]; then
-            log notice '    (none; --apply would create one)'
-         else
-            while IFS= read -r id; do
-               [ -z "${id}" ] && continue
-               log notice "    - id=${id}"
-            done <<< "${ids}"
-         fi
-      done
-   else
-      log notice "  rulesets list: HTTP ${status} (token may lack admin:org)"
-   fi
+   ## PAID PLAN ONLY. Org-level rulesets list (GET /orgs/{org}/rulesets)
+   ## returns HTTP 403 with body "Upgrade to GitHub Team to enable this
+   ## feature." on Free-plan orgs. The org-ai-assisted org is Free, so
+   ## this block was dead noise on every audit. Apply uses repo-level
+   ## rulesets (Free-compatible) via policy_upsert_repo_ruleset; this
+   ## listing block is only useful if the plan is upgraded to Team+.
+   ## Uncomment if/when the plan changes; restore the corresponding
+   ## 'existing rulesets named ...' assertions in
+   ## ci/tests/test_dm_audit.sh too.
+   # result="$(ghorg_api GET "/orgs/${org}/rulesets?per_page=100")" || true
+   # status="$(ghorg_status_of "${result}")"
+   # if [ "${status}" = '200' ]; then
+   #    ruleset_body="$(ghorg_body_of "${result}")"
+   #    for ruleset_name in "${RULESET_NAME_BRANCH}" "${RULESET_NAME_TAG}"; do
+   #       log notice "  existing rulesets named \"${ruleset_name}\":"
+   #       ids="$(printf '%s' "${ruleset_body}" \
+   #          | ghorg_jq_capped -r --arg name "${ruleset_name}" -- \
+   #            '.[] | select(.name == $name) | .id' || true)"
+   #       if [ -z "${ids}" ]; then
+   #          log notice '    (none; --apply would create one)'
+   #       else
+   #          while IFS= read -r id; do
+   #             [ -z "${id}" ] && continue
+   #             log notice "    - id=${id}"
+   #          done <<< "${ids}"
+   #       fi
+   #    done
+   # else
+   #    log notice "  rulesets list: HTTP ${status} (paid plan only / token may lack admin:org)"
+   # fi
 
-   ## Fine-grained PAT activity. The UI toggles are not REST-settable
-   ## (see apply_org_policy); this is informative context for
-   ## deciding whether to flip them.
-   log notice '  fine-grained PAT activity:'
-   result="$(ghorg_api GET "/orgs/${org}/personal-access-token-requests?per_page=1")" || true
-   status="$(ghorg_status_of "${result}")"
-   case "${status}" in
-      200)
-         pending="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
-         log notice "    pending requests on first page: ${pending}"
-         ;;
-      404|403)
-         log notice "    requests endpoint: HTTP ${status} (approval flow may be off / token lacks scope)"
-         ;;
-      *)
-         log notice "    requests endpoint: HTTP ${status}"
-         ;;
-   esac
-   result="$(ghorg_api GET "/orgs/${org}/personal-access-tokens?per_page=1")" || true
-   status="$(ghorg_status_of "${result}")"
-   case "${status}" in
-      200)
-         approved="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
-         log notice "    approved tokens on first page: ${approved}"
-         ;;
-      *)
-         log notice "    approved tokens endpoint: HTTP ${status} (token may lack admin:org)"
-         ;;
-   esac
+   ## GITHUB-APP-ONLY. Both endpoints under 'fine-grained PAT activity'
+   ## are GitHub-App-only per docs.github.com:
+   ##   GET /orgs/{org}/personal-access-token-requests
+   ##   GET /orgs/{org}/personal-access-tokens
+   ## "Only GitHub Apps can use this endpoint." Classic and fine-grained
+   ## PATs are rejected regardless of scope - response is HTTP 404 with
+   ## empty 'x-accepted-oauth-scopes' header. The PAT-restriction policy
+   ## toggle in the org UI does NOT change this: it controls whether
+   ## PATs may BE USED to access org resources, not whether REST clients
+   ## can ENUMERATE such tokens. dm-github-org-policy is entirely
+   ## PAT-authenticated via ghorg_api, so these calls can never return
+   ## data here - block was dead noise on every audit.
+   ## Uncomment if/when an App-token code path is added; restore the
+   ## 'fine-grained PAT activity:' assertion in
+   ## ci/tests/test_dm_audit.sh too.
+   # log notice '  fine-grained PAT activity:'
+   # result="$(ghorg_api GET "/orgs/${org}/personal-access-token-requests?per_page=1")" || true
+   # status="$(ghorg_status_of "${result}")"
+   # case "${status}" in
+   #    200)
+   #       pending="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
+   #       log notice "    pending requests on first page: ${pending}"
+   #       ;;
+   #    404|403)
+   #       log notice "    requests endpoint: HTTP ${status} (endpoint accepts GitHub App tokens only, not PATs)"
+   #       ;;
+   #    *)
+   #       log notice "    requests endpoint: HTTP ${status}"
+   #       ;;
+   # esac
+   # result="$(ghorg_api GET "/orgs/${org}/personal-access-tokens?per_page=1")" || true
+   # status="$(ghorg_status_of "${result}")"
+   # case "${status}" in
+   #    200)
+   #       approved="$(ghorg_body_of "${result}" | ghorg_jq_capped -- 'length' 2>/dev/null || printf '%s' '?')"
+   #       log notice "    approved tokens on first page: ${approved}"
+   #       ;;
+   #    *)
+   #       log notice "    approved tokens endpoint: HTTP ${status} (endpoint accepts GitHub App tokens only, not PATs)"
+   #       ;;
+   # esac
 
    log notice '  installed GitHub Apps:'
    result="$(ghorg_api GET "/orgs/${org}/installations?per_page=100")" || true
@@ -488,6 +509,10 @@ audit_org_state() {
    if [ -z "${repos}" ]; then
       log notice '    (no public non-archived repos)'
    else
+      ## Per-repo presence is shown so legitimately-bare repos
+      ## (no language deps to track - propagating dependabot.yml
+      ## everywhere just to satisfy Scorecard would be noise) are
+      ## visible alongside the ones that genuinely need it.
       missing_count=0
       have_count=0
       while IFS= read -r repo; do
@@ -496,12 +521,13 @@ audit_org_state() {
          status="$(ghorg_status_of "${result}")"
          if [ "${status}" = '200' ]; then
             have_count=$(( have_count + 1 ))
+            log notice "    yes: ${org}/${repo}"
          else
             missing_count=$(( missing_count + 1 ))
-            log notice "    - ${org}/${repo}"
+            log notice "    no:  ${org}/${repo}"
          fi
       done <<< "${repos}"
-      log notice "    have=${have_count}, missing=${missing_count}"
+      log notice "    summary: have=${have_count}, missing=${missing_count}"
    fi
 }
 
