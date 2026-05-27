@@ -11,11 +11,10 @@
 ## Safe to source: no top-level side effects beyond function and
 ## constant definitions.
 ##
-## Both variants (internal_git_diff_local and internal_git_diff_remote
-## below) compare commit SHAs rather than tree contents: amend, rebased
-## message, or cherry-pick of an already-applied change all produce a
-## new commit SHA with an unchanged tree, and all need to be pushed.
-## Tree-level `git diff` would falsely report "no diff" in those cases.
+## All push logic lives in genmkfile's 'git-tag-push' target; this
+## file owns only the dmf-specific orchestration (release-branch
+## universe, mirror remotes, per-repo filtering) and shells out to
+## genmkfile for the atomic push + cache.
 
 set -o errexit
 set -o nounset
@@ -26,9 +25,6 @@ shopt -s shift_verbose
 
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-
-# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/parallel.bsh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/parallel.bsh
 
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
@@ -47,138 +43,12 @@ if ! declare -p DM_PUSH_REMOTES_UNIVERSE &>/dev/null; then
    readonly -a DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix adrelanos "${DM_GITHUB_MIRROR}" )
 fi
 
-## Returns 0 if local branch and tracking ref differ (push needed),
-## 1 if same commit (skip).
-##
-## No network access; only as fresh as the last `git fetch`.
-## Misses concurrent-pusher races: if someone advanced the remote
-## since our last fetch, this gate will incorrectly say "skip"; the
-## eventual `git push` will be rejected non-fast-forward and the
-## caller is responsible for re-fetching and retrying.
-##
-## Arguments: $1 branch name (no refs/heads/), $2 remote name.
-internal_git_diff_local() {
-   local branch_name remote_name local_sha tracking_sha
-
-   branch_name="${1:-}"
-   remote_name="${2:-}"
-
-   [ -n "${branch_name}" ] || die 1 "${FUNCNAME[0]}: branch argument is empty"
-   [ -n "${remote_name}" ] || die 1 "${FUNCNAME[0]}: remote argument is empty"
-
-   local_sha="$(git rev-parse --verify --quiet "refs/heads/${branch_name}^{commit}")" || local_sha=''
-
-   [ -n "${local_sha}" ] || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
-
-   tracking_sha="$(git rev-parse --verify --quiet "refs/remotes/${remote_name}/${branch_name}^{commit}")" || tracking_sha=''
-
-   if [ -z "${tracking_sha}" ]; then
-      log warn "tracking ref 'refs/remotes/${remote_name}/${branch_name}' does not exist; push will create it."
-      ## Interactive pause only when stdin is a terminal - never hang
-      ## a CI run, cron job, or piped invocation.
-      if [ -t 0 ]; then
-         log warn "Press enter to continue."
-         read -r _
-      fi
-      return 0
-   fi
-
-   if [ "${local_sha}" = "${tracking_sha}" ]; then
-      log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: yes"
-      return 1
-   fi
-
-   log info "${FUNCNAME[0]}: branch_name: '${branch_name}' | remote_name '${remote_name}' | local_sha = tracking_sha: no"
-   return 0
-}
-
-## Returns 0 if local branch differs from remote (push needed),
-## 1 if same commit (skip).
-##
-## Authoritative: queries the remote via `git ls-remote` rather than
-## the possibly-stale local tracking ref. Costs one network
-## round-trip per call. Does not fully mitigate the concurrent pusher
-## case due to unavoidable TOCTOU issues.
-##
-## Arguments: $1 branch name (no refs/heads/), $2 remote name.
-internal_git_diff_remote() {
-   local branch_name remote_name local_sha ls_remote_output remote_sha
-
-   branch_name="${1:-}"
-   remote_name="${2:-}"
-
-   [ -n "${branch_name}" ] || die 1 "${FUNCNAME[0]}: branch argument is empty"
-   [ -n "${remote_name}" ] || die 1 "${FUNCNAME[0]}: remote argument is empty"
-
-   local_sha="$(git rev-parse --verify --quiet "refs/heads/${branch_name}^{commit}")" || local_sha=''
-   [ -n "${local_sha}" ] || die 1 "could not resolve local branch 'refs/heads/${branch_name}'"
-
-   ## --heads option to 'git ls-remote' is deprecated, --branches is
-   ## the replacement.
-   log info "git ls-remote --branches --quiet -- '${remote_name}' 'refs/heads/${branch_name}'"
-   if ! ls_remote_output="$(git ls-remote --branches --quiet -- "${remote_name}" "refs/heads/${branch_name}")"; then
-      log warn "'git ls-remote' failed; assuming push needed."
-      if [ -t 0 ]; then
-         log warn "Press enter to continue."
-         read -r _
-      fi
-      return 0
-   fi
-
-   ## When the ref is absent on the remote the output is empty and
-   ## the exit code is still 0; treat that as "push needed".
-   if [ -z "${ls_remote_output}" ]; then
-      return 0
-   fi
-
-   remote_sha="${ls_remote_output%%$'\t'*}"
-
-   if [ "${local_sha}" = "${remote_sha}" ]; then
-      return 1
-   fi
-
-   return 0
-}
-
-## Set DM_GATE_LS_REMOTE=true to opt in to the authoritative
-## ls-remote variant; default is the local tracking-ref variant.
-internal_git_diff() {
-   if [ "${DM_GATE_LS_REMOTE:-false}" = 'true' ]; then
-      internal_git_diff_remote "$@"
-   else
-      internal_git_diff_local "$@"
-   fi
-}
-
-## $1: output array name. $2..: bare branch names.
-## Populates the array with deduped tags pointing at any branch tip.
-internal_git_tags_at_branch_tips() {
-   local -n tags_out_ref
-   local branch_item tags_output sorted_output
-   local -a accumulated_list branch_tag_list
-
-   check_variable_name "$1" || return 1
-   tags_out_ref="$1"
-   shift
-
-   accumulated_list=()
-
-   for branch_item in "$@"; do
-      git show-ref --verify --quiet -- "refs/heads/${branch_item}" || continue
-      tags_output="$(git tag --points-at "refs/heads/${branch_item}")"
-      [ -n "${tags_output}" ] || continue
-      mapfile -t branch_tag_list <<< "${tags_output}"
-      accumulated_list+=( "${branch_tag_list[@]}" )
-   done
-
-   tags_out_ref=()
-   if [ "${#accumulated_list[@]}" -eq 0 ]; then
-      return 0
-   fi
-
-   sorted_output="$(printf '%s\n' "${accumulated_list[@]}" | sort --unique)"
-   mapfile -t tags_out_ref <<< "${sorted_output}"
-}
+## Canonical release-branch universe. The per-repo existing subset
+## is what gets passed to genmkfile (which is strict on missing
+## branches per its 'git-tag-push' contract).
+if ! declare -p DM_PUSH_BRANCHES_UNIVERSE &>/dev/null; then
+   readonly -a DM_PUSH_BRANCHES_UNIVERSE=( main master trixie )
+fi
 
 ## $1: output array name.
 ## Populates the array with developer-side push remotes that exist
@@ -197,13 +67,15 @@ internal_git_known_push_remotes() {
    done
 }
 
-## log_run_silent_if_success: keep successes quiet, surface failure output.
+## Dmf-owned signed-release trust boundary: unsigned ref must not
+## reach a mirror remote. genmkfile git-tag-push is generic and
+## does not verify; dmf wraps it with this pre-check.
 internal_git_verify_ref() {
    local ref
    ref="$1"
    case "${ref}" in
       refs/heads/*)
-         log_run_silent_if_success git verify-commit "${ref}"
+         log_run_silent_if_success git verify-commit "${ref}^{commit}"
          ;;
       refs/tags/*)
          log_run_silent_if_success git verify-tag "${ref}"
@@ -214,111 +86,53 @@ internal_git_verify_ref() {
    esac
 }
 
-## $1: remote name. $2..: bare branch names, '--', bare tag names.
-internal_git_verify_and_push_to_remote() {
-   local remote_name
-   local -a refspec_list
-
-   remote_name="$1"
-   shift
-
-   refspec_list=()
-   internal_git_compute_refspecs_for_remote refspec_list "${remote_name}" "$@"
-   internal_git_verify_refspecs "${refspec_list[@]}"
-   internal_git_push_refspecs "${remote_name}" "${refspec_list[@]}"
-}
-
-## $1: output array name. $2: remote. $3..: branches, '--', tags.
-internal_git_compute_refspecs_for_remote() {
-   local -n refspecs_out_ref
-   local remote_name branch_item tag_item
-   local -a branch_name_list tag_name_list
-
-   check_variable_name "$1" || return 1
-   refspecs_out_ref="$1"
-   remote_name="$2"
-   shift 2
-
-   branch_name_list=()
-   while [ "$#" -gt 0 ] && [ "$1" != '--' ]; do
-      branch_name_list+=( "$1" )
-      shift
-   done
-   if [ "$#" -gt 0 ]; then
-      shift
-   fi
-   tag_name_list=( "$@" )
-
-   refspecs_out_ref=()
-
-   for branch_item in "${branch_name_list[@]}"; do
-      git rev-parse --verify "refs/heads/${branch_item}" &>/dev/null || continue
-      internal_git_diff "${branch_item}" "${remote_name}" || continue
-      refspecs_out_ref+=( "refs/heads/${branch_item}:refs/heads/${branch_item}" )
-   done
-
-   for tag_item in "${tag_name_list[@]}"; do
-      [ -n "${tag_item}" ] || continue
-      git show-ref --verify --quiet -- "refs/tags/${tag_item}" || continue
-      refspecs_out_ref+=( "refs/tags/${tag_item}:refs/tags/${tag_item}" )
-   done
-}
-
-internal_git_verify_refspecs() {
-   local refspec_item ref
-   for refspec_item in "$@"; do
-      ref="${refspec_item%%:*}"
-      internal_git_verify_ref "${ref}"
-   done
-}
-
-## --atomic: a tag for an unpushed commit cannot land ahead of its branch tip.
-## --porcelain: per-ref machine-readable status for parallel_failures.
-internal_git_push_refspecs() {
-   local remote_name="$1"
-   shift
-   if [ "$#" -eq 0 ]; then
-      return 0
-   fi
-   log_run info git push --atomic --porcelain -- "${remote_name}" "$@"
-}
-
-## Atomic push of branches + tip tags to every known push remote in
-## parallel. Missing branches are skipped; falls back to git-describe
-## nearest-tag when no tip carries a tag.
+## Pre-verify each branch tip + tip tag signature, then delegate
+## the atomic push to 'genmkfile git-tag-push'. Pre-verify is here
+## because dm-push has no other pre-verify path, and dm-packaging-
+## helper-script's 'genmkfile git-verify' only covers HEAD.
 internal_git_push_atomic_all_remotes() {
-   local remote_item fallback_tag
-   local -a all_branches collected_tags remote_list
-   local -A push_label=()
-
-   all_branches=( main master trixie )
-
-   collected_tags=()
-   internal_git_tags_at_branch_tips collected_tags "${all_branches[@]}"
-
-   if [ "${#collected_tags[@]}" -eq 0 ]; then
-      fallback_tag=""
-      fallback_tag="$(git describe --abbrev=0 2>/dev/null)" || fallback_tag=""
-      [ -n "${fallback_tag}" ] && collected_tags+=( "${fallback_tag}" )
-   fi
+   local branch tag branch_tags_raw sorted_tags_raw
+   local -a existing_branches remote_list tip_tags branch_tag_list
 
    remote_list=()
    internal_git_known_push_remotes remote_list
 
-   for remote_item in "${remote_list[@]}"; do
-      log info "--------"
-      internal_git_verify_and_push_to_remote "${remote_item}" "${all_branches[@]}" -- "${collected_tags[@]}" &
-      push_label[$!]="[${all_branches[*]}] [${collected_tags[*]}] -> ${remote_item}"
-   done
-
-   if [ "${#push_label[@]}" -eq 0 ]; then
+   if [ "${#remote_list[@]}" -eq 0 ]; then
       log notice "no known push remotes configured locally; nothing to push"
       return 0
    fi
 
-   if ! parallel_wait push_label; then
-      log error "failed pushes:"
-      log error "${parallel_failures[*]}"
-      return 1
+   existing_branches=()
+   for branch in "${DM_PUSH_BRANCHES_UNIVERSE[@]}"; do
+      git show-ref --verify --quiet -- "refs/heads/${branch}" \
+         && existing_branches+=( "${branch}" )
+   done
+
+   if [ "${#existing_branches[@]}" -eq 0 ]; then
+      log notice "none of (${DM_PUSH_BRANCHES_UNIVERSE[*]}) exist locally; nothing to push"
+      return 0
    fi
+
+   ## Dedupe tip tags to avoid double-verifying a tag at multiple branch tips.
+   tip_tags=()
+   for branch in "${existing_branches[@]}"; do
+      internal_git_verify_ref "refs/heads/${branch}"
+      branch_tags_raw="$(git tag --points-at "refs/heads/${branch}")"
+      if [ -n "${branch_tags_raw}" ]; then
+         mapfile -t branch_tag_list <<< "${branch_tags_raw}"
+         tip_tags+=( "${branch_tag_list[@]}" )
+      fi
+   done
+   if [ "${#tip_tags[@]}" -gt 0 ]; then
+      sorted_tags_raw="$(printf '%s\n' "${tip_tags[@]}" | sort --unique)"
+      mapfile -t tip_tags <<< "${sorted_tags_raw}"
+   fi
+   for tag in "${tip_tags[@]}"; do
+      [ -n "${tag}" ] || continue
+      internal_git_verify_ref "refs/tags/${tag}"
+   done
+
+   make_git_push_branches="${existing_branches[*]}" \
+   make_git_push_remotes="${remote_list[*]}" \
+      genmkfile git-tag-push
 }
