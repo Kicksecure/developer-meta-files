@@ -209,6 +209,8 @@ internal_git_known_push_remotes() {
 ## 'derivative-maker/help-steps/git_sanity_test' function
 ## 'classify_tag' may be useful inspiration (maybe refactor that
 ## function into a tag-verifying script).
+## Use $git_verify_command_wrapper (derivative-maker, maybe to be moved
+## to helper-scripts?
 internal_git_verify_ref() {
    local ref
    ref="$1"
