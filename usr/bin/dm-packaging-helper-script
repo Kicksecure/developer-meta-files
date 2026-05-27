@@ -1804,11 +1804,6 @@ pkg_git_push_atomic() {
 
    dry_run_or_run genmkfile git-verify >/dev/null
 
-   if [ "${batch_meta_dry_run}" = "y" ]; then
-      log notice "[DRY-RUN] ${batch_current_package_reponame:-}: WOULD: pkg_git_push_atomic" >&2
-      return 0
-   fi
-
    internal_git_push_atomic_all_remotes
 }
 
@@ -2855,6 +2850,11 @@ main() {
 
    parse_args "$@"
    batch_meta_dry_run="${parsed_dry_run}"
+   if [ "${batch_meta_dry_run}" = "y" ]; then
+      ## function 'log_run' honors variable '$dry_run'
+      dry_run=1
+      export dry_run
+   fi
 
    if [ -z "${parsed_mode}" ] && [ -n "${parsed_target}" ]; then
       printf '%s\n' "${red}${bold}FATAL ERROR:${reset} one of --batch or --no-batch is required"

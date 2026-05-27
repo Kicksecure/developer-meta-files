@@ -298,6 +298,8 @@ internal_git_push_refspecs() {
    if [ "$#" -eq 0 ]; then
       return 0
    fi
+
+   ## function 'log_run' honors variable '$dry_run'
    log_run info git push --atomic --porcelain -- "${remote_name}" "$@"
 }
 
