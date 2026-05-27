@@ -2632,8 +2632,11 @@ fix debian/watch lintian warning debian-watch-contains-dh_make-template"
 
 wait_for_git_processes() {
    if ! parallel_wait git_pid_label ; then
-      printf '%s\n' "${red}${bold}ERROR ${BASH_SOURCE[0]}: failed git background jobs:${reset}" >&2
-      printf '   - %s\n' "${parallel_failures[@]}" >&2
+      ## parallel_wait now log-error's each failure individually
+      ## with pid+exit (helper-scripts parallel.bsh). Consolidate
+      ## the labels into one trailing summary line for grep /
+      ## at-a-glance after many parallel log lines have scrolled.
+      log error "${#parallel_failures[@]} git background job(s) failed: ${parallel_failures[*]}"
       exit 1
    fi
 }
