@@ -288,10 +288,14 @@ readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting'
 
 ## Branch + tag ruleset bypass actor list.
 ##
-##   SOURCE = []
-##     No one - including org owners - can override. Canonical
-##     history is sacred. Recovery from a stuck state goes through
-##     GitHub support, not a one-off bypass.
+##   SOURCE = [OrganizationAdmin]
+##     Org owners can override. Originally '[]' for "canonical
+##     history is sacred", but with required_signatures on SOURCE
+##     and a large amount of unsigned historical commits, every
+##     maintainer push got blocked. The bypass lets the org owner
+##     keep pushing unsigned commits while still blocking the same
+##     for non-admin contributors. The MIRROR shape is reused
+##     verbatim; same recovery-from-stuck-state benefit applies.
 ##   MIRROR = [OrganizationAdmin]
 ##     Org owners can override. If a re-fork or hotfix needs a
 ##     force-push or unsigned commit, do it without first dropping
@@ -301,7 +305,7 @@ readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting'
 ## repo level (Free for public repos). On Free the org-level upserts
 ## in dm-github-org-policy are commented out; the per-repo loop still
 ## consumes these.
-readonly POLICY_RULESET_BYPASS_SOURCE='[]'
+readonly POLICY_RULESET_BYPASS_SOURCE='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"OrganizationAdmin","bypass_mode":"always"}]'
 
 ## Branch + tag ruleset body shapes. POSTed to
@@ -317,17 +321,25 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##   - required_signatures   require GPG-signed commits / tags
 ##
 ## POLICY_RULESET_RULES_<ROLE> below selects the rules array per
-## role. SOURCE and PERSON include required_signatures; MIRROR and
-## BOT omit it. Rationale: the bot account (BOT_USERS) and the bot
-## org (org-ai-assisted, the MIRROR_ORGS entry) push commits via
-## AI-assisted automation that does not own a GPG key matching the
-## bot's GitHub-verified identity, so required_signatures on those
-## roles blocks every legitimate bot push. The canonical SOURCE
-## history (Kicksecure / Whonix) and the maintainer's PERSON mirror
-## still enforce signed commits.
+## role. Only SOURCE includes required_signatures; MIRROR, PERSON,
+## and BOT omit it. Rationale:
+##   - MIRROR (org-ai-assisted) and BOT (assisted-by-ai and peers)
+##     push commits via AI-assisted automation that does not own a
+##     GPG key matching the bot's GitHub-verified identity, so
+##     required_signatures on those roles blocks every legitimate
+##     bot push.
+##   - PERSON (adrelanos personal mirror) omits the rule because
+##     GitHub's ruleset bypass-actor list on user-owned repos is
+##     limited to DeployKey - there is no clean way to express
+##     "the repo owner can push unsigned commits" without dropping
+##     the rule. SOURCE keeps the rule plus an OrganizationAdmin
+##     bypass; PERSON has no equivalent escape hatch.
+##   - SOURCE (Kicksecure / Whonix) keeps the rule for the
+##     canonical history; the org owner can still push via the
+##     bypass actor (see POLICY_RULESET_BYPASS_SOURCE above).
 ##
 ## Operator note on required_signatures + GitHub's UI merge buttons
-## (applies to SOURCE / PERSON only):
+## (applies to SOURCE only):
 ##   "Merge pull request" and "Squash and merge" re-sign the produced
 ##     commit with GitHub's web-flow GPG key, so they keep working on
 ##     PRs with unsigned contributor commits.
@@ -362,8 +374,7 @@ readonly POLICY_RULESET_RULES_MIRROR='[
 ]'
 readonly POLICY_RULESET_RULES_PERSON='[
    {"type": "deletion"},
-   {"type": "non_fast_forward"},
-   {"type": "required_signatures"}
+   {"type": "non_fast_forward"}
 ]'
 readonly POLICY_RULESET_RULES_BOT='[
    {"type": "deletion"},
