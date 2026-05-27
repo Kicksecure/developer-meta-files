@@ -584,12 +584,12 @@ extract_description_from_debian_control() {
             fi
             headline_template="${headline_template//'XXX_REPLACE_ME_XXX'/"${headline}"}"
             dry_run_or_run append "${target_file}" "${headline_template}" >/dev/null
-            dry_run_or_run append "${target_file}" $'\n' >/dev/null
+            dry_run_or_run append "${target_file}" "" >/dev/null
             headline_written='y'
             continue
          fi
          if [ "${line}" = ' .' ]; then
-            dry_run_or_run append "${target_file}" $'\n' >/dev/null
+            dry_run_or_run append "${target_file}" "" >/dev/null
          else
             # Strip all leading whitespace
             read -r line <<< "${line}"
@@ -619,7 +619,7 @@ internal_descr_writer() {
             touch -- "${description_file}"
 
             dry_run_or_run append "${description_file}" "== ${batch_current_package_reponame} =="
-            dry_run_or_run append "${description_file}" $'\n' >/dev/null
+            dry_run_or_run append "${description_file}" "" >/dev/null
             dry_run_or_run append "${description_file}" "* ${batch_meta_repo_web_link}" >/dev/null
             dry_run_or_run append "${description_file}" "* [${batch_meta_debian_control_web_link} debian/control]" >/dev/null
 
@@ -633,14 +633,14 @@ internal_descr_writer() {
 
          if ! [ "${batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]:-}" = 'y' ]; then
             dry_run_or_run append "${description_file}" "=== ${batch_meta_file_name_without_reponame} ===" >/dev/null
-            dry_run_or_run append "${description_file}" $'\n' >/dev/null
+            dry_run_or_run append "${description_file}" "" >/dev/null
             dry_run_or_run append "${description_file}" "* [${batch_meta_file_web_link} ${batch_meta_file_name_without_reponame}]" >/dev/null
             [ "${batch_meta_gateway_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* gateway only<!--gateway-only-->' >/dev/null
             [ "${batch_meta_workstation_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* workstation only<!--workstation-only-->' >/dev/null
             [ "${batch_meta_non_qubes_whonix_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* Non-Qubes-Whonix only' >/dev/null
             [ "${batch_meta_qubes_whonix_only}" = 'y' ] && dry_run_or_run append "${description_file}" '* Qubes-Whonix only' >/dev/null
             [ "${batch_meta_installed_by_default}" = 'n' ] && dry_run_or_run append "${description_file}" '* Not installed by default.' >/dev/null
-            dry_run_or_run append "${description_file}" $'\n' >/dev/null
+            dry_run_or_run append "${description_file}" "" >/dev/null
 
             batch_meta_file_header_done_list["${batch_meta_relative_file_name}_${batch_current_package_reponame}_${category}_${project}"]='y'
          fi
@@ -932,7 +932,7 @@ pkg_readme_creator_do() {
 
    extract_description_from_debian_control "${control_file}" "${readme_file}" '# XXX_REPLACE_ME_XXX #'
 
-   dry_run_or_run append "${readme_file}" $'\n' >/dev/null
+   dry_run_or_run append "${readme_file}" "" >/dev/null
 
    cat -- "${generic_readme_template_file}" | dry_run_or_run tee --append -- "${readme_file}" >/dev/null
 
@@ -2103,7 +2103,7 @@ pkg_git_submodule_file_writer() {
         path = packages/${batch_current_project_name,,}/${batch_current_package_reponame}
 $url" >/dev/null
 
-   dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" $'\n' >/dev/null
+   dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" "" >/dev/null
 }
 
 ## Generates a release announcement.
@@ -2209,7 +2209,7 @@ pkg_git_packages_git_log_writer() {
 
    if [ "${package_header_written}" = 'y' ]; then
       ## Add newline but only if there were actually changelog lines.
-      dry_run_or_run append "${batch_current_package_changelog}" $'\n' >/dev/null
+      dry_run_or_run append "${batch_current_package_changelog}" "" >/dev/null
    fi
 
    return 0
