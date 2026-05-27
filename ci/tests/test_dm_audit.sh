@@ -53,8 +53,11 @@ required=(
    '2FA required for org members: false'
    'code-security defaults for new repos:'
    'members lacking 2FA'
-   'existing rulesets named'
-   'fine-grained PAT activity:'
+   ## 'existing rulesets named' and 'fine-grained PAT activity:'
+   ## sections are commented out in usr/bin/dm-github-org-policy
+   ## (org-level rulesets are Team+ only; PAT-activity endpoints are
+   ## GitHub-App-only - both unreachable from this PAT-based tool).
+   ## Restore both assertions if either block is uncommented.
    'installed GitHub Apps:'
    'org webhooks (Scorecard "Webhooks" check):'
    'total=2, lacking secret=1'
