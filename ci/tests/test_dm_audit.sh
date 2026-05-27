@@ -8,6 +8,17 @@
 ## Mock-API test: dm-github-org-policy --audit produces a report with the
 ## per-org settings sections, members lacking 2FA, rulesets, PAT
 ## activity, installed Apps - all read-only, no PATCH/PUT/POST.
+##
+## Both the PRESENCE of each required substring AND its ORDER relative to
+## the others are asserted. Order matters because a silent section
+## reorder (e.g. PAT activity printed before code-security defaults) is
+## otherwise invisible to substring-only assertions, yet would change
+## the meaning a maintainer reads off the audit output. The walker walks
+## the audit output once and advances through the required[] list
+## monotonically; a needle that is missing, duplicated upstream of its
+## intended position, or moved after a later section, all surface as the
+## same 'not found in order' failure - which is fine because every one
+## of those is an audit-format regression to investigate.
 
 set -o errexit
 set -o nounset
@@ -31,6 +42,9 @@ export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 out="$(dm-github-org-policy --audit 2>&1)"
 
 fail=0
+## NOTE: order in this array must match the chronological output order
+## of audit_org_state() in usr/bin/dm-github-org-policy. The walker
+## below enforces it.
 required=(
    '=== audit: org-ai-assisted ==='
    'fork-PR approval policy: first_time_contributors'
@@ -58,17 +72,44 @@ required=(
    ## audit. Fixture has the file for derivative-maker only;
    ## helper-scripts AND some-fork register as missing. Output
    ## format is per-repo 'yes:' / 'no:' lines + a 'summary:' line.
-   'summary: have=1, missing=2'
+   ## Per-repo lines are emitted in 'sort --unique' order
+   ## (alphabetical: derivative-maker < helper-scripts < some-fork),
+   ## then the summary line.
    '    yes: org-ai-assisted/derivative-maker'
    '    no:  org-ai-assisted/helper-scripts'
    '    no:  org-ai-assisted/some-fork'
+   'summary: have=1, missing=2'
 )
 
-for needle in "${required[@]}"; do
-   if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
-      printf '%s\n' "FAIL: missing expected fragment: ${needle}" >&2
+## Order-preserving walker. Each required[i] must appear on a line at
+## or after where required[i-1] was matched. Walks output once.
+mapfile -t out_lines <<< "${out}"
+needle_idx=0
+last_match_line=0
+while [ "${needle_idx}" -lt "${#required[@]}" ]; do
+   line_idx="${last_match_line}"
+   matched=0
+   while [ "${line_idx}" -lt "${#out_lines[@]}" ]; do
+      if [[ "${out_lines[line_idx]}" == *"${required[needle_idx]}"* ]]; then
+         last_match_line=$(( line_idx + 1 ))
+         matched=1
+         break
+      fi
+      line_idx=$(( line_idx + 1 ))
+   done
+   if [ "${matched}" -eq 0 ]; then
+      ## Distinguish 'missing entirely' (not anywhere in output) from
+      ## 'out of order' (present, but before the current cursor).
+      if grep --quiet --fixed-strings -- "${required[needle_idx]}" <<< "${out}"; then
+         printf '%s\n' "FAIL: out-of-order fragment: '${required[needle_idx]}'" \
+            "       (present in output but before line ${last_match_line};" \
+            "        previous match was '${required[needle_idx - 1]:-<start>}' on line ${last_match_line})" >&2
+      else
+         printf '%s\n' "FAIL: missing expected fragment: '${required[needle_idx]}'" >&2
+      fi
       fail=1
    fi
+   needle_idx=$(( needle_idx + 1 ))
 done
 
 ## Audit must NEVER print DRY-RUN: prefixes (those are apply-mode).

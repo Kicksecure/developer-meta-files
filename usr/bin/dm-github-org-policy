@@ -384,6 +384,19 @@ audit_org_state() {
    ## Fine-grained PAT activity. The UI toggles are not REST-settable
    ## (see apply_org_policy); this is informative context for
    ## deciding whether to flip them.
+   ##
+   ## NOTE: both endpoints below are GitHub-App-only. Per
+   ## docs.github.com/en/rest/orgs/personal-access-tokens:
+   ## "Only GitHub Apps can use this endpoint." Classic and
+   ## fine-grained PATs are rejected regardless of scope; the
+   ## response is HTTP 404 with an empty 'x-accepted-oauth-scopes'
+   ## header (no OAuth scope grants access). The PAT-restriction
+   ## policy toggle in the org UI does not change this -- it
+   ## controls whether PATs may BE USED to access org resources,
+   ## not whether REST clients can ENUMERATE such tokens. To get
+   ## real data here, install a GitHub App with the 'Personal
+   ## access tokens' permission and authenticate via its
+   ## installation token.
    log notice '  fine-grained PAT activity:'
    result="$(ghorg_api GET "/orgs/${org}/personal-access-token-requests?per_page=1")" || true
    status="$(ghorg_status_of "${result}")"
@@ -393,7 +406,7 @@ audit_org_state() {
          log notice "    pending requests on first page: ${pending}"
          ;;
       404|403)
-         log notice "    requests endpoint: HTTP ${status} (approval flow may be off / token lacks scope)"
+         log notice "    requests endpoint: HTTP ${status} (endpoint accepts GitHub App tokens only, not PATs)"
          ;;
       *)
          log notice "    requests endpoint: HTTP ${status}"
@@ -407,7 +420,7 @@ audit_org_state() {
          log notice "    approved tokens on first page: ${approved}"
          ;;
       *)
-         log notice "    approved tokens endpoint: HTTP ${status} (token may lack admin:org / PAT restriction policy not enforced)"
+         log notice "    approved tokens endpoint: HTTP ${status} (endpoint accepts GitHub App tokens only, not PATs)"
          ;;
    esac
 
