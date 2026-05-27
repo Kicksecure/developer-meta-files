@@ -378,7 +378,7 @@ audit_org_state() {
          fi
       done
    else
-      log notice "  rulesets list: HTTP ${status} (token may lack admin:org)"
+      log notice "  rulesets list: HTTP ${status} (paid plan only / token may lack admin:org)"
    fi
 
    ## Fine-grained PAT activity. The UI toggles are not REST-settable
@@ -407,7 +407,7 @@ audit_org_state() {
          log notice "    approved tokens on first page: ${approved}"
          ;;
       *)
-         log notice "    approved tokens endpoint: HTTP ${status} (token may lack admin:org)"
+         log notice "    approved tokens endpoint: HTTP ${status} (token may lack admin:org / PAT restriction policy not enforced)"
          ;;
    esac
 
@@ -488,6 +488,10 @@ audit_org_state() {
    if [ -z "${repos}" ]; then
       log notice '    (no public non-archived repos)'
    else
+      ## Per-repo presence is shown so legitimately-bare repos
+      ## (no language deps to track - propagating dependabot.yml
+      ## everywhere just to satisfy Scorecard would be noise) are
+      ## visible alongside the ones that genuinely need it.
       missing_count=0
       have_count=0
       while IFS= read -r repo; do
@@ -496,12 +500,13 @@ audit_org_state() {
          status="$(ghorg_status_of "${result}")"
          if [ "${status}" = '200' ]; then
             have_count=$(( have_count + 1 ))
+            log notice "    yes: ${org}/${repo}"
          else
             missing_count=$(( missing_count + 1 ))
-            log notice "    - ${org}/${repo}"
+            log notice "    no:  ${org}/${repo}"
          fi
       done <<< "${repos}"
-      log notice "    have=${have_count}, missing=${missing_count}"
+      log notice "    summary: have=${have_count}, missing=${missing_count}"
    fi
 }
 
