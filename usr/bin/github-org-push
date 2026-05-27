@@ -286,6 +286,7 @@ push_one() {
   if [ "${push_tags}" = '1' ]; then
     [ "${verbose}" = '1' ] \
       && log notice "push --tags ${repo_dir} -> ${remote_name}"
+    ## XXX: bulk 'push --tags' intentional for mass-mirror-to-fork; not migrated to genmkfile git-tag-push.
     git -C "${repo_dir}" push --tags -- "${remote_name}" \
       || log warn "'${repo_dir}': tag push to '${remote_name}' failed"
   fi
