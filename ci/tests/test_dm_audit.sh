@@ -81,7 +81,7 @@ required=(
    '    yes: org-ai-assisted/derivative-maker'
    '    no:  org-ai-assisted/helper-scripts'
    '    no:  org-ai-assisted/some-fork'
-   'summary: have=1, missing=2'
+   '    summary: have=1, missing=2'
 )
 
 ## Order-preserving walker. Each required[i] must appear on a line at
