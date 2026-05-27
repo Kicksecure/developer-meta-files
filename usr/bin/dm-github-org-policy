@@ -109,6 +109,9 @@ Run 'dm-github-org-policy --policy-dump' for the full table of what
 gets applied (bodies, endpoints, methods, labels, SOURCE vs MIRROR
 diffs).
 
+Environment variable:
+ORGS_OVERRIDE=Kicksecure,Whonix
+
 Auth:
   ${GITHUB_TOKEN} env var, or chmod-600 ~/.config/github-token.
   Classic PAT needs admin:org + repo. Fine-grained PAT needs
