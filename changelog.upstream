@@ -1,3 +1,271 @@
+commit 23bbc27e4ebed8b936e3e82f0b23fbb3ae0c5a68
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 06:43:47 2026 -0400
+
+    .
+
+commit 72ba78cccdeda65d31fe9819b543a5c4afbf60ec
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 06:22:20 2026 -0400
+
+    .
+
+commit 9232e85f76b83901989cce145769bb8e5afefbea
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 26 12:08:45 2026 -0400
+
+    do not guard variables that do not need it
+
+commit 6bf16acf87ee26f70090bbfe197e6e3746b87c63
+Merge: 949ddd44 2921b3c8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue May 26 07:21:52 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit 2921b3c824c182cf8689ed25f2fe52235bb2b324
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Mon May 25 23:54:44 2026 -0400
+
+    Tweaks, FIXMEs, TODOs
+
+commit 949ddd44b04aec7e53aa46345cc87f4feae5a8e3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 25 16:55:40 2026 -0400
+
+    .
+
+commit 99800d4bc2d4a3168a7c461fb01a20fe4b458b7c
+Merge: 97305b72 d209e347
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 25 14:48:24 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/loving-fermat-ZeNGB'
+
+commit d209e34754454d769f84fc8e0301700e0a2a96f8
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 25 18:44:30 2026 +0000
+
+    launch-systemd-container action + install-deps install-self-mode
+
+    * .github/actions/launch-systemd-container/
+        New composite action: builds a Debian-based docker image
+        with systemd as PID 1 (via a sibling Dockerfile + ARG IMAGE /
+        ARG APT_BOOTSTRAP_PACKAGES) and starts it detached +
+        --privileged so subsequent workflow steps `docker exec`
+        against a real init. Caller runs on a host runner without
+        the `container:` directive. /tmp is mounted with the `exec`
+        flag explicitly so equivs-build / dpkg-buildpackage / pip
+        wheels can exec generated scripts from mktemp dirs (Docker's
+        --tmpfs default is noexec).
+
+    * .github/actions/install-deps/
+        New install-self-mode input (install | deb-icup). 'install'
+        is the previous file-copy install via genmkfile; 'deb-icup'
+        builds and apt-installs the real .deb so the postinst runs
+        (required by consumers that rely on config-package-dev
+        displace / divert, e.g. dist-encrypted). Body moves to
+        install-self.sh (sibling of install-genmkfile.sh /
+        install-helper-scripts.sh).
+
+        Drop the dead GENMKFILE_DEBUG=1 prefix from all three
+        install-* scripts: it was placed before `sudo`, which then
+        stripped it from the env passed to genmkfile, so debug
+        output was never produced.
+
+commit 97305b7202454a216f1381f0e3d0d37abf4ec053
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 25 14:40:57 2026 -0400
+
+    .
+
+commit 86bccdc6bb91971572aad1b4ca3f55382e58b718
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 25 14:39:11 2026 -0400
+
+    .
+
+commit 05e0c82a47070b8aef018b52bcd747aab8ba0d27
+Merge: b590cbf2 aef71532
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon May 25 14:37:04 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit aef7153268a9a2c89a5fdd8ff33cb326f9de93de
+Author: Claude <noreply@anthropic.com>
+Date:   Mon May 25 17:53:03 2026 +0000
+
+    Develop qubes-template-(kicksecure|whonix) on master, mirror tag to trixie + push unification + cleanup sweep
+
+    Flip the qubes-template-(kicksecure|whonix) workflow: develop on
+    master locally, mirror the master tag onto trixie automatically.
+    Unify the push path so dm-push and the batch flow both go through
+    one shared, atomic-per-remote helper. Plus a substantial cleanup
+    sweep (FIXMEs, TODOs, XXX markers, R-010 conformance) that landed
+    on the same branch during PR life.
+
+    WHY (qubes-template flip)
+
+    These two special repos were being developed on trixie locally
+    even though their GitHub default branch is master. derivative-
+    maker pinned the submodule SHA at trixie tip, but its CI clones
+    with --shallow-submodules: a shallow clone of master does not
+    auto-follow tags pointing at a non-default-branch tip, and a
+    follow-up 'git fetch <SHA>' doesn't auto-follow tags either.
+    Result: git_sanity_test flagged the submodule as 'Untagged commit'
+    even though the tag existed on the remote.
+
+    Working on master instead, then mirroring the tag onto trixie,
+    lands the parent-pinned SHA on the submodule's default branch tip
+    - so the shallow clone always fetches the corresponding tag.
+
+    WORKFLOW CHANGE (qubes-template-(kicksecure|whonix))
+
+    - Local dev branch is now master (was trixie).
+    - pkg_git_sign_tags signs HEAD on master, then
+      pkg_git_qubes_template_sync_trixie fast-forwards trixie onto
+      master, signs trixie's new tip, and returns to master. Idem-
+      potent; --ff-only so divergent trixie surfaces to the operator
+      rather than producing a merge commit. A read-only
+      'git merge-base --is-ancestor' runs before the destructive ops
+      so divergence is caught in dry-run too.
+    - dm-qubes-templates-official-build-commands is one loop: per
+      template repo, switch to master, dm-quickgittagsign (signs
+      master AND mirrors to trixie), dm-push.
+
+    PUSH UNIFICATION (all repos)
+
+    - New git-helpers.bsh library:
+      * internal_git_known_push_remotes - enumerates push remotes
+        (github-kicksecure, github-whonix, adrelanos, $DM_GITHUB_
+        MIRROR) that exist locally. Replaces the per-project
+        batch_current_package_remote_list subset for the push path.
+      * internal_git_verify_ref - per-ref signature check
+        (verify-commit for branches, verify-tag for tags).
+      * Per-remote three-phase helper:
+        internal_git_compute_refspecs_for_remote ->
+        internal_git_verify_refspecs -> internal_git_push_refspecs.
+        Composed by internal_git_verify_and_push_to_remote.
+      * internal_git_push_atomic_all_remotes - parallel-per-remote
+        driver, one --atomic --porcelain push per remote so branches
+        + tip tags succeed or fail together.
+      * Internal helpers take a caller-named output array (nameref)
+        instead of stdout, so the function bodies run in the caller's
+        shell and errexit propagates directly without process-
+        substitution swallowing the exit status.
+    - dm-push is now a ~30-line thin wrapper over
+      internal_git_push_atomic_all_remotes.
+    - dm-packaging-helper-script: pkg_git_push_remotes +
+      pkg_git_push_tags collapsed into one pkg_git_push_atomic.
+      Dry-run handled at this consumer level (one WOULD line) so the
+      shared library stays a pure 'actually push' helper.
+    - Pushed branches: main, master, trixie (existing-only).
+      bookworm is intentionally not in the list - drop per operator
+      decision.
+    - Canonical push-remote universe hoisted to a new
+      DM_PUSH_REMOTES_UNIVERSE readonly array near the top of
+      git-helpers.bsh; internal_git_known_push_remotes iterates the
+      constant. set_batch_current_package_remote_list docstring
+      rewritten to acknowledge it's intentionally narrower (per-
+      package fetch list, project-aware).
+
+    CLEANUP SWEEP (incidental but in scope)
+
+    - Interactive 'read -r _' fallbacks in internal_git_diff_local /
+      _remote guarded with [ -t 0 ] so CI / cron / piped callers see
+      the warning but don't block on stdin.
+
+    - 4 FIXMEs resolved across dm-packaging-helper-script and
+      github-org-*:
+      * GHORG_MOCK switched from 0/1 to 'true'/'false' string boolean
+        per R-053 (2 source call sites + 18 ci/tests + 2 docs).
+      * Canonical dependabot.yml path hoisted to a global
+        canonical_dependabot_yml constant; deduplicated.
+      * parse_args docstring fixed (stale 'declared near the bottom'
+        claim replaced with 'initializes and writes the parsed_*
+        globals listed below').
+      * '--repo implies --no-batch' inference moved from main() into
+        parse_args() so all flag-shape logic lives in one place.
+
+    - 6 TODOs resolved:
+      * dm-check-mirrors: drop commented-out single-mirror debug
+        block and stale 'TODO: --max-time' (already set on the per-
+        mirror scurl).
+      * Drop a 9-line commented-out 'TODO: delete /tmp/list-of-
+        packages' fallback in pkg_packaging_files_diff.
+      * Default '*) die 1 ...' arm in set_batch_context_from_pwd so a
+        new entry in repo_is_special that forgets a project mapping
+        fails loud.
+      * 'leading-space TODO' on extract_description_from_debian_
+        control replaced with a Debian Policy 5.6.13 citation.
+      * pkg_install_dependabot_yml: drop the redundant dependabot_
+        yml_is_manual check (INSTALL semantic; the file-exists check
+        handles all 'already present' cases).
+
+    - 3 larger TODO refactors:
+      * pkg_update_consumer_workflows: replace the 11-entry hardcoded
+        consumer-wrapper list with a nullglob scan of
+        ${canonical_workflows_dir}/*.yml.
+      * Sweep trailing 'true' to 'return 0' at function tails
+        (37 sites).
+      * Hoist canonical push-remote universe (see PUSH UNIFICATION).
+
+    - 2 XXX markers resolved:
+      * Drop dead 3-line SourceForge upload template stub in
+        dm-upload-repository.
+      * dm-packaging-helper-script: the local nothing_to_commit() was
+        byte-identical to helper-scripts/usr/libexec/helper-scripts/
+        git.sh; source git.sh and delete the local copy.
+
+    - R-010 compliance: dm-check-mirrors had only 5/6 strict-mode
+      lines; add 'shopt -s shift_verbose'.
+
+    OUT-OF-SCOPE FIXES TO KEEP CI GREEN
+
+    - dm-qubes-templates-official-build-commands: missing 'shopt -s
+      shift_verbose' added (R-010).
+    - dm-tor-update-repository: file-level '# shellcheck disable=
+      SC2317' for the intentional dead code below the early 'exit 0'
+      TODO stub.
+
+    CODERABBIT REVIEW
+
+    Three review passes; all valid findings folded in:
+    - git tag --points-at stray '--' removed in both dm-push and
+      dm-packaging-helper-script.
+    - Ancestry check added to dry-run path of
+      pkg_git_qubes_template_sync_trixie so divergent trixie surfaces
+      even when dry_run_or_run skips the destructive ops.
+    - pkg_git_qubes_template_sync_trixie destructive ops grouped
+      under a single dry-run guard.
+    - declare -A switched to local -A inside
+      internal_git_push_atomic_all_remotes for clearer intent.
+
+commit b590cbf2a3ece88c202c2e8823e1eccc0148868e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 24 17:17:30 2026 -0400
+
+    .
+
+commit e324afd05b0812b80eeac4ebc039ffbd755fb489
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 24 17:06:51 2026 -0400
+
+    TODO
+
+commit 142ec251c49739dd9696cd01f267bd807b8fffae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 24 17:05:35 2026 -0400
+
+    .
+
+commit ba3a8dd346b4818ace5c496ff8dcca4b689a90f7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun May 24 19:07:36 2026 +0000
+
+    bumped changelog version
+
 commit c08665fd8d2e17ed8ecd95fee41d8f83f3a45bd7
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sun May 24 14:59:34 2026 -0400
