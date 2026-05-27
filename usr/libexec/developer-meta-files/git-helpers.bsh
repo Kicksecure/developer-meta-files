@@ -41,8 +41,7 @@ fi
 ## list down to what actually exists locally. Add or remove names here,
 ## not inline. ArrayBolt3 is fetch-only by policy and stays out.
 if ! declare -p DM_PUSH_REMOTES_UNIVERSE &>/dev/null; then
-   ## TODO: add "${DM_GITHUB_DEV}"
-   readonly -a DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" )
+   readonly -a DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" )
 fi
 
 ## Canonical release-branch universe. The per-repo existing subset
