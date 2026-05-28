@@ -2276,16 +2276,7 @@ pkg_git_qubes_template_sync_trixie() {
    ## Ancestry check runs in both live and dry-run so divergence
    ## surfaces before any destructive op.
    if ! git merge-base --is-ancestor "refs/heads/trixie" "${master_head}"; then
-      local trixie_head ahead_count trees_match reconcile_hint
-      trixie_head="$(git rev-parse --verify 'refs/heads/trixie^{commit}')"
-      ahead_count="$(git rev-list --count "${master_head}..refs/heads/trixie")"
-      if git diff --quiet "${master_head}" "refs/heads/trixie"; then
-         trees_match='yes (only merge-commit history differs; reset is content-safe)'
-      else
-         trees_match='no (real changes on trixie would be lost by a reset)'
-      fi
-      reconcile_hint="git switch trixie && git reset --hard ${master_head} && git push --force-with-lease origin trixie && git switch master"
-      die 1 "${prefix} 'trixie' (${trixie_head:0:12}) has ${ahead_count} commit(s) not on master (${master_head:0:12}); ff-only sync would fail. Trees identical: ${trees_match}. To reconcile: ${reconcile_hint}"
+      die 1 "${prefix} 'trixie' commit(s) not on master."
    fi
 
    ## Dry-run short-circuit: a per-step dry_run_or_run wrap leaves the
