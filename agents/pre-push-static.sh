@@ -329,7 +329,12 @@ check_R090_command_v() {
       ## 'style-ok: no-safe-rm' waiver below for R-120; used by
       ## bootstrap scripts that run before helper-scripts is on the
       ## system but aren't part of the R-093 hard-coded allowlist.
-      if grep --quiet --fixed-strings 'style-ok: no-has' -- "${script}"; then
+      ## Anchored regex (not --fixed-strings) so a typo'd
+      ## superset like 'no-has-typo' or 'no-hash' doesn't
+      ## silently disable R-090.
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*no-has([[:space:]]|$)' \
+         -- "${script}"; then
          continue
       fi
       hits="$(grep --line-number 'command -v' -- "${script}" 2>/dev/null || true)"
@@ -373,8 +378,12 @@ check_R120_rm() {
 
    for script in "${@}"; do
       ## Script-wide waiver: '## style-ok: no-safe-rm' anywhere in
-      ## the file disables R-120 for that file.
-      if grep --quiet --fixed-strings 'style-ok: no-safe-rm' -- "${script}"; then
+      ## the file disables R-120 for that file. Anchored regex (not
+      ## --fixed-strings) so a typo'd superset doesn't silently
+      ## disable R-120; mirrors the no-has waiver above.
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*no-safe-rm([[:space:]]|$)' \
+         -- "${script}"; then
          continue
       fi
       ## Conservative: 'rm' as a word at start-of-line or after

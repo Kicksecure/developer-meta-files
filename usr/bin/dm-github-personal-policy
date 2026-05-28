@@ -126,6 +126,54 @@ user_kind() {
 target_kind="$(user_kind "${target_user}")" \
    || die 64 "refusing to run against '${target_user}': not in PERSON_USERS or BOT_USERS at the top of this script. Add it there if it should be in scope."
 
+## Per-repo ruleset bypass actor list.
+##
+## PERSON only: resolve target_user's numeric GitHub user_id and
+## inject a [{User, target_user_id, always}] bypass. On user-owned
+## repos there is no OrganizationAdmin to reuse (no org); the User
+## actor_type is the repo-owner-bypass equivalent and gives the
+## maintainer an escape hatch for required_signatures (the only
+## rule on PERSON that would otherwise block their own unsigned
+## pushes). The maintainer can ALSO bypass deletion and
+## non_fast_forward via this same actor, but that's fine: they
+## already have repo-owner privileges and can do those via the
+## GitHub UI anyway.
+##
+## BOT: empty bypass. The BOT rules (deletion + non_fast_forward,
+## no required_signatures) do not block legitimate bot pushes;
+## granting the bot itself a User bypass would let it
+## force-push and delete branches on its own repos, defeating
+## the whole point of those rules. Normal automated pushes do
+## not need a bypass.
+case "${target_kind}" in
+   person)
+      target_user_result="$(ghorg_api GET "/users/${target_user}")" \
+         || die 1 "could not GET /users/${target_user} to resolve user_id for ruleset bypass"
+      target_user_status="$(ghorg_status_of "${target_user_result}")"
+      if [ "${target_user_status}" != '200' ]; then
+         die 1 "user_id lookup for '${target_user}': HTTP ${target_user_status}"
+      fi
+      target_user_id="$(ghorg_body_of "${target_user_result}" \
+         | ghorg_jq_capped --raw-output -- '.id // ""')"
+      if ! [[ "${target_user_id}" =~ ^[0-9]+$ ]] || \
+         [ "${#target_user_id}" -gt "${GHORG_MAX_ID_LEN}" ]; then
+         die 1 "user_id for '${target_user}' is not a valid numeric id: '${target_user_id}'"
+      fi
+      ## --argjson injects target_user_id as a JSON number (not a
+      ## string) so GitHub's schema validator accepts the actor_id
+      ## type.
+      personal_bypass="$(ghorg_jq -n --argjson id "${target_user_id}" -- \
+         '[{actor_id: $id, actor_type: "User", bypass_mode: "always"}]')"
+      ;;
+   bot)
+      personal_bypass='[]'
+      ;;
+   *)
+      die 1 "unexpected target_kind='${target_kind}' (expected person|bot)"
+      ;;
+esac
+readonly personal_bypass
+
 readonly RULESET_NAME_BRANCH='dm-github-personal-policy default-branch protection'
 readonly RULESET_NAME_TAG='dm-github-personal-policy tag protection'
 
@@ -158,19 +206,20 @@ apply_repo_policy() {
       || true
 
    ## PERSON / BOT ruleset-rules split (required_signatures on /
-   ## off respectively) lives in agents/github-policy-canonical-vs-
-   ## mirror.md.
+   ## off respectively) and the per-kind bypass split (User actor
+   ## on PERSON, '[]' on BOT) both live in agents/github-policy-
+   ## canonical-vs-mirror.md.
    rules_var="POLICY_RULESET_RULES_${target_kind^^}"
 
    if check_variable_name "${rules_var}"; then
       policy_upsert_repo_ruleset "${target_user}" "${repo}" \
          "${RULESET_NAME_BRANCH}" \
-         "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo '[]' "${!rules_var}")" \
+         "$(policy_branch_ruleset_body "${RULESET_NAME_BRANCH}" repo "${personal_bypass}" "${!rules_var}")" \
          || true
 
       policy_upsert_repo_ruleset "${target_user}" "${repo}" \
          "${RULESET_NAME_TAG}" \
-         "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo '[]' "${!rules_var}")" \
+         "$(policy_tag_ruleset_body "${RULESET_NAME_TAG}" repo "${personal_bypass}" "${!rules_var}")" \
          || true
    fi
 
