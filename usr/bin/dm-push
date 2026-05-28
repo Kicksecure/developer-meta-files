@@ -26,4 +26,4 @@ fi
 
 repo_name="$(basename -- "$PWD")"
 
-"${dist_developer_meta_files_folder}/usr/bin/dm-packaging-helper-script" --repo "${repo_name}" internal_git_push_atomic_all_remotes
+"${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/usr/bin/dm-packaging-helper-script" --repo "${repo_name}" internal_git_push_atomic_all_remotes

@@ -36,23 +36,9 @@ source "${derivative_maker_source_code_dir}/packages/kicksecure/genmkfile/usr/sh
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/log_run_die.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/git.sh"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/parallel.bsh"
 
 log_level=info
-
-## Reusable wait-for-pids helper. Prefer the in-tree copy when run
-## from the source folder so dev iteration does not need a reinstall.
-parallel_helper="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/parallel.bsh"
-test -r "$parallel_helper" || parallel_helper="/usr/libexec/helper-scripts/parallel.bsh"
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/parallel.bsh
-source "$parallel_helper"
-
-## Shared git helpers (also sourced by dm-push). Prefer the in-tree
-## copy alongside this script during dev runs; fall back to the
-## installed path.
-git_helpers_lib="${MYDIR}/../libexec/developer-meta-files/git-helpers.bsh"
-test -r "$git_helpers_lib" || git_helpers_lib="/usr/libexec/developer-meta-files/git-helpers.bsh"
-# shellcheck source=../libexec/developer-meta-files/git-helpers.bsh
-source "$git_helpers_lib"
 
 canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/workflows"
 canonical_dependabot_yml="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
