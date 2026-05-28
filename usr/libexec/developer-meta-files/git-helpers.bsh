@@ -5,17 +5,6 @@
 
 ## AI-Assisted
 
-## Shared git helpers for the developer-meta-files scripts. Sourced
-## by dm-packaging-helper-script and dm-push.
-##
-## Safe to source: no top-level side effects beyond function and
-## constant definitions.
-##
-## All push logic lives in genmkfile's 'git-tag-push' target; this
-## file owns only the dmf-specific orchestration (release-branch
-## universe, mirror remotes, per-repo filtering) and shells out to
-## genmkfile for the atomic push + cache.
-
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -25,35 +14,15 @@ shopt -s shift_verbose
 
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
-
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 
-if [ -z "${DM_GITHUB_DEV:-}" ]; then
-   readonly DM_GITHUB_DEV='adrelanos'
-fi
-if [ -z "${DM_GITHUB_MIRROR:-}" ]; then
-   readonly DM_GITHUB_MIRROR='org-ai-assisted'
-fi
+DM_GITHUB_DEV='adrelanos'
+DM_GITHUB_MIRROR='org-ai-assisted'
+## ArrayBolt3 (fetch-only) is intentionally excluded.
+DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" )
+DM_PUSH_BRANCHES_UNIVERSE=( main master trixie )
 
-## Canonical push-remote universe. dm-push, dm-packaging-helper-script,
-## and every consumer of internal_git_known_push_remotes filter this
-## list down to what actually exists locally. Add or remove names here,
-## not inline. ArrayBolt3 is fetch-only by policy and stays out.
-if ! declare -p DM_PUSH_REMOTES_UNIVERSE &>/dev/null; then
-   readonly -a DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" )
-fi
-
-## Canonical release-branch universe. The per-repo existing subset
-## is what gets passed to genmkfile (which is strict on missing
-## branches per its 'git-tag-push' contract).
-if ! declare -p DM_PUSH_BRANCHES_UNIVERSE &>/dev/null; then
-   readonly -a DM_PUSH_BRANCHES_UNIVERSE=( main master trixie )
-fi
-
-## $1: output array name.
-## Populates the array with developer-side push remotes that exist
-## locally. ArrayBolt3 (fetch-only) is intentionally excluded.
 internal_git_known_push_remotes() {
    local -n remotes_out_ref
    local remote_item
@@ -68,9 +37,6 @@ internal_git_known_push_remotes() {
    done
 }
 
-## Dmf-owned signed-release trust boundary: unsigned ref must not
-## reach a mirror remote. genmkfile git-tag-push is generic and
-## does not verify; dmf wraps it with this pre-check.
 internal_git_verify_ref() {
    local ref
    ref="$1"
@@ -87,10 +53,6 @@ internal_git_verify_ref() {
    esac
 }
 
-## Pre-verify each branch tip + tip tag signature, then delegate
-## the atomic push to 'genmkfile git-tag-push'. Pre-verify is here
-## because dm-push has no other pre-verify path, and dm-packaging-
-## helper-script's 'genmkfile git-verify' only covers HEAD.
 internal_git_push_atomic_all_remotes() {
    local branch tag branch_tags_raw sorted_tags_raw
    local -a existing_branches remote_list tip_tags branch_tag_list
