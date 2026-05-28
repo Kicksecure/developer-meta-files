@@ -73,8 +73,8 @@ Notes:
 | --- | --- | --- |
 | Issue tracking | `has_issues=on` | `has_issues=off` (route upstream) |
 | Project boards / discussions / wikis | (default on, unset) | off |
-| Ruleset bypass | `[OrgAdmin]` (org owner can bypass; non-admins still blocked) | `[OrgAdmin]` on MIRROR; `[]` on PERSON/BOT |
-| Ruleset `required_signatures` ("allow only signed commits") | **on** (org owner bypasses via `[OrgAdmin]`) | **off on MIRROR / PERSON / BOT** (AI-assisted automation pushes commits without a verifiable GPG key for the bot identity; PERSON repos have no bypass-actor path for the owner on user-owned repos) |
+| Ruleset bypass | `[OrgAdmin]` (org owner can bypass; non-admins still blocked) | `[OrgAdmin]` on MIRROR; `[User: target_user_id]` on PERSON (computed at apply time from `GET /users/{login}` since user-owned repos have no org-admin actor); `[]` on BOT (no rule needs a bypass and the bot must not be able to force-push or delete its own branches) |
+| Ruleset `required_signatures` ("allow only signed commits") | **on** (org owner bypasses via `[OrgAdmin]`) | **on PERSON** (owner bypasses via `[User]`); **off on MIRROR / BOT** (AI-assisted automation pushes commits without a verifiable GPG key for the bot identity) |
 | CI / Actions | enabled, allow-list = github-owned + verified-creators | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on (it is where AI-assisted dev runs) |
 | Dependabot alerts + security updates | on | off (would duplicate upstream alerts) |
 | PVR (Private Vulnerability Reporting) | **off everywhere** (canonical disclosure is the wiki - see `.github/SECURITY.md`) | off |
@@ -84,26 +84,35 @@ Net deliberate diffs after this split:
 
 1. `has_issues=on` only on SOURCE. Everywhere else issues route
    upstream.
-2. `[OrgAdmin]` ruleset bypass on SOURCE and MIRROR; `[]` on
-   PERSON/BOT. SOURCE picked up `[OrgAdmin]` together with the
-   `required_signatures`-blocked-pushes fix (org owner needs to
-   keep pushing unsigned historical commits without dropping the
-   rule). MIRROR has it for hotfix re-fork without dropping the
-   ruleset. PERSON/BOT have no bypass because GitHub's
-   user-owned-repo bypass-actor list is essentially DeployKey
-   only - no `RepositoryAdmin` / `User` actor type works for the
-   repo owner.
-3. `required_signatures` ruleset rule on SOURCE only.
-   MIRROR (`org-ai-assisted`), PERSON (`adrelanos`), and BOT
-   (`assisted-by-ai` and peers) drop the rule. MIRROR/BOT drop
-   it because AI-assisted pushes carry no GPG key matching the
-   bot's GitHub-verified identity, so leaving the rule on would
-   block every legitimate bot push. PERSON drops it because the
-   user-owned-repo bypass-actor restriction above means the
-   maintainer has no escape hatch when the rule blocks an
-   unsigned-history push. SOURCE keeps the rule plus the
-   `[OrgAdmin]` bypass, so non-admin contributors still get the
-   protection. Dispatched via `POLICY_RULESET_RULES_<ROLE>` in
+2. Ruleset bypass on SOURCE / MIRROR / PERSON only; BOT gets `[]`.
+   Actor type pivots on whether the repo is org-owned or user-owned:
+   - SOURCE / MIRROR use `[OrgAdmin]` (static; org_id=1 maps to
+     "any org admin"). SOURCE picked it up together with the
+     `required_signatures`-blocked-pushes fix; MIRROR has had it
+     for hotfix re-fork without dropping the ruleset.
+   - PERSON uses `[User: target_user_id]` (computed at apply
+     time). User-owned repos have no `OrganizationAdmin`
+     equivalent, but the `User` actor type IS supported on
+     repo-level rulesets - the maintainer's own GitHub
+     user_id, resolved via `GET /users/{login}` in
+     `dm-github-personal-policy`, is the equivalent
+     repo-owner-bypass for the `required_signatures` rule.
+   - BOT gets `[]`. There is no `required_signatures` rule to
+     bypass, and the remaining rules (`deletion`,
+     `non_fast_forward`) do not block legitimate bot pushes -
+     adding a `User` bypass would let the bot force-push and
+     delete branches on its own repos, defeating the whole
+     point of those rules. SOURCE / MIRROR / PERSON let the
+     maintainer bypass; BOT does not.
+3. `required_signatures` ruleset rule on SOURCE and PERSON.
+   MIRROR (`org-ai-assisted`) and BOT (`assisted-by-ai` and
+   peers) drop the rule because AI-assisted pushes carry no GPG
+   key matching the bot's GitHub-verified identity, so leaving
+   the rule on would block every legitimate bot push. SOURCE
+   keeps the rule plus the `[OrgAdmin]` bypass; PERSON keeps it
+   plus the `[User: target_user_id]` bypass - non-admin
+   collaborators on either side still get the protection.
+   Dispatched via `POLICY_RULESET_RULES_<ROLE>` in
    `github-policy-data.bsh` (same naming pattern as
    `POLICY_RULESET_BYPASS_<ROLE>`).
 4. CI disabled entirely on PERSON/BOT (no workflows run on the
