@@ -187,8 +187,17 @@ readonly POLICY_APPS_LABEL='GitHub App / OAuth App policies must be set via UI'
 ##                                       whole request. Org-level
 ##                                       'forking_allowed_for_private_repositories'
 ##                                       is the actual gate.
-##   ruleset bypass        none  OrgAdmin   MIRROR: hotfix without
-##                                          dropping the ruleset
+##   ruleset bypass    OrgAdmin  OrgAdmin   SOURCE: org-owner-only
+##                                          escape hatch for
+##                                          unsigned historical
+##                                          pushes (rule on SOURCE
+##                                          + bypass = strict for
+##                                          non-admins).
+##                                          MIRROR: hotfix without
+##                                          dropping the ruleset.
+##                                          See
+##                                          POLICY_RULESET_BYPASS_*
+##                                          below.
 
 ## Per-repo PATCH body. apply_repo_policy in dm-github-org-policy
 ## pivots on org_kind to choose between SOURCE and MIRROR.
@@ -300,6 +309,26 @@ readonly POLICY_REPO_PVR_OFF_LABEL='disable private vulnerability reporting'
 ##     Org owners can override. If a re-fork or hotfix needs a
 ##     force-push or unsigned commit, do it without first dropping
 ##     the ruleset.
+##   PERSON = computed at --apply time, not a static constant.
+##     dm-github-personal-policy resolves target_user -> user_id via
+##     GET /users/{login} and builds
+##     [{actor_id: <id>, actor_type: "User", bypass_mode: "always"}].
+##     Static org-level OrganizationAdmin does not apply to
+##     user-owned repos (no org); the User actor_type is the
+##     repo-owner-bypass equivalent. The bypass lets the maintainer
+##     push unsigned commits to their own mirror repos without
+##     dropping required_signatures for any other collaborator with
+##     write access. bypass_mode: "always" exempts the actor from
+##     EVERY rule (deletion + non_fast_forward + required_signatures);
+##     that broader scope is acceptable on PERSON because the
+##     maintainer is the repo owner and could perform deletion /
+##     force-push via the GitHub UI regardless.
+##   BOT = '[]'. The BOT rules (deletion + non_fast_forward, no
+##     required_signatures) do not block legitimate bot pushes;
+##     granting the bot account a User bypass would let it
+##     force-push and delete branches on its own repos, defeating
+##     the rules' purpose. dm-github-personal-policy hardcodes '[]'
+##     when target_kind=bot and skips the user_id lookup entirely.
 ##
 ## Plan-independent: works at org level (PAID PLAN ONLY, Team+) and
 ## repo level (Free for public repos). On Free the org-level upserts
@@ -321,25 +350,25 @@ readonly POLICY_RULESET_BYPASS_MIRROR='[{"actor_id":1,"actor_type":"Organization
 ##   - required_signatures   require GPG-signed commits / tags
 ##
 ## POLICY_RULESET_RULES_<ROLE> below selects the rules array per
-## role. Only SOURCE includes required_signatures; MIRROR, PERSON,
-## and BOT omit it. Rationale:
+## role. SOURCE and PERSON include required_signatures; MIRROR and
+## BOT omit it. Rationale:
 ##   - MIRROR (org-ai-assisted) and BOT (assisted-by-ai and peers)
 ##     push commits via AI-assisted automation that does not own a
 ##     GPG key matching the bot's GitHub-verified identity, so
 ##     required_signatures on those roles blocks every legitimate
 ##     bot push.
-##   - PERSON (adrelanos personal mirror) omits the rule because
-##     GitHub's ruleset bypass-actor list on user-owned repos is
-##     limited to DeployKey - there is no clean way to express
-##     "the repo owner can push unsigned commits" without dropping
-##     the rule. SOURCE keeps the rule plus an OrganizationAdmin
-##     bypass; PERSON has no equivalent escape hatch.
-##   - SOURCE (Kicksecure / Whonix) keeps the rule for the
-##     canonical history; the org owner can still push via the
-##     bypass actor (see POLICY_RULESET_BYPASS_SOURCE above).
+##   - SOURCE (Kicksecure / Whonix) and PERSON (adrelanos personal
+##     mirror) keep the rule. SOURCE pairs it with an
+##     OrganizationAdmin bypass; PERSON pairs it with a User-actor
+##     bypass scoped to target_user's GitHub user_id (resolved at
+##     --apply time, see dm-github-personal-policy). Either bypass
+##     lets the maintainer push unsigned commits (whether
+##     backfilling unsigned history or going forward without a
+##     verifiable GPG key) without dropping the rule for non-admin
+##     collaborators with write access.
 ##
 ## Operator note on required_signatures + GitHub's UI merge buttons
-## (applies to SOURCE only):
+## (applies to SOURCE / PERSON):
 ##   "Merge pull request" and "Squash and merge" re-sign the produced
 ##     commit with GitHub's web-flow GPG key, so they keep working on
 ##     PRs with unsigned contributor commits.
@@ -374,7 +403,8 @@ readonly POLICY_RULESET_RULES_MIRROR='[
 ]'
 readonly POLICY_RULESET_RULES_PERSON='[
    {"type": "deletion"},
-   {"type": "non_fast_forward"}
+   {"type": "non_fast_forward"},
+   {"type": "required_signatures"}
 ]'
 readonly POLICY_RULESET_RULES_BOT='[
    {"type": "deletion"},

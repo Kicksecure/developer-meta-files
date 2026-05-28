@@ -8,11 +8,10 @@
 ## Unit test for policy_branch_ruleset_body / policy_tag_ruleset_body
 ## role-keyed rules dispatch. Pins the contract that:
 ##
-##   POLICY_RULESET_RULES_SOURCE              ->  3 rules including
-##                                                required_signatures
-##   POLICY_RULESET_RULES_MIRROR / _PERSON
-##     / _BOT                                 ->  2 rules, NO
-##                                                required_signatures
+##   POLICY_RULESET_RULES_SOURCE / _PERSON  ->  3 rules including
+##                                              required_signatures
+##   POLICY_RULESET_RULES_MIRROR / _BOT     ->  2 rules, NO
+##                                              required_signatures
 ##
 ## Rationale lives once in agents/github-policy-canonical-vs-
 ## mirror.md ("Summary of intentional canonical-vs-mirror splits").
@@ -90,7 +89,7 @@ assert_rules 'branch MIRROR' policy_branch_ruleset_body \
    'deletion,non_fast_forward'
 assert_rules 'branch PERSON' policy_branch_ruleset_body \
    POLICY_RULESET_RULES_PERSON \
-   'deletion,non_fast_forward'
+   'deletion,non_fast_forward,required_signatures'
 assert_rules 'branch BOT' policy_branch_ruleset_body \
    POLICY_RULESET_RULES_BOT \
    'deletion,non_fast_forward'
@@ -104,7 +103,7 @@ assert_rules 'tag MIRROR' policy_tag_ruleset_body \
    'deletion,non_fast_forward'
 assert_rules 'tag PERSON' policy_tag_ruleset_body \
    POLICY_RULESET_RULES_PERSON \
-   'deletion,non_fast_forward'
+   'deletion,non_fast_forward,required_signatures'
 assert_rules 'tag BOT' policy_tag_ruleset_body \
    POLICY_RULESET_RULES_BOT \
    'deletion,non_fast_forward'
