@@ -1,3 +1,174 @@
+commit 24256ef775c1f11216d44b99a2ad1b5349cb1702
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 12:17:00 2026 -0400
+
+    .
+
+commit 21e2c966185006860798563c03f2a1cfb44d4259
+Merge: 851e57c8 60388315
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 12:15:17 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 603883150b1440245d215028c2d5054741dfdd40
+Merge: 5d28fb07 62c7c823
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 28 05:56:15 2026 -0400
+
+    Merge pull request #122 from org-ai-assisted/claude/loving-fermat-ZeNGB
+
+    github-policy: required_signatures on PERSON with User-actor bypass; OrgAdmin bypass on SOURCE
+
+commit 62c7c823887d92f0334e165f101e39381f40dbe6
+Author: Claude <noreply@anthropic.com>
+Date:   Thu May 28 09:52:15 2026 +0000
+
+    github-policy: required_signatures on PERSON with User-actor bypass; OrgAdmin bypass on SOURCE
+
+    Unblocks pushes against repos with unsigned historical commits
+    without dropping the required_signatures rule entirely.
+
+    SOURCE (Kicksecure / Whonix):
+      rule stays on. Bypass changed from [] -> [OrganizationAdmin]
+      (same shape MIRROR already uses), so the org owner can push
+      unsigned commits while non-admin contributors are still blocked.
+
+    PERSON (adrelanos personal mirror):
+      rule stays on. Bypass is computed at --apply time from
+      GET /users/{login} -> [{actor_id: <user_id>, actor_type: "User",
+      bypass_mode: "always"}]. User-owned repos have no
+      OrganizationAdmin equivalent, but actor_type=User on a
+      repo-level ruleset is the repo-owner-bypass equivalent. The
+      maintainer can keep pushing unsigned commits to their own
+      mirror repos while non-admin collaborators with write access
+      remain bound by the rule.
+
+    BOT (assisted-by-ai and peers):
+      no required_signatures (AI-assisted pushes carry no verifiable
+      GPG key for the bot identity, so the rule would block every
+      legitimate push). Bypass stays as []: the remaining rules
+      (deletion, non_fast_forward) protect the bot from accidental
+      force-push / branch deletion on its own repos. Granting a User
+      bypass on BOT would defeat that protection.
+
+    MIRROR (org-ai-assisted): unchanged.
+
+    Live-tested:
+      GET /users/adrelanos -> HTTP 200, user_id=1985040.
+      Generated PERSON body has the [User: 1985040] bypass + the
+      3-rule list including required_signatures; generated BOT body
+      has [] bypass + the 2-rule list. dm-github-personal-policy
+      adrelanos --dry-run iterates all 41 repos and prints the
+      planned upserts.
+
+    Files:
+    - usr/libexec/developer-meta-files/github-policy-data.bsh:
+      - POLICY_RULESET_BYPASS_SOURCE: [] -> [OrganizationAdmin].
+      - POLICY_RULESET_RULES_PERSON: unchanged (3 rules including
+        required_signatures).
+      - Doc blocks rewritten to cover all four roles (SOURCE,
+        MIRROR, PERSON, BOT) and clarify that bypass_mode: "always"
+        exempts the actor from every rule, not just history.
+    - usr/bin/dm-github-personal-policy:
+      - case "${target_kind}": person resolves user_id via
+        GET /users/{login} and builds [{User, target_user_id,
+        always}]; bot hardcodes []; unexpected kind dies.
+    - agents/github-policy-canonical-vs-mirror.md: summary table
+      + items 2-3 in "Net deliberate diffs" rewritten to match.
+    - agents/pre-push-static.sh: anchor style-ok waiver regex
+      (extended-regex with leading/trailing word boundary) so
+      no-has-typo cannot satisfy a no-has waiver. Applies to both
+      the no-has and no-safe-rm waivers.
+    - ci/tests/test_ruleset_body_rules_dispatch.sh: contract pin
+      for PERSON kept at 3 rules including required_signatures
+      (this PR pins the post-rebase contract).
+
+    https://claude.ai/code/session_01GUPFaPsw673d33HL5jbCbW
+
+commit 5d28fb077f6f9b791ba9ab7071ca00cf38a5b255
+Author: assisted-by-ai (Bot Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu May 28 05:52:01 2026 -0400
+
+    pkg_git_qubes_template_sync_trixie: actionable divergence diagnostic (#123)
+
+    ## Why
+
+    When `pkg_git_qubes_template_sync_trixie`'s ancestry check fails, the
+    old `die` message was just:
+
+    ```
+    qubes-template-whonix: pkg_git_qubes_template_sync_trixie 'trixie' has commits not on master; ff-only sync would fail - reconcile manually
+    ```
+
+    That leaves the operator to:
+    1. Dig out the divergent SHAs.
+    2. Count the unique commits.
+    3. Decide whether the divergence is content-real or just stranded
+    merge-commit history.
+    4. Invent the reset command.
+
+    Common case in practice after the May-25 strategy flip (`aef7153` _
+    develop on master, mirror tag to trixie): some trixie tips are
+    content-identical merge commits like `Merge branch 'master' into
+    trixie`, so `git diff master trixie` is empty but ancestry-check
+    correctly fails. The user just needs to reset trixie; the message should
+    tell them so.
+
+    ## After
+
+    ```
+    qubes-template-whonix: pkg_git_qubes_template_sync_trixie 'trixie' (2a123a95ce02) has 2 commit(s) not on master (c59605209ad2); ff-only sync would fail. Trees identical: yes (only merge-commit history differs; reset is content-safe). To reconcile: git switch trixie && git reset --hard c59605209ad2... && git push --force-with-lease origin trixie && git switch master
+    ```
+
+    If trees actually differ (real work on trixie), the message says so and
+    the operator knows a hard reset would lose work.
+
+    ## Scope
+
+    Same control flow, same exit code. Only the failure message changes. No
+    behavior change on the success path.
+
+    ## Test plan
+
+    - [x] `bash -n usr/bin/dm-packaging-helper-script` passes.
+    - [x] Ran the new diagnostic snippet against a real divergent
+    qubes-template-whonix tree _ produces the expected output (`ahead by:
+    2`, `trees identical: yes`).
+
+    ---
+    _Generated by [Claude
+    Code](https://claude.ai/code/session_01GnpfnyzLETPpPz1G6smsRV)_
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+
+    ## Summary by CodeRabbit
+
+    ## Release Notes
+
+    * **Bug Fixes**
+    * Enhanced error diagnostics with detailed commit information and
+    actionable reconciliation commands when branch synchronization conflicts
+    are detected, helping users resolve issues faster.
+
+    <!-- review_stack_entry_start -->
+
+    [![Review Change
+    Stack](https://storage.googleapis.com/coderabbit_public_assets/review-stack-in-coderabbit-ui.svg)](https://app.coderabbit.ai/change-stack/org-ai-assisted/developer-meta-files/pull/123?utm_source=github_walkthrough&utm_medium=github&utm_campaign=change_stack)
+
+    <!-- review_stack_entry_end -->
+
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    Co-authored-by: Claude <noreply@anthropic.com>
+
+commit 851e57c8058b06d1d5db9e5be0b72237f1ff0cf3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed May 27 22:49:37 2026 +0000
+
+    bumped changelog version
+
 commit 39e310a55fe7683727a2db96d9466552cfa87ec1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed May 27 18:35:07 2026 -0400
