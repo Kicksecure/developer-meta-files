@@ -1,3 +1,95 @@
+commit 6d8fc89055286cfb51c5bb3987eb4ec1ab586108
+Merge: d72d7c60 01be5324
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 30 12:32:05 2026 -0400
+
+    Merge remote-tracking branch 'github-kicksecure/master'
+
+commit 01be5324928172dd46884c296d4f5085c3c03a2a
+Merge: d72d7c60 c76ab0d3
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat May 30 12:31:05 2026 -0400
+
+    Merge pull request #5 from Kicksecure/dependabot/github_actions/github-actions-14053788eb
+
+    ci(deps)(deps): bump the github-actions group with 2 updates
+
+commit c76ab0d36c145df171a94248c494e76a55f09cfa
+Author: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Date:   Fri May 29 20:36:17 2026 +0000
+
+    ci(deps)(deps): bump the github-actions group with 2 updates
+
+    Bumps the github-actions group with 2 updates: [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) and [github/codeql-action](https://github.com/github/codeql-action).
+
+
+    Updates `anthropics/claude-code-action` from 1.0.123 to 1.0.133
+    - [Release notes](https://github.com/anthropics/claude-code-action/releases)
+    - [Commits](https://github.com/anthropics/claude-code-action/compare/51ea8ea73a139f2a74ff649e3092c25a904aed7e...787c5a0ce96a9a6cfb050ea0c8f4c05f2447c251)
+
+    Updates `github/codeql-action` from 4.35.5 to 4.36.0
+    - [Release notes](https://github.com/github/codeql-action/releases)
+    - [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)
+    - [Commits](https://github.com/github/codeql-action/compare/9e0d7b8d25671d64c341c19c0152d693099fb5ba...7211b7c8077ea37d8641b6271f6a365a22a5fbfa)
+
+    ---
+    updated-dependencies:
+    - dependency-name: anthropics/claude-code-action
+      dependency-version: 1.0.133
+      dependency-type: direct:production
+      update-type: version-update:semver-patch
+      dependency-group: github-actions
+    - dependency-name: github/codeql-action
+      dependency-version: 4.36.0
+      dependency-type: direct:production
+      update-type: version-update:semver-minor
+      dependency-group: github-actions
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+commit d72d7c603fadfd85f3dd8cea021cef5acc647ae4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:31:29 2026 -0400
+
+    .
+
+commit 74188a0df9ec1f320a4f6f5bafcc49d41607ea6d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:28:25 2026 -0400
+
+    .
+
+commit ade44fce594b57c66f30ee2426feff17bb0a992a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:24:43 2026 -0400
+
+    .
+
+commit a8632e3400619624e50eff043b9556fd576fc743
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:22:43 2026 -0400
+
+    .
+
+commit c007096141cd8949c687ccf5b9a3d0874eed5c48
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:19:22 2026 -0400
+
+    .
+
+commit 06f9dc1bea022310ec49b3af4d0a3471cde1fc82
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 16:18:38 2026 -0400
+
+    .
+
+commit b902436f73894793a160c1f27e04e7e586e460a0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu May 28 19:29:49 2026 +0000
+
+    bumped changelog version
+
 commit 24256ef775c1f11216d44b99a2ad1b5349cb1702
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Thu May 28 12:17:00 2026 -0400
