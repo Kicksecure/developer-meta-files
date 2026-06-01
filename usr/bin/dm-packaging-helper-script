@@ -600,6 +600,20 @@ internal_git_known_push_remotes() {
    remotes_out_ref=()
 
    for remote_item in "${DM_PUSH_REMOTES_UNIVERSE[@]}"; do
+      if [ "${remote_item}" = "adrelanos" ]; then
+         ## github bug 404
+         ## https://github.com/adrelanos/icon-pack-dist
+         case "${batch_current_package_reponame}" in
+            icon-pack-dist|initializer-dist|libvirt-dist)
+               true "INFO: skip github bug: yes, skip."
+               continue
+               ;;
+            *)
+               true "INFO: proceed: yes"
+               ;;
+         esac
+      fi
+
       git remote get-url -- "${remote_item}" &>/dev/null || continue
       remotes_out_ref+=( "${remote_item}" )
    done
