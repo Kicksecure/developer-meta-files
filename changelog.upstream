@@ -1,3 +1,52 @@
+commit ba6ce6909d45fc9e85a0c3defebafdfd9762851b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 2 16:24:26 2026 -0400
+
+    rename to pkg_git_branch_pull_upstream_master
+
+commit a614732c6271d0e3566a664974af75bcedd586bd
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 2 16:23:09 2026 -0400
+
+    implement pkg_git_branch_pull_upstream
+
+commit 8e4f5635239a0073d367a3bc74cf16734594769f
+Merge: 7cd1a415 9e710e07
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 2 14:29:26 2026 -0400
+
+    Merge remote-tracking branch 'gitlab-adrelanos/master'
+
+commit 7cd1a415f45d6324ca92f6ff50700e605c5c9209
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jun 2 14:29:23 2026 -0400
+
+    .
+
+commit 9e710e07b4121ffc289d9fd465b454ba50d1646d
+Author: claude <noreply@anthropic.com>
+Date:   Tue Jun 2 13:44:11 2026 -0400
+
+    Exempt branch-switch targets from on-master pre-flight guard
+
+    pkg_git_check_current_branch runs before every target and returns
+    non-zero for any repo not on master. Under errexit this aborts the
+    whole run, so the branch-switching commands (pkg_git_branch_checkout_*
+    and pkg_git_branch_trixie) could never execute when a repo was left
+    on a non-master branch (e.g. detached HEAD) - a catch-22, since their
+    entire purpose is to put the repo back on master.
+
+    Add pkg_git_target_is_branch_switch and skip the pre-flight guard for
+    those targets in both batch and no-batch modes.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit da30acb93dd39da57081e64395514e0792132d42
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 1 22:01:57 2026 +0000
+
+    bumped changelog version
+
 commit 55fad141a49e51622b944d707059ddc15fba0216
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jun 1 18:00:13 2026 -0400
