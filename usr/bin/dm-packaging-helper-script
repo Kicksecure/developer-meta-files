@@ -1416,6 +1416,23 @@ pkg_git_check_current_branch() {
    return 1
 }
 
+## Branch-switching targets change which branch is checked out, so the
+## on-master pre-flight guard (pkg_git_check_current_branch) must not run
+## before them. Otherwise a repo left on a non-master branch (e.g. detached
+## HEAD) makes the guard abort under errexit before the very command meant
+## to put it back on master can run.
+pkg_git_target_is_branch_switch() {
+   case "${1}" in
+      pkg_git_branch_trixie|\
+      pkg_git_branch_checkout_master|\
+      pkg_git_branch_checkout_bullseye|\
+      pkg_git_branch_checkout_trixie)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
 ## Creates a 'trixie' branch for all repos.
 pkg_git_branch_trixie() {
    dry_run_or_run git branch trixie || true
@@ -2977,13 +2994,17 @@ main() {
 
    if [ "${parsed_mode}" = 'no-batch' ]; then
       set_batch_context_from_pwd
-      run_batch_command pkg_git_check_current_branch
+      if ! pkg_git_target_is_branch_switch "${parsed_target}"; then
+         run_batch_command pkg_git_check_current_branch
+      fi
       run_batch_command "${parsed_target}" "${parsed_args[@]}"
       for post_run_hook in "${post_run_hook_list[@]}"; do
          "${post_run_hook}"
       done
    elif [ "${parsed_mode}" = 'batch' ]; then
-      run_batch pkg_git_check_current_branch
+      if ! pkg_git_target_is_branch_switch "${parsed_target}"; then
+         run_batch pkg_git_check_current_branch
+      fi
       case "${parsed_target}" in
          'commit_filter')
             [ -z "${parsed_args[0]:-}" ] && {
