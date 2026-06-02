@@ -1480,7 +1480,7 @@ pkg_git_branch_fetch_all() {
    return 0
 }
 
-pkg_git_branch_pull_upstream() {
+pkg_git_branch_pull_upstream_master() {
    local origin_name_list package_remote_item upstream_repo
 
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
