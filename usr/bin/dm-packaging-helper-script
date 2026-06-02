@@ -43,10 +43,12 @@ log_level=info
 canonical_workflows_dir="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/workflows"
 canonical_dependabot_yml="${derivative_maker_source_code_dir}/packages/kicksecure/developer-meta-files/consumer-templates/.github/dependabot.yml"
 
-[ -v DM_GITHUB_DEV ] || DM_GITHUB_DEV='adrelanos'
+[ -v DM_GITHUB_DEV ] || DM_GITHUB_DEV='github-adrelanos'
+[ -v DM_GITLAB_DEV ] || DM_GITLAB_DEV='gitlab-adrelanos'
 [ -v DM_GITHUB_MIRROR ] || DM_GITHUB_MIRROR='org-ai-assisted'
+
 ## ArrayBolt3 (fetch-only) is intentionally excluded.
-[ -v DM_PUSH_REMOTES_UNIVERSE ] || DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" )
+[ -v DM_PUSH_REMOTES_UNIVERSE ] || DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" "${DM_GITLAB_DEV}")
 [ -v DM_PUSH_BRANCHES_UNIVERSE ] || DM_PUSH_BRANCHES_UNIVERSE=( main master trixie )
 
 ## BEGIN Initialization functions {
@@ -1373,8 +1375,14 @@ pkg_git_remotes_add() {
    dry_run_or_run git remote set-url "${DM_GITHUB_MIRROR}" \
       "git@github.com:${DM_GITHUB_MIRROR}/${batch_current_package_reponame}.git" || true
 
-   dry_run_or_run git remote add     adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
-   dry_run_or_run git remote set-url adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+   ## TODO: remove
+   dry_run_or_run git remote rm     adrelanos || true
+
+   dry_run_or_run git remote add     github-adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote set-url github-adrelanos         "git@github.com:adrelanos/${batch_current_package_reponame}.git" || true
+
+   dry_run_or_run git remote add     gitlab-adrelanos         "git@gitlab.com:adrelanos-only-test/${batch_current_package_reponame}.git" || true
+   dry_run_or_run git remote set-url gitlab-adrelanos         "git@gitlab.com:adrelanos-only-test/${batch_current_package_reponame}.git" || true
 
    dry_run_or_run git remote add     ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
    dry_run_or_run git remote set-url ArrayBolt3         "git@github.com:ArrayBolt3/${batch_current_package_reponame}.git" || true
