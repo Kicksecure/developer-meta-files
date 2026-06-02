@@ -1480,6 +1480,28 @@ pkg_git_branch_fetch_all() {
    return 0
 }
 
+pkg_git_branch_pull_upstream() {
+   local origin_name_list package_remote_item upstream_repo
+
+   if [ "${batch_current_project_name,,}" = "whonix" ]; then
+      upstream_repo=github-whonix
+   elif [ "${batch_current_project_name,,}" = "kicksecure" ]; then
+      upstream_repo=github-kicksecure
+   elif [ "${batch_current_project_name,,}" = "derivative-maker" ]; then
+      upstream_repo=github-kicksecure
+   else
+      printf '%s\n' "ERROR: batch_current_project_name wrong! (1)"
+      exit 1
+   fi
+
+   for package_remote_item in "${origin_name_list[@]}"; do
+      dry_run_or_run git pull --ff-only --verify-signatures -- "${upstream_repo}" "${package_remote_item}" &
+      git_pid_label[$!]="pull ${package_remote_item} (${batch_current_package_reponame})"
+   done
+
+   return 0
+}
+
 pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
