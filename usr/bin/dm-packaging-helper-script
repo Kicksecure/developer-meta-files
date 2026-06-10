@@ -602,7 +602,7 @@ internal_git_known_push_remotes() {
    remotes_out_ref=()
 
    for remote_item in "${DM_PUSH_REMOTES_UNIVERSE[@]}"; do
-      if [ "${remote_item}" = "adrelanos" ]; then
+      if [ "${remote_item}" = "github-adrelanos" ]; then
          ## github bug 404
          ## https://github.com/adrelanos/icon-pack-dist
          case "${batch_current_package_reponame}" in
