@@ -27,6 +27,14 @@ RUN systemctl mask -- \
       systemd-udevd.service \
       systemd-modules-load.service
 
+## systemd >= 256 mounts a tmpfs over /tmp by default (tmp.mount). Inside
+## a container that shadows anything `docker cp` writes to /tmp: the copy
+## lands in the lower directory while the running system sees the empty
+## tmpfs, so copied files silently "vanish". Mask tmp.mount so /tmp stays
+## a plain directory on the container filesystem -- `docker cp` to /tmp
+## then works and persists, matching pre-256 behaviour.
+RUN systemctl mask -- tmp.mount
+
 STOPSIGNAL SIGRTMIN+3
 
 ENTRYPOINT ["/lib/systemd/systemd"]
