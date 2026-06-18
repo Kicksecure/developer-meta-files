@@ -1,3 +1,36 @@
+commit 9b39929eafa6a0240d6425f3fa9cd0b9c152fa3f
+Merge: 6ca67cdc 96b81ee0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jun 18 08:21:19 2026 -0400
+
+    Merge remote-tracking branch 'gitlab-adrelanos/claude/launch-container-mask-tmp-mount'
+
+commit 96b81ee0cae3c699f2227111f3538cf69664713c
+Author: claude <noreply@anthropic.com>
+Date:   Thu Jun 18 07:57:43 2026 -0400
+
+    launch-systemd-container: mask tmp.mount so docker cp to /tmp works
+
+    systemd >= 256 mounts a tmpfs over /tmp by default (tmp.mount). Inside a
+    container that shadows anything docker cp writes to /tmp: the copy lands
+    in the lower directory while the running system sees the empty tmpfs, so
+    copied files silently vanish. Mask tmp.mount so /tmp stays a plain
+    directory on the container filesystem; docker cp to /tmp then works and
+    persists, matching pre-256 behaviour.
+
+    Verified against a throwaway build of the edited Dockerfile: /tmp is no
+    longer a separate mount, tmp.mount is masked, docker cp to /tmp is
+    visible from exec, and systemctl is-system-running stays 'running' with
+    no failed units.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 6ca67cdce44ec472844c4725bc4333fe5f2aa97a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 10 20:34:03 2026 +0000
+
+    bumped changelog version
+
 commit 8a03cda8b3d2a23887a7645b35476117dc83e970
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jun 10 16:32:32 2026 -0400
