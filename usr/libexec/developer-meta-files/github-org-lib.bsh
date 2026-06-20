@@ -82,10 +82,10 @@ ghorg_authenticated_user_cached=''
 ## ============================================================================
 
 ## Resolves a GitHub token from ${GITHUB_TOKEN} or ~/.config/github-token.
-## The file must be a regular file (not a symlink), permissions 600 or
-## 400, and contain a single token line. Symlinks are refused because
-## a stat-then-read sequence would dereference, letting an attacker
-## substitute the file between perm check and read.
+## The token file may be a symlink: it is canonicalized with `readlink -f`
+## and every check (regular file, permissions 600 or 400, readable, single
+## token line) is then applied to that real path, so stat and read operate
+## on the same file and the symlink cannot be repointed between them.
 ghorg_token() {
   local token_file mode token default_config_dir default_token_path
 
@@ -99,8 +99,13 @@ ghorg_token() {
     default_token_path="${default_config_dir}/github-token"
     token_file="${GHORG_TOKEN_FILE:-${default_token_path}}"
     if [ -L "${token_file}" ]; then
-      log error "'${token_file}' is a symlink"
-      return 1
+      ## Canonicalize once, then run every check below on the real path so
+      ## stat and read hit the same file (no swap-the-symlink TOCTOU).
+      token_file="$(readlink -f -- "${token_file}" 2>/dev/null || true)"
+      if [ -z "${token_file}" ]; then
+        log error 'cannot resolve github-token symlink target'
+        return 1
+      fi
     fi
     if [ ! -e "${token_file}" ]; then
       log error "no GitHub token. Set GITHUB_TOKEN or write one line to '${token_file}' and set its permissions to 0600."
@@ -356,13 +361,16 @@ ghorg_api() {
   ## GHORG_TOKEN_FILE counts as "configured" even if the file is
   ## missing - the operator clearly chose that path.
   default_token_path="${XDG_CONFIG_HOME:-${HOME}/.config}/github-token"
-  if ! token="$(ghorg_token 2>/dev/null)"; then
-    if [ -n "${GITHUB_TOKEN:-}" ] \
-      || [ -n "${GHORG_TOKEN_FILE:-}" ] \
-      || [ -e "${default_token_path}" ]; then
-      log error 'GitHub token configured but invalid'
-      return 1
-    fi
+  if [ -n "${GITHUB_TOKEN:-}" ] \
+    || [ -n "${GHORG_TOKEN_FILE:-}" ] \
+    || [ -e "${default_token_path}" ]; then
+    ## Auth explicitly configured -> fail closed, and let ghorg_token's
+    ## specific reason (bad permissions, unresolvable symlink, disallowed
+    ## characters, ...) reach the operator instead of suppressing it behind
+    ## a generic 'configured but invalid' message.
+    token="$(ghorg_token)" || return 1
+  else
+    ## Nothing configured -> request anonymously (60/hr per IP).
     token=''
   fi
 
