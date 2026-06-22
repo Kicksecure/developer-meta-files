@@ -61,6 +61,21 @@
 ##
 ##   agents/pre-push-static.sh --per-commit origin/master
 ##
+## Staged mode: pass '--staged' to check the staged index instead
+## of a commit range (pre-commit semantics). File-content checks
+## run against the staged set ('git diff --cached'); add '--all' to
+## also include unstaged tracked modifications (the set 'git commit
+## --all' would record). Pass '--message-file <path>' to supply the
+## pending commit message so the R-001 commit-message and
+## changelog-trailer checks can run before the commit exists; with
+## no message file those two checks are skipped (push/CI still
+## enforce them on the real commit-range). '--staged' and
+## '--per-commit' are mutually exclusive. Used by the Claude Code
+## commit-gate hook (dist-ai-config claude/hooks/dmf-gate.py).
+##
+##   agents/pre-push-static.sh --staged
+##   agents/pre-push-static.sh --staged --all --message-file MSG
+##
 ## Style-guide deviations, documented for reviewers:
 ##   * R-040 (log not printf): self-contained tool, must run on
 ##     a developer machine that may lack helper-scripts. Same
@@ -81,11 +96,43 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-## Per-commit mode flag. Must precede the base-ref positional.
+## Mode flags. Must precede the base-ref positional.
 per_commit_mode=0
-if [ "$#" -ge 1 ] && [ "${1}" = '--per-commit' ]; then
-   per_commit_mode=1
-   shift
+staged_mode=0
+staged_all=0
+message_file=''
+while [ "$#" -ge 1 ]; do
+   case "${1}" in
+      --per-commit)
+         per_commit_mode=1
+         shift
+         ;;
+      --staged)
+         staged_mode=1
+         shift
+         ;;
+      --all)
+         staged_all=1
+         shift
+         ;;
+      --message-file)
+         shift
+         if [ "$#" -lt 1 ]; then
+            printf '%s\n' 'pre-push-static: --message-file requires an argument' >&2
+            exit 2
+         fi
+         message_file="${1}"
+         shift
+         ;;
+      *)
+         break
+         ;;
+   esac
+done
+
+if [ "${staged_mode}" -eq 1 ] && [ "${per_commit_mode}" -eq 1 ]; then
+   printf '%s\n' 'pre-push-static: --staged and --per-commit are mutually exclusive' >&2
+   exit 2
 fi
 
 ## Nested-brace expansion `${1:-@{u}}` mis-parses: bash terminates
@@ -132,6 +179,14 @@ resolve_base() {
 }
 
 list_changed_files() {
+   if [ "${staged_mode}" -eq 1 ]; then
+      if [ "${staged_all}" -eq 1 ] && git rev-parse --verify --quiet HEAD >/dev/null; then
+         git diff --name-only --diff-filter=ACMRT HEAD
+      else
+         git diff --name-only --diff-filter=ACMRT --cached
+      fi
+      return 0
+   fi
    git diff --name-only --diff-filter=ACMRT "${base_ref}"...HEAD
 }
 
@@ -203,7 +258,15 @@ check_ascii_files() {
 check_ascii_commit_msg() {
    local msg hits
 
-   msg="$(git log "${base_ref}..HEAD" --format='%B%n')"
+   if [ "${staged_mode}" -eq 1 ]; then
+      if [ -z "${message_file}" ]; then
+         note "staged mode: no --message-file; skipping commit-message R-001 check"
+         return 0
+      fi
+      msg="$(cat -- "${message_file}")"
+   else
+      msg="$(git log "${base_ref}..HEAD" --format='%B%n')"
+   fi
    if [ -z "${msg}" ]; then
       return 0
    fi
@@ -293,6 +356,51 @@ check_changelog_no_manual() {
       fi
       fail "changelog manual-edit" "commit ${sha} edits debian/changelog (genmkfile-owned); bump via 'genmkfile deb-chl-bumpup-major', or add a 'Changelog-manual-ok: <reason>' trailer to the commit message"
    done < <(git rev-list --reverse "${base_ref}..HEAD")
+}
+
+## Staged-mode counterpart of check_changelog_no_manual: there is no
+## commit yet, so judge the staged diff as a single pending commit.
+## debian/changelog may be staged only as a genmkfile auto-bump
+## (requires --message-file carrying the exact subject AND a
+## changelog-family-only staged diff) or with a 'Changelog-manual-ok:'
+## override trailer. Without a message file we cannot read the pending
+## subject/trailer, so we defer to push/CI rather than fail blindly.
+check_changelog_no_manual_staged() {
+   local file subject body touches_changelog only_family
+   local -a changed
+
+   changed=()
+   mapfile -t changed < <(list_changed_files)
+   if [ "${#changed[@]}" -eq 0 ]; then
+      return 0
+   fi
+   touches_changelog=0
+   only_family=1
+   for file in "${changed[@]}"; do
+      if is_changelog_path "${file}"; then
+         touches_changelog=1
+      fi
+      if ! is_changelog_family_path "${file}"; then
+         only_family=0
+      fi
+   done
+   if [ "${touches_changelog}" -eq 0 ]; then
+      return 0
+   fi
+   if [ -z "${message_file}" ]; then
+      note "staged mode: debian/changelog staged but no --message-file; deferring changelog-trailer check to push/CI"
+      return 0
+   fi
+   subject="$(head --lines=1 -- "${message_file}")"
+   if [ "${subject}" = "${changelog_autobump_subject}" ] && [ "${only_family}" -eq 1 ]; then
+      return 0
+   fi
+   body="$(cat -- "${message_file}")"
+   if grep --quiet --ignore-case --extended-regexp \
+      '^[[:space:]]*changelog-manual-ok:[[:space:]]*[^[:space:]]' <<< "${body}"; then
+      return 0
+   fi
+   fail "changelog manual-edit" "staged debian/changelog edit (genmkfile-owned); bump via 'genmkfile deb-chl-bumpup-major', or add a 'Changelog-manual-ok: <reason>' trailer to the commit message"
 }
 
 ## --- Tier 1 style-guide checks (single-grep, near-zero false-positive) ---
@@ -735,14 +843,20 @@ restore_head() {
 main() {
    local sha saved_base_ref
 
-   resolve_base
+   if [ "${staged_mode}" -eq 0 ]; then
+      resolve_base
+   fi
 
    ## Commit-message R-001 check covers the whole base..HEAD range
    ## once; per-commit iteration would re-check the same messages
    ## N times. The changelog check is likewise a commit-range scan
    ## (inspects each commit's diff + message) and runs once here.
    check_ascii_commit_msg
-   check_changelog_no_manual
+   if [ "${staged_mode}" -eq 1 ]; then
+      check_changelog_no_manual_staged
+   else
+      check_changelog_no_manual
+   fi
 
    if [ "${per_commit_mode}" -eq 1 ]; then
       ## Detached-checkout iteration. Capture the current ref so
