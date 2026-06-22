@@ -85,3 +85,9 @@ Wire as a hook so the gate is unmissable:
         (R-002). NB: R-001 (no emoji / smart quotes / em dashes
         in commit messages) is enforced by pre-push-static.sh
         on the commit-range message; no manual sub-item.
+    [ ] debian/changelog NOT hand-edited: it is genmkfile-owned
+        (bump via 'genmkfile deb-chl-bumpup-major', which commits
+        with the 'bumped changelog version' subject). An
+        intentional manual edit needs a 'Changelog-manual-ok:
+        <reason>' commit trailer; pre-push-static.sh enforces
+        this (hard fail) on the commit-range.

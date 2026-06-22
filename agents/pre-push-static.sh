@@ -42,6 +42,11 @@
 ##      aren't on PATH (developer machines that haven't installed
 ##      them still get the bash-style-guide gate; CI runs in
 ##      debian:trixie-slim with them apt-installed).
+##  16. debian/changelog is genmkfile-owned and must not be
+##      hand-edited. A commit touching debian/changelog passes only
+##      if it is a genmkfile auto-bump ('bumped changelog version'
+##      subject, changelog-family-only diff) or carries a mandatory
+##      'Changelog-manual-ok: <reason>' override trailer.
 ##
 ## Scope: files changed in HEAD vs upstream tracking branch
 ## (@{u}). Pass an explicit base ref as $1 to override
@@ -209,6 +214,85 @@ check_ascii_commit_msg() {
    fail "R-001 ASCII" "commit-range message contains non-ASCII"
    note "offending line(s):"
    printf '%s\n' "${hits}" >&2
+}
+
+## --- Packaging-convention check: debian/changelog is genmkfile-owned ---
+##
+## debian/changelog must NOT be hand-edited; genmkfile auto-generates
+## the version bumps (project convention: 'genmkfile
+## deb-chl-bumpup-major'). A commit that modifies debian/changelog is
+## accepted only when it is EITHER:
+##   1. a genmkfile auto-bump commit -- subject is exactly
+##      'bumped changelog version' (from 'deb-uachl-commit-changelog')
+##      and it touches only changelog-family files (debian/changelog
+##      and/or changelog.upstream); OR
+##   2. an intentional manual edit carrying a mandatory override
+##      trailer 'Changelog-manual-ok: <reason>' in its commit message.
+## Any other commit touching debian/changelog FAILs the gate.
+##
+## Runs once over base..HEAD (independent of --per-commit), like the
+## commit-message ASCII check: each commit is inspected individually so
+## an auto-bump commit and a feature commit in the same range are judged
+## on their own merits.
+changelog_autobump_subject='bumped changelog version'
+
+is_changelog_path() {
+   case "${1}" in
+      debian/changelog|*/debian/changelog)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
+is_changelog_family_path() {
+   case "${1}" in
+      debian/changelog|*/debian/changelog|changelog.upstream|*/changelog.upstream)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
+check_changelog_no_manual() {
+   local sha subject body file touches_changelog only_family
+   local -a changed
+
+   while IFS= read -r sha; do
+      if [ -z "${sha}" ]; then
+         continue
+      fi
+      changed=()
+      mapfile -t changed < <(git diff-tree --no-commit-id --name-only -r "${sha}")
+      if [ "${#changed[@]}" -eq 0 ]; then
+         continue
+      fi
+      touches_changelog=0
+      only_family=1
+      for file in "${changed[@]}"; do
+         if is_changelog_path "${file}"; then
+            touches_changelog=1
+         fi
+         if ! is_changelog_family_path "${file}"; then
+            only_family=0
+         fi
+      done
+      if [ "${touches_changelog}" -eq 0 ]; then
+         continue
+      fi
+      ## genmkfile auto-bump: exact subject AND changelog-family-only diff.
+      subject="$(git log -1 --format=%s "${sha}")"
+      if [ "${subject}" = "${changelog_autobump_subject}" ] && [ "${only_family}" -eq 1 ]; then
+         continue
+      fi
+      ## Manual override: mandatory non-empty reason after the trailer.
+      body="$(git log -1 --format=%B "${sha}")"
+      if grep --quiet --ignore-case --extended-regexp \
+         '^[[:space:]]*changelog-manual-ok:[[:space:]]*[^[:space:]]' <<< "${body}"; then
+         continue
+      fi
+      fail "changelog manual-edit" "commit ${sha} edits debian/changelog (genmkfile-owned); bump via 'genmkfile deb-chl-bumpup-major', or add a 'Changelog-manual-ok: <reason>' trailer to the commit message"
+   done < <(git rev-list --reverse "${base_ref}..HEAD")
 }
 
 ## --- Tier 1 style-guide checks (single-grep, near-zero false-positive) ---
@@ -655,8 +739,10 @@ main() {
 
    ## Commit-message R-001 check covers the whole base..HEAD range
    ## once; per-commit iteration would re-check the same messages
-   ## N times.
+   ## N times. The changelog check is likewise a commit-range scan
+   ## (inspects each commit's diff + message) and runs once here.
    check_ascii_commit_msg
+   check_changelog_no_manual
 
    if [ "${per_commit_mode}" -eq 1 ]; then
       ## Detached-checkout iteration. Capture the current ref so

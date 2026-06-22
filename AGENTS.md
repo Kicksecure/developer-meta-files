@@ -13,8 +13,10 @@ Or install once and forget:
     ln -s ../../agents/pre-push-static.sh .git/hooks/pre-push
 
 It catches R-001 ASCII (commit messages too), `bash -n`,
-`shellcheck -x`, and Tier-1 single-grep rules from
-[`agents/bash-style-guide.md`](agents/bash-style-guide.md). CI
+`shellcheck -x`, Tier-1 single-grep rules from
+[`agents/bash-style-guide.md`](agents/bash-style-guide.md), and a
+hand-edited genmkfile-owned `debian/changelog` (override with a
+`Changelog-manual-ok: <reason>` commit trailer). CI
 mirrors the same gate via
 [`.github/workflows/reusable-pre-push-static.yml`](.github/workflows/reusable-pre-push-static.yml);
 pushing without running it locally just makes CI the slower
