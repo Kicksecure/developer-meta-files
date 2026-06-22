@@ -61,20 +61,19 @@
 ##
 ##   agents/pre-push-static.sh --per-commit origin/master
 ##
-## Staged mode: pass '--staged' to check the staged index instead
-## of a commit range (pre-commit semantics). File-content checks
-## run against the staged set ('git diff --cached'); add '--all' to
-## also include unstaged tracked modifications (the set 'git commit
-## --all' would record). Pass '--message-file <path>' to supply the
-## pending commit message so the R-001 commit-message and
-## changelog-trailer checks can run before the commit exists; with
-## no message file those two checks are skipped (push/CI still
-## enforce them on the real commit-range). '--staged' and
-## '--per-commit' are mutually exclusive. Used by the Claude Code
-## commit-gate hook (dist-ai-config claude/hooks/dmf-gate.py).
+## Staged mode: pass '--staged' to check the staged index instead of
+## a commit range (pre-commit semantics). The file LIST comes from the
+## index ('git diff --cached'), but content checks read each path's
+## WORKING-TREE copy -- a per-file warning is emitted when they differ
+## (re-stage to check the exact blob). '--all' instead checks all
+## tracked modifications vs HEAD (what 'git commit --all' records).
+## '--message-file <path>' supplies the pending message so the R-001
+## commit-message and changelog-trailer checks can run pre-commit;
+## without it those two are skipped (push/CI still enforce them).
+## '--staged' and '--per-commit' are mutually exclusive. Used by the
+## Claude commit-gate hook (dist-ai-config claude/hooks/dmf-gate.py).
 ##
-##   agents/pre-push-static.sh --staged
-##   agents/pre-push-static.sh --staged --all --message-file MSG
+##   agents/pre-push-static.sh --staged [--all] [--message-file MSG]
 ##
 ## Style-guide deviations, documented for reviewers:
 ##   * R-040 (log not printf): self-contained tool, must run on
@@ -132,6 +131,11 @@ done
 
 if [ "${staged_mode}" -eq 1 ] && [ "${per_commit_mode}" -eq 1 ]; then
    printf '%s\n' 'pre-push-static: --staged and --per-commit are mutually exclusive' >&2
+   exit 2
+fi
+
+if [ -n "${message_file}" ] && [ ! -f "${message_file}" ]; then
+   printf '%s\n' "pre-push-static: --message-file '${message_file}' not found" >&2
    exit 2
 fi
 
@@ -780,6 +784,23 @@ check_precommit_hooks() {
    run_precommit_hook requirements-txt-fixer    "${req_files[@]}"
 }
 
+## Staged mode reads working-tree copies, not staged blobs. Warn (do not
+## fail) for any checked path whose working tree differs from the index,
+## so a "passed" result is not mistaken for a check of the exact blob the
+## commit will record. Skipped under --all (there the working tree IS the
+## set being recorded).
+warn_staged_worktree_skew() {
+   local file rc
+
+   for file in "${@}"; do
+      rc=0
+      git diff --quiet -- "${file}" || rc=$?
+      if [ "${rc}" -ne 0 ]; then
+         note "staged mode: '${file}' has unstaged changes; checks ran against the working tree, not the staged blob (re-stage to verify the exact committed content)"
+      fi
+   done
+}
+
 run_file_checks() {
    ## Run all file-content checks given the current global
    ## base_ref. Caller controls base_ref (single union pass in
@@ -827,6 +848,9 @@ run_file_checks() {
    fi
 
    if [ "${#file_list[@]}" -gt 0 ]; then
+      if [ "${staged_mode}" -eq 1 ] && [ "${staged_all}" -eq 0 ]; then
+         warn_staged_worktree_skew "${file_list[@]}"
+      fi
       check_ascii_files "${file_list[@]}"
       check_precommit_hooks "${file_list[@]}"
    fi
