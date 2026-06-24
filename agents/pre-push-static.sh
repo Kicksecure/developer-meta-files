@@ -42,6 +42,11 @@
 ##      aren't on PATH (developer machines that haven't installed
 ##      them still get the bash-style-guide gate; CI runs in
 ##      debian:trixie-slim with them apt-installed).
+##  16. debian/changelog is genmkfile-owned and must not be
+##      hand-edited. A commit touching debian/changelog passes only
+##      if it is a genmkfile auto-bump ('bumped changelog version'
+##      subject, changelog-family-only diff) or carries a mandatory
+##      'Changelog-manual-ok: <reason>' override trailer.
 ##
 ## Scope: files changed in HEAD vs upstream tracking branch
 ## (@{u}). Pass an explicit base ref as $1 to override
@@ -55,6 +60,20 @@
 ## merge-base against HEAD.
 ##
 ##   agents/pre-push-static.sh --per-commit origin/master
+##
+## Staged mode: pass '--staged' to check the staged index instead of
+## a commit range (pre-commit semantics). The file LIST comes from the
+## index ('git diff --cached'), but content checks read each path's
+## WORKING-TREE copy -- a per-file warning is emitted when they differ
+## (re-stage to check the exact blob). '--all' instead checks all
+## tracked modifications vs HEAD (what 'git commit --all' records).
+## '--message-file <path>' supplies the pending message so the R-001
+## commit-message and changelog-trailer checks can run pre-commit;
+## without it those two are skipped (push/CI still enforce them).
+## '--staged' and '--per-commit' are mutually exclusive. Used by the
+## Claude commit-gate hook (dist-ai-config claude/hooks/dmf-gate.py).
+##
+##   agents/pre-push-static.sh --staged [--all] [--message-file MSG]
 ##
 ## Style-guide deviations, documented for reviewers:
 ##   * R-040 (log not printf): self-contained tool, must run on
@@ -76,11 +95,48 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-## Per-commit mode flag. Must precede the base-ref positional.
+## Mode flags. Must precede the base-ref positional.
 per_commit_mode=0
-if [ "$#" -ge 1 ] && [ "${1}" = '--per-commit' ]; then
-   per_commit_mode=1
-   shift
+staged_mode=0
+staged_all=0
+message_file=''
+while [ "$#" -ge 1 ]; do
+   case "${1}" in
+      --per-commit)
+         per_commit_mode=1
+         shift
+         ;;
+      --staged)
+         staged_mode=1
+         shift
+         ;;
+      --all)
+         staged_all=1
+         shift
+         ;;
+      --message-file)
+         shift
+         if [ "$#" -lt 1 ]; then
+            printf '%s\n' 'pre-push-static: --message-file requires an argument' >&2
+            exit 2
+         fi
+         message_file="${1}"
+         shift
+         ;;
+      *)
+         break
+         ;;
+   esac
+done
+
+if [ "${staged_mode}" -eq 1 ] && [ "${per_commit_mode}" -eq 1 ]; then
+   printf '%s\n' 'pre-push-static: --staged and --per-commit are mutually exclusive' >&2
+   exit 2
+fi
+
+if [ -n "${message_file}" ] && [ ! -f "${message_file}" ]; then
+   printf '%s\n' "pre-push-static: --message-file '${message_file}' not found" >&2
+   exit 2
 fi
 
 ## Nested-brace expansion `${1:-@{u}}` mis-parses: bash terminates
@@ -127,6 +183,14 @@ resolve_base() {
 }
 
 list_changed_files() {
+   if [ "${staged_mode}" -eq 1 ]; then
+      if [ "${staged_all}" -eq 1 ] && git rev-parse --verify --quiet HEAD >/dev/null; then
+         git diff --name-only --diff-filter=ACMRT HEAD
+      else
+         git diff --name-only --diff-filter=ACMRT --cached
+      fi
+      return 0
+   fi
    git diff --name-only --diff-filter=ACMRT "${base_ref}"...HEAD
 }
 
@@ -198,7 +262,15 @@ check_ascii_files() {
 check_ascii_commit_msg() {
    local msg hits
 
-   msg="$(git log "${base_ref}..HEAD" --format='%B%n')"
+   if [ "${staged_mode}" -eq 1 ]; then
+      if [ -z "${message_file}" ]; then
+         note "staged mode: no --message-file; skipping commit-message R-001 check"
+         return 0
+      fi
+      msg="$(cat -- "${message_file}")"
+   else
+      msg="$(git log "${base_ref}..HEAD" --format='%B%n')"
+   fi
    if [ -z "${msg}" ]; then
       return 0
    fi
@@ -209,6 +281,130 @@ check_ascii_commit_msg() {
    fail "R-001 ASCII" "commit-range message contains non-ASCII"
    note "offending line(s):"
    printf '%s\n' "${hits}" >&2
+}
+
+## --- Packaging-convention check: debian/changelog is genmkfile-owned ---
+##
+## debian/changelog must NOT be hand-edited; genmkfile auto-generates
+## the version bumps (project convention: 'genmkfile
+## deb-chl-bumpup-major'). A commit that modifies debian/changelog is
+## accepted only when it is EITHER:
+##   1. a genmkfile auto-bump commit -- subject is exactly
+##      'bumped changelog version' (from 'deb-uachl-commit-changelog')
+##      and it touches only changelog-family files (debian/changelog
+##      and/or changelog.upstream); OR
+##   2. an intentional manual edit carrying a mandatory override
+##      trailer 'Changelog-manual-ok: <reason>' in its commit message.
+## Any other commit touching debian/changelog FAILs the gate.
+##
+## Runs once over base..HEAD (independent of --per-commit), like the
+## commit-message ASCII check: each commit is inspected individually so
+## an auto-bump commit and a feature commit in the same range are judged
+## on their own merits.
+changelog_autobump_subject='bumped changelog version'
+
+is_changelog_path() {
+   case "${1}" in
+      debian/changelog|*/debian/changelog)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
+is_changelog_family_path() {
+   case "${1}" in
+      debian/changelog|*/debian/changelog|changelog.upstream|*/changelog.upstream)
+         return 0
+         ;;
+   esac
+   return 1
+}
+
+check_changelog_no_manual() {
+   local sha subject body file touches_changelog only_family
+   local -a changed
+
+   while IFS= read -r sha; do
+      if [ -z "${sha}" ]; then
+         continue
+      fi
+      changed=()
+      mapfile -t changed < <(git diff-tree --no-commit-id --name-only -r "${sha}")
+      if [ "${#changed[@]}" -eq 0 ]; then
+         continue
+      fi
+      touches_changelog=0
+      only_family=1
+      for file in "${changed[@]}"; do
+         if is_changelog_path "${file}"; then
+            touches_changelog=1
+         fi
+         if ! is_changelog_family_path "${file}"; then
+            only_family=0
+         fi
+      done
+      if [ "${touches_changelog}" -eq 0 ]; then
+         continue
+      fi
+      ## genmkfile auto-bump: exact subject AND changelog-family-only diff.
+      subject="$(git log -1 --format=%s "${sha}")"
+      if [ "${subject}" = "${changelog_autobump_subject}" ] && [ "${only_family}" -eq 1 ]; then
+         continue
+      fi
+      ## Manual override: mandatory non-empty reason after the trailer.
+      body="$(git log -1 --format=%B "${sha}")"
+      if grep --quiet --ignore-case --extended-regexp \
+         '^[[:space:]]*changelog-manual-ok:[[:space:]]*[^[:space:]]' <<< "${body}"; then
+         continue
+      fi
+      fail "changelog manual-edit" "commit ${sha} edits debian/changelog (genmkfile-owned); bump via 'genmkfile deb-chl-bumpup-major', or add a 'Changelog-manual-ok: <reason>' trailer to the commit message"
+   done < <(git rev-list --reverse "${base_ref}..HEAD")
+}
+
+## Staged-mode counterpart of check_changelog_no_manual: there is no
+## commit yet, so judge the staged diff as a single pending commit.
+## debian/changelog may be staged only as a genmkfile auto-bump
+## (requires --message-file carrying the exact subject AND a
+## changelog-family-only staged diff) or with a 'Changelog-manual-ok:'
+## override trailer. Without a message file we cannot read the pending
+## subject/trailer, so we defer to push/CI rather than fail blindly.
+check_changelog_no_manual_staged() {
+   local file subject body touches_changelog only_family
+   local -a changed
+
+   changed=()
+   mapfile -t changed < <(list_changed_files)
+   if [ "${#changed[@]}" -eq 0 ]; then
+      return 0
+   fi
+   touches_changelog=0
+   only_family=1
+   for file in "${changed[@]}"; do
+      if is_changelog_path "${file}"; then
+         touches_changelog=1
+      fi
+      if ! is_changelog_family_path "${file}"; then
+         only_family=0
+      fi
+   done
+   if [ "${touches_changelog}" -eq 0 ]; then
+      return 0
+   fi
+   if [ -z "${message_file}" ]; then
+      note "staged mode: debian/changelog staged but no --message-file; deferring changelog-trailer check to push/CI"
+      return 0
+   fi
+   subject="$(head --lines=1 -- "${message_file}")"
+   if [ "${subject}" = "${changelog_autobump_subject}" ] && [ "${only_family}" -eq 1 ]; then
+      return 0
+   fi
+   body="$(cat -- "${message_file}")"
+   if grep --quiet --ignore-case --extended-regexp \
+      '^[[:space:]]*changelog-manual-ok:[[:space:]]*[^[:space:]]' <<< "${body}"; then
+      return 0
+   fi
+   fail "changelog manual-edit" "staged debian/changelog edit (genmkfile-owned); bump via 'genmkfile deb-chl-bumpup-major', or add a 'Changelog-manual-ok: <reason>' trailer to the commit message"
 }
 
 ## --- Tier 1 style-guide checks (single-grep, near-zero false-positive) ---
@@ -588,6 +784,23 @@ check_precommit_hooks() {
    run_precommit_hook requirements-txt-fixer    "${req_files[@]}"
 }
 
+## Staged mode reads working-tree copies, not staged blobs. Warn (do not
+## fail) for any checked path whose working tree differs from the index,
+## so a "passed" result is not mistaken for a check of the exact blob the
+## commit will record. Skipped under --all (there the working tree IS the
+## set being recorded).
+warn_staged_worktree_skew() {
+   local file rc
+
+   for file in "${@}"; do
+      rc=0
+      git diff --quiet -- "${file}" || rc=$?
+      if [ "${rc}" -ne 0 ]; then
+         note "staged mode: '${file}' has unstaged changes; checks ran against the working tree, not the staged blob (re-stage to verify the exact committed content)"
+      fi
+   done
+}
+
 run_file_checks() {
    ## Run all file-content checks given the current global
    ## base_ref. Caller controls base_ref (single union pass in
@@ -635,6 +848,9 @@ run_file_checks() {
    fi
 
    if [ "${#file_list[@]}" -gt 0 ]; then
+      if [ "${staged_mode}" -eq 1 ] && [ "${staged_all}" -eq 0 ]; then
+         warn_staged_worktree_skew "${file_list[@]}"
+      fi
       check_ascii_files "${file_list[@]}"
       check_precommit_hooks "${file_list[@]}"
    fi
@@ -651,12 +867,20 @@ restore_head() {
 main() {
    local sha saved_base_ref
 
-   resolve_base
+   if [ "${staged_mode}" -eq 0 ]; then
+      resolve_base
+   fi
 
    ## Commit-message R-001 check covers the whole base..HEAD range
    ## once; per-commit iteration would re-check the same messages
-   ## N times.
+   ## N times. The changelog check is likewise a commit-range scan
+   ## (inspects each commit's diff + message) and runs once here.
    check_ascii_commit_msg
+   if [ "${staged_mode}" -eq 1 ]; then
+      check_changelog_no_manual_staged
+   else
+      check_changelog_no_manual
+   fi
 
    if [ "${per_commit_mode}" -eq 1 ]; then
       ## Detached-checkout iteration. Capture the current ref so
