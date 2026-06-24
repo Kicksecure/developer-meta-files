@@ -1506,7 +1506,7 @@ pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
    ## TODO: remove
-   #repo_skip 'usability-misc' || return 0
+   repo_skip 'usability-misc' || return 0
 
    #origin_branch="github-${batch_current_project_name,,}/master"
    origin_branch="${DM_GITHUB_MIRROR}/master"
