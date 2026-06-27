@@ -1943,6 +1943,52 @@ pkg_git_push_atomic() {
    internal_git_push_atomic_all_remotes
 }
 
+## Like pkg_git_push_atomic but for the AI model, which has no signing key
+## yet: pushes the package's branches WITHOUT Git signature verification and
+## WITHOUT requiring a tag at the branch tip, so work-in-progress dev commits
+## can be mirrored. Secure-by-default is preserved: the normal
+## pkg_git_push_atomic still signs/verifies; only this explicit opt-out path
+## skips it. Pushes are non-force (a diverged remote is rejected, not
+## clobbered) and limited to the locally-configured remotes; scope to a single
+## mirror with e.g. 'DM_PUSH_REMOTES_UNIVERSE=org-ai-assisted'.
+## TODO: remove once the AI model has a signing key and can use
+## pkg_git_push_atomic.
+pkg_git_push_atomic_unsigned() {
+   local branch remote
+   local -a remote_list existing_branches refspecs
+
+   if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
+      true "Detected package 'derivative-maker', skipping (tags created manually)."
+      return 0
+   fi
+
+   remote_list=()
+   internal_git_known_push_remotes remote_list
+   if [ "${#remote_list[@]}" -eq 0 ]; then
+      log notice "no known push remotes configured locally; nothing to push"
+      return 0
+   fi
+
+   existing_branches=()
+   for branch in "${DM_PUSH_BRANCHES_UNIVERSE[@]}"; do
+      git show-ref --verify --quiet -- "refs/heads/${branch}" \
+         && existing_branches+=( "${branch}" )
+   done
+   if [ "${#existing_branches[@]}" -eq 0 ]; then
+      log notice "none of (${DM_PUSH_BRANCHES_UNIVERSE[*]}) exist locally; nothing to push"
+      return 0
+   fi
+
+   refspecs=()
+   for branch in "${existing_branches[@]}"; do
+      refspecs+=( "refs/heads/${branch}:refs/heads/${branch}" )
+   done
+
+   for remote in "${remote_list[@]}"; do
+      dry_run_or_run git push --atomic --porcelain -- "${remote}" "${refspecs[@]}"
+   done
+}
+
 ## Checks out the changelog.upstream file of all repos.
 git_reset_changelog_upstream() {
    dry_run_or_run git checkout -- changelog.upstream
