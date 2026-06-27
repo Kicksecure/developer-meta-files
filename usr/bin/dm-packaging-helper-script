@@ -1950,12 +1950,16 @@ pkg_git_push_atomic() {
 ## pkg_git_push_atomic still signs/verifies; only this explicit opt-out path
 ## skips it. Pushes are non-force (a diverged remote is rejected, not
 ## clobbered) and limited to the locally-configured remotes; scope to a single
-## mirror with e.g. 'DM_PUSH_REMOTES_UNIVERSE=org-ai-assisted'.
+## mirror with e.g. 'DM_PUSH_REMOTES_UNIVERSE=org-ai-assisted'. As a
+## secure-by-default guardrail the published production remotes
+## 'github-kicksecure' and 'github-whonix' are ALWAYS refused on this unsigned
+## path (even if an explicit DM_PUSH_REMOTES_UNIVERSE lists them): unsigned
+## commits must never reach a published org.
 ## TODO: remove once the AI model has a signing key and can use
 ## pkg_git_push_atomic.
 pkg_git_push_atomic_unsigned() {
    local branch remote
-   local -a remote_list existing_branches refspecs
+   local -a remote_list allowed_remotes existing_branches refspecs
 
    if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
       true "Detected package 'derivative-maker', skipping (tags created manually)."
@@ -1964,8 +1968,25 @@ pkg_git_push_atomic_unsigned() {
 
    remote_list=()
    internal_git_known_push_remotes remote_list
+
+   ## Refuse the published production orgs on the unsigned path, regardless of
+   ## DM_PUSH_REMOTES_UNIVERSE. These literals match the remote names added by
+   ## pkg_git_remotes_add.
+   allowed_remotes=()
+   for remote in "${remote_list[@]}"; do
+      case "${remote}" in
+         'github-kicksecure'|'github-whonix')
+            log notice "refusing unsigned push to production remote '${remote}'; skipping"
+            ;;
+         *)
+            allowed_remotes+=( "${remote}" )
+            ;;
+      esac
+   done
+   remote_list=( "${allowed_remotes[@]}" )
+
    if [ "${#remote_list[@]}" -eq 0 ]; then
-      log notice "no known push remotes configured locally; nothing to push"
+      log notice "no eligible push remotes (production remotes are refused on the unsigned path); nothing to push"
       return 0
    fi
 
