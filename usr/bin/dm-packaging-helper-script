@@ -1946,13 +1946,7 @@ pkg_git_push_atomic() {
 ## Like pkg_git_push_atomic but for the AI model, which has no signing key
 ## yet: pushes the package's branches WITHOUT Git signature verification and
 ## WITHOUT requiring a tag at the branch tip, so work-in-progress dev commits
-## can be mirrored. Secure-by-default is preserved: the normal
-## pkg_git_push_atomic still signs/verifies; only this explicit opt-out path
-## skips it. As a whitelist guardrail the unsigned path pushes ONLY to the bot
-## mirror org (DM_GITHUB_MIRROR, default 'org-ai-assisted') and ignores
-## DM_PUSH_REMOTES_UNIVERSE entirely, so unsigned commits can never reach a dev
-## or published production remote. Pushes are non-force (a diverged remote is
-## rejected, not clobbered).
+## can be mirrored.
 ## TODO: remove once the AI model has a signing key and can use
 ## pkg_git_push_atomic.
 pkg_git_push_atomic_unsigned() {
@@ -1977,8 +1971,7 @@ pkg_git_push_atomic_unsigned() {
    ## receive unsigned commits.
    mirror_url="$(git remote get-url -- "${DM_GITHUB_MIRROR}" 2>/dev/null)" || mirror_url=''
    if [ -z "${mirror_url}" ]; then
-      log notice "mirror remote '${DM_GITHUB_MIRROR}' not configured locally; nothing to push (run pkg_git_remotes_add)"
-      return 0
+      die 1 "mirror remote '${DM_GITHUB_MIRROR}' not configured locally; nothing to push (run pkg_git_remotes_add)"
    fi
    case "${mirror_url}" in
       *"github.com:${DM_GITHUB_MIRROR}/"*|*"github.com/${DM_GITHUB_MIRROR}/"*)
