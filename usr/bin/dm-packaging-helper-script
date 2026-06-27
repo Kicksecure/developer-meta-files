@@ -1948,45 +1948,25 @@ pkg_git_push_atomic() {
 ## WITHOUT requiring a tag at the branch tip, so work-in-progress dev commits
 ## can be mirrored. Secure-by-default is preserved: the normal
 ## pkg_git_push_atomic still signs/verifies; only this explicit opt-out path
-## skips it. Pushes are non-force (a diverged remote is rejected, not
-## clobbered) and limited to the locally-configured remotes; scope to a single
-## mirror with e.g. 'DM_PUSH_REMOTES_UNIVERSE=org-ai-assisted'. As a
-## secure-by-default guardrail the published production remotes
-## 'github-kicksecure' and 'github-whonix' are ALWAYS refused on this unsigned
-## path (even if an explicit DM_PUSH_REMOTES_UNIVERSE lists them): unsigned
-## commits must never reach a published org.
+## skips it. As a whitelist guardrail the unsigned path pushes ONLY to the bot
+## mirror org (DM_GITHUB_MIRROR, default 'org-ai-assisted') and ignores
+## DM_PUSH_REMOTES_UNIVERSE entirely, so unsigned commits can never reach a dev
+## or published production remote. Pushes are non-force (a diverged remote is
+## rejected, not clobbered).
 ## TODO: remove once the AI model has a signing key and can use
 ## pkg_git_push_atomic.
 pkg_git_push_atomic_unsigned() {
-   local branch remote
-   local -a remote_list allowed_remotes existing_branches refspecs
+   local branch
+   local -a existing_branches refspecs
 
    if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
       true "Detected package 'derivative-maker', skipping (tags created manually)."
       return 0
    fi
 
-   remote_list=()
-   internal_git_known_push_remotes remote_list
-
-   ## Refuse the published production orgs on the unsigned path, regardless of
-   ## DM_PUSH_REMOTES_UNIVERSE. These literals match the remote names added by
-   ## pkg_git_remotes_add.
-   allowed_remotes=()
-   for remote in "${remote_list[@]}"; do
-      case "${remote}" in
-         'github-kicksecure'|'github-whonix')
-            log notice "refusing unsigned push to production remote '${remote}'; skipping"
-            ;;
-         *)
-            allowed_remotes+=( "${remote}" )
-            ;;
-      esac
-   done
-   remote_list=( "${allowed_remotes[@]}" )
-
-   if [ "${#remote_list[@]}" -eq 0 ]; then
-      log notice "no eligible push remotes (production remotes are refused on the unsigned path); nothing to push"
+   ## Whitelist: the bot mirror org is the only allowed unsigned-push target.
+   if ! git remote get-url -- "${DM_GITHUB_MIRROR}" &>/dev/null; then
+      log notice "mirror remote '${DM_GITHUB_MIRROR}' not configured locally; nothing to push (run pkg_git_remotes_add)"
       return 0
    fi
 
@@ -2005,9 +1985,7 @@ pkg_git_push_atomic_unsigned() {
       refspecs+=( "refs/heads/${branch}:refs/heads/${branch}" )
    done
 
-   for remote in "${remote_list[@]}"; do
-      dry_run_or_run git push --atomic --porcelain -- "${remote}" "${refspecs[@]}"
-   done
+   dry_run_or_run git push --atomic --porcelain -- "${DM_GITHUB_MIRROR}" "${refspecs[@]}"
 }
 
 ## Checks out the changelog.upstream file of all repos.
