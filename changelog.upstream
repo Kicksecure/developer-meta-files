@@ -1,3 +1,109 @@
+commit ff82e1569ba05721f9502a0316f11d536cce43c2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 27 09:44:49 2026 -0400
+
+    .
+
+commit 47dc1449a492e24fa10581bf25651b29cc7ba6d7
+Merge: 872c03ce 5f6bbf88
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jun 27 09:43:11 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 5f6bbf888fab38c344524c7332c83634098b3825
+Author: claude (dev19 452d6a32-78ae-4574-a7aa-e04eaa9194f2) <noreply@anthropic.com>
+Date:   Sat Jun 27 09:38:56 2026 -0400
+
+    dm-packaging-helper-script: validate mirror URL + reorder skip (AI review)
+
+    Two findings from an AI review pass on pkg_git_push_atomic_unsigned:
+
+    - Codex (P2): the whitelist used the remote NAME as its only boundary, so
+      a remote named after the mirror but re-pointed at a dev/production repo
+      could still receive unsigned commits. Validate the remote URL points at
+      'github.com[:/]${DM_GITHUB_MIRROR}/' and die otherwise.
+    - CodeRabbit (minor): move the derivative-maker skip ahead of the mirror
+      checks; the skip path never pushes, so it must not depend on (or die on)
+      the mirror config.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01J4U4YpkvdtZK3nhTLBjC9V
+
+commit f9788819c604cc4f8261157d271ad495cbc4678c
+Author: claude (dev19 452d6a32-78ae-4574-a7aa-e04eaa9194f2) <noreply@anthropic.com>
+Date:   Sat Jun 27 09:32:46 2026 -0400
+
+    dm-packaging-helper-script: error out if bot mirror org undefined
+
+    pkg_git_push_atomic_unsigned now dies if DM_GITHUB_MIRROR is empty or
+    unset rather than falling back to an empty/implicit push target. An
+    explicitly-empty DM_GITHUB_MIRROR= would otherwise bypass the script's
+    '[ -v ] || default' guard and reach 'git push -- "" ...'.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01J4U4YpkvdtZK3nhTLBjC9V
+
+commit c6a7462e708c10ab5864c0361d4cb2576825eec9
+Author: claude (dev19 452d6a32-78ae-4574-a7aa-e04eaa9194f2) <noreply@anthropic.com>
+Date:   Sat Jun 27 09:31:10 2026 -0400
+
+    dm-packaging-helper-script: whitelist unsigned push to mirror org only
+
+    Replace the production-org blacklist with a whitelist: pkg_git_push_-
+    atomic_unsigned now pushes ONLY to the bot mirror org (DM_GITHUB_MIRROR,
+    default 'org-ai-assisted') and ignores DM_PUSH_REMOTES_UNIVERSE entirely.
+    A whitelist fails safe -- any remote that is not the mirror (dev remotes
+    and published production orgs alike) is never an unsigned-push target,
+    and no remote-scoping override is needed at the call site.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01J4U4YpkvdtZK3nhTLBjC9V
+
+commit 37c596b2b3e29c48911e90c5b5fa9e59c90aed9a
+Author: claude (dev19 452d6a32-78ae-4574-a7aa-e04eaa9194f2) <noreply@anthropic.com>
+Date:   Sat Jun 27 09:28:47 2026 -0400
+
+    dm-packaging-helper-script: refuse prod orgs on unsigned push path
+
+    Secure-by-default guardrail for pkg_git_push_atomic_unsigned: always
+    refuse the published production remotes 'github-kicksecure' and
+    'github-whonix', regardless of DM_PUSH_REMOTES_UNIVERSE. Without this an
+    unsigned push that omitted the remote-scoping override would push
+    unsigned commits straight to a published org. The mirror and dev remotes
+    (org-ai-assisted, github-adrelanos, gitlab-adrelanos) remain allowed.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01J4U4YpkvdtZK3nhTLBjC9V
+
+commit 088e228192c988a4e43357272a04c0ada7cf5ac9
+Author: claude (dev19 452d6a32-78ae-4574-a7aa-e04eaa9194f2) <noreply@anthropic.com>
+Date:   Sat Jun 27 09:12:51 2026 -0400
+
+    dm-packaging-helper-script: add pkg_git_push_atomic_unsigned
+
+    Add an AI-model push target. The normal pkg_git_push_atomic is unchanged
+    and stays secure-by-default (signs/verifies, and via genmkfile git-tag-push
+    requires a signed tag at each branch tip). The AI model has no signing key
+    yet, and its work-in-progress commits are untagged, so it needs an explicit
+    opt-out: pkg_git_push_atomic_unsigned pushes the package branches directly
+    with 'git push --atomic' -- no signature verification and no tag-at-tip
+    requirement.
+
+    Pushes are non-force (a diverged remote is rejected, not clobbered) and
+    limited to the locally-configured remotes; scope to one mirror with e.g.
+    'DM_PUSH_REMOTES_UNIVERSE=org-ai-assisted'. The derivative-maker meta-repo
+    is skipped.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01J4U4YpkvdtZK3nhTLBjC9V
+
+commit 872c03ce4b586f1f3997e60503b44fae11328f37
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jun 24 18:04:03 2026 +0000
+
+    bumped changelog version
+
 commit 06fca39869af7e92b58504da22ef4194d52bf80d
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jun 24 14:00:19 2026 -0400
