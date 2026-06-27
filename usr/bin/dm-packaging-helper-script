@@ -1943,6 +1943,70 @@ pkg_git_push_atomic() {
    internal_git_push_atomic_all_remotes
 }
 
+## Like pkg_git_push_atomic but for the AI model, which has no signing key
+## yet: pushes the package's branches WITHOUT Git signature verification and
+## WITHOUT requiring a tag at the branch tip, so work-in-progress dev commits
+## can be mirrored. Secure-by-default is preserved: the normal
+## pkg_git_push_atomic still signs/verifies; only this explicit opt-out path
+## skips it. As a whitelist guardrail the unsigned path pushes ONLY to the bot
+## mirror org (DM_GITHUB_MIRROR, default 'org-ai-assisted') and ignores
+## DM_PUSH_REMOTES_UNIVERSE entirely, so unsigned commits can never reach a dev
+## or published production remote. Pushes are non-force (a diverged remote is
+## rejected, not clobbered).
+## TODO: remove once the AI model has a signing key and can use
+## pkg_git_push_atomic.
+pkg_git_push_atomic_unsigned() {
+   local branch mirror_url
+   local -a existing_branches refspecs
+
+   ## The skip path never pushes, so it must not depend on the mirror config.
+   if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
+      true "Detected package 'derivative-maker', skipping (tags created manually)."
+      return 0
+   fi
+
+   ## The bot mirror org must be defined; never fall back to an empty or
+   ## implicit push target on the unsigned path.
+   if [ -z "${DM_GITHUB_MIRROR:-}" ]; then
+      die 1 "${FUNCNAME[0]}: DM_GITHUB_MIRROR (bot mirror org) is not defined; refusing unsigned push."
+   fi
+
+   ## Whitelist: the bot mirror org is the only allowed unsigned-push target.
+   ## Validate by URL, not just by remote name -- a remote that carries the
+   ## mirror name but was re-pointed at a dev or production repo must not
+   ## receive unsigned commits.
+   mirror_url="$(git remote get-url -- "${DM_GITHUB_MIRROR}" 2>/dev/null)" || mirror_url=''
+   if [ -z "${mirror_url}" ]; then
+      log notice "mirror remote '${DM_GITHUB_MIRROR}' not configured locally; nothing to push (run pkg_git_remotes_add)"
+      return 0
+   fi
+   case "${mirror_url}" in
+      *"github.com:${DM_GITHUB_MIRROR}/"*|*"github.com/${DM_GITHUB_MIRROR}/"*)
+         true "mirror remote URL verified: '${mirror_url}'"
+         ;;
+      *)
+         die 1 "${FUNCNAME[0]}: remote '${DM_GITHUB_MIRROR}' points at '${mirror_url}', not the bot mirror org on github.com; refusing unsigned push."
+         ;;
+   esac
+
+   existing_branches=()
+   for branch in "${DM_PUSH_BRANCHES_UNIVERSE[@]}"; do
+      git show-ref --verify --quiet -- "refs/heads/${branch}" \
+         && existing_branches+=( "${branch}" )
+   done
+   if [ "${#existing_branches[@]}" -eq 0 ]; then
+      log notice "none of (${DM_PUSH_BRANCHES_UNIVERSE[*]}) exist locally; nothing to push"
+      return 0
+   fi
+
+   refspecs=()
+   for branch in "${existing_branches[@]}"; do
+      refspecs+=( "refs/heads/${branch}:refs/heads/${branch}" )
+   done
+
+   dry_run_or_run git push --atomic --porcelain -- "${DM_GITHUB_MIRROR}" "${refspecs[@]}"
+}
+
 ## Checks out the changelog.upstream file of all repos.
 git_reset_changelog_upstream() {
    dry_run_or_run git checkout -- changelog.upstream
