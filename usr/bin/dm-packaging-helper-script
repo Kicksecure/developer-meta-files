@@ -1959,6 +1959,12 @@ pkg_git_push_atomic_unsigned() {
    local branch
    local -a existing_branches refspecs
 
+   ## The bot mirror org must be defined; never fall back to an empty or
+   ## implicit push target on the unsigned path.
+   if [ -z "${DM_GITHUB_MIRROR:-}" ]; then
+      die 1 "${FUNCNAME[0]}: DM_GITHUB_MIRROR (bot mirror org) is not defined; refusing unsigned push."
+   fi
+
    if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
       true "Detected package 'derivative-maker', skipping (tags created manually)."
       return 0
