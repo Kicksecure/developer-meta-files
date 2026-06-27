@@ -1956,8 +1956,14 @@ pkg_git_push_atomic() {
 ## TODO: remove once the AI model has a signing key and can use
 ## pkg_git_push_atomic.
 pkg_git_push_atomic_unsigned() {
-   local branch
+   local branch mirror_url
    local -a existing_branches refspecs
+
+   ## The skip path never pushes, so it must not depend on the mirror config.
+   if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
+      true "Detected package 'derivative-maker', skipping (tags created manually)."
+      return 0
+   fi
 
    ## The bot mirror org must be defined; never fall back to an empty or
    ## implicit push target on the unsigned path.
@@ -1965,16 +1971,23 @@ pkg_git_push_atomic_unsigned() {
       die 1 "${FUNCNAME[0]}: DM_GITHUB_MIRROR (bot mirror org) is not defined; refusing unsigned push."
    fi
 
-   if [ "${batch_current_package_reponame:-}" = 'derivative-maker' ]; then
-      true "Detected package 'derivative-maker', skipping (tags created manually)."
-      return 0
-   fi
-
    ## Whitelist: the bot mirror org is the only allowed unsigned-push target.
-   if ! git remote get-url -- "${DM_GITHUB_MIRROR}" &>/dev/null; then
+   ## Validate by URL, not just by remote name -- a remote that carries the
+   ## mirror name but was re-pointed at a dev or production repo must not
+   ## receive unsigned commits.
+   mirror_url="$(git remote get-url -- "${DM_GITHUB_MIRROR}" 2>/dev/null)" || mirror_url=''
+   if [ -z "${mirror_url}" ]; then
       log notice "mirror remote '${DM_GITHUB_MIRROR}' not configured locally; nothing to push (run pkg_git_remotes_add)"
       return 0
    fi
+   case "${mirror_url}" in
+      *"github.com:${DM_GITHUB_MIRROR}/"*|*"github.com/${DM_GITHUB_MIRROR}/"*)
+         true "mirror remote URL verified: '${mirror_url}'"
+         ;;
+      *)
+         die 1 "${FUNCNAME[0]}: remote '${DM_GITHUB_MIRROR}' points at '${mirror_url}', not the bot mirror org on github.com; refusing unsigned push."
+         ;;
+   esac
 
    existing_branches=()
    for branch in "${DM_PUSH_BRANCHES_UNIVERSE[@]}"; do
