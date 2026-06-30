@@ -444,29 +444,25 @@ Please donate! [C]
       error "base_folder '$base_folder' does not exist. Did the amd64 cowbuilder chroot (build-steps.d/*_create-vbox-vm) fail to build?"
    fi
 
-   ## Serialise the curated allowlist '$env_vars_keep_list' plus the
-   ## export-specific presentation strings computed above into an env file
-   ## for the chroot script to source. Re-using the existing list (the same
-   ## one sudo passes via '--preserve-env=') means there is no parallel
-   ## hardcoded list to drift out of sync.
-   local chroot_env_file env_vars_var_keep_item export_env_var_item
-   chroot_env_file="$binary_build_folder_dist/chroot-env-export-vbox-vm"
-   mkdir --parents -- "$binary_build_folder_dist"
-   {
-      printf '%s\n' "## Serialized build variables for the chroot script to restore"
-      printf '%s\n' "## with 'source'. Data only (declare -x); not an executable script."
-      for env_vars_var_keep_item in $env_vars_keep_list; do
-         ## Skip variables that are unset in this run; an unset entry in
-         ## the allowlist is not an error.
-         [ -n "${!env_vars_var_keep_item+x}" ] || continue
-         declare -p "$env_vars_var_keep_item"
-      done
-      ## Export-specific variables not in '$env_vars_keep_list', computed
-      ## above on the host and consumed by the chroot export script.
-      for export_env_var_item in producturl vendor vendorurl description eulafile_user vm_multiple project_clearnet; do
-         declare -p "$export_env_var_item"
-      done
-   } > "$chroot_env_file"
+   ## Hand the chroot script its variables through the environment via the
+   ## existing '--preserve-env' below, rather than serialising them to a file
+   ## the chroot sources. Export each set entry of the curated allowlist
+   ## '$env_vars_keep_list' (several are in the list but not exported, so the
+   ## '--preserve-env=' on '$SUDO_TO_ROOT' would otherwise skip them) plus the
+   ## export-specific presentation strings computed above. Re-using the
+   ## allowlist means there is no parallel hardcoded list to drift.
+   local env_vars_var_keep_item export_env_var_item
+   for env_vars_var_keep_item in $env_vars_keep_list; do
+      ## Skip variables unset in this run; an unset allowlist entry is not an
+      ## error.
+      [ -v "$env_vars_var_keep_item" ] || continue
+      # shellcheck disable=SC2163  # dynamic export of the allowlisted name is intended
+      export "$env_vars_var_keep_item"
+   done
+   for export_env_var_item in producturl vendor vendorurl description eulafile_user vm_multiple project_clearnet; do
+      # shellcheck disable=SC2163
+      export "$export_env_var_item"
+   done
 
    local chroot_exec_script
    chroot_exec_script="$dist_source_help_steps_folder/pbuilder-chroot-script-export-vbox-vm"
@@ -479,7 +475,9 @@ Please donate! [C]
    local cowbuilder_exit_code
    cowbuilder_exit_code=0
 
-   ## 'chroot_env_file' is forwarded to the chroot script as '$1'.
+   ## '--preserve-env' carries the variables exported above (plus the
+   ## '--preserve-env=' allowlist baked into '$SUDO_TO_ROOT') through cowbuilder
+   ## into the chroot script's environment; no env file is passed.
    $SUDO_TO_ROOT \
       --preserve-env \
          ${COWBUILDER_PREFIX:-} \
@@ -494,7 +492,6 @@ Please donate! [C]
                --bindmounts "$bindmounts" \
                -- \
                "$chroot_exec_script" \
-               "$chroot_env_file" \
                || { cowbuilder_exit_code="$?" ; true; };
 
    if [ -d "$base_folder" ]; then
