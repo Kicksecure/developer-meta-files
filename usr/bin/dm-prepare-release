@@ -223,10 +223,15 @@ libvirt_compress() {
       test -f "${dist_binary_build_folder}/Whonix-Gateway.xml"
       test -f "${dist_binary_build_folder}/Whonix-Workstation.xml"
 
-      true "libvirt_target_network_file_external: $libvirt_target_network_file_external"
-      test -f "${libvirt_target_network_file_external}"
-      true "libvirt_target_network_file_internal: $libvirt_target_network_file_internal"
-      test -f "${libvirt_target_network_file_internal}"
+      ## The Whonix-External / Whonix-Internal libvirt network XML files were
+      ## removed from the 'libvirt-dist' package, so 'build-steps.d/*_export-
+      ## libvirt-xml' no longer generates them and they are not part of the
+      ## release archive anymore. Left commented (not deleted) to document the
+      ## former behavior in case per-network XML returns.
+      #true "libvirt_target_network_file_external: $libvirt_target_network_file_external"
+      #test -f "${libvirt_target_network_file_external}"
+      #true "libvirt_target_network_file_internal: $libvirt_target_network_file_internal"
+      #test -f "${libvirt_target_network_file_internal}"
 
       if [ "${dist_build_raw:-}" = "true" ]; then
          test -f "${binary_image_raw_file_for_unified}"
@@ -283,8 +288,11 @@ libvirt_compress() {
       true "vm_multiple: true"
       file_list_compress_full_path+=("${dist_binary_build_folder}/Whonix-Gateway.xml")
       file_list_compress_full_path+=("${dist_binary_build_folder}/Whonix-Workstation.xml")
-      file_list_compress_full_path+=("${libvirt_target_network_file_external}")
-      file_list_compress_full_path+=("${libvirt_target_network_file_internal}")
+      ## Whonix-External / Whonix-Internal network XML removed from
+      ## 'libvirt-dist'; no longer generated, so not archived. See the
+      ## matching commented-out 'test -f' block above.
+      #file_list_compress_full_path+=("${libvirt_target_network_file_external}")
+      #file_list_compress_full_path+=("${libvirt_target_network_file_internal}")
 
       true "dist_build_raw for raw image: ${dist_build_raw:-}"
       if [ "${dist_build_raw:-}" = "true" ]; then
@@ -411,161 +419,96 @@ Please donate! [C]
 [B] https://www.${project_clearnet}/wiki/Stay_Tuned
 [C] https://www.${project_clearnet}/wiki/Donate"
 
-   $SUDO_TO_ROOT safe-rm --force -- "${binary_image_ova_file}"
-   $SUDO_TO_ROOT safe-rm --force -- "${HOMEVAR_VBOX_TEMP}/temp.ova"
+   ## VirtualBox is installed and the VM is registered inside the amd64
+   ## cowbuilder chroot (see 'build-steps.d/*_create-vbox-vm'), not on the
+   ## build host. So run the 'VBoxManage export' / 'import --dry-run' portion
+   ## inside that chroot via 'cowbuilder --execute', mirroring
+   ## 'build-steps.d/*_create-vbox-vm'. Signing and upload stay on the host
+   ## (where the operator's credentials already are); only the VBoxManage
+   ## portion runs in the chroot. The '.ova' is written to
+   ## '$binary_image_ova_file' under the bind-mounted
+   ## '$binary_build_folder_dist', so it lands on the host.
+   local dist_build_multiarch_package_item
+   dist_build_multiarch_package_item="amd64"
+   export dist_build_multiarch_package_item
 
-   local eulafile_vbox_temp
-   eulafile_vbox_temp="${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
+   ## Sets base_folder / cow_folder for the current
+   ## $dist_build_multiarch_package_item.
+   set_cowbuilder_folders
 
-   $SUDO_TO_ROOT cp -- "${eulafile_user}" "${HOMEVAR_VBOX_TEMP}/temp-eulafile.txt"
-   $SUDO_TO_ROOT chown -- "dm-vbox-temp:dm-vbox-temp" "${eulafile_vbox_temp}"
-
-   ## binary_image_text_vbox_temp setup deliberately removed: the
-   ## matching `--eulafile "${binary_image_text_vbox_temp}"` after
-   ## `--vsys '1'` is commented out below as a VirtualBox license-
-   ## screen workaround, so writing this file (which was never read)
-   ## was dead work. If the second-eulafile branch is ever
-   ## re-enabled, the cp + chown pair needs to come back too.
-
-   ## https://forums.whonix.org/t/allow-us-to-download-the-vm-files-in-a-compressed-format-like-zip-7z-gzip-etc/14210/6
-   ## tar parses TAR_OPTIONS itself, so the embedded single quotes around
-   ## the --mtime value are intentional.
-   # shellcheck disable=SC2089
-   TAR_OPTIONS="\
-      ${TAR_OPTIONS:-}
-      --owner=0 --group=0 --numeric-owner \
-      --mode=go=rX,u+rw,a-s \
-      --sort=name \
-      --sparse \
-      --mtime='2015-10-21 00:00Z' \
-      --xz \
-      "
-   # shellcheck disable=SC2090
-   export TAR_OPTIONS
-   XZ_OPT="${XZ_OPT:-} -9"
-   export XZ_OPT
-
-   true "INFO: vm_names_to_be_exported: $vm_names_to_be_exported"
-
-   ## --vsys needs to precede --eulafile.
-   if [ "${vm_multiple}" = "false" ]; then
-      $SUDO_TO_VBOX_TEMP \
-         VBoxManage \
-            export "${VMNAME}" \
-            --vsys "0" \
-            --eulafile "${eulafile_vbox_temp}" \
-            --description "${description}" \
-            --manifest \
-            --product "${VMNAME}" \
-            --producturl "${producturl}" \
-            --vendor "${vendor}" \
-            --vendorurl "${vendorurl}" \
-            --version "${dist_build_version}" \
-            --output "${HOMEVAR_VBOX_TEMP}/temp.ova"
-   else
-      ## Only use '--eulafile' after "--vsys '0'".
-      ## No longer using additional, second '--eulafile' after "--vsys '1'"
-      ## No longer using:
-      # --vsys '1' \
-      # --eulafile "${binary_image_text_vbox_temp}" \
-      ##
-      ## This is to avoid a VirtualBox bug, which shows the second "Software License Agreement" screen,
-      ## which lacks the buttons [Agree] [Disagree] [Print] [Save].
-      ##
-      ## https://www.reddit.com/r/Whonix/comments/1jnavvb/cannot_install_whonix_virtualbox_asks_me_to_agree/
-      ## https://imgur.com/a/IGjI7TV
-      $SUDO_TO_VBOX_TEMP \
-         VBoxManage \
-            export ${vm_names_to_be_exported} \
-            --output "${HOMEVAR_VBOX_TEMP}/temp.ova" \
-            --vsys '0' \
-               --eulafile "${eulafile_vbox_temp}" \
-               --description "${description}" \
-               --manifest \
-               --product "Whonix-Gateway" \
-               --producturl "https://www.${project_clearnet}/wiki/Whonix-Gateway" \
-               --vendor "Whonix" \
-               --vendorurl "https://www.${project_clearnet}" \
-               --version "${dist_build_version}" \
-            --vsys '1' \
-               --description "${description}" \
-               --manifest \
-               --product "Whonix-Workstation" \
-               --producturl "https://www.${project_clearnet}/wiki/Whonix-Workstation" \
-               --vendor "Whonix" \
-               --vendorurl "https://www.${project_clearnet}" \
-               --version "${dist_build_version}"
+   if [ ! -d "$base_folder" ]; then
+      error "base_folder '$base_folder' does not exist. Did the amd64 cowbuilder chroot (build-steps.d/*_create-vbox-vm) fail to build?"
    fi
 
-   ## Sanity test.
-   $SUDO_TO_VBOX_TEMP test -r "${HOMEVAR_VBOX_TEMP}/temp.ova"
-   ## Move from dm-vbox-temp user home folder to normal user home folder.
-   $SUDO_TO_ROOT mv --verbose -- "${HOMEVAR_VBOX_TEMP}/temp.ova" "${binary_image_ova_file}"
-   ## Fix permissions because file previously needed to be moved from one user to another using root rights.
+   ## Serialise the curated allowlist '$env_vars_keep_list' plus the
+   ## export-specific presentation strings computed above into an env file
+   ## for the chroot script to source. Re-using the existing list (the same
+   ## one sudo passes via '--preserve-env=') means there is no parallel
+   ## hardcoded list to drift out of sync.
+   local chroot_env_file env_vars_var_keep_item export_env_var_item
+   chroot_env_file="$binary_build_folder_dist/chroot-env-export-vbox-vm"
+   mkdir --parents -- "$binary_build_folder_dist"
+   {
+      printf '%s\n' "#!/bin/bash"
+      printf '%s\n' "## Auto-generated by ${BASH_SOURCE[0]}; do not edit by hand."
+      for env_vars_var_keep_item in $env_vars_keep_list; do
+         ## Skip variables that are unset in this run; an unset entry in
+         ## the allowlist is not an error.
+         [ -n "${!env_vars_var_keep_item+x}" ] || continue
+         declare -p "$env_vars_var_keep_item"
+      done
+      ## Export-specific variables not in '$env_vars_keep_list', computed
+      ## above on the host and consumed by the chroot export script.
+      for export_env_var_item in producturl vendor vendorurl description eulafile_user vm_multiple project_clearnet; do
+         declare -p "$export_env_var_item"
+      done
+   } > "$chroot_env_file"
+
+   local chroot_exec_script
+   chroot_exec_script="$dist_source_help_steps_folder/pbuilder-chroot-script-export-vbox-vm"
+
+   local bindmounts
+   ## Keep host and chroot absolute paths identical so $binary_image_ova_file
+   ## and the bind-mounted legal files resolve correctly inside the chroot.
+   bindmounts="$binary_build_folder_dist $source_code_folder_dist"
+
+   local cowbuilder_exit_code
+   cowbuilder_exit_code=0
+
+   ## 'chroot_env_file' is forwarded to the chroot script as '$1'.
+   $SUDO_TO_ROOT \
+      --preserve-env \
+         ${COWBUILDER_PREFIX:-} \
+            cowbuilder \
+               --host-arch "$host_architecture" \
+               --architecture "$dist_build_multiarch_package_item" \
+               --configfile "$dist_build_pbuilder_config_file" \
+               --execute \
+               --basepath "$base_folder" \
+               --buildplace "$cow_folder" \
+               --save-after-login \
+               --bindmounts "$bindmounts" \
+               -- \
+               "$chroot_exec_script" \
+               "$chroot_env_file" \
+               || { cowbuilder_exit_code="$?" ; true; };
+
+   if [ -d "$base_folder" ]; then
+      $SUDO_TO_ROOT "$dist_source_help_steps_folder/umount_kill.sh" "$base_folder"
+   fi
+
+   if [ ! "${cowbuilder_exit_code:-}" = "0" ]; then
+      error "cowbuilder --execute pbuilder-chroot-script-export-vbox-vm failed with exit code '$cowbuilder_exit_code'."
+   fi
+
+   ## The chroot wrote '$binary_image_ova_file' (root-owned, world-readable)
+   ## onto the bind-mount. Restore normal-user ownership on the host.
    $SUDO_TO_ROOT chown -- "$user_name:$user_name" "${binary_image_ova_file}"
-
-   ## Only important for redistribution.
-   ## VirtualBox creates ${binary_image_ova_file} with u+r only, which is problematic
-   ## with respect to rsync.
-   chmod ugo+r -- "${binary_image_ova_file}"
-
-   sync
 
    ## Sanity test.
    test -r "${binary_image_ova_file}"
 
-   ## Sanity test.
-   ##
-   ## NOTE: A different --vmname is required, because ${VMNAME} does already exist
-   ## in the list of imported VirtualBox machines.
-   ##
-   ## Not using $SUDO_TO_VBOX_TEMP because binary_image_ova_file is stored in
-   ## normal user home folder. Not in dm-vbox-temp user home folder.
-   if [ "${vm_multiple}" = "false" ]; then
-      ## Bug:
-      ## VBoxManage: error: Cannot import until the license agreement listed above is accepted.
-#       VBoxManage \
-#          import "${binary_image_ova_file}" \
-#          --vsys "0" \
-#          --eula show \
-#          --vmname "${VMNAME}-${dist_build_version}"
-
-      VBoxManage \
-         import "${binary_image_ova_file}" \
-         --vsys "0" \
-         --eula accept \
-         --vmname "${VMNAME}-${dist_build_version}" \
-         --dry-run
-   else
-      VBoxManage \
-         import "${binary_image_ova_file}" \
-         --vsys "0" \
-            --eula show \
-            --vmname "Whonix-Gateway-${dist_build_version}" \
-         --vsys "1" \
-            --eula show \
-            --vmname "Whonix-Workstation-${dist_build_version}" \
-
-      VBoxManage \
-         import "${binary_image_ova_file}" \
-         --vsys "0" \
-            --eula accept \
-            --vmname "Whonix-Gateway-${dist_build_version}" \
-            --dry-run \
-         --vsys "1" \
-            --eula accept \
-            --vmname "Whonix-Workstation-${dist_build_version}" \
-            --dry-run
-   fi
-
-   local vm_name_to_be_deleted
-   for vm_name_to_be_deleted in ${vm_names_to_be_exported} ; do
-      ## Safe disk space.
-      ## Delete temporary VM in temporary VM user build folder to save disk space
-      ## during the build process.
-      $SUDO_TO_VBOX_TEMP VBoxManage unregistervm "$vm_name_to_be_deleted" --delete || true
-      $SUDO_TO_ROOT safe-rm -r -f -- "$HOMEVAR_VBOX_TEMP/VirtualBox VMs/$vm_name_to_be_deleted"
-   done
+   sync
 }
 
 sign_cmd_openpgp() {
