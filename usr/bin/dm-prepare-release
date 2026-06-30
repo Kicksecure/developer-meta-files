@@ -470,6 +470,10 @@ Please donate! [C]
    local bindmounts
    ## Keep host and chroot absolute paths identical so $binary_image_ova_file
    ## and the bind-mounted legal files resolve correctly inside the chroot.
+   ## Space-separated by design: pbuilder word-splits BINDMOUNTS internally
+   ## ('for i in $BINDMOUNTS'), so a bind path containing a space is unsupported
+   ## by pbuilder itself -- a bash array here would not help. These are
+   ## controlled build paths with no spaces.
    bindmounts="$binary_build_folder_dist $source_code_folder_dist"
 
    local cowbuilder_exit_code
