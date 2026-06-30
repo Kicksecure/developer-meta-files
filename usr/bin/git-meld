@@ -83,13 +83,17 @@ if is_submodule_blob "${old_file}" && is_submodule_blob "${new_file}"; then
    old_commit="$(extract_commit "${old_file}")"
    new_commit="$(extract_commit "${new_file}")"
    cd -- "${diff_path}"
+   ## '--no-ext-diff': these inner diffs must print the submodule's normal
+   ## textual diff, NOT re-enter this driver -- git propagates the top-level
+   ## '-c diff.external=...' to nested git via GIT_CONFIG_PARAMETERS.
    ## No '--' before the commit refs: that would make git treat them as
    ## pathspecs instead of revisions.
-   git diff --find-copies --stat "${old_commit}" "${new_commit}"
-   git diff --find-copies "${old_commit}" "${new_commit}"
+   git --no-ext-diff diff --find-copies --stat "${old_commit}" "${new_commit}"
+   git --no-ext-diff diff --find-copies "${old_commit}" "${new_commit}"
 else
-   ## '$old_hex'/'$new_hex' are blob object names, not paths -- again no '--'.
-   git diff --find-copies --stat "${old_hex}" "${new_hex}" || true
+   ## '--no-ext-diff' (don't re-enter this driver, see above). '$old_hex' /
+   ## '$new_hex' are blob object names, not paths -- again no '--'.
+   git --no-ext-diff diff --find-copies --stat "${old_hex}" "${new_hex}" || true
    meld "${old_file}" "${new_file}"
 fi
 

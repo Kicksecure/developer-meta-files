@@ -29,15 +29,15 @@ fi
 ## helper-scripts is installed); fall back to the in-tree copy.
 helper_scripts_dir="${HELPER_SCRIPTS_PATH:-${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts}"
 grep_find_unicode_wrapper="${helper_scripts_dir}/usr/bin/grep-find-unicode-wrapper"
-## helper-scripts-run sets HELPER_SCRIPTS_PATH + PYTHONPATH so the in-tree
+## run-via-helper-scripts sets HELPER_SCRIPTS_PATH + PYTHONPATH so the in-tree
 ## Python helpers (here the security-hardened 'stcat') run during the
 ## build bootstrap, before helper-scripts is installed.
-helper_scripts_run="${helper_scripts_dir}/usr/bin/helper-scripts-run"
+run_via_helper_scripts="${helper_scripts_dir}/usr/bin/run-via-helper-scripts"
 
 ## Sanity tests.
 test -d "$derivative_maker_source_code_dir"
 test -x "$grep_find_unicode_wrapper"
-test -x "$helper_scripts_run"
+test -x "$run_via_helper_scripts"
 
 ## Need to 'cd' for relative paths.
 cd -- "$derivative_maker_source_code_dir"
@@ -86,7 +86,7 @@ read_link_target() {
    ## Symlink target, independent of 'core.symlinks': a real symlink via
    ## 'readlink'; a symlink checked out as a regular file (core.symlinks
    ## =false) stores its target as the file content. Read it with the
-   ## security-hardened 'stcat', run via helper-scripts-run so it resolves
+   ## security-hardened 'stcat', run via run-via-helper-scripts so it resolves
    ## (with its stdisplay module on PYTHONPATH) during the build's
    ## bootstrap before helper-scripts is installed. stcat does no option
    ## parsing, so a leading-dash path is safe without '--'.
@@ -95,7 +95,7 @@ read_link_target() {
    if [ -L "$path" ]; then
       readlink -- "$path"
    else
-      "$helper_scripts_run" stcat "$path"
+      "$run_via_helper_scripts" stcat "$path"
    fi
 }
 
