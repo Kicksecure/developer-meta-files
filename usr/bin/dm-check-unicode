@@ -138,7 +138,7 @@ find_symlinks() {
    ## when 'core.symlinks=false').
    for symlink in "${!git_symlink_paths[@]}"; do
       symlink="./$symlink"
-      [ -n "${seen_symlink[$symlink]+_}" ] && continue
+      [ -v "seen_symlink[$symlink]" ] && continue
       seen_symlink["$symlink"]=1
       all_symlinks+=("$symlink")
    done
@@ -149,7 +149,7 @@ find_symlinks() {
    ## '.gitignore', ... leaving filesystem symlinks under those
    ## unvalidated).
    while IFS= read -r -d '' symlink; do
-      [ -n "${seen_symlink[$symlink]+_}" ] && continue
+      [ -v "seen_symlink[$symlink]" ] && continue
       seen_symlink["$symlink"]=1
       all_symlinks+=("$symlink")
    done < <(find "." -path '*/.git' -prune -o -type l -print0)
