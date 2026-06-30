@@ -29,7 +29,7 @@ fi
 ## helper-scripts is installed); fall back to the in-tree copy. Export it so
 ## run-via-helper-scripts (below) inherits this same tree instead of
 ## re-deriving its own.
-HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH:-${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts}"
+[ -v HELPER_SCRIPTS_PATH ] || HELPER_SCRIPTS_PATH="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts"
 export HELPER_SCRIPTS_PATH
 grep_find_unicode_wrapper="${HELPER_SCRIPTS_PATH}/usr/bin/grep-find-unicode-wrapper"
 ## run-via-helper-scripts sets HELPER_SCRIPTS_PATH + PYTHONPATH so the in-tree
