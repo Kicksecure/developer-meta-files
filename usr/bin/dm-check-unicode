@@ -26,13 +26,16 @@ fi
 
 ## helper-scripts location: prefer HELPER_SCRIPTS_PATH (exported by the
 ## derivative-maker build's help-steps during bootstrap, before
-## helper-scripts is installed); fall back to the in-tree copy.
-helper_scripts_dir="${HELPER_SCRIPTS_PATH:-${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts}"
-grep_find_unicode_wrapper="${helper_scripts_dir}/usr/bin/grep-find-unicode-wrapper"
+## helper-scripts is installed); fall back to the in-tree copy. Export it so
+## run-via-helper-scripts (below) inherits this same tree instead of
+## re-deriving its own.
+HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH:-${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts}"
+export HELPER_SCRIPTS_PATH
+grep_find_unicode_wrapper="${HELPER_SCRIPTS_PATH}/usr/bin/grep-find-unicode-wrapper"
 ## run-via-helper-scripts sets HELPER_SCRIPTS_PATH + PYTHONPATH so the in-tree
 ## Python helpers (here the security-hardened 'stcat') run during the
 ## build bootstrap, before helper-scripts is installed.
-run_via_helper_scripts="${helper_scripts_dir}/usr/bin/run-via-helper-scripts"
+run_via_helper_scripts="${HELPER_SCRIPTS_PATH}/usr/bin/run-via-helper-scripts"
 
 ## Sanity tests.
 test -d "$derivative_maker_source_code_dir"
@@ -75,12 +78,17 @@ symlink_whitelist["./qubes/qubes-template-whonix/whonix-workstation"]="whonix-ga
 ## whose content is the link target, so 'find -type l' misses it and the
 ## content checks further below would false-flag it. Enumerating from git
 ## metadata makes symlink handling independent of 'core.symlinks'.
+## 'git ls-files --stage' prints "<mode> <object> <stage>\t<path>"; mode
+## 120000 is a symlink. Capture first (a git failure then trips errexit; a
+## process substitution would mask it), then split on the tab and read the
+## mode with a parameter expansion -- no awk, no subshell around the loop, so
+## the associative array persists.
 declare -A git_symlink_paths
-while IFS= read -r git_symlink_path; do
-   [ -z "$git_symlink_path" ] && continue
+git_ls_files_stage="$(git ls-files --recurse-submodules --stage)"
+while IFS=$'\t' read -r git_index_meta git_symlink_path; do
+   [ "${git_index_meta%% *}" = "120000" ] || continue
    git_symlink_paths["$git_symlink_path"]=1
-done < <(git ls-files --recurse-submodules --stage \
-   | awk -F'\t' 'split($1, mode_sha_stage, " ") && mode_sha_stage[1] == "120000" { print $2 }')
+done <<< "$git_ls_files_stage"
 
 read_link_target() {
    ## Symlink target, independent of 'core.symlinks': a real symlink via
