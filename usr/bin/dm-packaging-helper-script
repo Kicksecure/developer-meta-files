@@ -1491,7 +1491,7 @@ pkg_git_branch_fetch_one() {
 }
 
 pkg_git_diff_and_merge_branch_upstream() {
-   pkg_git_diff_and_merge_branch "github-${batch_current_project_name,,}"
+   pkg_git_diff_and_merge_branch "github-${batch_current_project_name,,}/master"
 }
 
 pkg_git_diff_and_merge_branch_arraybolt3() {
@@ -1513,7 +1513,9 @@ pkg_git_diff_and_merge_branch() {
    #repo_skip 'derivative-maker' || return 0
 
    local origin_branch
-   origin_branch="$@"
+   ## Called with exactly one argument (the '<remote>/<branch>' ref); use
+   ## "${1}" not "$@" to avoid SC2124 (array-to-string assignment).
+   origin_branch="${1}"
 
    ## Use the fully qualified remote-tracking ref to avoid name
    ## collision with same-named tags.
@@ -1542,7 +1544,16 @@ pkg_git_diff_and_merge_branch() {
    dry_run_or_run git --no-pager diff -C ..."${origin_ref}"
    dry_run_or_run git --no-pager kdiff -C ..."${origin_ref}"
 
-   if [ "${origin_branch}" = "ArrayBolt3/arraybolt3/trixie" ]; then
+   if [ "${origin_branch}" = "github-${batch_current_project_name,,}/master" ]; then
+      ## Real upstream master (github-whonix / github-kicksecure): a
+      ## trusted, signed source. Same policy as the ArrayBolt3 branch
+      ## below: verify the tip's signature (aborts under errexit if it is
+      ## missing/invalid, so nothing unsigned is ever merged), then merge
+      ## '--no-ff' so the maintainer-signed merge commit authenticates the
+      ## commits below it (sq-git policy).
+      git verify-commit "${origin_ref}"
+      dry_run_or_run git merge --no-ff "${origin_ref}"
+   elif [ "${origin_branch}" = "ArrayBolt3/arraybolt3/trixie" ]; then
       ## 'git verify-commit' passes through debug output by 'sq-git-wrapper'.
       git verify-commit "${origin_ref}"
       ## 'git merge' does not pass through debug output by 'sq-git-wrapper'.
@@ -1569,6 +1580,10 @@ pkg_git_diff_and_merge_branch() {
 
 pkg_git_branch_pull_upstream_master() {
    local origin_name_list package_remote_item upstream_repo
+
+   ## Branch(es) to pull from upstream. Without this the loop below
+   ## iterated an unset array and pulled nothing (silent no-op).
+   origin_name_list=( "master" )
 
    if [ "${batch_current_project_name,,}" = "whonix" ]; then
       upstream_repo=github-whonix
