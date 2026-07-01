@@ -440,6 +440,26 @@ check_R010_strict_block() {
          | grep --count --extended-regexp \
             '^(set -o (errexit|nounset|pipefail|errtrace)|shopt -s (inherit_errexit|shift_verbose))$' \
          || true)"
+      ## Source-able dual-mode scripts (executed AND sourced for code
+      ## reuse, e.g. usr/bin/update-torbrowser sourced by
+      ## dist-installer-gui; or pure helper-script .bsh libraries) MUST
+      ## NOT enable strict-mode at top level: 'set -o errexit'/'nounset'
+      ## and 'shopt -s inherit_errexit' would leak into the sourcing
+      ## shell. Such scripts therefore keep ZERO column-0 strict lines
+      ## and guard the block behind the helper-scripts
+      ## was_executed()/was_sourced() runtime check (indented, invisible
+      ## to the regex above). Skip R-010 for exactly that shape: fully
+      ## guarded (count 0) AND the guard present. A partial top-level
+      ## block (count 1..5) is not a clean source-able script and stays
+      ## subject to the count check below. This condition also leaves
+      ## this script itself enforced: it keeps its own count-6 column-0
+      ## block, so it never enters the skip despite naming the tokens.
+      if [ "${count}" -eq 0 ] \
+         && grep --quiet --extended-regexp \
+            '\b(was_executed|was_sourced)\b' -- "${script}"; then
+         note "R-010 skipped: source-able guarded script '${script}'"
+         continue
+      fi
       if [ "${count}" -lt 6 ]; then
          fail "R-010 strict-mode block" "'${script}' has only ${count}/6 strict-mode lines in head -100"
       fi
