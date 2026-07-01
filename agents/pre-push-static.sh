@@ -32,6 +32,9 @@
 ##  14. R-130 No ':' as bare no-op placeholder on its own line
 ##      (does NOT flag the ': "${var:=default}"' parameter-default
 ##      idiom widely used in the codebase)
+##  16. R-034 no 'echo' command (use printf); '## style-ok: allow-echo'
+##  17. R-103 no process-replacement 'exec <cmd>' (fd-redirect exec
+##      exempt); '## style-ok: allow-exec'
 ##  15. pre-commit-hooks (direct binary execution, no framework)
 ##      against the right file-type subsets: check-yaml,
 ##      check-json, check-toml, check-xml, check-ast,
@@ -649,6 +652,64 @@ check_R130_null_command() {
    emit_hits "R-130 bare ':' no-op" "${hits}"
 }
 
+check_R034_echo() {
+   local script hits line
+   local -a fs
+
+   ## R-034: 'echo' as a command (use printf). Per-script so a script-wide
+   ## '## style-ok: allow-echo' waiver can exempt a file that genuinely needs it.
+   ## filter_self drops this script (its own tag/comment text contains 'echo').
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   for script in "${fs[@]}"; do
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*allow-echo([[:space:]]|$)' \
+         -- "${script}"; then
+         continue
+      fi
+      ## 'echo' as a word at start-of-line or after whitespace (command position).
+      ## A leading '#' blocks the '[^#]*' prefix, so comment lines are excluded.
+      hits="$(grep --line-number --extended-regexp \
+         '^[[:space:]]*[^#]*[[:space:]]echo([[:space:]]|$)|^[[:space:]]*echo([[:space:]]|$)' \
+         -- "${script}" 2>/dev/null || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-034 echo not printf" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
+}
+
+check_R103_exec() {
+   local script hits line
+   local -a fs
+
+   ## R-103: process-replacement 'exec <command>' (run as child, forward rc).
+   ## fd-redirection exec ('exec 9>lock', 'exec {fd}>&-', 'exec >file') is NOT
+   ## process replacement -- a digit / '{' / '<' / '>' / '&' immediately follows
+   ## 'exec', so those are exempt. Per-script '## style-ok: allow-exec' waiver for
+   ## surfaces that must hand off the process. filter_self drops this script.
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   for script in "${fs[@]}"; do
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*allow-exec([[:space:]]|$)' \
+         -- "${script}"; then
+         continue
+      fi
+      hits="$(grep --line-number --extended-regexp \
+         '^[[:space:]]*[^#]*[[:space:]]exec[[:space:]]+[^[:space:]0-9{<>&]|^[[:space:]]*exec[[:space:]]+[^[:space:]0-9{<>&]' \
+         -- "${script}" 2>/dev/null || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-103 process-replacement exec" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
+}
+
 check_R080_shellcheck_source_path() {
    local hits
 
@@ -872,6 +933,8 @@ run_file_checks() {
       check_R090_command_v "${shell_files[@]}"
       check_R120_rm "${shell_files[@]}"
       check_R130_null_command "${shell_files[@]}"
+      check_R034_echo "${shell_files[@]}"
+      check_R103_exec "${shell_files[@]}"
    else
       note "no changed shell files"
    fi
