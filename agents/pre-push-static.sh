@@ -460,6 +460,19 @@ check_R010_strict_block() {
          note "R-010 skipped: source-able guarded script '${script}'"
          continue
       fi
+      ## Script-wide waiver: '## style-ok: no-strict' anywhere in the
+      ## file. For sourced-ONLY fragments that are never executed and
+      ## thus do not use the was_executed()/was_sourced() guard above:
+      ## '/etc/profile.d/*.sh' login-shell fragments, '.bashrc.d'
+      ## snippets, and similar. Enabling strict-mode in them would leak
+      ## 'set -o errexit'/'nounset' into (and could kill) the sourcing
+      ## interactive shell. Same escape-hatch shape as 'no-has'/'no-safe-rm'.
+      if grep --quiet --extended-regexp \
+            '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*no-strict([[:space:]]|$)' \
+            -- "${script}"; then
+         note "R-010 skipped: 'style-ok: no-strict' waiver in '${script}'"
+         continue
+      fi
       if [ "${count}" -lt 6 ]; then
          fail "R-010 strict-mode block" "'${script}' has only ${count}/6 strict-mode lines in head -100"
       fi
