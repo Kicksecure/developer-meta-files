@@ -32,6 +32,9 @@
 ##  14. R-130 No ':' as bare no-op placeholder on its own line
 ##      (does NOT flag the ': "${var:=default}"' parameter-default
 ##      idiom widely used in the codebase)
+##  16. R-034 no 'echo' command (use printf); '## style-ok: allow-echo'
+##  17. R-103 no process-replacement 'exec <cmd>' (fd-redirect exec
+##      exempt); '## style-ok: allow-exec'
 ##  15. pre-commit-hooks (direct binary execution, no framework)
 ##      against the right file-type subsets: check-yaml,
 ##      check-json, check-toml, check-xml, check-ast,
@@ -440,6 +443,39 @@ check_R010_strict_block() {
          | grep --count --extended-regexp \
             '^(set -o (errexit|nounset|pipefail|errtrace)|shopt -s (inherit_errexit|shift_verbose))$' \
          || true)"
+      ## Source-able dual-mode scripts (executed AND sourced for code
+      ## reuse, e.g. usr/bin/update-torbrowser sourced by
+      ## dist-installer-gui; or pure helper-script .bsh libraries) MUST
+      ## NOT enable strict-mode at top level: 'set -o errexit'/'nounset'
+      ## and 'shopt -s inherit_errexit' would leak into the sourcing
+      ## shell. Such scripts therefore keep ZERO column-0 strict lines
+      ## and guard the block behind the helper-scripts
+      ## was_executed()/was_sourced() runtime check (indented, invisible
+      ## to the regex above). Skip R-010 for exactly that shape: fully
+      ## guarded (count 0) AND the guard present. A partial top-level
+      ## block (count 1..5) is not a clean source-able script and stays
+      ## subject to the count check below. This condition also leaves
+      ## this script itself enforced: it keeps its own count-6 column-0
+      ## block, so it never enters the skip despite naming the tokens.
+      if [ "${count}" -eq 0 ] \
+         && grep --quiet --extended-regexp \
+            '\b(was_executed|was_sourced)\b' -- "${script}"; then
+         note "R-010 skipped: source-able guarded script '${script}'"
+         continue
+      fi
+      ## Script-wide waiver: '## style-ok: no-strict' anywhere in the
+      ## file. For sourced-ONLY fragments that are never executed and
+      ## thus do not use the was_executed()/was_sourced() guard above:
+      ## '/etc/profile.d/*.sh' login-shell fragments, '.bashrc.d'
+      ## snippets, and similar. Enabling strict-mode in them would leak
+      ## 'set -o errexit'/'nounset' into (and could kill) the sourcing
+      ## interactive shell. Same escape-hatch shape as 'no-has'/'no-safe-rm'.
+      if grep --quiet --extended-regexp \
+            '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*no-strict([[:space:]]|$)' \
+            -- "${script}"; then
+         note "R-010 skipped: 'style-ok: no-strict' waiver in '${script}'"
+         continue
+      fi
       if [ "${count}" -lt 6 ]; then
          fail "R-010 strict-mode block" "'${script}' has only ${count}/6 strict-mode lines in head -100"
       fi
@@ -614,6 +650,64 @@ check_R130_null_command() {
    ## (truncate) -- those have trailing content past the colon.
    hits="$(grep --line-number --extended-regexp '^[[:space:]]*:[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
    emit_hits "R-130 bare ':' no-op" "${hits}"
+}
+
+check_R034_echo() {
+   local script hits line
+   local -a fs
+
+   ## R-034: 'echo' as a command (use printf). Per-script so a script-wide
+   ## '## style-ok: allow-echo' waiver can exempt a file that genuinely needs it.
+   ## filter_self drops this script (its own tag/comment text contains 'echo').
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   for script in "${fs[@]}"; do
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*allow-echo([[:space:]]|$)' \
+         -- "${script}"; then
+         continue
+      fi
+      ## 'echo' as a word at start-of-line or after whitespace (command position).
+      ## A leading '#' blocks the '[^#]*' prefix, so comment lines are excluded.
+      hits="$(grep --line-number --extended-regexp \
+         '^[[:space:]]*[^#]*[[:space:]]echo([[:space:]]|$)|^[[:space:]]*echo([[:space:]]|$)' \
+         -- "${script}" 2>/dev/null || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-034 echo not printf" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
+}
+
+check_R103_exec() {
+   local script hits line
+   local -a fs
+
+   ## R-103: process-replacement 'exec <command>' (run as child, forward rc).
+   ## fd-redirection exec ('exec 9>lock', 'exec {fd}>&-', 'exec >file') is NOT
+   ## process replacement -- a digit / '{' / '<' / '>' / '&' immediately follows
+   ## 'exec', so those are exempt. Per-script '## style-ok: allow-exec' waiver for
+   ## surfaces that must hand off the process. filter_self drops this script.
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   for script in "${fs[@]}"; do
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*allow-exec([[:space:]]|$)' \
+         -- "${script}"; then
+         continue
+      fi
+      hits="$(grep --line-number --extended-regexp \
+         '^[[:space:]]*[^#]*[[:space:]]exec[[:space:]]+[^[:space:]0-9{<>&]|^[[:space:]]*exec[[:space:]]+[^[:space:]0-9{<>&]' \
+         -- "${script}" 2>/dev/null || true)"
+      if [ -z "${hits}" ]; then
+         continue
+      fi
+      while IFS= read -r line; do
+         fail "R-103 process-replacement exec" "'${script}:${line}'"
+      done <<< "${hits}"
+   done
 }
 
 check_R080_shellcheck_source_path() {
@@ -839,6 +933,8 @@ run_file_checks() {
       check_R090_command_v "${shell_files[@]}"
       check_R120_rm "${shell_files[@]}"
       check_R130_null_command "${shell_files[@]}"
+      check_R034_echo "${shell_files[@]}"
+      check_R103_exec "${shell_files[@]}"
    else
       note "no changed shell files"
    fi

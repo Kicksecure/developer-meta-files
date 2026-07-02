@@ -177,6 +177,15 @@ Good:
     result="$(my_helper "${value}")"
     printf '%s\n' "warn: ${result}"
 
+**R-034: Never `echo`; always `printf '%s\n'` (see R-030).** `echo`
+is not portable: `-n`/`-e` flag handling and backslash expansion
+differ across shells and `/bin/sh` implementations, and data that
+starts with `-` or contains `\` silently changes the output.
+`printf '%s\n' "${data}"` is unambiguous. The gate flags `echo`
+used as a command; a file that genuinely needs it carries a
+script-wide `## style-ok: allow-echo` waiver (same shape as
+`no-safe-rm`).
+
 
 ## printf vs log
 
@@ -505,6 +514,29 @@ Exception: bootstrap that runs before the executable bit is set
 (fresh `git clone` with `core.fileMode=false`, or a tarball that
 lost +x), or surfaces that don't honor the shebang. State the
 reason inline.
+
+**R-103: Don't replace the process with `exec <command>`; run it as
+a child and forward the exit code.** Process-replacement `exec`
+drops the wrapper from the `ps` tree (harder to debug) and skips
+any cleanup the wrapper would run on exit.
+
+Bad:
+
+    exec sandbox-run --dir "${repo}" -- ./tests/suite.sh "$@"
+
+Good:
+
+    rc=0
+    sandbox-run --dir "${repo}" -- ./tests/suite.sh "$@" || rc=$?
+    exit "${rc}"
+
+This rule targets *process replacement* only. `exec` used purely to
+open/redirect a file descriptor (`exec 9>"${lock}"`, `exec
+{fd}>&-`, `exec >"${log}"`) is not process replacement and is not
+flagged. A surface that genuinely needs to hand off the process
+(a remote-command payload where a lingering wrapper would deadlock
+the transport; a pty/login shim) carries a script-wide `##
+style-ok: allow-exec` waiver stating the reason.
 
 
 ## Errors and logging
