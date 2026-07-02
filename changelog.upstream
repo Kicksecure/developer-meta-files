@@ -1,3 +1,84 @@
+commit 0f28059e97308567f5a8d4faac6452f459417df4
+Merge: b69b5383 5392cb7c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 07:05:50 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 5392cb7c45c3f66d2c40acc2032af66f5e866ce1
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 06:16:55 2026 -0400
+
+    dm-virtualbox-update-local-and-wiki-links: has/die deps + shift_verbose
+
+    R-090: replace the 'command -v -- X >/dev/null' dependency probes
+    with 'has X || die 1 ...' (sourcing has.sh + log_run_die.sh by the
+    canonical absolute path, matching dm-virtualbox-installer-*); 'has'
+    verifies the target is actually executable and is not fooled by
+    aliases/functions.
+
+    R-010: add the missing 'shopt -s shift_verbose' to complete the
+    6-line strict-mode preamble. The script uses no 'shift', so this is
+    inert today and just satisfies the gate.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit a18d93acb6204dafc93506d3f84b59b885ae8543
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 06:16:54 2026 -0400
+
+    git-meld: run 'git diff' as a child, not 'exec' (R-103)
+
+    The re-dispatch path used 'exec git ... diff "$@"', a process
+    replacement that drops the wrapper from the ps tree. Run git diff as
+    a child and forward its exit code instead; an explicit 'exit' is
+    still required here because the driver logic below must not run in
+    re-dispatch mode (this is not the last statement).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 480d473e7d34a1a4f36f5b3f53329ba7a926ea74
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 06:06:37 2026 -0400
+
+    bash-style-guide R-103: prefer the plain command over the rc= dance
+
+    The R-103 "Good" example showed a capture-and-exit pattern
+
+        rc=0
+        cmd ... || rc=$?
+        exit "${rc}"
+
+    for the last-line handoff that replaces `exec cmd`. That is
+    unnecessary ceremony there: a script's exit status is its last
+    command's exit status, so a plain call forwards the code already,
+    and under 'set -o errexit' a failure exits with the child's status
+    while any 'trap ... EXIT' cleanup still runs (what exec skips).
+
+    Make the plain call the primary "Good" form, and keep the explicit
+    '|| rc=$?' capture only for its real use: running inline cleanup on
+    every exit path and still returning the child's original code (there
+    the '|| rc=$?' is load-bearing -- it disarms errexit so teardown
+    runs). The R-103 static check only forbids 'exec <command>'; it does
+    not require the dance, so the plain call already passes.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit b69b53837a1f21dd255dcc9182299165757bdfb2
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 05:57:45 2026 -0400
+
+    .
+
+commit 0cb786fda7103322473ff1cd6c4337a27d33e437
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 09:56:34 2026 +0000
+
+    bumped changelog version
+
 commit ef6f0854a1d266359fdd9defb5bfb22d57f56982
 Merge: 125b7a90 2cb104ec
 Author: Patrick Schleizer <adrelanos@whonix.org>
