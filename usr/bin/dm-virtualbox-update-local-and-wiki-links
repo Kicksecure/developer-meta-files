@@ -36,7 +36,6 @@ has mw-edit     || die 1 "'mw-edit' not on PATH"
 has stecho      || die 1 "'stecho' not on PATH"
 has stsponge    || die 1 "'stsponge' not on PATH"
 has overwrite   || die 1 "'overwrite' not on PATH"
-has append-once || die 1 "'append-once' not on PATH"
 has str_replace || die 1 "'str_replace' not on PATH"
 
 declare -A url_cache
@@ -156,7 +155,11 @@ replace_wiki_string () {
    [ -z "${wiki_content}" ] && return 1
 
    tmpfile="$(mktemp)"
-   append-once "${tmpfile}" "${wiki_content}" >/dev/null
+   ## 'overwrite', not 'append-once': the tmpfile is a fresh empty mktemp, and
+   ## 'append-once' would prepend a newline to it (its "fix a missing
+   ## terminating newline" path treats the empty file as needing one), leaving
+   ## a blank line at the top of the wiki page. 'overwrite' just writes.
+   overwrite "${tmpfile}" "${wiki_content}" >/dev/null
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
    wiki_content="$(cat -- "${tmpfile}")"
    wiki_cache["${cache_id}"]="${wiki_content}"
@@ -192,7 +195,9 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)"
 
    get_wiki_page_cached "${wiki_page}"
-   append-once "${tmpfile}" "${wiki_content}" >/dev/null
+   ## 'overwrite', not 'append-once' -- see replace_wiki_string: append-once on
+   ## a fresh empty mktemp injects a leading blank line into the uploaded page.
+   overwrite "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
 
