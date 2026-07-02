@@ -189,28 +189,30 @@ save_cached_page_to_wiki () {
    append-once "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
-   ## TODO
-   ## XXX: hardcoded
-   #mw-edit 'https://www.whonix.org/w' "${tmpfile}" "${wiki_page}"
 
    ## Leftover temp file is by design - kept on disk so a developer
    ## can inspect it after a failure.
    printf '%s\n' "INFO: save_cached_page_to_wiki tmp file kept for review: ${tmpfile}"
 }
 
-declare kicksecure_wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_intel64_regex vbox_macos_arm64_regex
-kicksecure_wiki_vbox_page='Template:VirtualBox_Host_Software_Installation'
+declare wiki_vbox_page vbox_download_page vbox_win_regex vbox_macos_intel64_regex vbox_macos_arm64_regex
+wiki_vbox_page='Template:VirtualBox_Host_Software_Installation'
 vbox_download_page='https://www.virtualbox.org/wiki/Downloads'
 vbox_win_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*Win\.exe'
 vbox_macos_intel64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*OSX.dmg'
 vbox_macos_arm64_regex='https:\/\/download.virtualbox.org\/virtualbox\/.*\/VirtualBox-.*macOSArm64.dmg'
 
-WIKI_URL='https://www.kicksecure.com/w'
+## The VirtualBox host software installation template is mirrored on both
+## wikis. The page title is identical; only the domain differs. Each wiki is
+## fetched, compared and updated independently.
+declare -a wiki_url_list=(
+   'https://www.kicksecure.com/w'
+   'https://www.whonix.org/w'
+)
 
 main () {
-   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done sha_link_root sha_link_full
+   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done sha_link_root sha_link_full WIKI_URL
 
-   update_done='false'
 #    if [ ! -v WIKI_API_USER_NAME ]; then
 #       stecho "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
 #       exit 1
@@ -222,26 +224,35 @@ main () {
    get_url_from_page "${vbox_download_page}" "${vbox_win_regex}";   vbox_win_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_latest="${func_result}"
-   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_win_regex}";   vbox_win_current="${func_result}"
-   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
-   get_url_from_wiki "${kicksecure_wiki_vbox_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_current="${func_result}"
 
-   if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
-      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
-      update_done='true'
-   fi
-   if [ "${vbox_macos_intel64_latest}" != "${vbox_macos_intel64_current}" ]; then
-      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"
-      update_done='true'
-   fi
-   if [ "${vbox_macos_arm64_latest}" != "${vbox_macos_arm64_current}" ]; then
-      replace_wiki_string "${kicksecure_wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"
-      update_done='true'
-   fi
+   ## The same links are mirrored on every wiki in 'wiki_url_list'. Each wiki
+   ## is fetched, compared and (if changed) saved independently, because its
+   ## current page content is cached per wiki (the cache key includes
+   ## WIKI_URL).
+   for WIKI_URL in "${wiki_url_list[@]}"; do
+      update_done='false'
 
-   if [ "${update_done}" = 'true' ]; then
-      save_cached_page_to_wiki "${kicksecure_wiki_vbox_page}"
-   fi
+      get_url_from_wiki "${wiki_vbox_page}" "${vbox_win_regex}";   vbox_win_current="${func_result}"
+      get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
+      get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_current="${func_result}"
+
+      if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
+         replace_wiki_string "${wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
+         update_done='true'
+      fi
+      if [ "${vbox_macos_intel64_latest}" != "${vbox_macos_intel64_current}" ]; then
+         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"
+         update_done='true'
+      fi
+      if [ "${vbox_macos_arm64_latest}" != "${vbox_macos_arm64_current}" ]; then
+         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"
+         update_done='true'
+      fi
+
+      if [ "${update_done}" = 'true' ]; then
+         save_cached_page_to_wiki "${wiki_vbox_page}"
+      fi
+   done
 
    sha_link_root="$(dirname -- "${vbox_win_latest}")"
    ## example sha_link_full
