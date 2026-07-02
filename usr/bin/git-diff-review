@@ -25,14 +25,24 @@ review_tool="git-diff-review"
 # shellcheck disable=SC2317
 display_regular_file() {
    ## stcat neutralizes terminal escapes in a hostile blob (required; no
-   ## raw-diff fallback). 'diff' exits 1 on differ -- expected.
+   ## raw-diff fallback). Accept only 'diff' exit 0/1 (same/differ); a real
+   ## diff error (>=2) or any stcat failure must NOT pass as a rendered file.
+   ## Capture diff to a var (||-suffixed, no errexit toggle) so both statuses
+   ## are checkable without a two-stage-pipe PIPESTATUS dance.
+   local diff_rc diff_out
    printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
    has stcat
-   diff --unified -- "${1}" "${2}" | stcat || true
+   diff_rc=0
+   diff_out="$(diff --unified -- "${1}" "${2}")" || diff_rc=$?
+   if [ "${diff_rc}" -gt 1 ]; then
+      printf '%s\n' "git-diff-review: ERROR: diff failed (rc=${diff_rc}) for ${3}." >&2
+      return "${diff_rc}"
+   fi
+   printf '%s\n' "${diff_out}" | stcat \
+      || { diff_rc=$?; printf '%s\n' "git-diff-review: ERROR: stcat failed (rc=${diff_rc}) for ${3}." >&2; return "${diff_rc}"; }
 }
 
-git_review_bindir="$(dirname -- "${git_review_self}")"
-mydir="$(cd -- "${git_review_bindir}" && pwd)"
+mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
 for git_review_driver in \
    "/usr/libexec/developer-meta-files/git-review-driver.sh" \
    "${mydir}/../libexec/developer-meta-files/git-review-driver.sh" ; do

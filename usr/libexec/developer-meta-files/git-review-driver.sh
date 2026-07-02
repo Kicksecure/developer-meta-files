@@ -163,10 +163,14 @@ if [ "${longest}" -gt 5000 ]; then
    printf '%s\n' "${review_tool}: WARNING: ${diff_path_q} has a ${longest}-char line; a viewer may truncate/hang." >&2
 fi
 
+## Check BOTH sides: a deleted binary has new_file=/dev/null, so scanning only
+## new_file would miss it and open the old binary in the viewer.
 is_binary=no
-if LC_ALL=C grep --quiet --perl-regexp '\x00' -- "${new_file}" 2>/dev/null; then
-   is_binary=yes
-fi
+for binary_blob in "${old_file}" "${new_file}"; do
+   if [ "${binary_blob}" != /dev/null ] && LC_ALL=C grep --quiet --perl-regexp '\x00' -- "${binary_blob}" 2>/dev/null; then
+      is_binary=yes
+   fi
+done
 
 ## --stat always surfaces the change; the viewer opens only for text (a binary
 ## blob would render as noise, and the --stat already shows it changed).

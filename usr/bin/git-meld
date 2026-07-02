@@ -28,8 +28,7 @@ display_regular_file() {
    meld "${1}" "${2}"
 }
 
-git_review_bindir="$(dirname -- "${git_review_self}")"
-mydir="$(cd -- "${git_review_bindir}" && pwd)"
+mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
 for git_review_driver in \
    "/usr/libexec/developer-meta-files/git-review-driver.sh" \
    "${mydir}/../libexec/developer-meta-files/git-review-driver.sh" ; do
