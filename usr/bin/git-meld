@@ -30,7 +30,12 @@ self_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
 ## then a no-op.
 if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
    cd -- "${GIT_PREFIX:-.}"
-   exec git -c "diff.external=${self_path}" diff "$@"
+   ## Run 'git diff' as a child and forward its exit code, rather than
+   ## 'exec'-ing it (R-103): keeps this wrapper in the process tree. An
+   ## explicit 'exit' is still needed because this is not the last
+   ## statement -- the driver logic below must not run in re-dispatch mode.
+   git -c "diff.external=${self_path}" diff "$@"
+   exit "$?"
 fi
 
 [[ -v git_external_level ]] || git_external_level=0
