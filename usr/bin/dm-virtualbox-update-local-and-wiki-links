@@ -83,21 +83,22 @@ get_wiki_page_cached () {
 # }
 
 extract_url () {
-   local content regex line regex_result
+   local content regex line match
 
    content="${1:-}"
    regex="${2:-}"
    [ -z "${content}" ] && return 1
    [ -z "${regex}" ] && return 1
 
-   regex_result=""
+   ## Emit EVERY matching URL, one per line, so callers can tell apart no
+   ## match, exactly one, and several (ambiguous) -- rather than silently
+   ## overwriting and returning only the last match.
    while read -r line; do
       if [[ "${line}" =~ ${regex} ]]; then
-         regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
+         match="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
+         stecho "${match}"
       fi
    done <<< "${content}"
-
-   stecho "${regex_result}"
 }
 
 get_url_from_page () {
@@ -111,13 +112,13 @@ get_url_from_page () {
    get_url_cached "${dl_page}"
    readarray -t result < <(extract_url "${url_content}" "${release_regex}")
 
-   if [ "${#result[@]}" != '1' ]; then
-      1>&2 stecho 'WARNING - more than one URL found for download!'
-   elif [ -z "${result[0]}" ]; then
+   if [ "${#result[@]}" -eq 0 ]; then
       1>&2 stecho 'WARNING - no URL found!'
+   elif [ "${#result[@]}" -gt 1 ]; then
+      1>&2 stecho 'WARNING - more than one URL found for download!'
    fi
 
-   func_result="${result[0]}"
+   func_result="${result[0]:-}"
 }
 
 get_url_from_wiki () {
@@ -131,13 +132,13 @@ get_url_from_wiki () {
    get_wiki_page_cached "${wiki_page}"
    readarray -t result < <(extract_url "${wiki_content}" "${release_regex}")
 
-   if [ "${#result[@]}" != '1' ]; then
-      1>&2 stecho 'WARNING - more than one URL found for download!'
-   elif [ -z "${result[0]}" ]; then
+   if [ "${#result[@]}" -eq 0 ]; then
       1>&2 stecho 'WARNING - no URL found!'
+   elif [ "${#result[@]}" -gt 1 ]; then
+      1>&2 stecho 'WARNING - more than one URL found for download!'
    fi
 
-   func_result="${result[0]}"
+   func_result="${result[0]:-}"
 }
 
 replace_wiki_string () {
@@ -247,17 +248,31 @@ main () {
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_current="${func_result}"
 
+      ## Each replace is guarded: replace_wiki_string returns non-zero when the
+      ## current URL is not present on the page (nothing to replace). Called as
+      ## a bare command that would abort the whole run under 'errexit' -- and
+      ## kill the other links, the other wiki, and the local file writes below.
+      ## Warn and carry on instead, and only mark the page dirty on success.
       if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the Windows link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
       if [ "${vbox_macos_intel64_latest}" != "${vbox_macos_intel64_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the macOS/Intel link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
       if [ "${vbox_macos_arm64_latest}" != "${vbox_macos_arm64_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the macOS/ARM link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
 
       if [ "${update_done}" = 'true' ]; then
