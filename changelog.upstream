@@ -1,3 +1,167 @@
+commit c3a2d6b76d44f442fe4e278e85455d6c44aef60c
+Merge: 1a34416b e670b33f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 03:56:05 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/r010-sourceable-guard-skip'
+
+commit e670b33f19fa63c28dc3a67aeb1b186ebae9daac
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 03:45:34 2026 -0400
+
+    dm-virtualbox-update-local-and-wiki-links: update both wikis
+
+    The VirtualBox host software installation template is mirrored on both
+    the Kicksecure and Whonix wikis with an identical page title; only the
+    domain differs. The script only updated www.kicksecure.com and carried a
+    dead '## TODO / ## XXX: hardcoded' commented-out mw-edit for
+    www.whonix.org.
+
+    Iterate the full fetch/compare/save cycle over a wiki_url_list holding
+    both domains instead of bolting on a second hardcoded mw-edit. Each wiki
+    is tracked independently: its current page content is fetched and
+    compared per wiki (the wiki_cache key already includes WIKI_URL), so a
+    wiki that is already current is left untouched. Renamed
+    kicksecure_wiki_vbox_page to wiki_vbox_page since it is no longer
+    Kicksecure-specific, and dropped the dead whonix comment.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit f65f74667459a5677393ff8a5678ca663ae0486f
+Author: claude (dev29 1b766332-1023-4a87-adbd-b17a64476bbf) <noreply@anthropic.com>
+Date:   Wed Jul 1 15:21:12 2026 -0400
+
+    pre-push-static: add R-034 (no echo) + R-103 (no process-replacement exec)
+
+    Two more Tier-1 gate rules, with the established script-wide waiver shape:
+
+    - R-034: 'echo' used as a command (use printf, per R-030). echo is not
+      portable -- -n/-e and backslash handling differ across shells, and data
+      with a leading '-' or a '\' silently changes the output. Waiver:
+      ## style-ok: allow-echo.
+    - R-103: process-replacement 'exec <command>' (run it as a child and forward
+      the exit code, so the wrapper stays in the ps tree and its cleanup runs).
+      fd-redirection exec ('exec 9>lock', 'exec {fd}>&-', 'exec >log') is NOT
+      process replacement and is exempt. Waiver: ## style-ok: allow-exec.
+
+    Both checks are per-script (waiver-aware), exclude comments, and are
+    filter_self'd (their needle/tag text appears in this script). Documents
+    R-034/R-103 in bash-style-guide.md.
+
+    Drive-by: the header-comment additions pushed 'shopt -s shift_verbose' to
+    line 101, just past R-010's head-100 window (the gate then flagged its own
+    5/6 block); trimmed the additions so the strict block stays within 100.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01BBdc6EqGiW8uGCQsvkn8LD
+
+commit 840cb6090312ca4dbd2a80adc181027406896516
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 12:05:11 2026 -0400
+
+    dm-packaging-helper-script: unify upstream remote mapping (review)
+
+    CodeRabbit (PR #125) flagged that pkg_git_diff_and_merge_branch_upstream
+    derived the upstream remote as 'github-<project>', but the pull path maps
+    'derivative-maker' to 'github-kicksecure' (there is no
+    'github-derivative-maker' remote) -- so the merge path silently no-op'd for
+    the derivative-maker project.
+
+    Extract the mapping into a single pkg_git_upstream_remote() helper and reuse
+    it from the merge wrapper, the trusted-upstream dispatch match, and the pull
+    function, so the three cannot diverge.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+commit b733f5ed496944342a1bf430e7ef30eff5a86851
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 11:44:32 2026 -0400
+
+    dm-packaging-helper-script: fix upstream pull/merge git plumbing
+
+    Three fixes in the upstream-sync helpers:
+
+    - pkg_git_branch_pull_upstream_master: 'origin_name_list' was declared local
+      but never populated, so the pull loop iterated an empty array and pulled
+      nothing (silent no-op). Initialize it to ( "master" ).
+
+    - pkg_git_diff_and_merge_branch_upstream: passed the bare remote
+      'github-<proj>' instead of 'github-<proj>/master', so 'refs/remotes/...'
+      was not a branch ref and the diff check silently no-oped. Pass the
+      '/master' ref (matches the arraybolt3 / bot siblings and the previously
+      commented intent).
+
+    - pkg_git_diff_and_merge_branch: with the ref fixed, the merge dispatch had
+      no case for the upstream value and fell through to 'die'. Add an upstream
+      branch that verify-commits the tip (aborts under errexit on a bad/missing
+      signature) then merges --no-ff, the same trusted-signed-source policy as
+      the arraybolt3 branch. Also fix SC2124: 'origin_branch="$@"' -> "${1}".
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+commit 76f8b5d16251e06b4873136593d72983ab5106a9
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 11:44:32 2026 -0400
+
+    pre-push-static: add R-010 'no-strict' waiver for sourced-only scripts
+
+    R-010 requires the strict-mode block on every script, but a sourced-only
+    fragment (an '/etc/profile.d/*.sh' login-shell fragment, a '.bashrc.d'
+    snippet) must NOT set 'set -o errexit'/'nounset' at top level -- it would
+    leak into and could kill the sourcing interactive shell. Such fragments do
+    not use the was_executed()/was_sourced() guard that the existing skip
+    detects.
+
+    Add a '## style-ok: no-strict' whole-file waiver, mirroring the existing
+    no-has / no-safe-rm escape hatches. Opt-in only: a file without the marker
+    is unaffected, so existing enforcement does not change.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+commit fe6a25aebed679f4fca2fe5aeb50e5d89f9d4534
+Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+Date:   Wed Jul 1 06:05:25 2026 -0400
+
+    pre-push-static: R-010 skip fully-guarded source-able scripts
+
+    R-010 requires six strict-mode lines anchored at column 0 in the top 100
+    lines. A source-able script (executed AND sourced for code reuse, e.g.
+    usr/bin/update-torbrowser sourced by dist-installer-gui, or a pure
+    helper-script .bsh library) must NOT enable strict-mode at top level:
+    'set -o errexit'/'nounset' and 'shopt -s inherit_errexit' would leak into
+    the sourcing shell. Such scripts therefore keep ZERO column-0 strict lines
+    and guard the block behind the helper-scripts was_executed()/was_sourced()
+    runtime check, indented out of reach of R-010's column-anchored regex.
+    R-010 was thus unsatisfiable by any such file (check_runtime.bsh, a
+    sanctioned upstream library, scores 0/6 too).
+
+    Skip R-010 for exactly that shape: fully guarded (count 0) AND the
+    was_executed()/was_sourced() guard present. The count==0 predicate is the
+    correctness invariant, not a heuristic: a clean source-able script has no
+    top-level strict lines at all. A partial top-level block (count 1..5, e.g.
+    a standalone that uses was_sourced() only to REFUSE sourcing) is NOT a
+    clean source-able script and stays subject to the count check, so its
+    coverage is unchanged. This script itself keeps its own count-6 column-0
+    block and so is never skipped despite naming the tokens in the detector.
+    Emits a note when skipping, so the skip is visible rather than silent.
+
+    Differential sweep over 1501 shell files in the tree: the only outcome
+    changes are FAIL->skip for the 16 genuinely source-able count-0 scripts;
+    no standalone or partial-block script changed behavior.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+commit 1a34416bda91fa8b22531346f867ebb2837b9500
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Jun 29 15:21:29 2026 +0000
+
+    bumped changelog version
+
 commit f366297a5bd3c71b348f3fa7530c12fc18578e76
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jun 29 08:50:37 2026 -0400
