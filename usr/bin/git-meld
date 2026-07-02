@@ -8,6 +8,14 @@
 ## A git external diff driver: opens 'meld' for regular files, and for a
 ## submodule gitlink change prints the submodule's own 'git diff' between the
 ## old and new commits (instead of the opaque "Subproject commit <hex>" blob).
+##
+## Security stance: this is a REVIEW tool. Its overriding invariant is that a
+## real change is NEVER rendered as empty / no output -- a change a reviewer
+## cannot see is a change an attacker can hide. Every branch below either shows
+## the change or fails LOUD; several classes that a plain 'meld' would gloss
+## over (mode-only changes, symlink swaps, gitlink spoofing, Trojan-Source
+## Unicode, and files git refuses to hand to an external driver at all) are
+## surfaced explicitly.
 
 set -o errexit
 set -o nounset
@@ -30,10 +38,24 @@ self_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
 ## then a no-op.
 if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
    cd -- "${GIT_PREFIX:-.}"
+
+   ## Pre-flight overview with a NON-external diff. This is the ONLY place that
+   ## can surface files git never hands to this driver at all: paths marked
+   ## 'binary' / '-diff' / 'diff=<driver>' by .gitattributes, blobs git
+   ## auto-detects as binary (a NUL byte), and LFS pointers all render as
+   ## "Binary files differ" (or nothing) with the per-file driver skipped. The
+   ## tree-level summary lists every changed path, rename, and mode change
+   ## regardless, so nothing is invisible.
+   printf '%s\n' "===== git-meld pre-flight: full change set (no external diff) ====="
+   git diff --no-ext-diff --stat --summary --find-renames "$@" || true
+   if git diff --no-ext-diff --name-only "$@" 2>/dev/null | grep --quiet -e '\.gitattributes$' -e '^\.gitattributes$'; then
+      printf '%s\n' "git-meld: WARNING: this change touches .gitattributes, which can change how OTHER files are diffed (mark them binary/-diff and hide their contents). Review .gitattributes FIRST." >&2
+   fi
+   printf '%s\n' "===== git-meld per-file diffs ====="
+
    ## Run 'git diff' as a child and forward its exit code, rather than
    ## 'exec'-ing it (R-103): keeps this wrapper in the process tree. An
-   ## explicit 'exit' is still needed because this is not the last
-   ## statement -- the driver logic below must not run in re-dispatch mode.
+   ## explicit 'exit' is still needed because this is not the last statement.
    git -c "diff.external=${self_path}" diff "$@"
    exit "$?"
 fi
@@ -57,13 +79,15 @@ if [ "$#" -lt 7 ]; then
    exit 0
 fi
 
-true "1 path: ${1}"
-true "2 old-file: ${2}"
-true "3 old-hex: ${3}"
-true "4 old-mode: ${4}"
-true "5 new-file: ${5}"
-true "6 new-hex: ${6}"
-true "7 new-mode: ${7}"
+diff_path="${1}"
+old_file="${2}"
+old_hex="${3}"
+old_mode="${4}"
+new_file="${5}"
+new_hex="${6}"
+new_mode="${7}"
+
+true "${self_path}: path=${diff_path} old=${old_hex}/${old_mode} new=${new_hex}/${new_mode}"
 
 ## Recursion-depth backstop. Normally inert: the inner submodule diffs below
 ## use '--no-ext-diff' and never re-enter this driver, so the count stays at 1.
@@ -85,45 +109,80 @@ extract_commit() {
    sed --quiet -- 's/^Subproject commit \([0-9a-fA-F]*\).*/\1/p' "${1}"
 }
 
-diff_path="${1}"
-old_file="${2}"
-old_hex="${3}"
-new_file="${5}"
-new_hex="${6}"
+## Argument sanity: modes are six octal digits, object ids are hex or all-zero
+## (added/deleted side). Surface anything unexpected rather than trusting it.
+for check_mode in "${old_mode}" "${new_mode}"; do
+   [[ "${check_mode}" =~ ^[0-7]{6}$ ]] \
+      || printf '%s\n' "git-meld: WARNING: unexpected mode '${check_mode}' for '${diff_path}'." >&2
+done
 
-if is_submodule_blob "${old_file}" && is_submodule_blob "${new_file}"; then
+## Mode / type change banner. Surfaces mode-only changes (e.g. a data file made
+## executable) that a content diff alone would not show, plus any type
+## transition (file <-> symlink <-> gitlink).
+if [ "${old_mode}" != "${new_mode}" ]; then
+   printf '%s\n' "git-meld: MODE CHANGE '${diff_path}': ${old_mode} -> ${new_mode}"
+   case "${new_mode}" in
+      100755) [ "${old_mode}" = 100755 ] || printf '%s\n' "git-meld: NOTE: '${diff_path}' is now EXECUTABLE (+x)." ;;
+   esac
+fi
+
+## Symlink: the blob content IS the link target, which meld would show as
+## innocuous plain text. Make the target explicit and flag file<->symlink
+## transitions, then stop (do not hand a link to meld as a file).
+read_target() { if [ "${1}" = /dev/null ] || [ ! -e "${1}" ]; then printf '(none)'; else tr '\n' ' ' < "${1}"; fi; }
+if [ "${old_mode:0:2}" = "12" ] || [ "${new_mode:0:2}" = "12" ]; then
+   old_target="$(read_target "${old_file}")"
+   new_target="$(read_target "${new_file}")"
+   printf '%s\n' "git-meld: SYMLINK '${diff_path}': ${old_target} -> ${new_target}"
+   exit 0
+fi
+
+## Real submodule gitlink? Decide by MODE (160000), NOT by blob content: a
+## regular file whose content merely reads 'Subproject commit <hex>' is a SPOOF
+## meant to route a real file change through the submodule branch (which never
+## opens meld), hiding the file's contents. Mode is authoritative.
+if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
    old_commit="$(extract_commit "${old_file}")"
    new_commit="$(extract_commit "${new_file}")"
-   cd -- "${diff_path}"
+   printf '%s\n' "Submodule ${diff_path}: ${old_commit:-<none>} -> ${new_commit:-<none>}"
 
-   ## Surface the gitlink change ITSELF first. Even if the detailed diff below
-   ## cannot be produced, the reviewer must still SEE that the submodule pointer
-   ## moved -- a review/diff tool must NEVER render a real change as empty
-   ## output (that would let a real, possibly malicious, change pass unseen).
-   printf '%s\n' "Submodule ${diff_path}: ${old_commit} -> ${new_commit}"
-
-   ## Show the submodule's own textual diff. '--no-ext-diff' goes AFTER 'diff':
-   ## it is a 'git diff' option, not a top-level git option ('git --no-ext-diff
-   ## diff' is rejected outright), and it keeps the inner diff from re-entering
-   ## this driver. No '--' before the commit refs, or git treats them as
-   ## pathspecs. Do NOT swallow a failure: if the submodule commits are not
-   ## present locally (never fetched), fail LOUD rather than hide the change.
-   submodule_diff_rc=0
-   git diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
-   git diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
-   if [ "${submodule_diff_rc}" != 0 ]; then
-      printf '%s\n' "git-meld: ERROR: submodule '${diff_path}' changed ${old_commit} -> ${new_commit} but its diff could not be shown (commits not available locally? fetch the submodule to inspect). The change is NOT being hidden." >&2
+   ## 'git -C' (not 'cd') so an odd/symlinked submodule path cannot redirect us;
+   ## verify it is a real git repo before diffing. Never swallow a failure: if
+   ## the commits are not present locally, fail LOUD rather than hide the change.
+   if ! git -C "${diff_path}" rev-parse --git-dir >/dev/null 2>&1; then
+      printf '%s\n' "git-meld: ERROR: submodule '${diff_path}' is not an initialized git repo here; cannot show its diff (init/fetch it). The gitlink change is NOT being hidden." >&2
       exit 1
    fi
-else
-   ## '--no-ext-diff' after 'diff' (see above). '$old_hex' / '$new_hex' are blob
-   ## object names, not paths -- again no '--'. meld shows the actual file diff,
-   ## so a failed '--stat' summary here does not hide the change; still, warn on
-   ## failure rather than swallow it silently.
-   git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
-      || printf '%s\n' "git-meld: WARNING: '--stat' summary for '${diff_path}' (${old_hex} -> ${new_hex}) failed; opening meld with the full diff anyway." >&2
-   meld "${old_file}" "${new_file}"
+   submodule_diff_rc=0
+   git -C "${diff_path}" diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
+   git -C "${diff_path}" diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
+   if [ "${submodule_diff_rc}" != 0 ]; then
+      printf '%s\n' "git-meld: ERROR: submodule '${diff_path}' ${old_commit} -> ${new_commit}: its diff could not be shown (commits not present locally? fetch it). The change is NOT being hidden." >&2
+      exit 1
+   fi
+   exit 0
 fi
+
+## Content mimics a gitlink but the mode says it is a regular file -> obfuscation.
+if is_submodule_blob "${old_file}" || is_submodule_blob "${new_file}"; then
+   printf '%s\n' "git-meld: WARNING: '${diff_path}' content mimics a submodule gitlink ('Subproject commit ...') but its mode (${old_mode} -> ${new_mode}) is not 160000. Treating as a REGULAR FILE; inspect closely (possible obfuscation)." >&2
+fi
+
+## Trojan-Source scan: bidirectional overrides (U+202A-E, U+2066-9), zero-width
+## space, and BOM/ZWNBSP, plus C0 control bytes other than tab/newline/CR. These
+## render deceptively (or invisibly) in an editor/meld; warn before opening.
+if LC_ALL=C grep --quiet --perl-regexp \
+   -e '[\x00-\x08\x0b\x0c\x0e-\x1f]|\xe2\x80[\xaa-\xae]|\xe2\x81[\xa6-\xa9]|\xe2\x80\x8b|\xef\xbb\xbf' \
+   -- "${new_file}" 2>/dev/null; then
+   printf '%s\n' "git-meld: WARNING: '${diff_path}' contains bidirectional/invisible/control Unicode (possible Trojan-Source). Inspect the raw bytes, not just the rendered diff." >&2
+fi
+
+## Regular file: surface a '--stat' summary ('--no-ext-diff' after 'diff';
+## '$old_hex'/'$new_hex' are blob ids, no '--'). meld shows the actual file
+## diff, so a failed '--stat' does not hide it; still warn rather than swallow.
+git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
+   || printf '%s\n' "git-meld: WARNING: '--stat' summary for '${diff_path}' (${old_hex} -> ${new_hex}) failed; opening meld with the full diff anyway." >&2
+meld "${old_file}" "${new_file}"
 
 true "${self_path}: END. git_external_level: ${git_external_level}"
 
