@@ -3,11 +3,6 @@
 ## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
 ## See the file COPYING for copying conditions.
 
-## File-level disable: the script body below the early `exit 0` (TODO
-## stub, see comment near the top) is intentionally dead. Drop the
-## directive and the `exit 0` when the script is finished.
-# shellcheck disable=SC2317
-
 set -x
 set -o errexit
 set -o nounset
@@ -17,9 +12,6 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
-
-## TODO
-exit 0
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -32,7 +24,10 @@ else
    derivative_maker_source_code_dir="$(cd -- "$MYDIR" && cd -- "../../../../../" && pwd)"
 fi
 
+export dist_build_source_run=true
+export dist_build_one_parsed=true
 source "$derivative_maker_source_code_dir/help-steps/pre"
+source "$derivative_maker_source_code_dir/help-steps/variables"
 
 source "/usr/libexec/helper-scripts/strings.bsh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
@@ -47,7 +42,6 @@ dm_tor_update_repository() {
   ## Create a fresh chroot to work in.
   #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
 
-  ## TODO: broken
   true 'INFO: Setting cowbuilder file variables.'
   set_cowbuilder_folders
 
