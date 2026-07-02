@@ -522,11 +522,27 @@ Bad:
 
     exec sandbox-run --dir "${repo}" -- ./tests/suite.sh "$@"
 
-Good:
+Good -- just run it. A script's exit status is its last command's
+exit status, so a plain call as the final line forwards the code
+already; under `set -o errexit` a failure exits immediately with
+the child's status, and any `trap ... EXIT` cleanup still runs
+(exactly what `exec` would skip):
+
+    sandbox-run --dir "${repo}" -- ./tests/suite.sh "$@"
+
+Only reach for an explicit capture when you must run cleanup on
+*every* exit path and still return the child's original code, and
+that cleanup is inline rather than a `trap ... EXIT` handler. The
+`|| rc=$?` is load-bearing here: it disarms `errexit` so the
+teardown runs instead of the script aborting on failure:
 
     rc=0
     sandbox-run --dir "${repo}" -- ./tests/suite.sh "$@" || rc=$?
+    teardown_temp_dirs
     exit "${rc}"
+
+Do not add that ceremony when the command is simply the last thing
+the script does -- the plain call is equivalent and cleaner.
 
 This rule targets *process replacement* only. `exec` used purely to
 open/redirect a file descriptor (`exec 9>"${lock}"`, `exec
