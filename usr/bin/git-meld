@@ -38,8 +38,12 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
    exit "$?"
 fi
 
+## Recursion-depth counter, EXPORTED so a re-invoked driver inherits and
+## increments it -- a fresh subprocess would otherwise reset it to 1, which is
+## why the guard below could never actually fire. See the guard for its use.
 [[ -v git_external_level ]] || git_external_level=0
 git_external_level=$((git_external_level + 1))
+export git_external_level
 
 true "${self_path}: START. git_external_level: ${git_external_level}"
 
@@ -61,8 +65,11 @@ true "5 new-file: ${5}"
 true "6 new-hex: ${6}"
 true "7 new-mode: ${7}"
 
-## Recursion guard: the submodule branch below runs 'git diff' inside the
-## submodule, which re-enters this driver. Bail before it nests too deep.
+## Recursion-depth backstop. Normally inert: the inner submodule diffs below
+## use '--no-ext-diff' and never re-enter this driver, so the count stays at 1.
+## It only bites if that protection is ever lost and the driver starts nesting
+## -- the exported counter then climbs across the re-invoked processes and this
+## bails before it runs away.
 if [ "${git_external_level}" -ge 3 ]; then
    exit 255
 fi
@@ -88,17 +95,33 @@ if is_submodule_blob "${old_file}" && is_submodule_blob "${new_file}"; then
    old_commit="$(extract_commit "${old_file}")"
    new_commit="$(extract_commit "${new_file}")"
    cd -- "${diff_path}"
-   ## '--no-ext-diff': these inner diffs must print the submodule's normal
-   ## textual diff, NOT re-enter this driver -- git propagates the top-level
-   ## '-c diff.external=...' to nested git via GIT_CONFIG_PARAMETERS.
-   ## No '--' before the commit refs: that would make git treat them as
-   ## pathspecs instead of revisions.
-   git diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}"
-   git diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}"
+
+   ## Surface the gitlink change ITSELF first. Even if the detailed diff below
+   ## cannot be produced, the reviewer must still SEE that the submodule pointer
+   ## moved -- a review/diff tool must NEVER render a real change as empty
+   ## output (that would let a real, possibly malicious, change pass unseen).
+   printf '%s\n' "Submodule ${diff_path}: ${old_commit} -> ${new_commit}"
+
+   ## Show the submodule's own textual diff. '--no-ext-diff' goes AFTER 'diff':
+   ## it is a 'git diff' option, not a top-level git option ('git --no-ext-diff
+   ## diff' is rejected outright), and it keeps the inner diff from re-entering
+   ## this driver. No '--' before the commit refs, or git treats them as
+   ## pathspecs. Do NOT swallow a failure: if the submodule commits are not
+   ## present locally (never fetched), fail LOUD rather than hide the change.
+   submodule_diff_rc=0
+   git diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
+   git diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" || submodule_diff_rc=$?
+   if [ "${submodule_diff_rc}" != 0 ]; then
+      printf '%s\n' "git-meld: ERROR: submodule '${diff_path}' changed ${old_commit} -> ${new_commit} but its diff could not be shown (commits not available locally? fetch the submodule to inspect). The change is NOT being hidden." >&2
+      exit 1
+   fi
 else
-   ## '--no-ext-diff' (don't re-enter this driver, see above). '$old_hex' /
-   ## '$new_hex' are blob object names, not paths -- again no '--'.
-   git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" || true
+   ## '--no-ext-diff' after 'diff' (see above). '$old_hex' / '$new_hex' are blob
+   ## object names, not paths -- again no '--'. meld shows the actual file diff,
+   ## so a failed '--stat' summary here does not hide the change; still, warn on
+   ## failure rather than swallow it silently.
+   git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
+      || printf '%s\n' "git-meld: WARNING: '--stat' summary for '${diff_path}' (${old_hex} -> ${new_hex}) failed; opening meld with the full diff anyway." >&2
    meld "${old_file}" "${new_file}"
 fi
 
