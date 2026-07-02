@@ -178,9 +178,7 @@ Good:
     printf '%s\n' "warn: ${result}"
 
 **R-034: Never `echo`; always `printf '%s\n'` (see R-030).** `echo`
-is not portable: `-n`/`-e` flag handling and backslash expansion
-differ across shells and `/bin/sh` implementations, and data that
-starts with `-` or contains `\` silently changes the output.
+flag handling is problematic.
 `printf '%s\n' "${data}"` is unambiguous. The gate flags `echo`
 used as a command; a file that genuinely needs it carries a
 script-wide `## style-ok: allow-echo` waiver (same shape as
