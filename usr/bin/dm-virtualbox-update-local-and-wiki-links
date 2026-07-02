@@ -60,11 +60,12 @@ get_wiki_page_cached () {
    wiki_page="${1:-}"
    [ -z "${wiki_page}" ] && return 1
 
-   tmpfile="$(mktemp)"
-
    cache_id="${WIKI_URL} - ${wiki_page}"
 
+   ## 'mktemp' inside the cache-miss branch only: on a cache hit (every repeat
+   ## lookup) we never fetch, so creating a temp file here would just leak it.
    if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
+      tmpfile="$(mktemp)"
       mw-fetch "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
       wiki_cache["${cache_id}"]="$(cat -- "${tmpfile}")"
       ## Leftover temp file is by design - kept on disk so a
@@ -236,6 +237,15 @@ main () {
    get_url_from_page "${vbox_download_page}" "${vbox_win_regex}";   vbox_win_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_latest="${func_result}"
+
+   ## Fail fast if the download page scrape came up empty (get_url_from_page
+   ## only warns on a miss). Without this, an empty 'latest' URL flows into the
+   ## local-file writes at the end of main -- 'dirname ""' -> '.', download.txt
+   ## truncated to empty, SHA256SUMS clobbered from a bogus fetch -- corrupting
+   ## the tracked files. A broken scrape must stop here, before any write.
+   [ -n "${vbox_win_latest}" ]           || die 1 "no latest Windows VirtualBox URL scraped from '${vbox_download_page}'"
+   [ -n "${vbox_macos_intel64_latest}" ] || die 1 "no latest macOS/Intel VirtualBox URL scraped from '${vbox_download_page}'"
+   [ -n "${vbox_macos_arm64_latest}" ]   || die 1 "no latest macOS/ARM VirtualBox URL scraped from '${vbox_download_page}'"
 
    ## The same links are mirrored on every wiki in 'wiki_url_list'. Each wiki
    ## is fetched, compared and (if changed) saved independently, because its
