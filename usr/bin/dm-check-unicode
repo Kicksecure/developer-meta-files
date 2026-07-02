@@ -24,11 +24,23 @@ else
    derivative_maker_source_code_dir="$(cd -- "$MYDIR" && cd -- "../../../../../" && pwd)"
 fi
 
-grep_find_unicode_wrapper="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/bin/grep-find-unicode-wrapper"
+## helper-scripts location: prefer HELPER_SCRIPTS_PATH (exported by the
+## derivative-maker build's help-steps during bootstrap, before
+## helper-scripts is installed); fall back to the in-tree copy. Export it so
+## run-via-helper-scripts (below) inherits this same tree instead of
+## re-deriving its own.
+[ -v HELPER_SCRIPTS_PATH ] || HELPER_SCRIPTS_PATH="${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts"
+export HELPER_SCRIPTS_PATH
+grep_find_unicode_wrapper="${HELPER_SCRIPTS_PATH}/usr/bin/grep-find-unicode-wrapper"
+## run-via-helper-scripts sets HELPER_SCRIPTS_PATH + PYTHONPATH so the in-tree
+## Python helpers (here the security-hardened 'stcat') run during the
+## build bootstrap, before helper-scripts is installed.
+run_via_helper_scripts="${HELPER_SCRIPTS_PATH}/usr/bin/run-via-helper-scripts"
 
 ## Sanity tests.
 test -d "$derivative_maker_source_code_dir"
 test -x "$grep_find_unicode_wrapper"
+test -x "$run_via_helper_scripts"
 
 ## Need to 'cd' for relative paths.
 cd -- "$derivative_maker_source_code_dir"
@@ -61,11 +73,45 @@ symlink_whitelist["./live-build-data/d-i-branding/logo_debian_dark.png"]="logo_d
 symlink_whitelist["./live-build-data/d-i-branding/logo_installer.png"]="logo_debian.png"
 symlink_whitelist["./qubes/qubes-template-whonix/whonix-workstation"]="whonix-gateway"
 
+## Git-tracked symlinks (mode 120000), recursing into submodules. With
+## 'core.symlinks=false' a symlink is checked out as a regular text file
+## whose content is the link target, so 'find -type l' misses it and the
+## content checks further below would false-flag it. Enumerating from git
+## metadata makes symlink handling independent of 'core.symlinks'.
+## 'git ls-files --stage' prints "<mode> <object> <stage>\t<path>"; mode
+## 120000 is a symlink. Capture first (a git failure then trips errexit; a
+## process substitution would mask it), then split on the tab and read the
+## mode with a parameter expansion -- no awk, no subshell around the loop, so
+## the associative array persists.
+declare -A git_symlink_paths
+git_ls_files_stage="$(git ls-files --recurse-submodules --stage)"
+while IFS=$'\t' read -r git_index_meta git_symlink_path; do
+   [ "${git_index_meta%% *}" = "120000" ] || continue
+   git_symlink_paths["$git_symlink_path"]=1
+done <<< "$git_ls_files_stage"
+
+read_link_target() {
+   ## Symlink target, independent of 'core.symlinks': a real symlink via
+   ## 'readlink'; a symlink checked out as a regular file (core.symlinks
+   ## =false) stores its target as the file content. Read it with the
+   ## security-hardened 'stcat', run via run-via-helper-scripts so it resolves
+   ## (with its stdisplay module on PYTHONPATH) during the build's
+   ## bootstrap before helper-scripts is installed. stcat does no option
+   ## parsing, so a leading-dash path is safe without '--'.
+   local path
+   path="$1"
+   if [ -L "$path" ]; then
+      readlink -- "$path"
+   else
+      "$run_via_helper_scripts" stcat "$path"
+   fi
+}
+
 check_symlink() {
    local symlink
    symlink="$1"
    local target
-   target="$(readlink -- "$symlink")"
+   target="$(read_link_target "$symlink")"
 
    if [ "${symlink_whitelist[$symlink]+_}" ]; then
       if [ "${symlink_whitelist[$symlink]}" == "$target" ]; then
@@ -82,15 +128,40 @@ check_symlink() {
 
 find_symlinks() {
    local symlink found_symlink
+   local -A seen_symlink
+   local -a all_symlinks=()
    found_symlink=""
+
+   ## Authoritative: every git-tracked symlink, normalized to the './'
+   ## prefix the whitelist keys use, independent of 'core.symlinks' (a
+   ## 'find -type l' alone misses the ones materialized as regular files
+   ## when 'core.symlinks=false').
+   for symlink in "${!git_symlink_paths[@]}"; do
+      symlink="./$symlink"
+      [ -v "seen_symlink[$symlink]" ] && continue
+      seen_symlink["$symlink"]=1
+      all_symlinks+=("$symlink")
+   done
+
+   ## Plus any remaining (e.g. untracked) filesystem symlinks.
+   ## Need to use '"."' for relative paths. Prune '.git' directories only
+   ## (the old '-iwholename "*.git*"' also excluded '.github/',
+   ## '.gitignore', ... leaving filesystem symlinks under those
+   ## unvalidated).
    while IFS= read -r -d '' symlink; do
+      [ -v "seen_symlink[$symlink]" ] && continue
+      seen_symlink["$symlink"]=1
+      all_symlinks+=("$symlink")
+   done < <(find "." -path '*/.git' -prune -o -type l -print0)
+
+   for symlink in ${all_symlinks[@]+"${all_symlinks[@]}"}; do
       if check_symlink "$symlink" ; then
          continue
       fi
       found_symlink=true
       printf '%s\n' "----------" >&2
-   ## Need to use '"."' for relative paths.
-   done < <(find "." -type l -not -iwholename '*.git*' -print0)
+   done
+
    if [ "$found_symlink" = "true" ]; then
       exit 1
    fi
@@ -230,12 +301,14 @@ while IFS= read -r file_name ; do
 #       fi
 #    fi
 
-   ## git symlink when using 'symlinks = true' (git default setting)
-   if [ "$file_name" = "qubes/qubes-template-whonix/whonix-workstation" ]; then
-      file_content="$(stcat "$file_name")"
-      if [ "$file_content" = "whonix-gateway" ]; then
-         continue
-      fi
+   ## Skip git-tracked symlinks. With 'core.symlinks=false' they
+   ## materialize as regular files (content = link target, no trailing
+   ## newline) and would otherwise be false-flagged here as a missing
+   ## newline. They are verified separately, against the symlink
+   ## whitelist, in find_symlinks() above. 'git ls-files' paths have no
+   ## './' prefix, matching grep's output here.
+   if [ -n "${git_symlink_paths[$file_name]+_}" ]; then
+      continue
    fi
 
    grep_missing_newline_result_filtered+=("$file_name")

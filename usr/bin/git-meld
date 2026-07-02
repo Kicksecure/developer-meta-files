@@ -1,0 +1,102 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## A git external diff driver: opens 'meld' for regular files, and for a
+## submodule gitlink change prints the submodule's own 'git diff' between the
+## old and new commits (instead of the opaque "Subproject commit <hex>" blob).
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+self_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+
+## Dual-mode dispatch.
+## As a git external diff driver, git sets GIT_DIFF_PATH_TOTAL and passes the 7
+## positional args (path old-file old-hex old-mode new-file new-hex new-mode);
+## that is the driver logic below.
+## Invoked any other way -- i.e. as 'git meld [<diff args>]' via the one-line
+## delegating alias -- re-run 'git diff' with this script wired in as the diff
+## driver. A '!'-alias runs from the repo root, so cd into GIT_PREFIX first to
+## make relative pathspecs resolve from the directory the user actually ran in
+## (parity with a plain 'git diff'); GIT_PREFIX is empty at the root, so this is
+## then a no-op.
+if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
+   cd -- "${GIT_PREFIX:-.}"
+   exec git -c "diff.external=${self_path}" diff "$@"
+fi
+
+[[ -v git_external_level ]] || git_external_level=0
+git_external_level=$((git_external_level + 1))
+
+true "${self_path}: START. git_external_level: ${git_external_level}"
+
+## Unmerged (conflicted) paths: git invokes the external diff driver with ONLY
+## the path (one argument), not the usual seven. Open the conflicted
+## working-tree file and stop, rather than aborting on the missing args under
+## 'nounset'.
+if [ "$#" -lt 7 ]; then
+   true "${self_path}: unmerged path (one-argument callback): ${1}"
+   meld "${1}"
+   exit 0
+fi
+
+true "1 path: ${1}"
+true "2 old-file: ${2}"
+true "3 old-hex: ${3}"
+true "4 old-mode: ${4}"
+true "5 new-file: ${5}"
+true "6 new-hex: ${6}"
+true "7 new-mode: ${7}"
+
+## Recursion guard: the submodule branch below runs 'git diff' inside the
+## submodule, which re-enters this driver. Bail before it nests too deep.
+if [ "${git_external_level}" -ge 3 ]; then
+   exit 255
+fi
+
+is_submodule_blob() {
+   grep --quiet -- '^Subproject commit' "${1}"
+}
+
+extract_commit() {
+   ## Capture only the hex object name; ignore any trailing suffix such as the
+   ## '-dirty' git appends when the submodule working tree has local changes
+   ## (otherwise the revision passed to 'git diff' below would be invalid).
+   sed --quiet -- 's/^Subproject commit \([0-9a-fA-F]*\).*/\1/p' "${1}"
+}
+
+diff_path="${1}"
+old_file="${2}"
+old_hex="${3}"
+new_file="${5}"
+new_hex="${6}"
+
+if is_submodule_blob "${old_file}" && is_submodule_blob "${new_file}"; then
+   old_commit="$(extract_commit "${old_file}")"
+   new_commit="$(extract_commit "${new_file}")"
+   cd -- "${diff_path}"
+   ## '--no-ext-diff': these inner diffs must print the submodule's normal
+   ## textual diff, NOT re-enter this driver -- git propagates the top-level
+   ## '-c diff.external=...' to nested git via GIT_CONFIG_PARAMETERS.
+   ## No '--' before the commit refs: that would make git treat them as
+   ## pathspecs instead of revisions.
+   git --no-ext-diff diff --find-copies --stat "${old_commit}" "${new_commit}"
+   git --no-ext-diff diff --find-copies "${old_commit}" "${new_commit}"
+else
+   ## '--no-ext-diff' (don't re-enter this driver, see above). '$old_hex' /
+   ## '$new_hex' are blob object names, not paths -- again no '--'.
+   git --no-ext-diff diff --find-copies --stat "${old_hex}" "${new_hex}" || true
+   meld "${old_file}" "${new_file}"
+fi
+
+true "${self_path}: END. git_external_level: ${git_external_level}"
+
+exit 0
