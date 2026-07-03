@@ -1,3 +1,45 @@
+commit 407904a4e1da81e96ba05763bac0ac630eaded6c
+Merge: bc2c3c62 f3004aec
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 20:45:06 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit f3004aecfcad6993989b28a22afc98af0010bef5
+Merge: bc2c3c62 0bfdc22a
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 2 20:43:45 2026 -0400
+
+    Merge pull request #127 from org-ai-assisted/claude/vbox-vdi-workdir-bind-mount
+
+    create-vbox-vm export: bind-mount the VM disk work folder
+
+commit 0bfdc22a9d9d4d46d017f6a21d48ff22581c76dc
+Author: claude (derivative-maker3 ffb70f1b-ad5f-4fe1-9c66-bbc9e65a090f) <noreply@anthropic.com>
+Date:   Thu Jul 2 16:54:06 2026 -0400
+
+    create-vbox-vm export: bind-mount the VM disk work folder
+
+    Counterpart to the derivative-maker change that moves the VirtualBox '.vdi' out
+    of the cowbuilder chroot onto host '/rw'-backed storage
+    ('$binary_image_vdi_dir', a dedicated bind mount). The unified 'VBoxManage
+    export' runs in this chroot as 'dm-vbox-temp' and reads the disk that the
+    VirtualBox registry references by absolute path, so this step must bind-mount
+    the same work folder. mkdir it and add it to 'bindmounts', and clean it on
+    export teardown.
+
+    Verified end-to-end with a '--dry-run true --target virtualbox' build: the
+    unified export reports 'Successfully exported 2 machine(s)'.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_013KGErLCzVcqd2kYV2DJT5E
+
+commit bc2c3c62dfea4c11e72d832726afa86df8734c5e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 2 11:15:51 2026 +0000
+
+    bumped changelog version
+
 commit 0f28059e97308567f5a8d4faac6452f459417df4
 Merge: b69b5383 5392cb7c
 Author: Patrick Schleizer <adrelanos@whonix.org>
