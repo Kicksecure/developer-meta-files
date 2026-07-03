@@ -5,12 +5,11 @@
 
 ## AI-Assisted
 
-## Safe git external diff driver: opens 'meld' for regular-file diffs, and for a
-## submodule gitlink change prints the submodule's own 'git diff'. Thin wrapper
-## over the shared hardened core (git-review-driver.sh) that surfaces mode /
-## symlink / gitlink-spoof / Trojan-Source-Unicode / long-line / binary /
-## driver-skipped changes so a review is never silently blind. See also the
-## sibling safe drivers git-kdiff3 and git-diff-review.
+## Safe git external diff driver: opens 'kdiff3' for regular-file diffs. Thin
+## wrapper over the shared hardened core (git-review-driver.sh); sibling of
+## git-meld and git-diff-review. Surfaces mode / symlink / gitlink-spoof /
+## Trojan-Source-Unicode / long-line / binary / driver-skipped changes so a
+## review is never silently blind.
 
 set -o errexit
 set -o nounset
@@ -20,12 +19,12 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
-review_tool="git-meld"
+review_tool="git-kdiff3"
 
 ## Invoked indirectly by the sourced git-review-driver.sh (not dead code).
 # shellcheck disable=SC2317
 display_regular_file() {
-   meld "${1}" "${2}"
+   kdiff3 "${1}" "${2}"
 }
 
 mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
@@ -38,5 +37,5 @@ for git_review_driver in \
       exit 0
    fi
 done
-printf '%s\n' "git-meld: ERROR: git-review-driver.sh not found." >&2
+printf '%s\n' "git-kdiff3: ERROR: git-review-driver.sh not found." >&2
 exit 2

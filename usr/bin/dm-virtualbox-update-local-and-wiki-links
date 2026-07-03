@@ -36,7 +36,6 @@ has mw-edit     || die 1 "'mw-edit' not on PATH"
 has stecho      || die 1 "'stecho' not on PATH"
 has stsponge    || die 1 "'stsponge' not on PATH"
 has overwrite   || die 1 "'overwrite' not on PATH"
-has append-once || die 1 "'append-once' not on PATH"
 has str_replace || die 1 "'str_replace' not on PATH"
 
 declare -A url_cache
@@ -61,11 +60,12 @@ get_wiki_page_cached () {
    wiki_page="${1:-}"
    [ -z "${wiki_page}" ] && return 1
 
-   tmpfile="$(mktemp)"
-
    cache_id="${WIKI_URL} - ${wiki_page}"
 
+   ## 'mktemp' inside the cache-miss branch only: on a cache hit (every repeat
+   ## lookup) we never fetch, so creating a temp file here would just leak it.
    if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
+      tmpfile="$(mktemp)"
       mw-fetch "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
       wiki_cache["${cache_id}"]="$(cat -- "${tmpfile}")"
       ## Leftover temp file is by design - kept on disk so a
@@ -84,21 +84,22 @@ get_wiki_page_cached () {
 # }
 
 extract_url () {
-   local content regex line regex_result
+   local content regex line match
 
    content="${1:-}"
    regex="${2:-}"
    [ -z "${content}" ] && return 1
    [ -z "${regex}" ] && return 1
 
-   regex_result=""
+   ## Emit EVERY matching URL, one per line, so callers can tell apart no
+   ## match, exactly one, and several (ambiguous) -- rather than silently
+   ## overwriting and returning only the last match.
    while read -r line; do
       if [[ "${line}" =~ ${regex} ]]; then
-         regex_result="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
+         match="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
+         stecho "${match}"
       fi
    done <<< "${content}"
-
-   stecho "${regex_result}"
 }
 
 get_url_from_page () {
@@ -112,13 +113,13 @@ get_url_from_page () {
    get_url_cached "${dl_page}"
    readarray -t result < <(extract_url "${url_content}" "${release_regex}")
 
-   if [ "${#result[@]}" != '1' ]; then
-      1>&2 stecho 'WARNING - more than one URL found for download!'
-   elif [ -z "${result[0]}" ]; then
+   if [ "${#result[@]}" -eq 0 ]; then
       1>&2 stecho 'WARNING - no URL found!'
+   elif [ "${#result[@]}" -gt 1 ]; then
+      1>&2 stecho 'WARNING - more than one URL found for download!'
    fi
 
-   func_result="${result[0]}"
+   func_result="${result[0]:-}"
 }
 
 get_url_from_wiki () {
@@ -132,13 +133,13 @@ get_url_from_wiki () {
    get_wiki_page_cached "${wiki_page}"
    readarray -t result < <(extract_url "${wiki_content}" "${release_regex}")
 
-   if [ "${#result[@]}" != '1' ]; then
-      1>&2 stecho 'WARNING - more than one URL found for download!'
-   elif [ -z "${result[0]}" ]; then
+   if [ "${#result[@]}" -eq 0 ]; then
       1>&2 stecho 'WARNING - no URL found!'
+   elif [ "${#result[@]}" -gt 1 ]; then
+      1>&2 stecho 'WARNING - more than one URL found for download!'
    fi
 
-   func_result="${result[0]}"
+   func_result="${result[0]:-}"
 }
 
 replace_wiki_string () {
@@ -156,7 +157,11 @@ replace_wiki_string () {
    [ -z "${wiki_content}" ] && return 1
 
    tmpfile="$(mktemp)"
-   append-once "${tmpfile}" "${wiki_content}" >/dev/null
+   ## 'overwrite', not 'append-once': the tmpfile is a fresh empty mktemp, and
+   ## 'append-once' would prepend a newline to it (its "fix a missing
+   ## terminating newline" path treats the empty file as needing one), leaving
+   ## a blank line at the top of the wiki page. 'overwrite' just writes.
+   overwrite "${tmpfile}" "${wiki_content}" >/dev/null
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
    wiki_content="$(cat -- "${tmpfile}")"
    wiki_cache["${cache_id}"]="${wiki_content}"
@@ -192,7 +197,9 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)"
 
    get_wiki_page_cached "${wiki_page}"
-   append-once "${tmpfile}" "${wiki_content}" >/dev/null
+   ## 'overwrite', not 'append-once' -- see replace_wiki_string: append-once on
+   ## a fresh empty mktemp injects a leading blank line into the uploaded page.
+   overwrite "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
 
@@ -231,6 +238,15 @@ main () {
    get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_latest="${func_result}"
 
+   ## Fail fast if the download page scrape came up empty (get_url_from_page
+   ## only warns on a miss). Without this, an empty 'latest' URL flows into the
+   ## local-file writes at the end of main -- 'dirname ""' -> '.', download.txt
+   ## truncated to empty, SHA256SUMS clobbered from a bogus fetch -- corrupting
+   ## the tracked files. A broken scrape must stop here, before any write.
+   [ -n "${vbox_win_latest}" ]           || die 1 "no latest Windows VirtualBox URL scraped from '${vbox_download_page}'"
+   [ -n "${vbox_macos_intel64_latest}" ] || die 1 "no latest macOS/Intel VirtualBox URL scraped from '${vbox_download_page}'"
+   [ -n "${vbox_macos_arm64_latest}" ]   || die 1 "no latest macOS/ARM VirtualBox URL scraped from '${vbox_download_page}'"
+
    ## The same links are mirrored on every wiki in 'wiki_url_list'. Each wiki
    ## is fetched, compared and (if changed) saved independently, because its
    ## current page content is cached per wiki (the cache key includes
@@ -242,17 +258,31 @@ main () {
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_current="${func_result}"
 
+      ## Each replace is guarded: replace_wiki_string returns non-zero when the
+      ## current URL is not present on the page (nothing to replace). Called as
+      ## a bare command that would abort the whole run under 'errexit' -- and
+      ## kill the other links, the other wiki, and the local file writes below.
+      ## Warn and carry on instead, and only mark the page dirty on success.
       if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_win_current}" "${vbox_win_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the Windows link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
       if [ "${vbox_macos_intel64_latest}" != "${vbox_macos_intel64_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_intel64_current}" "${vbox_macos_intel64_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the macOS/Intel link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
       if [ "${vbox_macos_arm64_latest}" != "${vbox_macos_arm64_current}" ]; then
-         replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"
-         update_done='true'
+         if replace_wiki_string "${wiki_vbox_page}" "${vbox_macos_arm64_current}" "${vbox_macos_arm64_latest}"; then
+            update_done='true'
+         else
+            1>&2 stecho "WARNING: could not replace the macOS/ARM link on ${WIKI_URL} (current URL not found on the page); skipping it."
+         fi
       fi
 
       if [ "${update_done}" = 'true' ]; then

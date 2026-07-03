@@ -17,8 +17,6 @@ check-ref-commits-for-unicode "${1}"
 
 git log "...${1}"
 
-git diff --stat "...${1}"
-
-git diff "...${1}"
+git-diff-review "...${1}"
 
 true "$0: OK."
