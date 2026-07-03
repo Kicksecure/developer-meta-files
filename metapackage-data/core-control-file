@@ -384,6 +384,12 @@ Description: All systems, physical hardware, server packages
 Package: dist-baremetal-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: virtualbox-guest-additions-iso | virtualbox-7.2 | virtualbox-7.3 | virtualbox-7.4 | virtualbox-8.0 | virtualbox-8.1 | virtualbox-8.2 | virtualbox-8.3 | virtualbox-8.4,
+ ${misc:Depends}
+Breaks: virtualbox-guest-x11,
+ virtualbox-guest-utils
+Replaces: virtualbox-guest-x11,
+ virtualbox-guest-utils
 Description: All systems, physical hardware, GUI packages
  For all hardened systems.
  .
@@ -428,6 +434,12 @@ Description: All systems, VMs, server packages
 Package: dist-vm-gui-all
 Architecture: all
 Pre-Depends: legacy-dist
+Depends: virtualbox-guest-additions-iso | virtualbox-7.2 | virtualbox-7.3 | virtualbox-7.4 | virtualbox-8.0 | virtualbox-8.1 | virtualbox-8.2 | virtualbox-8.3 | virtualbox-8.4,
+ ${misc:Depends}
+Breaks: virtualbox-guest-x11,
+ virtualbox-guest-utils
+Replaces: virtualbox-guest-x11,
+ virtualbox-guest-utils
 Description: All systems, VMs, GUI packages
  For all hardened systems.
  .
@@ -1087,6 +1099,7 @@ Depends: whonix-gateway-general-cli,
  tinyproxy,
  dnf,
  qubes-core-agent-dom0-updates,
+ fwupd-qubes-vm,
  ${misc:Depends}
 Breaks: qubes-whonix-gateway-packages-recommended
 Replaces: qubes-whonix-gateway-packages-recommended
