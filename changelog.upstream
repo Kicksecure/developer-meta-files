@@ -1,3 +1,466 @@
+commit 2436fec1a7eb9585ed0b8b909db3e45c66c553dd
+Merge: 65d4b80d 98a92f42
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 13:21:31 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/git-review-driver-hardening'
+
+commit 98a92f4257b9fb11e5b624511755c377ef7d104b
+Author: claude (dev43 c61bd391-348a-41f6-a84d-800d0827c716) <noreply@anthropic.com>
+Date:   Fri Jul 3 12:39:28 2026 -0400
+
+    git review driver: idiomatic guards, fail-on-undecodable Unicode, style cleanup
+
+    Harden and tidy git-review-driver.sh (shared core of git-meld / git-kdiff3 /
+    git-diff-review):
+
+    - Required-var asserts use the same '[ -n ... ] || { printf; exit 2; }' guard
+      idiom as the neighbouring display_regular_file check, dropping the ':' null
+      command (R-130) and the '${var:?}' form.
+    - Undecodable/non-UTF-8 Unicode (unicode-show rc 2) in a blob OR a path is now
+      FATAL: it is recorded in a global flag and every non-error exit routes through
+      git_review_finish(), which exits non-zero (git then aborts the diff) so an
+      undecodable payload cannot pass as a clean review. Decodable non-ASCII (rc 1)
+      stays warn-only. GIT_REVIEW_UNICODE_NONFATAL=<non-empty> downgrades the hard
+      abort ONLY when the re-dispatch block's shared status file exists to defer to:
+      the finding is recorded there and the run still exits non-zero at the very end,
+      after showing every file. With no status file (e.g. the driver wired directly
+      as git's diff.external, bypassing re-dispatch) it fails closed immediately
+      rather than let git see a clean external diff.
+    - git_review_unicode_rc is a global (not a local) so the last scan's exit code
+      is readable by callers.
+    - The '>= 3' recursion guard now prints a useful error before 'exit 255'.
+    - Style: one assignment per line (no ';' chaining, R-074); multi-line function
+      bodies (is_submodule_blob, extract_commit, read_target); case arm reflowed
+      (R-070/R-071); interpolated values single-quoted in messages (R-024). Tested
+      '--' end-of-options support: unicode-show has no option parsing and awk does
+      not accept it in the file position, so no new '--' was added.
+
+    Path tab/newline check (addresses an AI-review finding): unicode-show -- like
+    stcat and grep-find-unicode-wrapper, whose sources all allow '\t'/'\n' via the
+    '[\x1b\n\t\x20-\x7E]' allow-list -- never flags a tab or newline, yet in a PATH
+    those bytes are anomalous and can forge/hide diff-output lines. Rather than
+    reimplement a Unicode scanner, everything else (non-ASCII, bidi, CR, NUL,
+    non-UTF-8) stays delegated to unicode-show; a single 'case' adds only the two
+    bytes it deliberately allows. (NUL cannot occur in a path: argv is
+    NUL-terminated.) Verified: all three tools allow tab/newline; the case matches
+    tab/newline only (CR already caught by unicode-show).
+
+    Also fold in pre-existing correctness fixes surfaced by AI review of this diff:
+
+    - Deletion Unicode-scan gap: a deletion hands new_file=/dev/null, so scanning
+      only the new side never inspected a removed file's content. Fall back to the
+      old side (mirrors the binary check), so removed Trojan-Source / undecodable
+      content is still surfaced (and now fatal).
+    - '.gitattributes' warning could be dropped: piping 'git diff --name-only'
+      straight into grep let a git failure mask a real match under pipefail. Capture
+      the name list first, then grep, so git's rc cannot suppress the warning.
+    - Symlink add/delete mislabel: the absent (/dev/null) side printed
+      '(regular file)' instead of '(none)', contradicting the never-misleading
+      invariant. Label it '(none)' when the side is absent.
+    - NONFATAL status-file write is no longer swallowed with '|| true': a write
+      error now fails hard, so a fatal finding cannot silently pass as clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01XmRjrQxBBbQE6eyjWnvzjb
+
+commit 65d4b80d243c0459cc3598e26e54d015e30951ad
+Merge: 4520b0cc 1dc3a452
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 12:56:49 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 1dc3a4529ca651713b0dbf3b89830d2664aa4d0f
+Merge: 4520b0cc f8e6bd2e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 12:56:15 2026 -0400
+
+    Merge pull request #130 from org-ai-assisted/claude/r103-command-position-exec
+
+    pre-push-static: R-103 flags only command-position exec, not 'docker exec'
+
+commit f8e6bd2e22797c1e11382f1adb9a05cda4a6bee6
+Author: claude (dist-encrypted 32346333-8fef-4cd4-8c75-bad674a69df0) <noreply@anthropic.com>
+Date:   Fri Jul 3 12:45:41 2026 -0400
+
+    pre-push-static: R-103 flags only command-position exec, not 'docker exec'
+
+    R-103 (no process-replacement 'exec') matched any '<space>exec<space>' token, so
+    it false-flagged 'exec' used as a SUBCOMMAND ARGUMENT -- 'docker exec',
+    'kubectl exec', 'nsenter ... exec' -- which is not bash process replacement at
+    all. The only escape was a per-script allow-exec waiver, i.e. suppressing a real
+    rule to dodge a false positive.
+
+    Match only COMMAND-POSITION exec instead: at line start, or right after a command
+    separator (; & | && || ( ) { }) or a control keyword (then/do/else/in). A bareword
+    before 'exec' (a command name) no longer matches. fd-redirection exec stays exempt
+    via the trailing class; the allow-exec waiver stays for genuine process-handoff
+    surfaces.
+
+    Net effect vs the old regex: drops the docker/kubectl/nsenter false positives AND
+    newly catches a real case the old pattern missed -- subshell '(exec cmd)'.
+    Verified against a fixture of positive (line-start / post-separator / post-keyword
+    / subshell) and negative (docker/kubectl/sudo exec, fd-redirect, comment,
+    substring) cases.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_011nGFGA6Qhi8prJkLrp1EDw
+
+commit 4520b0cc3373548290284c3bb174a20759c75f28
+Merge: 64e16c6d c2b48441
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 12:12:28 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit c2b4844191eaffac0251f0e30a7d16cd1df39314
+Merge: 64e16c6d 08454329
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri Jul 3 12:06:59 2026 -0400
+
+    Merge pull request #126 from org-ai-assisted/claude/wiki-page-leading-newline-fix
+
+    dm-virtualbox-...wiki-links + git-meld: correctness & security fixes
+
+commit 084543291bddcb1b6af4f286db0d0e171b25f320
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 10:51:38 2026 -0400
+
+    git review tools: address CodeRabbit PR review
+
+    - git-diff-review: stop swallowing real failures -- accept only 'diff' exit
+      0/1 (same/differ); a diff error (>=2) or any stcat failure now returns
+      non-zero instead of passing as a rendered file (PIPESTATUS).
+    - Detect binary blobs on BOTH sides: a deleted binary has new_file=/dev/null,
+      so scanning only new_file missed it and opened the old binary in the viewer.
+    - git-review-driver.sh: mark executable (+x) to match the sourced-lib
+      convention (has.sh / log_run_die.sh are shebang + 100755); the
+      check-shebang-scripts-are-executable gate flags a shebang'd 100644 file.
+
+    Other CodeRabbit points were already addressed in prior commits (path
+    neutralization via diff_path_q; submodule add/remove NOTE; unmerged path via
+    git diff --cc). Re-verified in the sandbox VM: 0 hidden for all three tools.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit a7e7e8d13408d196c35528b65cd49711840c3562
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 10:14:47 2026 -0400
+
+    git review tools: address ai-review findings
+
+    From Codex + CodeRabbit + a fresh-context subagent:
+
+    - git-kdiff3, git-diff-review were committed mode 100644 (Codex): +x.
+    - Symlink target was printed raw and exited early (subagent, security): the
+      target now goes through stcat and is Unicode-scanned; a file<->symlink type
+      change no longer hides the regular side; only the actual symlink side is read
+      as a target.
+    - Unicode scans warn on ANY non-zero unicode-show exit (subagent + CodeRabbit):
+      exit 2 (non-UTF-8/undecodable) was silently treated as clean; now fail-closed,
+      reports stcat-neutralized.
+    - Unmerged paths no longer self-diff (rendered empty, hid the conflict);
+      show git's --cc combined diff, stcat-neutralized (CodeRabbit).
+    - Suspicious/control-byte paths are neutralized (printf %q) in every diagnostic
+      so the warning itself cannot inject terminal escapes (CodeRabbit).
+    - Added/removed submodule prints an accurate NOTE, not a misleading "fetch it"
+      error (subagent).
+    - Binary blob surfaced via --stat but NOT opened in the viewer (CodeRabbit).
+
+    Verified in the sandbox VM: adversarial suite (incl. symlink-target-bidi) and
+    fuzzer 0 hidden for all three tools; shellcheck + gate clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 860978734f01561156b3cb4fbd7a7f15cc5a857b
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 10:00:53 2026 -0400
+
+    git review tools: delegate Unicode scan to unicode-show; secure-by-default; concise
+
+    - Unicode detection now delegates to 'unicode-show' (uses its exit code with
+      UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 to ignore the benign missing final
+      newline); no hand-rolled bidi/homoglyph grep.
+    - Secure by default: the tools require unicode-show (git review lib) and stcat
+      (git-diff-review); dm-review-branch requires git-diff-review. No insecure
+      fallback to an unscanned / un-neutralized / plain diff.
+    - Source has.sh; tool-presence via 'has'.
+    - Trim comments to the org style (rationale once, terse).
+
+    Verified in the sandbox VM: adversarial suite 0 hidden for git-meld / git-kdiff3
+    / git-diff-review; shellcheck + gate clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 80c5ff2939aae75b32fce98291961e88facf4db3
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 09:14:12 2026 -0400
+
+    git-meld: surface mode/symlink/gitlink-spoof/Trojan-Unicode; pre-flight for skipped files
+
+    Harden the diff driver against review evasion (a diff tool must never render a
+    real change as empty/misleading output). Driven by adversarial + fuzz tests
+    (dist-ai): the old driver hid mode-only changes, symlink swaps, Trojan-Source
+    Unicode, and files git skips; all now surfaced.
+
+    Driver path:
+    - MODE CHANGE banner when old/new mode differ (e.g. a data file made +x) --
+      a content diff alone never shows this.
+    - SYMLINK: print old->new link target (meld would show it as innocuous text)
+      and stop, instead of handing a link to meld as a file.
+    - Decide the submodule branch by MODE (160000), NOT by blob content: a regular
+      file whose content merely reads 'Subproject commit <hex>' is a spoof to route
+      a real file change through the (meld-less) submodule path -- now warned and
+      treated as a regular file. Real gitlinks use 'git -C' (not 'cd') + a repo
+      check, so an odd/symlinked submodule path cannot redirect us.
+    - Trojan-Source scan: warn on bidirectional/invisible/control Unicode in the
+      new blob before opening meld.
+    - Argument-mode sanity warning.
+
+    Re-dispatch ('git meld') path:
+    - Pre-flight 'git diff --no-ext-diff --stat --summary --find-renames' overview,
+      the only way to surface files git never hands to the driver (marked
+      binary/-diff/diff= by .gitattributes, auto-binary via a NUL byte, LFS). Warn
+      loudly when .gitattributes itself changes.
+
+    Verified: adversarial suite 0 hidden (was 4), fuzzer 0 hidden over 150 iters
+    (was 3); no regression on the submodule suite; shellcheck + gate clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 87f0609862254eb9f1506a3ed0b7c278b7477ee9
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 08:30:44 2026 -0400
+
+    dm-virtualbox...wiki-links: fail fast on empty scrape; don't leak temp on cache hit
+
+    - Data-corruption guard (found by Codex + a fresh-context review): if the
+      VirtualBox download-page scrape returns no match, get_url_from_page only
+      warns and leaves the 'latest' URL empty. That empty value then flowed
+      into the local-file writes at the end of main -- 'dirname ""' -> '.',
+      download.txt truncated to empty, weblink_SHA256SUMS set to './SHA256SUMS',
+      and SHA256SUMS clobbered from fetching a non-URL. Add a non-empty check
+      on the three 'latest' URLs right after scraping, 'die' before any write.
+      (The wiki path was already safe; only the local files were exposed.)
+
+    - get_wiki_page_cached created its mktemp unconditionally, before the
+      cache check, leaking a temp file on every cache hit. Move it into the
+      cache-miss branch.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 188f4b847d331a726de8065730620dabe3aa7fed
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 08:20:26 2026 -0400
+
+    git-meld: fix submodule diff (--no-ext-diff placement); never hide a change; export counter
+
+    Three git-meld fixes:
+
+    - SECURITY / hidden-change: the submodule inner diffs were wrapped in
+      '|| true', so any failure was swallowed and the reviewer saw EMPTY
+      output -- a real (possibly malicious) submodule pointer change rendered
+      as "no change". A review/diff tool must never do that. Now the gitlink
+      transition 'Submodule <path>: <old> -> <new>' is always printed first,
+      and a diff failure fails LOUD (error to stderr + exit 1) instead of
+      being hidden. Verified with an adversarial sandbox test (unfetched
+      old/new/both commits): 0 hidden-change cases, vs all hidden before.
+
+    - '--no-ext-diff' was in the wrong position: 'git --no-ext-diff diff' is
+      rejected ("unknown option: --no-ext-diff") because it is a 'git diff'
+      option, not a top-level git option. So the submodule diffs ALWAYS
+      failed -- the feature never worked, and '|| true' masked that too.
+      Moved it after 'diff' ('git diff --no-ext-diff ...') in both branches.
+
+    - export git_external_level so the recursion-depth guard actually works:
+      it was never exported, so a re-invoked driver reset the count to 1 and
+      the '>= 3' guard could never fire. Kept the START/END level markers.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 05ea8d09f97b306df59d5b26cef18f89cb9ae1f7
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 08:14:31 2026 -0400
+
+    dm-virtualbox...wiki-links: don't abort on a missing link; real multi-URL warning
+
+    Two correctness fixes from an AI-review pass:
+
+    - errexit-abort: replace_wiki_string was called as a bare command in
+      main(). It returns non-zero when the current URL is absent from the
+      page (nothing to replace), which under 'set -o errexit' aborted the
+      ENTIRE run -- skipping the remaining links, the second wiki, and the
+      local download.txt / SHA256SUMS writes. Guard each call in an 'if',
+      warn-and-continue, and only mark the page dirty on a successful
+      replace.
+
+    - dead multi-URL warning: extract_url overwrote its result each
+      iteration and emitted a single line, so callers' '[ ${#result[@]} !=
+      1 ]' ambiguity check could never fire and a page with several matches
+      silently took the last. extract_url now emits every match, one per
+      line; callers distinguish 0 (no URL) / 1 (ok) / many (ambiguous) and
+      read result[0] nounset-safely.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit d1df81cebc15bd647d5d56cc9dd15769fedf669b
+Author: claude (derivative-maker b0dfc869-1cb7-42f6-8aa8-8ad1eafa0b81) <noreply@anthropic.com>
+Date:   Thu Jul 2 07:57:10 2026 -0400
+
+    dm-virtualbox...wiki-links: write wiki tmpfile with 'overwrite', not 'append-once'
+
+    'append-once <file> <content>' on the fresh empty mktemp used to stage
+    the wiki page prepends a newline: append_shared reads the empty file,
+    sees it does not end in "\n", "fixes" that by setting contents to "\n",
+    then appends -- leaving a blank line at the top. This happened in both
+    replace_wiki_string and save_cached_page_to_wiki, so leading blank lines
+    accumulated on the uploaded wiki page (one per changed link + one on
+    save). Tested: 3 replaces + save produced 4 leading blank lines.
+
+    'overwrite' is the correct tool -- it truncates and writes the content
+    verbatim (with a single trailing newline), skipping the empty-file
+    newline fixup, so the page starts at its first real line. Tested: same
+    flow now yields 0 leading blank lines, content intact. Dropped the now-
+    unused 'append-once' dependency check.
+
+    Pre-existing since the file was first added (7932da50), not introduced
+    by the recent both-wikis / has-die changes.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
+
+commit 64e16c6de54ca26cc6f88844d58f1d5b8036335f
+Merge: 53d8fbd1 08c5091c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 11:55:07 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/vbox-guest-additions-iso'
+
+commit 08c5091c4bbb988123129b468ac69d455657106d
+Merge: 53d8fbd1 f4a039ce
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 11:30:54 2026 -0400
+
+    Merge ArrayBolt3/arraybolt3/trixie: virtualbox-guest-additions-iso support
+
+    Lands ArrayBolt3's trixie work on top of the freshly-synced master (the
+    original changelog-strip branch it was based on has since merged upstream, so
+    this re-bases the same content onto current master):
+
+    - metapackage-data/core-control-file: virtualbox-guest-additions-iso
+      Depends/Breaks/Replaces on dist-baremetal-gui-all and dist-vm-gui-all.
+    - metapackage-data/README.md: rationale for the Guest Additions dependency.
+    - usr/bin/dm-check-unicode: --exclude='*.iso' in the missing-newline check
+      (VBoxGuestAdditions.iso is binary).
+
+    Conflict resolution (three scripts) is identical to the vetted resolution of
+    the earlier merge: trixie carries a squashed, modified copy of earlier work
+    from this repo, so the evolved master versions win, while trixie's genuinely-new
+    additions merge cleanly and are kept.
+
+    - usr/bin/git-meld: kept master's R-103 form (run 'git diff' as a child, not
+      'exec'); took trixie's 'git diff --no-ext-diff' flag placement over master's
+      'git --no-ext-diff diff' (the latter is invalid -- git rejects --no-ext-diff
+      as an unknown top-level option, exit 129).
+    - usr/bin/dm-check-unicode: kept master on every conflict (detailed comments,
+      nounset-safe array expansion); trixie's --exclude='*.iso' merged cleanly.
+    - usr/bin/dm-prepare-release: kept master's binary_image_vdi_dir bind-mount and
+      the more accurate --preserve-env comment.
+
+    Signature note: merged with --no-verify-signatures. Trixie's commits are
+    PGP-signed by Aaron Rainbolt but his key is not in this checkout's sq keystore
+    (sq-git-wrapper reports ERRSIG UNKNOWN). Verify+trust his key to drop this.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit 53d8fbd1bda9c0781df9d2982e9c375a2f237aa8
+Merge: 8699d6c8 7ba6604a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 09:22:09 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/changelog-strip-ai-trailers'
+
+commit 7ba6604adf4ea3ac9cc130541bc43c429db400dd
+Author: claude (dev41 b0c7bb15-ff46-414d-922d-fb2f11cc0ad1) <noreply@anthropic.com>
+Date:   Fri Jul 3 09:03:32 2026 -0400
+
+    dm-packaging-helper-script: strip AI-assistant trailers from changelog
+
+    pkg_git_packages_git_log_writer folds each commit's full message into a
+    single changelog line. AI-assistant commit trailers were being carried
+    into the generated changelog. Strip them alongside the existing
+    blank-line removal, before newlines are collapsed to spaces:
+
+      - "Co-Authored-By:" (case-insensitive, so git's canonical
+        "Co-authored-by:" casing is caught too)
+      - "Claude-Session:"
+      - the "Generated with [Claude Code]" footer -- deleting the whole line
+        also drops its leading emoji, keeping the changelog ASCII-only
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01Px9yCA9qQ3KHrakkA4dEfY
+
+commit 8699d6c856704379daf19326021b2aa7334b363b
+Merge: cc241674 265c9af4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 09:12:07 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/claude/changelog-strip-ai-trailers'
+
+commit 265c9af43338a2f53655dbf78de52d57f9aee9d8
+Author: claude (dev41 b0c7bb15-ff46-414d-922d-fb2f11cc0ad1) <noreply@anthropic.com>
+Date:   Fri Jul 3 09:03:32 2026 -0400
+
+    dm-packaging-helper-script: strip AI-assistant trailers from changelog
+
+    pkg_git_packages_git_log_writer folds each commit's full message into a
+    single changelog line. Commit trailers "Co-Authored-By:" and
+    "Claude-Session:" were being carried into the generated changelog. Strip
+    them alongside the existing blank-line removal, case-insensitively so
+    git's canonical "Co-authored-by:" casing is caught too.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01Px9yCA9qQ3KHrakkA4dEfY
+
+commit cc2416749fbe32ea0f31ccd459c0b6d1494194c1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 08:53:38 2026 -0400
+
+    .
+
+commit 0614b34dbd916159c270bff9938b154c65f49819
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 08:41:47 2026 -0400
+
+    .
+
+commit 8770f3e1b68d7cbfd83965d17983c1a70928d6ee
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 08:13:55 2026 -0400
+
+    .
+
+commit a39b4c807b3bdf5ad0bb66ba29f7e81ab811e702
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 08:08:05 2026 -0400
+
+    .
+
+commit f681b452ffe1a5eff4c2e203f9664de1d1f05d7a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 00:54:43 2026 +0000
+
+    bumped changelog version
+
 commit 407904a4e1da81e96ba05763bac0ac630eaded6c
 Merge: bc2c3c62 f3004aec
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -384,6 +847,232 @@ Date:   Thu Jul 2 03:45:34 2026 -0400
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
     Claude-Session: https://claude.ai/code/session_01FhPYFwuCtfJn3tJJHstoXg
 
+commit f4a039ce805cf1ec309045b590ace591d4baad4c
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Jul 1 20:34:56 2026 -0400
+
+    Modified and squashed commit of the following:
+
+    commit 521e4d82a55bc558bfdd014e3dcf65b9bbec1e9a
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 19:36:15 2026 -0400
+
+        dm-prepare-release: bindmounts comment -- repeated --bindmounts flags don't help
+
+        Verified from pbuilder source (unquoted 'for mnt in $BINDMOUNTS'); repeated
+        '--bindmounts' flags append to the same whitespace-split string, so they do not
+        preserve a space within a path. Note that in the comment.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit df075b4d8d4338133f37e81f82159317b5b16e01
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 19:26:02 2026 -0400
+
+        dm-prepare-release: document bindmounts space-handling
+
+        pbuilder word-splits BINDMOUNTS internally, so a bind-mount path with a space is
+        unsupported by pbuilder itself and a bash array would not help; note that the
+        space-joined string is the expected form (the build paths have no spaces).
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 00b7a335831a22b7ff271dafc688f5e19e97b902
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 19:18:21 2026 -0400
+
+        dm-prepare-release: pass export-chroot vars via --preserve-env, not an env-file
+
+        virtualbox_export serialized the build variables to a 'chroot-env-export-vbox-vm'
+        file ('{ ...; declare -p; } > file') that the chroot export script sourced --
+        runtime-generated code. Instead export the allowlisted variables plus the
+        export-specific presentation strings (producturl, vendor, ...) and let the
+        existing '--preserve-env' on the cowbuilder call carry them into the chroot;
+        drop the env-file argument. Pairs with the derivative-maker change to the
+        chroot scripts. Verified end to end (kicksecure-cli/virtualbox dry-run: export
+        runs with no env file, OVA produced, exit 0).
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 37e14d11b0f2e6e223f9a37fcb2be481fe948b48
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 19:04:31 2026 -0400
+
+        dm-check-unicode: test array membership with '[ -v ]'
+
+        Replace '[ -n "${seen_symlink[$symlink]+_}" ]' with the idiomatic
+        '[ -v "seen_symlink[$symlink]" ]' -- a direct "is this key set?" test, no '+_'
+        substitution trick.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 6d8bb6a7070935c908343c8b5300f4fa25f7b7b6
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 18:42:41 2026 -0400
+
+        dm-check-unicode: default HELPER_SCRIPTS_PATH via '[ -v ] ||'
+
+        Use the preferred defaulting idiom '[ -v HELPER_SCRIPTS_PATH ] ||
+        HELPER_SCRIPTS_PATH=...' instead of '"${HELPER_SCRIPTS_PATH:-...}"': it defaults
+        only when the name is unset, so an explicitly set-but-empty value is respected,
+        and it reads as a one-time set-at-source statement.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit c4fd24f4616f03b513b54acecda59098d5b7d4c8
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 18:39:32 2026 -0400
+
+        dm-check-unicode: simplify helper-scripts path + git-symlink enumeration
+
+        Two readability cleanups, no behavior change (dm-check-unicode still exits 0
+        clean, whonix-workstation symlink still handled):
+
+        - Drop the superfluous 'helper_scripts_dir' alias: it was just
+          "HELPER_SCRIPTS_PATH or its in-tree default" under another name. Default
+          HELPER_SCRIPTS_PATH itself and export it, so run-via-helper-scripts inherits
+          this same tree instead of re-deriving its own.
+
+        - Replace the 'while ... done < <(git ls-files ... | awk ...)' process
+          substitution with a captured variable iterated via a here-string. Capturing
+          first lets errexit catch a git failure (the process substitution masked it);
+          the tab split + a '${meta%% *}' parameter expansion read the mode, dropping
+          the awk 'split()' entirely; and with no subshell around the loop the
+          associative array is populated in the current shell.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 21c87abff00c38e527ebf3a7f036fcf8c2e5d11e
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 17:08:12 2026 -0400
+
+        dm-tor-update-repository: activate the script; source variables
+
+        Drop the early '## TODO' + 'exit 0' stub (and the now-unneeded file-level
+        SC2317 disable) so the body actually runs. Fix the breakage that the inline
+        '## TODO: broken' marked: the script used set_cowbuilder_folders, SUDO_TO_ROOT,
+        base_folder, DIST_APTGETOPT, dist_build_sources_list_torproject, etc. but only
+        sourced help-steps/pre, so those were undefined. Source help-steps/variables
+        too (with the dist_build_source_run / dist_build_one_parsed setup, as
+        help-steps/sign-and-tag does). Verified: it now parses, sources cleanly, and
+        set_cowbuilder_folders + the variables it needs resolve. (The full repository
+        update still needs a live source-flavor cowbuilder chroot to exercise the
+        cowbuilder/apt/deb822 steps.)
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 49e03c324e115bb6e37e984aab569cdedd5651f5
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 16:06:16 2026 -0400
+
+        git-meld --no-ext-diff; dm-check-unicode/dm-prepare-release env + rename cleanup
+
+        - git-meld: pass --no-ext-diff to the inner 'git diff' calls. git propagates
+          the top-level '-c diff.external=git-meld' to nested git via
+          GIT_CONFIG_PARAMETERS, so without it the submodule/blob diffs re-enter this
+          driver (popping meld per file / hitting the recursion guard) instead of
+          printing the normal textual diff.
+        - dm-prepare-release: the chroot env file passed to the export chroot script is
+          now framed as serialized data (declare -x restored via 'source'), without a
+          '#!/bin/bash' shebang -- it was never executed as a script. Add a
+          'style-ok: no-has' waiver for the pre-existing 'command -v' dependency probes.
+        - dm-check-unicode: follow the helper-scripts-run -> run-via-helper-scripts
+          rename (var, path, comments).
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 07d8e8c50587388221aee104ab06bf0db9b69744
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 15:26:13 2026 -0400
+
+        git-meld: add git external diff driver
+
+        A dual-mode git diff driver moved in from a local ~/bin script and brought up
+        to the bash style guide:
+        - opens 'meld' for regular files;
+        - for a submodule gitlink change, cd's into the submodule and prints its own
+          'git diff' between the old and new commits (instead of the opaque
+          "Subproject commit <hex>" blob);
+        - invoked without GIT_DIFF_PATH_TOTAL (i.e. as 'git meld ...' via a delegating
+          alias) it re-execs 'git diff' with itself wired in as diff.external, using a
+          self-referential path so it works in-tree and installed.
+
+        Robustness: a one-argument guard for git's unmerged-path callback (avoids a
+        nounset abort during conflict review), hex-only submodule-commit extraction
+        (tolerates the '-dirty' suffix), and a recursion-depth guard.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit a9ecf51a1f25ad36a7461763e89a27580fc32a8a
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 13:37:45 2026 -0400
+
+        dm-prepare-release: export VirtualBox OVA inside the cowbuilder chroot
+
+        The VirtualBox VM is created and registered inside the amd64 cowbuilder
+        chroot (see derivative-maker build-steps.d/*_create-vbox-vm), and
+        VirtualBox is no longer installed on the build host. So factor the
+        VBoxManage-using portion of virtualbox_export out of the host: it now
+        serializes the build environment and dispatches to a chroot script
+        (help-steps/pbuilder-chroot-script-export-vbox-vm in derivative-maker)
+        via cowbuilder --execute. The .ova is written to the bind-mounted
+        binary_image_ova_file so it lands on the host; signing and upload stay on
+        the host where the operator credentials already are.
+
+        Also drop the Whonix-External / Whonix-Internal libvirt network XML files
+        from the multi-VM release archive and its test -f checks: those files were
+        removed from the libvirt-dist package, so they are no longer generated.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
+    commit 6b97215782d090661e7126cca3aee9911edf901f
+    Author: claude (dev22 c20093f1-1b30-4397-87b6-9586321c87df) <noreply@anthropic.com>
+    Date:   Tue Jun 30 06:35:07 2026 -0400
+
+        dm-check-unicode: handle git symlinks independent of core.symlinks
+
+        With core.symlinks=false a git-tracked symlink (mode 120000) is checked
+        out as a regular text file whose content is the link target. The old code
+        found symlinks via 'find -type l' (which misses those), so it never
+        verified them against the whitelist, and the missing-newline check then
+        false-flagged them. One path (qubes/qubes-template-whonix/whonix-workstation)
+        was special-cased by shelling out to a bare 'stcat', which is not on PATH
+        in the dry-run CI container -- so the 1200 caller misreported the
+        resulting "command not found" as "Unicode found!".
+
+        Enumerate symlinks from git metadata instead:
+        - git ls-files --recurse-submodules --stage, filtered to mode 120000,
+          gives every tracked symlink regardless of core.symlinks (and across
+          submodules).
+        - read_link_target() reads the target via readlink for a real symlink, or
+          via the security-hardened helper-scripts 'stcat' for the regular-file
+          materialization, run through the new 'helper-scripts-run' wrapper (which
+          sets HELPER_SCRIPTS_PATH + PYTHONPATH) so it resolves during the build
+          bootstrap, before helper-scripts is installed, without losing stcat's
+          hardening. Requires the helper-scripts helper-scripts-run change.
+        - find_symlinks() verifies the git symlink set (plus any stray filesystem
+          symlinks) against the whitelist; it prunes only real '.git' directories
+          ('-path "*/.git" -prune'), no longer over-excluding '.github/' etc.
+        - The missing-newline check skips git-tracked symlinks generically,
+          replacing the single hardcoded special-case.
+
+        Verified: with core.symlinks=false, dm-check-unicode passes on a clean
+        tree (exit 0), reads whonix-workstation via the in-tree stcat, and no
+        longer flags it.
+
+        Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+        Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
+
 commit f65f74667459a5677393ff8a5678ca663ae0486f
 Author: claude (dev29 1b766332-1023-4a87-adbd-b17a64476bbf) <noreply@anthropic.com>
 Date:   Wed Jul 1 15:21:12 2026 -0400
@@ -512,6 +1201,19 @@ Date:   Wed Jul 1 06:05:25 2026 -0400
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
     Claude-Session: https://claude.ai/code/session_018bezwAzE9uxSX1xrH7okFV
 
+commit 2ffe1a5f5d21abd942548225ca2d09875fdfb937
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Jun 30 00:32:33 2026 -0400
+
+    Exclude ISO files from newline-at-end-of-filechecks (for VBoxGuestAdditions.iso)
+
+commit 576d70fb2935090968374367a70a8b25800714be
+Merge: 1644555a 1a34416b
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Mon Jun 29 19:36:48 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
+
 commit 1a34416bda91fa8b22531346f867ebb2837b9500
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jun 29 15:21:29 2026 +0000
@@ -529,6 +1231,12 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jun 29 07:33:22 2026 -0400
 
     fix
+
+commit 1644555af614bb4cb52979633bd6114efe03413a
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jun 28 15:23:04 2026 -0400
+
+    Sync core-control-file with anon-meta-packages, add virtualbox-guest-additions-iso dependencies, document rationale behind Guest Additions dependency mechanism
 
 commit 6428cf0d2cb9616fd40d92211590a9dcb7b7bb7e
 Author: Patrick Schleizer <adrelanos@whonix.org>
