@@ -2429,7 +2429,14 @@ pkg_git_packages_git_log_writer() {
       commit_msg_full="$(git log --format='%B' -n 1 "${commit_hash}")"
       ## Remove trailing spaces.
       commit_msg_full="${commit_msg_full%"${commit_msg_full##*[![:space:]]}"}"
-      commit_msg_full="$(printf '%s\n' "${commit_msg_full}" | sed '/^[[:space:]]*$/d')"
+      ## Delete blank lines. Also strip AI-assistant commit trailers
+      ## ("Co-Authored-By:", "Claude-Session:" and the "Generated with
+      ## [Claude Code]" footer) so they do not leak into the generated
+      ## changelog. The 'I' address flag is case-insensitive to also catch
+      ## git's canonical "Co-authored-by:" casing. Deleting the whole footer
+      ## line also drops its leading emoji, keeping the changelog ASCII-only.
+      commit_msg_full="$(printf '%s\n' "${commit_msg_full}" \
+         | sed '/^[[:space:]]*$/d; /^[[:space:]]*Co-Authored-By:/Id; /^[[:space:]]*Claude-Session:/Id; /Generated with \[Claude Code\]/Id')"
       ## Replace new lines with spaces to unbreak links for multi line comments.
       commit_msg_full="$(printf '%s\n' "${commit_msg_full}" | tr '\n' ' ')"
       ## Remove trailing spaces.
