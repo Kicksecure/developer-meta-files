@@ -436,6 +436,15 @@ commit_filter() {
       're-generate man pages (generated using "genmkfile manpages")' \
       'add todo' \
       'todo' \
+      'genmkfile uch' \
+      'stub' \
+      'changelog' \
+      'port to sequonia-pgp' \
+      'port to sequoia-pgp' \
+      'windows' \
+      'docker' \
+      'add CLAUDE.md' \
+      'add AGENTS.md' \
       '-' \
       '.' \
       ; do
@@ -2398,9 +2407,18 @@ pkg_git_packages_git_log_writer() {
       commit_msg_short_list="$(git --no-pager log --pretty='%H %s')"
    fi
 
+   if [ "$commit_msg_short_list" = "" ]; then
+      true "${batch_current_package_reponame}: commit_msg_short_list empty?"
+      exit 1
+   fi
+
    package_header_written='n'
 
    while read -r commit_hash commit_msg_short ; do
+      if [ "$commit_msg_short" = "" ]; then
+         true "${batch_current_package_reponame}: commit_hash: $commit_hash | commit_msg_short empty"
+         continue
+      fi
       if ! commit_filter "${commit_msg_short}" ; then
          true "SKIP: ${commit_msg_short}"
          continue
