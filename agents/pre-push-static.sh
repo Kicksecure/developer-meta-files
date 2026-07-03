@@ -686,10 +686,15 @@ check_R103_exec() {
    local -a fs
 
    ## R-103: process-replacement 'exec <command>' (run as child, forward rc).
-   ## fd-redirection exec ('exec 9>lock', 'exec {fd}>&-', 'exec >file') is NOT
-   ## process replacement -- a digit / '{' / '<' / '>' / '&' immediately follows
-   ## 'exec', so those are exempt. Per-script '## style-ok: allow-exec' waiver for
-   ## surfaces that must hand off the process. filter_self drops this script.
+   ## Only COMMAND-POSITION 'exec' is process replacement: at line start, or right
+   ## after a command separator (; & | && || ( ) { }) or a control keyword
+   ## (then/do/else/in). 'exec' as an ARGUMENT to another command -- 'docker exec',
+   ## 'kubectl exec', 'nsenter ... exec' -- is a bareword-preceded subcommand, NOT
+   ## process replacement, so it must NOT match. fd-redirection exec ('exec 9>lock',
+   ## 'exec {fd}>&-', 'exec >file') is exempt via the trailing class (a digit / '{'
+   ## / '<' / '>' / '&' immediately follows 'exec'). Per-script
+   ## '## style-ok: allow-exec' waiver for surfaces that must genuinely hand off the
+   ## process. filter_self drops this script.
    mapfile -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    for script in "${fs[@]}"; do
@@ -699,7 +704,9 @@ check_R103_exec() {
          continue
       fi
       hits="$(grep --line-number --extended-regexp \
-         '^[[:space:]]*[^#]*[[:space:]]exec[[:space:]]+[^[:space:]0-9{<>&]|^[[:space:]]*exec[[:space:]]+[^[:space:]0-9{<>&]' \
+         --regexp='^[[:space:]]*exec[[:space:]]+[^[:space:]0-9{<>&]' \
+         --regexp='^[[:space:]]*[^#]*[;&|(){}][[:space:]]*exec[[:space:]]+[^[:space:]0-9{<>&]' \
+         --regexp='^[[:space:]]*[^#]*[[:space:]](then|do|else|in)[[:space:]]+exec[[:space:]]+[^[:space:]0-9{<>&]' \
          -- "${script}" 2>/dev/null || true)"
       if [ -z "${hits}" ]; then
          continue
