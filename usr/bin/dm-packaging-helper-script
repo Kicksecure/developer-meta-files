@@ -2433,10 +2433,14 @@ pkg_git_packages_git_log_writer() {
          committer_person='@ArrayBolt3'
       elif [ "${committer_person}" = 'TNT BOM BOM' ]; then
          committer_person='@nurmagoz'
+      elif [ "${committer_person}" = 'assisted-by-ai (Bot Account)' ]; then
+         committer_person='ai'
       fi
 
       if [ "${committer_person}" = 'Patrick Schleizer' ]; then
          credit_msg=""
+      elif [ "${committer_person}" = 'ai' ]; then
+         credit_msg="(AI assisted)"
       else
          credit_msg=" (Thanks to ${committer_person}!)"
       fi
