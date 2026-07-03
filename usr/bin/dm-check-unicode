@@ -264,6 +264,7 @@ grep_missing_newline_result_raw="$( \
       --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg' \
       --exclude='*.ico' --exclude='*.svg' --exclude='*.ai' \
       --exclude='*.gpg' --exclude='*.kbx' --exclude='*.pf2' \
+      --exclude='*.iso' \
       --perl-regexp --null-data --files-with-matches --invert-match \
       --exclude="control.authcookie" \
       --exclude="RecommendedTBBVersions" \

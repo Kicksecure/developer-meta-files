@@ -93,12 +93,12 @@ if is_submodule_blob "${old_file}" && is_submodule_blob "${new_file}"; then
    ## '-c diff.external=...' to nested git via GIT_CONFIG_PARAMETERS.
    ## No '--' before the commit refs: that would make git treat them as
    ## pathspecs instead of revisions.
-   git --no-ext-diff diff --find-copies --stat "${old_commit}" "${new_commit}"
-   git --no-ext-diff diff --find-copies "${old_commit}" "${new_commit}"
+   git diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}"
+   git diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}"
 else
    ## '--no-ext-diff' (don't re-enter this driver, see above). '$old_hex' /
    ## '$new_hex' are blob object names, not paths -- again no '--'.
-   git --no-ext-diff diff --find-copies --stat "${old_hex}" "${new_hex}" || true
+   git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" || true
    meld "${old_file}" "${new_file}"
 fi
 
