@@ -271,11 +271,16 @@ git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
    || printf '%s\n' "${review_tool}: WARNING: '--stat' for '${diff_path_q}' failed; showing the diff anyway." >&2
 
 ## Fail closed BEFORE opening a viewer: a fatal (undecodable / non-UTF-8) blob
-## must never reach meld/kdiff3, exactly as the difftool/mergetool wrappers gate
-## before opening. NONFATAL deferral mode instead falls through to show it
-## (stcat-neutralized in the textual driver) and fails at the very end.
-if [ "${git_review_fatal}" != 0 ] && [ -z "${GIT_REVIEW_UNICODE_NONFATAL:-}" ]; then
-   git_review_finish
+## must never reach a GUI viewer (meld/kdiff3), exactly as the difftool/mergetool
+## wrappers gate before opening. Only the terminal-safe stcat textual display
+## (git-diff-review, which sets git_review_display_terminal_safe=yes) may DEFER
+## under NONFATAL and show it neutralized, failing at the very end. A GUI viewer
+## always fails closed here regardless of NONFATAL.
+if [ "${git_review_fatal}" != 0 ]; then
+   if [ -z "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] \
+      || [ "${git_review_display_terminal_safe:-}" != yes ]; then
+      git_review_finish
+   fi
 fi
 
 if [ "${is_binary}" = yes ]; then

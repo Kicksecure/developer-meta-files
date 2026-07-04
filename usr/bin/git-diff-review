@@ -21,6 +21,12 @@ shopt -s shift_verbose
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
 review_tool="git-diff-review"
 
+## This display is terminal-safe (stcat-neutralized), so it -- and ONLY it -- may
+## DEFER a fatal (undecodable) blob under GIT_REVIEW_UNICODE_NONFATAL and show it
+## neutralized, failing at the end. The GUI wrappers (git-meld / git-kdiff3) do
+## NOT set this, so the driver fails them closed on a fatal blob regardless.
+git_review_display_terminal_safe=yes
+
 ## Invoked indirectly by the sourced git-review-driver.sh (not dead code).
 # shellcheck disable=SC2317
 display_regular_file() {

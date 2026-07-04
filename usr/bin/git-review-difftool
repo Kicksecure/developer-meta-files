@@ -39,7 +39,10 @@ remote_file="$3"
 # shellcheck source=../libexec/developer-meta-files/git-review-scan.sh
 source /usr/libexec/developer-meta-files/git-review-scan.sh
 
-## diff_path_q labels any fail-closed message with the reviewed path.
+## Either scanned side can be the culprit, so fail-closed messages name BOTH
+## (the per-side scan WARNING above already pinpoints which). diff_path_q keeps
+## the single reviewed path for the textual diff-review branch below.
+pair_q="$( printf '%q and %q' "${local_file}" "${remote_file}" )"
 diff_path_q="$( printf '%q' "${remote_file}" )"
 
 ## Scan BOTH sides before opening anything.
@@ -52,13 +55,13 @@ remote_is_binary="${git_review_is_binary}"
 ## GIT_REVIEW_UNICODE_NONFATAL deferral is intentionally NOT honored here -- it
 ## exists for the batch textual re-dispatch, not a per-file GUI open.)
 if [ "${git_review_fatal}" != 0 ]; then
-   printf '%s\n' "${review_tool}: ERROR: '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the viewer (fail closed). Inspect with 'git diff-review' instead. NOT hidden." >&2
+   printf '%s\n' "${review_tool}: ERROR: ${pair_q} has undecodable/non-UTF-8 Unicode; refusing to open the viewer (fail closed). Inspect with 'git diff-review' instead. NOT hidden." >&2
    exit 1
 fi
 
 ## A binary side would render as noise; surface it and do not open the viewer.
 if [ "${local_is_binary}" = yes ] || [ "${remote_is_binary}" = yes ]; then
-   printf '%s\n' "${review_tool}: NOTE: '${diff_path_q}' looks BINARY (NUL byte); not opened in the viewer." >&2
+   printf '%s\n' "${review_tool}: NOTE: ${pair_q} looks BINARY (NUL byte); not opened in the viewer." >&2
    exit 0
 fi
 

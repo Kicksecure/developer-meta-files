@@ -76,7 +76,7 @@ git_review_finish() {
             exit 1
          fi
       else
-         printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' contains undecodable/non-UTF-8 Unicode; failing the review (to continue and fail only at the end, set GIT_REVIEW_UNICODE_NONFATAL=1 AND run via the git-meld/git-kdiff3/git-diff-review wrapper, which provides the status file)." >&2
+         printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' contains undecodable/non-UTF-8 Unicode; failing the review (to continue and fail only at the end, set GIT_REVIEW_UNICODE_NONFATAL=1 AND run via the git-diff-review wrapper -- the terminal-safe textual reviewer, which provides the status file; the GUI wrappers git-meld/git-kdiff3 always fail closed on a fatal blob)." >&2
          exit 1
       fi
    fi
