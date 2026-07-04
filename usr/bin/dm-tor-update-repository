@@ -72,7 +72,7 @@ dm_tor_update_repository() {
         --buildplace "$cow_folder" \
         --save-after-login \
         -- \
-        apt-get "${DIST_APTGETOPT[@]}" update
+        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
   true 'INFO: Extracting local Tor version number from apt list files...'
