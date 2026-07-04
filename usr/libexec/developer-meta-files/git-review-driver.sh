@@ -24,77 +24,13 @@
 declare -F display_regular_file >/dev/null 2>&1 \
    || { printf '%s\n' "git-review-driver.sh: wrapper must define 'display_regular_file()'" >&2; exit 2; }
 
-# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
-
-has unicode-show
-has stcat
-has mktemp
-has safe-rm
-
-## Fatal-finding flag: set to 1 once an undecodable/non-UTF-8 (unicode-show
-## rc 2) blob or path is seen this run. A decodable non-ASCII finding (rc 1) is
-## warned but is NOT fatal. Consumed by git_review_finish.
-git_review_fatal=0
-
-## Env var suppresses unicode-show's benign "missing newline at end" finding.
-## Warn on ANY non-zero exit: 1 == suspicious found, 2 == undecodable/non-UTF-8
-## (fail-closed -- treat as fatal, never silently pass). git_review_unicode_rc
-## is intentionally a global (not a local): callers read the last scan's exit.
-git_review_unicode_rc=0
-git_review_unicode_scan() {
-   local target label report
-
-   target="$1"
-   label="$2"
-   git_review_unicode_rc=0
-   report="$(UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 NO_COLOR=1 unicode-show "${target}" 2>&1)" \
-      || git_review_unicode_rc="$?"
-   if [ "${git_review_unicode_rc}" != 0 ]; then
-      printf '%s\n' "${review_tool}: WARNING: '${label}' suspicious/undecodable Unicode (unicode-show rc='${git_review_unicode_rc}'):" >&2
-      printf '%s\n' "${report}" | stcat >&2 || true
-      if [ "${git_review_unicode_rc}" -ge 2 ]; then
-         git_review_fatal=1
-      fi
-   fi
-}
-
-## Every non-error exit in external-diff mode routes through this so a fatal
-## Unicode finding is never rendered as a clean review: by default it exits
-## non-zero (git then aborts the diff). Set GIT_REVIEW_UNICODE_NONFATAL to a
-## non-empty value to let the review run to completion instead; the finding is
-## recorded to the shared status file and the re-dispatch block still exits
-## non-zero at the very end.
-git_review_finish() {
-   if [ "${git_review_fatal}" != 0 ]; then
-      ## Deferral is only possible when BOTH the operator opted in AND a status
-      ## file exists to defer to. Without the status file (e.g. wired directly as
-      ## git's 'diff.external', bypassing the re-dispatch block that creates it)
-      ## there is nowhere to record the finding, so fail closed NOW rather than
-      ## fall through to 'exit 0' and let git see a clean external diff.
-      if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] && [ -n "${git_review_status_file:-}" ]; then
-         ## Record the finding for the end-of-run failure. A write error must NOT
-         ## be swallowed -- dropping it would let a fatal finding pass as clean.
-         if ! printf '%s\n' "fatal-unicode '${diff_path_q}'" >> "${git_review_status_file}"; then
-            printf '%s\n' "${review_tool}: ERROR: '${diff_path_q}' has undecodable/non-UTF-8 Unicode and its finding could not be recorded; failing." >&2
-            exit 1
-         fi
-      else
-         printf '%s\n' "${review_tool}: ERROR: '${diff_path_q}' contains undecodable/non-UTF-8 Unicode; failing the review (to continue and fail only at the end, set GIT_REVIEW_UNICODE_NONFATAL=1 AND run via the git-meld/git-kdiff3/git-diff-review wrapper, which provides the status file)." >&2
-         exit 1
-      fi
-   fi
-   exit 0
-}
-
-## Trap target (invoked indirectly via 'trap ... EXIT', not dead code): remove
-## the shared status file created by the re-dispatch block.
-# shellcheck disable=SC2317
-git_review_cleanup() {
-   if [ -n "${git_review_status_file:-}" ]; then
-      safe-rm --force -- "${git_review_status_file}"
-   fi
-}
+## Shared content-hardening core (has-checks, the fatal flag, Unicode/Trojan-
+## Source surfacing via git_review_unicode_scan, fail-closed git_review_finish,
+## git_review_cleanup, and git_review_scan_content for the wrappers). Single-
+## sourced so every review contract -- external diff here, difftool/mergetool in
+## the wrappers -- behaves identically. Sibling of this driver.
+# shellcheck source=git-review-scan.sh
+source "$( dirname -- "${BASH_SOURCE[0]}" )/git-review-scan.sh"
 
 ## Re-dispatch mode ('git meld [<args>]' via the delegating alias).
 if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
@@ -303,10 +239,12 @@ if [ "${longest}" -gt 5000 ]; then
 fi
 
 ## Check BOTH sides: a deleted binary has new_file=/dev/null, so scanning only
-## new_file would miss it and open the old binary in the viewer.
+## new_file would miss it and open the old binary in the viewer. '--text' is
+## required: without it GNU grep's binary-file heuristic short-circuits and a
+## NUL is NOT matched, so a binary blob would be misclassified as text and opened.
 is_binary=no
 for binary_blob in "${old_file}" "${new_file}"; do
-   if [ "${binary_blob}" != /dev/null ] && LC_ALL=C grep --quiet --perl-regexp '\x00' -- "${binary_blob}" 2>/dev/null; then
+   if [ "${binary_blob}" != /dev/null ] && LC_ALL=C grep --quiet --text --perl-regexp '\x00' -- "${binary_blob}" 2>/dev/null; then
       is_binary=yes
    fi
 done

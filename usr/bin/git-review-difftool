@@ -1,0 +1,99 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Safe git DIFFTOOL backend. git difftool materializes the two sides of a change
+## as real files and passes them as $LOCAL/$REMOTE; this wrapper runs the shared
+## content-hardening scan on both (Trojan-Source Unicode, over-long lines,
+## binary), fails closed on undecodable/non-UTF-8 content, then opens the chosen
+## viewer -- so a difftool review gets the same neutralization as the external-
+## diff drivers git-meld / git-kdiff3 / git-diff-review. Wire it via
+## 'git config difftool.<name>.cmd'; see git-review-tools.gitconfig. Shares the
+## hardened core git-review-scan.sh with git-review-driver.sh.
+##
+## Usage (normally invoked by git, not by hand):
+##   git-review-difftool <meld|kdiff3|diff-review> <local-file> <remote-file>
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+review_tool="git-review-difftool"
+
+if [ "$#" -ne 3 ]; then
+   printf '%s\n' "${review_tool}: ERROR: expected 3 args, got $#." >&2
+   printf '%s\n' "Usage: ${review_tool} <meld|kdiff3|diff-review> <local-file> <remote-file>" >&2
+   exit 2
+fi
+viewer="$1"
+local_file="$2"
+remote_file="$3"
+
+## Locate + source the shared hardened scan core (installed path first, else the
+## in-repo sibling when running from a checkout).
+git_review_self="$( readlink -f -- "${BASH_SOURCE[0]}" )"
+mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
+for git_review_scan in \
+   "/usr/libexec/developer-meta-files/git-review-scan.sh" \
+   "${mydir}/../libexec/developer-meta-files/git-review-scan.sh" ; do
+   if [ -r "${git_review_scan}" ]; then
+      # shellcheck source=../libexec/developer-meta-files/git-review-scan.sh
+      source "${git_review_scan}"
+      break
+   fi
+done
+declare -F git_review_scan_content >/dev/null 2>&1 \
+   || { printf '%s\n' "${review_tool}: ERROR: git-review-scan.sh not found." >&2; exit 2; }
+
+## diff_path_q labels any fail-closed message with the reviewed path.
+diff_path_q="$( printf '%q' "${remote_file}" )"
+
+## Scan BOTH sides before opening anything.
+git_review_scan_content "${local_file}"  "local '${local_file}'"
+local_is_binary="${git_review_is_binary}"
+git_review_scan_content "${remote_file}" "remote '${remote_file}'"
+remote_is_binary="${git_review_is_binary}"
+
+## Fail closed: never hand an undecodable/non-UTF-8 blob to a viewer. (The
+## GIT_REVIEW_UNICODE_NONFATAL deferral is intentionally NOT honored here -- it
+## exists for the batch textual re-dispatch, not a per-file GUI open.)
+if [ "${git_review_fatal}" != 0 ]; then
+   printf '%s\n' "${review_tool}: ERROR: '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the viewer (fail closed). Inspect with 'git diff-review' instead. NOT hidden." >&2
+   exit 1
+fi
+
+## A binary side would render as noise; surface it and do not open the viewer.
+if [ "${local_is_binary}" = yes ] || [ "${remote_is_binary}" = yes ]; then
+   printf '%s\n' "${review_tool}: NOTE: '${diff_path_q}' looks BINARY (NUL byte); not opened in the viewer." >&2
+   exit 0
+fi
+
+case "${viewer}" in
+   meld)
+      meld "${local_file}" "${remote_file}"
+      ;;
+   kdiff3)
+      kdiff3 "${local_file}" "${remote_file}"
+      ;;
+   diff-review)
+      ## Terminal-safe textual diff: 'diff' rc 0 (same) / 1 (differ) are OK; rc
+      ## >=2 is a real error. stcat neutralizes any hostile escape sequence.
+      diff_rc=0
+      diff_out="$( diff --unified -- "${local_file}" "${remote_file}" )" || diff_rc=$?
+      if [ "${diff_rc}" -gt 1 ]; then
+         printf '%s\n' "${review_tool}: ERROR: diff failed (rc=${diff_rc}) for '${diff_path_q}'." >&2
+         exit "${diff_rc}"
+      fi
+      printf '%s\n' "${diff_out}" | stcat
+      ;;
+   *)
+      printf '%s\n' "${review_tool}: ERROR: unknown viewer '${viewer}' (expected meld|kdiff3|diff-review)." >&2
+      exit 2
+      ;;
+esac

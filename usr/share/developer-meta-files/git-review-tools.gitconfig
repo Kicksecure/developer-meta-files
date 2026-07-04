@@ -1,0 +1,37 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## Safe git difftool / mergetool backends (developer-meta-files).
+##
+## Each backend runs the shared content-hardening scan -- Trojan-Source Unicode,
+## over-long lines, binary detection, fail-closed on undecodable/non-UTF-8
+## content -- BEFORE opening the viewer, giving a difftool/mergetool review the
+## same neutralization as the external-diff drivers git-meld / git-kdiff3 /
+## git-diff-review.
+##
+## Activate by adding this to your ~/.gitconfig (it is not enabled automatically
+## so it never overrides your existing tool choices):
+##
+##   [include]
+##       path = /usr/share/developer-meta-files/git-review-tools.gitconfig
+##
+## Then:
+##   git difftool  --tool=review-meld    <rev>     # GUI, meld
+##   git difftool  --tool=review-kdiff3  <rev>     # GUI, kdiff3
+##   git difftool  --tool=review-diff    <rev>     # terminal-safe textual
+##   git mergetool --tool=review-meld              # 3-way GUI merge, meld
+##   git mergetool --tool=review-kdiff3            # 3-way GUI merge, kdiff3
+
+[difftool "review-meld"]
+	cmd = git-review-difftool meld "$LOCAL" "$REMOTE"
+[difftool "review-kdiff3"]
+	cmd = git-review-difftool kdiff3 "$LOCAL" "$REMOTE"
+[difftool "review-diff"]
+	cmd = git-review-difftool diff-review "$LOCAL" "$REMOTE"
+
+[mergetool "review-meld"]
+	cmd = git-review-mergetool meld "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+	trustExitCode = true
+[mergetool "review-kdiff3"]
+	cmd = git-review-mergetool kdiff3 "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+	trustExitCode = true

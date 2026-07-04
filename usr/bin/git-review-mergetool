@@ -1,0 +1,84 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Safe git MERGETOOL backend. On a conflict git materializes the three input
+## sides ($BASE/$LOCAL/$REMOTE) plus the in-progress $MERGED file; this wrapper
+## runs the shared content-hardening scan on the three inputs, fails closed on
+## undecodable/non-UTF-8 content, then opens a 3-way merge in the chosen viewer.
+## Only meld and kdiff3 (both real 3-way merge tools) are supported -- the
+## textual git-diff-review has no merge mode. Wire it via
+## 'git config mergetool.<name>.cmd' with 'trustExitCode = true'; see
+## git-review-tools.gitconfig. Shares git-review-scan.sh with git-review-driver.sh.
+##
+## Usage (normally invoked by git, not by hand):
+##   git-review-mergetool <meld|kdiff3> <base> <local> <remote> <merged>
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+review_tool="git-review-mergetool"
+
+if [ "$#" -ne 5 ]; then
+   printf '%s\n' "${review_tool}: ERROR: expected 5 args, got $#." >&2
+   printf '%s\n' "Usage: ${review_tool} <meld|kdiff3> <base> <local> <remote> <merged>" >&2
+   exit 2
+fi
+viewer="$1"
+base_file="$2"
+local_file="$3"
+remote_file="$4"
+merged_file="$5"
+
+## Locate + source the shared hardened scan core (installed path first, else the
+## in-repo sibling when running from a checkout).
+git_review_self="$( readlink -f -- "${BASH_SOURCE[0]}" )"
+mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
+for git_review_scan in \
+   "/usr/libexec/developer-meta-files/git-review-scan.sh" \
+   "${mydir}/../libexec/developer-meta-files/git-review-scan.sh" ; do
+   if [ -r "${git_review_scan}" ]; then
+      # shellcheck source=../libexec/developer-meta-files/git-review-scan.sh
+      source "${git_review_scan}"
+      break
+   fi
+done
+declare -F git_review_scan_content >/dev/null 2>&1 \
+   || { printf '%s\n' "${review_tool}: ERROR: git-review-scan.sh not found." >&2; exit 2; }
+
+diff_path_q="$( printf '%q' "${merged_file}" )"
+
+## Scan the three inputs before opening the merge. $BASE can be absent (an
+## add/add conflict hands /dev/null); git_review_scan_content handles /dev/null.
+git_review_scan_content "${base_file}"   "base '${base_file}'"
+git_review_scan_content "${local_file}"  "local '${local_file}'"
+git_review_scan_content "${remote_file}" "remote '${remote_file}'"
+
+if [ "${git_review_fatal}" != 0 ]; then
+   printf '%s\n' "${review_tool}: ERROR: a conflict side of '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the merge (fail closed). NOT hidden." >&2
+   exit 1
+fi
+
+## 3-way merge. The viewer's exit code is propagated so git (with
+## 'trustExitCode = true') can tell a completed merge from an abort.
+case "${viewer}" in
+   meld)
+      ## Middle pane is $MERGED (git's conflict-marked file); the user edits and
+      ## saves it in place.
+      meld "${local_file}" "${merged_file}" "${remote_file}"
+      ;;
+   kdiff3)
+      kdiff3 "${base_file}" "${local_file}" "${remote_file}" --output "${merged_file}"
+      ;;
+   *)
+      printf '%s\n' "${review_tool}: ERROR: unknown viewer '${viewer}' (expected meld|kdiff3)." >&2
+      exit 2
+      ;;
+esac
