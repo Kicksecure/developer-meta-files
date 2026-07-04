@@ -77,7 +77,7 @@ dm_tor_update_repository() {
   remote_tor_version_list=()
 
   #local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
-  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/trixie-developers/main/binary-amd64/Packages"
+  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/${dist_build_apt_stable_release}-developers/main/binary-amd64/Packages"
   test -r "${local_repository_packages_file}"
   ## To guard against non-malicious formatting issues such as tabs and CRLF.
   unicode-show "${local_repository_packages_file}"
@@ -100,7 +100,7 @@ dm_tor_update_repository() {
 
   true 'INFO: Extracting remote Tor version number from apt list files...'
 
-  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages"
+  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_${dist_build_apt_stable_release}_main_binary-amd64_Packages"
   test -r "${cowbuilder_repository_packages_file}"
   unicode-show "${cowbuilder_repository_packages_file}"
 
