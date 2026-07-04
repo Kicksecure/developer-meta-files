@@ -57,17 +57,32 @@ diff_path_q="$( printf '%q' "${merged_file}" )"
 
 ## Scan the three inputs before opening the merge. $BASE can be absent (an
 ## add/add conflict hands /dev/null); git_review_scan_content handles /dev/null.
+## git_review_is_binary is a global overwritten per call, so capture each side.
 git_review_scan_content "${base_file}"   "base '${base_file}'"
+base_is_binary="${git_review_is_binary}"
 git_review_scan_content "${local_file}"  "local '${local_file}'"
+local_is_binary="${git_review_is_binary}"
 git_review_scan_content "${remote_file}" "remote '${remote_file}'"
+remote_is_binary="${git_review_is_binary}"
 
 if [ "${git_review_fatal}" != 0 ]; then
    printf '%s\n' "${review_tool}: ERROR: a conflict side of '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the merge (fail closed). NOT hidden." >&2
    exit 1
 fi
 
-## 3-way merge. The viewer's exit code is propagated so git (with
-## 'trustExitCode = true') can tell a completed merge from an abort.
+## A binary conflict side cannot be meaningfully merged in a text/GUI tool and
+## would render as noise. Refuse and exit non-zero so the conflict is left
+## UNRESOLVED (never opened, never falsely marked resolved) -- mirrors the
+## difftool binary skip, but for a merge "skip" must signal not-resolved.
+if [ "${base_is_binary}" = yes ] || [ "${local_is_binary}" = yes ] || [ "${remote_is_binary}" = yes ]; then
+   printf '%s\n' "${review_tool}: NOTE: a conflict side of '${diff_path_q}' looks BINARY (NUL byte); refusing to open the merge -- resolve it another way. NOT hidden." >&2
+   exit 1
+fi
+
+## 3-way merge. For kdiff3 the exit code is trustworthy (0 == saved merge) and
+## git is configured with 'trustExitCode = true'. meld's exit code is NOT
+## reliable (it exits 0 even when closed without saving), so its mergetool entry
+## sets 'trustExitCode = false' and lets git verify $MERGED itself.
 case "${viewer}" in
    meld)
       ## Middle pane is $MERGED (git's conflict-marked file); the user edits and

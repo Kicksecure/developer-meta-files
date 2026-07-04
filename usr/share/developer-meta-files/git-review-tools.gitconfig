@@ -22,16 +22,28 @@
 ##   git mergetool --tool=review-meld              # 3-way GUI merge, meld
 ##   git mergetool --tool=review-kdiff3            # 3-way GUI merge, kdiff3
 
+## trustExitCode = true on the difftools so git HONORS the wrapper's fail-closed
+## non-zero exit (undecodable content) and stops the review instead of silently
+## continuing to the next file. git difftool ignores the tool's exit code
+## without it.
 [difftool "review-meld"]
 	cmd = git-review-difftool meld "$LOCAL" "$REMOTE"
+	trustExitCode = true
 [difftool "review-kdiff3"]
 	cmd = git-review-difftool kdiff3 "$LOCAL" "$REMOTE"
+	trustExitCode = true
 [difftool "review-diff"]
 	cmd = git-review-difftool diff-review "$LOCAL" "$REMOTE"
+	trustExitCode = true
 
 [mergetool "review-meld"]
 	cmd = git-review-mergetool meld "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
-	trustExitCode = true
+	## meld exits 0 even when closed WITHOUT saving, so its exit code cannot be
+	## trusted to mean "resolved" -- git would then falsely mark an unresolved
+	## conflict as done. Leave it false so git verifies $MERGED itself (this is
+	## also what git's own built-in meld mergetool does).
+	trustExitCode = false
 [mergetool "review-kdiff3"]
 	cmd = git-review-mergetool kdiff3 "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+	## kdiff3's exit code IS reliable: 0 only on a saved merge, non-zero on abort.
 	trustExitCode = true
