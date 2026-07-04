@@ -19,4 +19,8 @@ git log "...${1}"
 
 git-diff-review "...${1}"
 
+git-meld "...${1}"
+
+git-kdiff3 "...${1}"
+
 true "$0: OK."
