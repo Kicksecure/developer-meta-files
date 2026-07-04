@@ -980,7 +980,11 @@ pkg_readme_creator_commit() {
       return 0
    fi
 
-   dry_run_or_run git-diff-review --cached
+   ## Reviewing the maintainer's own staged changes -> meld's GUI is preferred.
+   ## git-diff-review (terminal-safe textual driver) is for untrusted diffs;
+   ## kept commented for quick re-enable.
+   #dry_run_or_run git-diff-review --cached
+   dry_run_or_run git-meld --cached
 
    dry_run_or_run git commit -m 'readme' || true
 }
@@ -2238,7 +2242,11 @@ pkg_git_diff_and_commit() {
    fi
 
    dry_run_or_run git add -A
-   dry_run_or_run git-diff-review --cached
+   ## Reviewing the maintainer's own staged changes -> meld's GUI is preferred.
+   ## git-diff-review (terminal-safe textual driver) is for untrusted diffs;
+   ## kept commented for quick re-enable.
+   #dry_run_or_run git-diff-review --cached
+   dry_run_or_run git-meld --cached
 
    true "press enter to continue"
    #read -r temp
