@@ -84,6 +84,8 @@ git_review_finish() {
          exit 1
       fi
    fi
+   ## FIXME: Should we really exit 0 in the event git_review_fatal is set
+   ## to 1?
    exit 0
 }
 

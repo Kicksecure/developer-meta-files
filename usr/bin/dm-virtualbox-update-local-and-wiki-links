@@ -31,12 +31,9 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
-has mw-fetch    || die 1 "'mw-fetch' not on PATH"
-has mw-edit     || die 1 "'mw-edit' not on PATH"
-has stecho      || die 1 "'stecho' not on PATH"
-has stsponge    || die 1 "'stsponge' not on PATH"
-has overwrite   || die 1 "'overwrite' not on PATH"
-has str_replace || die 1 "'str_replace' not on PATH"
+for dep_tool in mw-fetch mw-edit stecho stsponge overwrite str_replace; do
+  has "${dep_tool}" || die 1 "'${dep_tool}' not on PATH"
+done
 
 declare -A url_cache
 declare -A wiki_cache
@@ -63,7 +60,7 @@ get_wiki_page_cached () {
    cache_id="${WIKI_URL} - ${wiki_page}"
 
    ## 'mktemp' inside the cache-miss branch only: on a cache hit (every repeat
-   ## lookup) we never fetch, so creating a temp file here would just leak it.
+   ## lookup) we never fetch, so creating a temp file then would just leak it.
    if [ -z "${wiki_cache["${cache_id}"]:-}" ]; then
       tmpfile="$(mktemp)"
       mw-fetch "${WIKI_URL}" "${wiki_page}" "${tmpfile}"
@@ -92,12 +89,10 @@ extract_url () {
    [ -z "${regex}" ] && return 1
 
    ## Emit EVERY matching URL, one per line, so callers can tell apart no
-   ## match, exactly one, and several (ambiguous) -- rather than silently
-   ## overwriting and returning only the last match.
+   ## match, exactly one, and several (ambiguous).
    while read -r line; do
       if [[ "${line}" =~ ${regex} ]]; then
-         match="$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
-         stecho "${match}"
+         stecho "$(perl -p -e "s/.*(${regex}).*/\1/" <<< "${line}")"
       fi
    done <<< "${content}"
 }
@@ -197,8 +192,7 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)"
 
    get_wiki_page_cached "${wiki_page}"
-   ## 'overwrite', not 'append-once' -- see replace_wiki_string: append-once on
-   ## a fresh empty mktemp injects a leading blank line into the uploaded page.
+   ## 'overwrite', not 'append-once' -- see replace_wiki_string.
    overwrite "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
@@ -224,7 +218,9 @@ declare -a wiki_url_list=(
 )
 
 main () {
-   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current update_done sha_link_root sha_link_full WIKI_URL
+   local vbox_win_latest vbox_macos_intel64_latest vbox_macos_arm64_latest \
+      vbox_win_current vbox_macos_intel64_current vbox_macos_arm64_current \
+      update_done sha_link_root sha_link_full WIKI_URL
 
 #    if [ ! -v WIKI_API_USER_NAME ]; then
 #       stecho "ERROR: No username provided! Please ensure WIKI_API_USER_NAME is set in the environment."
@@ -234,7 +230,7 @@ main () {
 #       exit 1
 #    fi
 
-   get_url_from_page "${vbox_download_page}" "${vbox_win_regex}";   vbox_win_latest="${func_result}"
+   get_url_from_page "${vbox_download_page}" "${vbox_win_regex}"; vbox_win_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_latest="${func_result}"
    get_url_from_page "${vbox_download_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_latest="${func_result}"
 
@@ -254,13 +250,13 @@ main () {
    for WIKI_URL in "${wiki_url_list[@]}"; do
       update_done='false'
 
-      get_url_from_wiki "${wiki_vbox_page}" "${vbox_win_regex}";   vbox_win_current="${func_result}"
+      get_url_from_wiki "${wiki_vbox_page}" "${vbox_win_regex}"; vbox_win_current="${func_result}"
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_intel64_regex}"; vbox_macos_intel64_current="${func_result}"
       get_url_from_wiki "${wiki_vbox_page}" "${vbox_macos_arm64_regex}"; vbox_macos_arm64_current="${func_result}"
 
       ## Each replace is guarded: replace_wiki_string returns non-zero when the
-      ## current URL is not present on the page (nothing to replace). Called as
-      ## a bare command that would abort the whole run under 'errexit' -- and
+      ## current URL is not present on the page (nothing to replace). If called
+      ## as a bare command, it would abort the whole run under 'errexit' -- and
       ## kill the other links, the other wiki, and the local file writes below.
       ## Warn and carry on instead, and only mark the page dirty on success.
       if [ "${vbox_win_latest}" != "${vbox_win_current}" ]; then
