@@ -980,7 +980,7 @@ pkg_readme_creator_commit() {
       return 0
    fi
 
-   dry_run_or_run git diff --cached
+   dry_run_or_run git-diff-review --cached
 
    dry_run_or_run git commit -m 'readme' || true
 }
@@ -2238,7 +2238,7 @@ pkg_git_diff_and_commit() {
    fi
 
    dry_run_or_run git add -A
-   dry_run_or_run git diff --cached
+   dry_run_or_run git-diff-review --cached
 
    true "press enter to continue"
    #read -r temp
