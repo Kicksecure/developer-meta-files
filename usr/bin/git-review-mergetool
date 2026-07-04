@@ -82,7 +82,8 @@ fi
 ## 3-way merge. For kdiff3 the exit code is trustworthy (0 == saved merge) and
 ## git is configured with 'trustExitCode = true'. meld's exit code is NOT
 ## reliable (it exits 0 even when closed without saving), so its mergetool entry
-## sets 'trustExitCode = false' and lets git verify $MERGED itself.
+## sets 'trustExitCode = false'; git then checks whether $MERGED was modified
+## (and prompts if not) rather than trusting the exit code.
 case "${viewer}" in
    meld)
       ## Middle pane is $MERGED (git's conflict-marked file); the user edits and

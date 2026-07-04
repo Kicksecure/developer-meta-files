@@ -40,8 +40,10 @@
 	cmd = git-review-mergetool meld "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
 	## meld exits 0 even when closed WITHOUT saving, so its exit code cannot be
 	## trusted to mean "resolved" -- git would then falsely mark an unresolved
-	## conflict as done. Leave it false so git verifies $MERGED itself (this is
-	## also what git's own built-in meld mergetool does).
+	## conflict as done. Leave it false so git instead checks whether $MERGED was
+	## MODIFIED and prompts if it was not (a save/update check, not conflict-
+	## marker validation). This matches git's own built-in meld mergetool, which
+	## deliberately does not declare meld's exit code trustable (unlike kdiff3).
 	trustExitCode = false
 [mergetool "review-kdiff3"]
 	cmd = git-review-mergetool kdiff3 "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
