@@ -110,7 +110,7 @@ git_review_scan_content() {
    git_review_unicode_scan "${target}" "${label}"
 
    ## Over-long lines can truncate/hang a viewer (a place to bury a change).
-   longest="$(awk '{ if (length > m) m = length } END { print m + 0 }' "${target}" 2>/dev/null || printf '0')"
+   longest="$(wc --max-line-length < "${target}" 2>/dev/null || printf '0')"
    if [ "${longest}" -gt 5000 ]; then
       printf '%s\n' "${review_tool}: WARNING: '${label}' has a '${longest}'-char line; a viewer may truncate/hang." >&2
    fi

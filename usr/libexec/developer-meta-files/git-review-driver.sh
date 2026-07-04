@@ -237,7 +237,7 @@ git_review_unicode_scan "${unicode_scan_file}" "${diff_path_q}"
 longest=0
 for longline_blob in "${old_file}" "${new_file}"; do
    [ "${longline_blob}" != /dev/null ] || continue
-   blob_longest="$(awk '{ if (length > m) m = length } END { print m + 0 }' "${longline_blob}" 2>/dev/null || printf '0')"
+   blob_longest="$(wc --max-line-length < "${longline_blob}" 2>/dev/null || printf '0')"
    if [ "${blob_longest}" -gt "${longest}" ]; then
       longest="${blob_longest}"
    fi
