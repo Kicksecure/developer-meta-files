@@ -210,9 +210,14 @@ if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
       printf '%s\n' "${review_tool}: ERROR: submodule '${diff_path_q}' not an initialized git repo here; cannot show diff (init/fetch it). NOT hidden." >&2
       exit 1
    fi
+   ## The submodule's own diff is untrusted content (a malicious commit's file
+   ## bytes) shown on the terminal, so neutralize it through stcat like every
+   ## other untrusted line here -- otherwise it is a terminal-escape injection
+   ## vector for the textual reviewer. pipefail makes a git failure (bad object)
+   ## still set sm_rc.
    sm_rc=0
-   git -C "${diff_path}" diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" || sm_rc=$?
-   git -C "${diff_path}" diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" || sm_rc=$?
+   git -C "${diff_path}" diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
+   git -C "${diff_path}" diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
    if [ "${sm_rc}" != 0 ]; then
       printf '%s\n' "${review_tool}: ERROR: submodule '${diff_path_q}' '${old_commit}' -> '${new_commit}': diff unavailable (fetch it). NOT hidden." >&2
       exit 1
@@ -266,8 +271,10 @@ for binary_blob in "${old_file}" "${new_file}"; do
 done
 
 ## --stat always surfaces the change; the viewer opens only for text (a binary
-## blob would render as noise, and the --stat already shows it changed).
-git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
+## blob would render as noise, and the --stat already shows it changed). Through
+## stcat: a path can carry escapes and we do not want to rely on git's
+## core.quotePath default for neutralization. pipefail keeps a git failure loud.
+git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" | stcat \
    || printf '%s\n' "${review_tool}: WARNING: '--stat' for '${diff_path_q}' failed; showing the diff anyway." >&2
 
 ## Fail closed BEFORE opening a viewer: a fatal (undecodable / non-UTF-8) blob

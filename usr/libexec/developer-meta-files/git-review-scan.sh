@@ -63,12 +63,17 @@ git_review_unicode_scan() {
 ## and the re-dispatch block still exits non-zero at the very end.
 git_review_finish() {
    if [ "${git_review_fatal}" != 0 ]; then
-      ## Deferral is only possible when BOTH the operator opted in AND a status
-      ## file exists to defer to. Without the status file (e.g. wired directly as
-      ## git's 'diff.external', bypassing the re-dispatch block that creates it)
-      ## there is nowhere to record the finding, so fail closed NOW rather than
-      ## fall through to 'exit 0' and let git see a clean external diff.
-      if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] && [ -n "${git_review_status_file:-}" ]; then
+      ## Deferral is only possible when ALL hold: the operator opted in, a status
+      ## file exists to defer to, AND the display is terminal-safe (stcat). A GUI
+      ## viewer (git-meld/git-kdiff3, which do not set git_review_display_terminal_
+      ## safe) must fail closed NOW -- deferring would let the run reach
+      ## display_regular_file and hand the fatal blob to the GUI. Without a status
+      ## file (e.g. wired directly as git's 'diff.external', bypassing the
+      ## re-dispatch block that creates it) there is nowhere to record the finding,
+      ## so likewise fail closed rather than fall through to a clean 'exit 0'.
+      if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] \
+         && [ -n "${git_review_status_file:-}" ] \
+         && [ "${git_review_display_terminal_safe:-}" = yes ]; then
          ## Record the finding for the end-of-run failure. A write error must NOT
          ## be swallowed -- dropping it would let a fatal finding pass as clean.
          if ! printf '%s\n' "fatal-unicode '${diff_path_q:-(file)}'" >> "${git_review_status_file}"; then
