@@ -232,8 +232,16 @@ if [ "${new_file}" = /dev/null ]; then
 fi
 git_review_unicode_scan "${unicode_scan_file}" "${diff_path_q}"
 
-## Over-long lines can truncate/hang a viewer (a place to bury a change).
-longest="$(awk '{ if (length > m) m = length } END { print m + 0 }' "${new_file}" 2>/dev/null || printf '0')"
+## Over-long lines can truncate/hang a viewer (a place to bury a change). Check
+## BOTH sides: on a deletion new_file=/dev/null, yet the old side is still opened.
+longest=0
+for longline_blob in "${old_file}" "${new_file}"; do
+   [ "${longline_blob}" != /dev/null ] || continue
+   blob_longest="$(awk '{ if (length > m) m = length } END { print m + 0 }' "${longline_blob}" 2>/dev/null || printf '0')"
+   if [ "${blob_longest}" -gt "${longest}" ]; then
+      longest="${blob_longest}"
+   fi
+done
 if [ "${longest}" -gt 5000 ]; then
    printf '%s\n' "${review_tool}: WARNING: '${diff_path_q}' has a '${longest}'-char line; a viewer may truncate/hang." >&2
 fi
@@ -244,8 +252,16 @@ fi
 ## NUL is NOT matched, so a binary blob would be misclassified as text and opened.
 is_binary=no
 for binary_blob in "${old_file}" "${new_file}"; do
-   if [ "${binary_blob}" != /dev/null ] && LC_ALL=C grep --quiet --text --perl-regexp '\x00' -- "${binary_blob}" 2>/dev/null; then
+   [ "${binary_blob}" != /dev/null ] || continue
+   nul_rc=0
+   LC_ALL=C grep --quiet --text --perl-regexp '\x00' -- "${binary_blob}" 2>/dev/null || nul_rc=$?
+   if [ "${nul_rc}" = 0 ]; then
       is_binary=yes
+   elif [ "${nul_rc}" -ge 2 ]; then
+      ## grep itself errored (e.g. no PCRE support) -- fail CLOSED: treat as
+      ## binary so a possibly-binary blob is never opened as text.
+      is_binary=yes
+      printf '%s\n' "${review_tool}: WARNING: NUL check for '${diff_path_q}' errored (grep rc='${nul_rc}'); treating as binary (fail closed)." >&2
    fi
 done
 
@@ -253,6 +269,15 @@ done
 ## blob would render as noise, and the --stat already shows it changed).
 git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" \
    || printf '%s\n' "${review_tool}: WARNING: '--stat' for '${diff_path_q}' failed; showing the diff anyway." >&2
+
+## Fail closed BEFORE opening a viewer: a fatal (undecodable / non-UTF-8) blob
+## must never reach meld/kdiff3, exactly as the difftool/mergetool wrappers gate
+## before opening. NONFATAL deferral mode instead falls through to show it
+## (stcat-neutralized in the textual driver) and fails at the very end.
+if [ "${git_review_fatal}" != 0 ] && [ -z "${GIT_REVIEW_UNICODE_NONFATAL:-}" ]; then
+   git_review_finish
+fi
+
 if [ "${is_binary}" = yes ]; then
    printf '%s\n' "${review_tool}: NOTE: '${diff_path_q}' looks BINARY (NUL byte); shown as --stat only, not opened in the viewer." >&2
 else

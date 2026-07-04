@@ -102,7 +102,7 @@ git_review_cleanup() {
 ## a GUI. Does NOT exit; the caller calls git_review_finish to fail closed.
 git_review_is_binary=no
 git_review_scan_content() {
-   local target label longest
+   local target label longest nul_rc
 
    target="$1"
    label="$2"
@@ -118,9 +118,17 @@ git_review_scan_content() {
    ## A binary blob would render as noise in a text/GUI viewer. '--text' is
    ## required: without it GNU grep's binary-file heuristic short-circuits and a
    ## NUL is NOT matched, so the blob would be misclassified as text and opened.
+   ## grep rc: 0 == NUL found, 1 == none, >=2 == grep error -> fail CLOSED (treat
+   ## as binary) so a possibly-binary blob is never opened as text.
    git_review_is_binary=no
-   if [ "${target}" != /dev/null ] \
-      && LC_ALL=C grep --quiet --text --perl-regexp '\x00' -- "${target}" 2>/dev/null; then
-      git_review_is_binary=yes
+   if [ "${target}" != /dev/null ]; then
+      nul_rc=0
+      LC_ALL=C grep --quiet --text --perl-regexp '\x00' -- "${target}" 2>/dev/null || nul_rc=$?
+      if [ "${nul_rc}" = 0 ]; then
+         git_review_is_binary=yes
+      elif [ "${nul_rc}" -ge 2 ]; then
+         git_review_is_binary=yes
+         printf '%s\n' "${review_tool}: WARNING: NUL check for '${label}' errored (grep rc='${nul_rc}'); treating as binary (fail closed)." >&2
+      fi
    fi
 }
