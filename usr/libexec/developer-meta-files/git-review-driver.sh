@@ -28,9 +28,9 @@ declare -F display_regular_file >/dev/null 2>&1 \
 ## Source surfacing via git_review_unicode_scan, fail-closed git_review_finish,
 ## git_review_cleanup, and git_review_scan_content for the wrappers). Single-
 ## sourced so every review contract -- external diff here, difftool/mergetool in
-## the wrappers -- behaves identically. Sibling of this driver.
+## the wrappers -- behaves identically.
 # shellcheck source=git-review-scan.sh
-source "$( dirname -- "${BASH_SOURCE[0]}" )/git-review-scan.sh"
+source /usr/libexec/developer-meta-files/git-review-scan.sh
 
 ## Re-dispatch mode ('git meld [<args>]' via the delegating alias).
 if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then

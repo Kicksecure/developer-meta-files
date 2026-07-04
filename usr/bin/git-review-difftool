@@ -35,21 +35,9 @@ viewer="$1"
 local_file="$2"
 remote_file="$3"
 
-## Locate + source the shared hardened scan core (installed path first, else the
-## in-repo sibling when running from a checkout).
-git_review_self="$( readlink -f -- "${BASH_SOURCE[0]}" )"
-mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
-for git_review_scan in \
-   "/usr/libexec/developer-meta-files/git-review-scan.sh" \
-   "${mydir}/../libexec/developer-meta-files/git-review-scan.sh" ; do
-   if [ -r "${git_review_scan}" ]; then
-      # shellcheck source=../libexec/developer-meta-files/git-review-scan.sh
-      source "${git_review_scan}"
-      break
-   fi
-done
-declare -F git_review_scan_content >/dev/null 2>&1 \
-   || { printf '%s\n' "${review_tool}: ERROR: git-review-scan.sh not found." >&2; exit 2; }
+## Shared hardened scan core.
+# shellcheck source=../libexec/developer-meta-files/git-review-scan.sh
+source /usr/libexec/developer-meta-files/git-review-scan.sh
 
 ## diff_path_q labels any fail-closed message with the reviewed path.
 diff_path_q="$( printf '%q' "${remote_file}" )"
