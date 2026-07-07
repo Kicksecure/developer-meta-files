@@ -2591,7 +2591,7 @@ pkg_git_qubes_template_sync_trixie() {
 ## NOTE: When calling this directly, redirect STDERR to /dev/null with
 ## 2>/dev/null.
 pkg_need_version_bump_show() {
-   local changelog_version source_pkg reprepro_version repo_query_output
+   local changelog_version source_pkg reprepro_version reprepro_version_source repo_query_output
 
    batch_current_package_needs_version_bump='n'
 
@@ -2643,7 +2643,8 @@ pkg_need_version_bump_show() {
          return 1
       fi
 
-      reprepro_version="$(printf '%s\n' "${repo_query_output}" | grep source | awk 'NF{print $NF}')"
+      reprepro_version_source="$(printf '%s\n' "${repo_query_output}" | grep -- "source")" || true
+      reprepro_version="$(printf '%s\n' "${reprepro_version_source}" | awk -- 'NF{print $NF}')" || true
       ## Example reprepro_version:
       ## 1.2.3-1
 
