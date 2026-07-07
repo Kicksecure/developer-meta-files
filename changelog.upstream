@@ -1,3 +1,28 @@
+commit 523eb1e6c07e2a38663696af1b962bdeafe0e693
+Merge: 92d59d6c 3a31622a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:04:24 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 92d59d6cbfc475e8a43efe930b7976bbeb94c516
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:00:42 2026 -0400
+
+    .
+
+commit a1efcecd544173f5f17d3ce60cb222a8d3432db6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 10:00:22 2026 +0000
+
+    bumped changelog version
+
+commit 3a31622aed75ce6fb06d084c7900281b937fe221
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sat Jul 4 22:33:45 2026 -0400
+
+    fix
+
 commit 782c74a26d671e5bbd2fc3f117e08dea203fc1dc
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Jul 4 17:13:56 2026 -0400
@@ -99,6 +124,12 @@ Date:   Sat Jul 4 08:58:50 2026 -0400
 
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
     Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 76480632d5098d467b534f69c8699e9895bc8b6c
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Jul 3 20:36:10 2026 -0400
+
+    comments, fixme, minor improvements
 
 commit 7a39d3705e751307e55c9d68b0cd83adcc0f74e5
 Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
