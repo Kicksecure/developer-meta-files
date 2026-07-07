@@ -669,6 +669,9 @@ check_R034_echo() {
       fi
       ## 'echo' as a word at start-of-line or after whitespace (command position).
       ## A leading '#' blocks the '[^#]*' prefix, so comment lines are excluded.
+      ## FIXME: This will flag any file that uses the word 'echo' in a string.
+      ## The `[^#]*` portion of the regex will match almost any characters
+      ## needed to get to " echo " in the middle of the string.
       hits="$(grep --line-number --extended-regexp \
          '^[[:space:]]*[^#]*[[:space:]]echo([[:space:]]|$)|^[[:space:]]*echo([[:space:]]|$)' \
          -- "${script}" 2>/dev/null || true)"

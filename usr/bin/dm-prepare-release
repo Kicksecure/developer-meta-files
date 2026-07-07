@@ -488,8 +488,7 @@ Please donate! [C]
    local cowbuilder_exit_code
    cowbuilder_exit_code=0
 
-   ## '--preserve-env' carries the variables exported above (plus the
-   ## '--preserve-env=' allowlist baked into '$SUDO_TO_ROOT') through cowbuilder
+   ## '--preserve-env' carries the variables exported above through cowbuilder
    ## into the chroot script's environment; no env file is passed.
    $SUDO_TO_ROOT \
       --preserve-env \

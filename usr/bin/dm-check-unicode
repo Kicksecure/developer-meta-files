@@ -73,16 +73,8 @@ symlink_whitelist["./live-build-data/d-i-branding/logo_debian_dark.png"]="logo_d
 symlink_whitelist["./live-build-data/d-i-branding/logo_installer.png"]="logo_debian.png"
 symlink_whitelist["./qubes/qubes-template-whonix/whonix-workstation"]="whonix-gateway"
 
-## Git-tracked symlinks (mode 120000), recursing into submodules. With
-## 'core.symlinks=false' a symlink is checked out as a regular text file
-## whose content is the link target, so 'find -type l' misses it and the
-## content checks further below would false-flag it. Enumerating from git
-## metadata makes symlink handling independent of 'core.symlinks'.
-## 'git ls-files --stage' prints "<mode> <object> <stage>\t<path>"; mode
-## 120000 is a symlink. Capture first (a git failure then trips errexit; a
-## process substitution would mask it), then split on the tab and read the
-## mode with a parameter expansion -- no awk, no subshell around the loop, so
-## the associative array persists.
+## Detect symlinks from Git metadata. This works even when 'core.symlinks' is
+## set to 'false', like Kicksecure sets by default.
 declare -A git_symlink_paths
 git_ls_files_stage="$(git ls-files --recurse-submodules --stage)"
 while IFS=$'\t' read -r git_index_meta git_symlink_path; do
@@ -91,18 +83,16 @@ while IFS=$'\t' read -r git_index_meta git_symlink_path; do
 done <<< "$git_ls_files_stage"
 
 read_link_target() {
-   ## Symlink target, independent of 'core.symlinks': a real symlink via
-   ## 'readlink'; a symlink checked out as a regular file (core.symlinks
-   ## =false) stores its target as the file content. Read it with the
-   ## security-hardened 'stcat', run via run-via-helper-scripts so it resolves
-   ## (with its stdisplay module on PYTHONPATH) during the build's
-   ## bootstrap before helper-scripts is installed. stcat does no option
-   ## parsing, so a leading-dash path is safe without '--'.
    local path
    path="$1"
    if [ -L "$path" ]; then
       readlink -- "$path"
    else
+      ## When Git's 'core.symlinks' setting is set to 'false', symlinks are
+      ## text files containing the path. `read_link_target` will only ever be
+      ## called with a path that is guaranteed to be a symlink from Git's
+      ## perspective, so we can dump the contents of those files to get the
+      ## symlink target.
       "$run_via_helper_scripts" stcat "$path"
    fi
 }
@@ -132,22 +122,17 @@ find_symlinks() {
    local -a all_symlinks=()
    found_symlink=""
 
-   ## Authoritative: every git-tracked symlink, normalized to the './'
-   ## prefix the whitelist keys use, independent of 'core.symlinks' (a
-   ## 'find -type l' alone misses the ones materialized as regular files
-   ## when 'core.symlinks=false').
+   ## Find all symlinks Git knows about.
    for symlink in "${!git_symlink_paths[@]}"; do
+      ## Normalize symlink names; the untracked symlink routine below will
+      ## print names that start with "./".
       symlink="./$symlink"
       [ -v "seen_symlink[$symlink]" ] && continue
       seen_symlink["$symlink"]=1
       all_symlinks+=("$symlink")
    done
 
-   ## Plus any remaining (e.g. untracked) filesystem symlinks.
-   ## Need to use '"."' for relative paths. Prune '.git' directories only
-   ## (the old '-iwholename "*.git*"' also excluded '.github/',
-   ## '.gitignore', ... leaving filesystem symlinks under those
-   ## unvalidated).
+   ## Find untracked symlinks. Ignore .git in all subdirs.
    while IFS= read -r -d '' symlink; do
       [ -v "seen_symlink[$symlink]" ] && continue
       seen_symlink["$symlink"]=1
@@ -302,12 +287,8 @@ while IFS= read -r file_name ; do
 #       fi
 #    fi
 
-   ## Skip git-tracked symlinks. With 'core.symlinks=false' they
-   ## materialize as regular files (content = link target, no trailing
-   ## newline) and would otherwise be false-flagged here as a missing
-   ## newline. They are verified separately, against the symlink
-   ## whitelist, in find_symlinks() above. 'git ls-files' paths have no
-   ## './' prefix, matching grep's output here.
+   ## Skip git-tracked symlinks. 'git ls-files' paths have no './' prefix,
+   ## matching grep's output here.
    if [ -n "${git_symlink_paths[$file_name]+_}" ]; then
       continue
    fi
