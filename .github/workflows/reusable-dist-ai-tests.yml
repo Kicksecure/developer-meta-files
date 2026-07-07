@@ -1,0 +1,177 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: run this component's dist-ai regression suites.
+##
+## The comprehensive test suites for several derivative-maker packages
+## are too high-volume for in-tree human review, so they live in the
+## AI-maintained dist-ai repo (org-ai-assisted/dist-ai) rather than in
+## each package. This workflow wires them back to the package's own PRs:
+## it checks out the caller repo (the code under test) and dist-ai (the
+## suites), then runs dist-ai-tests-all against the caller checkout via
+## the standalone-component entry point (--component / --component-root).
+## The component name is derived from the caller's repo name, so the
+## consumer wrapper is byte-identical and needs no per-repo config.
+##
+## Runs in a debian:trixie-slim container (Python 3.13), NOT bare
+## ubuntu-24.04 (Python 3.12): the packages under test target current
+## Debian/Python (e.g. helper-scripts' stcat uses Path.read_text(newline=)
+## which is 3.13+). Same container choice as reusable-pre-push-static.yml.
+##
+## Checkout layout: the caller repo, dist-ai, and developer-meta-files
+## are checked out as SIBLING subdirectories of GITHUB_WORKSPACE
+## (component/, dist-ai/, dmf/), NOT the caller at the workspace root
+## with dist-ai nested inside it. This is deliberate: a suite that runs
+## pytest (e.g. privleap-tests) derives the test module name from the
+## test file's path relative to pytest's rootdir; if the dist-ai suites
+## sit under a dot-prefixed dir inside the caller checkout (.dist-ai),
+## pytest builds a module name with a leading dot and fails collection
+## with "the 'package' argument is required to perform a relative
+## import". Sibling dirs keep the suite path out of the caller tree and
+## free of dot components. Do not "simplify" this back to a single
+## workspace-root checkout.
+##
+## Per-repo values come from the caller's .github/dm-consumer.yml
+## (read at runtime, same pattern as reusable-coverity.yml):
+##   dist-ai-tests:
+##     apt-packages:   "python3 python3-pytest python3-hypothesis ..."
+##     helper-scripts: true   # also check out helper-scripts (for suites
+##                            # that drive sanitize-string, e.g.
+##                            # open-link-confirmation)
+## Both are optional; a repo needing only the default testing stack ships
+## no dm-consumer.yml at all.
+##
+## See developer-meta-files agents/github-actions.md and each package's
+## AGENTS.md "Tests" section.
+##
+## No 'concurrency:' block: github.workflow inside a reusable resolves to
+## the caller's workflow name, so a group declared here would deadlock
+## with the caller's cancellable group (same precedent as
+## reusable-pre-push-static.yml).
+
+name: dist-ai tests (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      categories:
+        description: 'dist-ai-tests-all category flags. Default: --core (fast, PR-suitable).'
+        required: false
+        type: string
+        default: '--core'
+      dist-ai-ref:
+        description: 'Ref of org-ai-assisted/dist-ai to check out.'
+        required: false
+        type: string
+        default: 'master'
+
+permissions:
+  contents: read
+
+jobs:
+  dist-ai-tests:
+    name: dist-ai tests
+    runs-on: ubuntu-24.04
+    container:
+      image: debian:trixie-slim
+    timeout-minutes: 20
+    ## Fork-PR guard: forked PRs need maintainer review before consuming
+    ## CI time. Same guard as the other reusables (agents/security.md).
+    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
+    permissions:
+      contents: read
+    env:
+      COMPONENT: ${{ github.event.repository.name }}
+      CATEGORIES: ${{ inputs.categories }}
+    steps:
+      - name: Install checkout + config dependencies (apt only)
+        run: |
+          apt-get update --quiet
+          apt-get install --yes --no-install-recommends \
+            ca-certificates file git rsync yq
+          git config --global --add safe.directory '*'
+
+      - name: Checkout component (code under test)
+        ## https://github.com/actions/checkout/releases/tag/v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          path: component
+          persist-credentials: false
+
+      - name: Checkout dist-ai (test suites)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/dist-ai
+          ref: ${{ inputs.dist-ai-ref }}
+          path: dist-ai
+          persist-credentials: false
+
+      - name: Checkout developer-meta-files (summary script)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/developer-meta-files
+          ref: master
+          path: dmf
+          persist-credentials: false
+
+      - name: Load per-repo config (.github/dm-consumer.yml)
+        id: cfg
+        ## Runtime read of the caller's per-repo config (reusable-coverity.yml
+        ## pattern). All logic lives in the committed dist-ai/ci script, not
+        ## inline here (no embedded shell scripts in CI files).
+        run: dist-ai/ci/dist-ai-tests-ci-config.sh component/.github/dm-consumer.yml
+
+      - name: Checkout helper-scripts (for suites that drive its tools)
+        if: steps.cfg.outputs.helper_scripts == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/helper-scripts
+          ref: master
+          path: helper-scripts
+          persist-credentials: false
+
+      - name: Provide helper-scripts runtime at the system path
+        if: steps.cfg.outputs.helper_scripts == 'true'
+        ## Some tools source helper-scripts via an absolute /usr/libexec path
+        ## (genmkfile make-helper, git-meld). Logic lives in the committed
+        ## dist-ai/ci script, not inline (no embedded shell in CI files).
+        run: dist-ai/ci/dist-ai-tests-ci-hs-runtime.sh "${GITHUB_WORKSPACE}/helper-scripts"
+
+      - name: Install test dependencies (apt only)
+        env:
+          APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
+        run: |
+          ## shellcheck disable=SC2086  # APT_PACKAGES is an intentional word list
+          apt-get install --yes --no-install-recommends ${APT_PACKAGES}
+
+      - name: Run dist-ai suites for this component
+        env:
+          HS_ARG: ${{ steps.cfg.outputs.hs_arg }}
+          SKIP_ARGS: ${{ steps.cfg.outputs.skip_args }}
+        ## shellcheck disable=SC2086  # CATEGORIES / HS_ARG / SKIP_ARGS are intentional flag lists
+        run: |
+          dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
+            --component "${COMPONENT}" \
+            --component-root "${GITHUB_WORKSPACE}/component" \
+            --timeout-core 600 \
+            ${HS_ARG} \
+            ${SKIP_ARGS}
+
+      - name: Emit step summary
+        if: always()
+        ## Per-suite detail is printed inline by dist-ai-tests-all on a
+        ## FAIL/TIMEOUT; this panel surfaces the headline result,
+        ## component, and categories in the PR Checks tab. job.status is
+        ## routed through env: per the org-wide convention (CodeQL flags
+        ## inline ${{ }} in run:).
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          dmf/ci/step-summary-emit.sh \
+            --tool 'dist-ai tests' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "component=${COMPONENT}" \
+            --row "categories=${CATEGORIES}"

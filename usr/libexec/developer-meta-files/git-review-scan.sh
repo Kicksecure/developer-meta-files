@@ -85,6 +85,10 @@ git_review_finish() {
          exit 1
       fi
    fi
+   ## FIXME: Should we really exit 0 in the event git_review_fatal is set
+   ## to 1? Reached here only in the NONFATAL-deferral path: the finding was
+   ## recorded to the status file above and the re-dispatch block still exits
+   ## non-zero at the very end; every other fatal case has already exited 1.
    exit 0
 }
 

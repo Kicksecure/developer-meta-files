@@ -36,13 +36,16 @@ dm_tor_update_repository() {
   local local_tor_version remote_tor_version local_tor_version_list \
     remote_tor_version_list
 
-  ## Make sure the proxy is set up properly.
+  ## Instructions:
+  ##
+  ## 1. Make sure the proxy is set up properly.
   #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor source
-
-  ## Create a fresh chroot to work in.
+  ##
+  ## 2. Create a fresh chroot to work in.
   #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
 
   true 'INFO: Setting cowbuilder file variables.'
+  dist_build_multiarch_package_item="$dist_build_target_arch"
   set_cowbuilder_folders
 
   ## Sanity test.
@@ -68,8 +71,8 @@ dm_tor_update_repository() {
         --basepath "$base_folder" \
         --buildplace "$cow_folder" \
         --save-after-login \
-          -- \
-          apt-get "${DIST_APTGETOPT[@]}" update
+        -- \
+        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" update
 
   ## Extract the Tor version numbers from the local and remote repositories.
   true 'INFO: Extracting local Tor version number from apt list files...'
@@ -77,7 +80,7 @@ dm_tor_update_repository() {
   remote_tor_version_list=()
 
   #local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_local/kicksecure/dists/local/main/binary-amd64/Packages"
-  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/trixie-developers/main/binary-amd64/Packages"
+  local_repository_packages_file="${derivative_maker_source_code_dir}/../derivative-binary/aptrepo_remote/kicksecure/dists/${dist_build_apt_stable_release}-developers/main/binary-amd64/Packages"
   test -r "${local_repository_packages_file}"
   ## To guard against non-malicious formatting issues such as tabs and CRLF.
   unicode-show "${local_repository_packages_file}"
@@ -100,7 +103,7 @@ dm_tor_update_repository() {
 
   true 'INFO: Extracting remote Tor version number from apt list files...'
 
-  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_trixie_main_binary-amd64_Packages"
+  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_tpo_dists_${dist_build_apt_stable_release}_main_binary-amd64_Packages"
   test -r "${cowbuilder_repository_packages_file}"
   unicode-show "${cowbuilder_repository_packages_file}"
 

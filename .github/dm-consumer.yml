@@ -1,0 +1,13 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Per-repo parameters for developer-meta-files consumer workflows, read at
+## workflow runtime.
+dist-ai-tests:
+  ## git-meld-tests needs the full helper-scripts runtime + GUI-viewer work
+  ## that is landing in PR #136; skip it until that merges so dm-virtualbox
+  ## still gates PRs. Remove this skip once git-meld-tests passes.
+  skip:
+    - git-meld-tests
