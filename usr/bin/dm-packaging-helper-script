@@ -1528,13 +1528,6 @@ pkg_git_diff_and_merge_branch_upstream() {
 }
 
 pkg_git_diff_and_merge_branch_arraybolt3() {
-   ## TODO: WIP
-   repo_skip 'developer-meta-files' || return 0
-   repo_skip 'kicksecure-meta-packages' || return 0
-   repo_skip 'user-sysmaint-split' || return 0
-   repo_skip 'vm-config-dist' || return 0
-   repo_skip 'anon-meta-packages' || return 0
-
    pkg_git_diff_and_merge_branch "ArrayBolt3/arraybolt3/trixie"
 }
 
