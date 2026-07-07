@@ -15,6 +15,11 @@
 ## The component name is derived from the caller's repo name, so the
 ## consumer wrapper is byte-identical and needs no per-repo config.
 ##
+## Runs in a debian:trixie-slim container (Python 3.13), NOT bare
+## ubuntu-24.04 (Python 3.12): the packages under test target current
+## Debian/Python (e.g. helper-scripts' stcat uses Path.read_text(newline=)
+## which is 3.13+). Same container choice as reusable-pre-push-static.yml.
+##
 ## Checkout layout: the caller repo, dist-ai, and developer-meta-files
 ## are checked out as SIBLING subdirectories of GITHUB_WORKSPACE
 ## (component/, dist-ai/, dmf/), NOT the caller at the workspace root
@@ -27,6 +32,16 @@
 ## import". Sibling dirs keep the suite path out of the caller tree and
 ## free of dot components. Do not "simplify" this back to a single
 ## workspace-root checkout.
+##
+## Per-repo values come from the caller's .github/dm-consumer.yml
+## (read at runtime, same pattern as reusable-coverity.yml):
+##   dist-ai-tests:
+##     apt-packages:   "python3 python3-pytest python3-hypothesis ..."
+##     helper-scripts: true   # also check out helper-scripts (for suites
+##                            # that drive sanitize-string, e.g.
+##                            # open-link-confirmation)
+## Both are optional; a repo needing only the default testing stack ships
+## no dm-consumer.yml at all.
 ##
 ## See developer-meta-files agents/github-actions.md and each package's
 ## AGENTS.md "Tests" section.
@@ -46,11 +61,6 @@ on:
         required: false
         type: string
         default: '--core'
-      apt-packages:
-        description: 'Space-separated apt packages the suites need at runtime.'
-        required: false
-        type: string
-        default: 'python3 python3-pytest python3-hypothesis python3-sdnotify python3-psutil'
       dist-ai-ref:
         description: 'Ref of org-ai-assisted/dist-ai to check out.'
         required: false
@@ -64,7 +74,9 @@ jobs:
   dist-ai-tests:
     name: dist-ai tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    container:
+      image: debian:trixie-slim
+    timeout-minutes: 20
     ## Fork-PR guard: forked PRs need maintainer review before consuming
     ## CI time. Same guard as the other reusables (agents/security.md).
     if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name != 'pull_request'
@@ -73,8 +85,14 @@ jobs:
     env:
       COMPONENT: ${{ github.event.repository.name }}
       CATEGORIES: ${{ inputs.categories }}
-      APT_PACKAGES: ${{ inputs.apt-packages }}
     steps:
+      - name: Install checkout + config dependencies (apt only)
+        run: |
+          apt-get update --quiet
+          apt-get install --yes --no-install-recommends \
+            ca-certificates file git rsync yq
+          git config --global --add safe.directory '*'
+
       - name: Checkout component (code under test)
         ## https://github.com/actions/checkout/releases/tag/v6.0.2
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -98,18 +116,39 @@ jobs:
           path: dmf
           persist-credentials: false
 
+      - name: Load per-repo config (.github/dm-consumer.yml)
+        id: cfg
+        ## Runtime read of the caller's per-repo config (reusable-coverity.yml
+        ## pattern). All logic lives in the committed dist-ai/ci script, not
+        ## inline here (no embedded shell scripts in CI files).
+        run: dist-ai/ci/dist-ai-tests-ci-config.sh component/.github/dm-consumer.yml
+
+      - name: Checkout helper-scripts (for suites that drive sanitize-string)
+        if: steps.cfg.outputs.helper_scripts == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/helper-scripts
+          ref: master
+          path: helper-scripts
+          persist-credentials: false
+
       - name: Install test dependencies (apt only)
+        env:
+          APT_PACKAGES: ${{ steps.cfg.outputs.apt_packages }}
         run: |
-          sudo --non-interactive apt-get update --quiet
           ## shellcheck disable=SC2086  # APT_PACKAGES is an intentional word list
-          sudo --non-interactive apt-get install --yes --no-install-recommends ${APT_PACKAGES}
+          apt-get install --yes --no-install-recommends ${APT_PACKAGES}
 
       - name: Run dist-ai suites for this component
-        ## shellcheck disable=SC2086  # CATEGORIES is an intentional flag list
+        env:
+          HS_ARG: ${{ steps.cfg.outputs.hs_arg }}
+        ## shellcheck disable=SC2086  # CATEGORIES and HS_ARG are intentional flag lists
         run: |
           dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
             --component "${COMPONENT}" \
-            --component-root "${GITHUB_WORKSPACE}/component"
+            --component-root "${GITHUB_WORKSPACE}/component" \
+            --timeout-core 600 \
+            ${HS_ARG}
 
       - name: Emit step summary
         if: always()
