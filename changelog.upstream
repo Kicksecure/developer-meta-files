@@ -1,8 +1,113 @@
+commit ccf7d629f6405e825d37ba6b09dc72454e888555
+Merge: 87a535ee 1cb6df10
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 09:34:43 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 87a535ee764d432ad36cc88c3d840d0e67d0e161
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 13:28:09 2026 +0000
+
+    bumped changelog version
+
 commit 76801130728ef4e1d64c83c38885b280bf29e81e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jul 7 09:25:39 2026 -0400
 
     .
+
+commit 1cb6df10e788af8dd2fb6fbdac9298d92cf83374
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:45:56 2026 -0400
+
+    CI: add dist-ai tests workflow (consumer wrapper)
+
+    Install the byte-identical consumer-dist-ai-tests.yml wrapper so this
+    package's dist-ai suites run on each PR and master push via the reusable in
+    developer-meta-files. Rollout of the dist-ai CI wiring.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 5fe52aa69812556b0c8c541a7d248613b0934045
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:44:49 2026 -0400
+
+    reusable-dist-ai-tests: trixie container + per-repo deps + helper-scripts co-checkout
+
+    - Run in a debian:trixie-slim container (Python 3.13), not bare ubuntu-24.04
+      (3.12): packages under test target current Debian/Python (helper-scripts'
+      stcat uses Path.read_text(newline=), 3.13+). Matches reusable-pre-push-static.
+    - Read per-repo deps from the caller's .github/dm-consumer.yml
+      (dist-ai-tests.apt-packages) via the committed dist-ai/ci helper -- no
+      embedded shell in the workflow.
+    - Optionally check out helper-scripts (dist-ai-tests.helper-scripts: true) and
+      pass --helper-scripts-root, for suites that drive sanitize-string
+      (open-link-confirmation).
+    - Raise per-suite timeout to 600s (sanitize-string-tests is subprocess-heavy).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 25191ba3a5a46380d5336c65cf790111e6907b1c
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:10:09 2026 -0400
+
+    reusable-dist-ai-tests: add python3-psutil to default deps
+
+    onion-grater's code imports psutil; the suite failed at import. Add it
+    to the default apt set (light, broadly useful) rather than a per-repo
+    config, keeping the consumer wrapper universal.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 79616bb1c13769746cae72b178e3e1d124093e4e
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 07:48:58 2026 -0400
+
+    reusable-dist-ai-tests: sibling checkout layout to fix pytest collection
+
+    The caller repo was checked out at the workspace root with dist-ai
+    nested at .dist-ai inside it. A suite that runs pytest (privleap-tests)
+    derives the test module name from the path relative to rootdir; the
+    leading-dot .dist-ai component yielded a leading-dot module name and
+    pytest failed collection with "the 'package' argument is required to
+    perform a relative import". Check the component, dist-ai, and
+    developer-meta-files out as sibling subdirs (component/, dist-ai/, dmf/)
+    instead, and point --component-root at component/. Keeps the suite path
+    out of the caller tree and free of dot components.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 811031b56291103df8e4fa63646401196e6bb9e7
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 07:35:10 2026 -0400
+
+    CI: add reusable-dist-ai-tests.yml + consumer template
+
+    Reusable workflow that runs a package's comprehensive dist-ai regression
+    suites (which live in org-ai-assisted/dist-ai, not in-tree) against the
+    package's own PRs and master pushes, via
+    dist-ai-tests-all --component/--component-root. The component is derived
+    from the caller repo name, so the consumer wrapper is universal
+    (byte-identical, no .github/dm-consumer.yml). Ships the byte-identical
+    consumer-templates/.github/workflows/consumer-dist-ai-tests.yml for
+    propagation by pkg_update_consumer_workflows.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 0eff09373aedd062aaf47db4840c720e377d5254
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 06:51:39 2026 -0400
+
+    pre-push-static.sh: fix docstring check numbering + R-010 window
+
+    The header check list had scrambled numbers (10a, 10, 11..14, 16, 17,
+    15, 16 with 16 duplicated); renumber the ten post-R-070 entries
+    sequentially 10..19. Also correct the R-010 summary line: the gate
+    checks the top 100 lines (head --lines=100), not 30. Drop an unused
+    'files' local in check_R042_blank_logline so shellcheck stays clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 commit 047d2eb072bff5bfbf4b22d97b39aa629ca5388e
 Author: Patrick Schleizer <adrelanos@whonix.org>
