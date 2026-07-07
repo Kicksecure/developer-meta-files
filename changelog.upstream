@@ -1,3 +1,153 @@
+commit 782c74a26d671e5bbd2fc3f117e08dea203fc1dc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 17:13:56 2026 -0400
+
+    .
+
+commit e5abd350e72c866a2be872aa47d4a70cc7bee1be
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 17:11:59 2026 -0400
+
+    .
+
+commit 253e6b41f3049ef9178e499088db5c309fbdafc4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 16:15:39 2026 -0400
+
+    .
+
+commit 740f3e02f977db4a34d7992811b2e2f7451a0cb8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 16:12:18 2026 -0400
+
+    .
+
+commit 1b5e623cb34c3151b5688bf78196a7aff8e06034
+Merge: de042656 19c445d1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 15:38:35 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 19c445d1c840e4e32a651ddd1c7c8ff8ee684ba0
+Merge: a44a5af6 8f96dea9
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 11:44:56 2026 -0400
+
+    Merge pull request #135 from org-ai-assisted/dm-packaging-helper-meld-own-changes
+
+    dm-packaging-helper-script: review own staged changes in meld, not git-diff-review
+
+commit 8f96dea9be8d0f9194acd7f3d4a45edf00370f7a
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 11:44:30 2026 -0400
+
+    dm-packaging-helper-script: review own staged changes in meld, not git-diff-review
+
+    These two pre-commit reviews show the maintainer's own freshly-staged
+    packaging output (README/changelog regeneration), not untrusted input.
+    For self-authored changes a GUI meld review is preferred; the
+    terminal-safe git-diff-review driver targets untrusted diffs. Comment
+    out git-diff-review (kept for quick re-enable) and use git-meld --cached.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit a44a5af672ef744f4d85a03d47c1593a10654673
+Merge: cd4ccffb 15e885b4
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 11:42:45 2026 -0400
+
+    Merge pull request #134 from org-ai-assisted/dm-packaging-helper-git-diff-review
+
+    dm-packaging-helper-script: review staged diffs via git-diff-review
+
+commit 15e885b45972ef5cac6a92da91374110a8476ca3
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 11:42:07 2026 -0400
+
+    dm-packaging-helper-script: review staged diffs via git-diff-review
+
+    The two operator-facing pre-commit review diffs used plain
+    'git diff --cached', which renders a hostile diff (Trojan-Source
+    Unicode, terminal escapes) unneutralized to the terminal. Switch both
+    to 'git-diff-review --cached' (it passes "$@" through to git diff)
+    so they get the same hardened, stcat-neutralized rendering already
+    used by dm-review-branch.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit cd4ccffb9fb3e43cda192e3a5c2dbabe5f675539
+Merge: 7a39d370 ff48f5d8
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 09:22:39 2026 -0400
+
+    Merge pull request #133 from org-ai-assisted/dm-review-branch-all-three-tools
+
+    dm-review-branch: open meld and kdiff3 after the textual review
+
+commit ff48f5d80b45f478c1cbc81fcd63f150d780deb5
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 08:58:50 2026 -0400
+
+    dm-review-branch: open meld and kdiff3 after the textual review
+
+    git-diff-review gives the terminal-safe textual pass; add git-meld and
+    git-kdiff3 so the branch review also opens the two GUI diff tools, as it
+    did before. All three share the hardened git-review-driver core.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 7a39d3705e751307e55c9d68b0cd83adcc0f74e5
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 15:31:38 2026 -0400
+
+    AGENTS.md: link to the comprehensive dist-ai test suites for its tools
+
+    The git-meld and dm-virtualbox-wiki-links tools have adversarial/regression
+    suites too high-volume for human review; they live in the AI-maintained
+    dist-ai repo. Add a minimal pointer + each tool's invocation.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit e7ba3db1e283772219f9fbdfcd1a87c4d722f8be
+Merge: de042656 94e879fe
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri Jul 3 14:55:44 2026 -0400
+
+    Merge pull request #132 from org-ai-assisted/claude/changelog-preserve-newlines
+
+    dm-packaging-helper-script: keep commit-body line breaks in changelog
+
+commit 94e879fece089b56512b42917c4eacfcd3525232
+Author: claude (dev45 83e78390-44e7-445e-a721-d02a129c3b80) <noreply@anthropic.com>
+Date:   Fri Jul 3 14:49:51 2026 -0400
+
+    dm-packaging-helper-script: keep commit-body line breaks in changelog
+
+    pkg_git_packages_git_log_writer collapsed each commit's full message onto
+    a single changelog line via `tr '\n' ' '`, turning a multi line body
+    (paragraphs, bullet lists, indented code blocks) into one run-on line.
+
+    Drop the flatten. Emit the commit subject as the bullet (carrying the
+    contributor credit) and each remaining body line indented beneath it, so
+    the message keeps its original structure. `IFS= read -r` preserves leading
+    indentation of body lines. Blank-line and AI-trailer stripping are folded
+    into the same sed, which now also strips trailing whitespace per line so
+    whitespace-only lines are deleted too.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_019yeVyH2vTpkhGX2U1qmKZD
+
+commit de0426564ab614a4c43123b5e2bb7ca36cef4421
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 18:07:00 2026 +0000
+
+    bumped changelog version
+
 commit 6546dafe646711fe67aaf7a916a5c34e01734b06
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 3 14:01:14 2026 -0400
