@@ -15,6 +15,19 @@
 ## The component name is derived from the caller's repo name, so the
 ## consumer wrapper is byte-identical and needs no per-repo config.
 ##
+## Checkout layout: the caller repo, dist-ai, and developer-meta-files
+## are checked out as SIBLING subdirectories of GITHUB_WORKSPACE
+## (component/, dist-ai/, dmf/), NOT the caller at the workspace root
+## with dist-ai nested inside it. This is deliberate: a suite that runs
+## pytest (e.g. privleap-tests) derives the test module name from the
+## test file's path relative to pytest's rootdir; if the dist-ai suites
+## sit under a dot-prefixed dir inside the caller checkout (.dist-ai),
+## pytest builds a module name with a leading dot and fails collection
+## with "the 'package' argument is required to perform a relative
+## import". Sibling dirs keep the suite path out of the caller tree and
+## free of dot components. Do not "simplify" this back to a single
+## workspace-root checkout.
+##
 ## See developer-meta-files agents/github-actions.md and each package's
 ## AGENTS.md "Tests" section.
 ##
@@ -66,6 +79,7 @@ jobs:
         ## https://github.com/actions/checkout/releases/tag/v6.0.2
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
+          path: component
           persist-credentials: false
 
       - name: Checkout dist-ai (test suites)
@@ -73,7 +87,7 @@ jobs:
         with:
           repository: org-ai-assisted/dist-ai
           ref: ${{ inputs.dist-ai-ref }}
-          path: .dist-ai
+          path: dist-ai
           persist-credentials: false
 
       - name: Checkout developer-meta-files (summary script)
@@ -81,7 +95,7 @@ jobs:
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: master
-          path: .github/dmf
+          path: dmf
           persist-credentials: false
 
       - name: Install test dependencies (apt only)
@@ -93,20 +107,21 @@ jobs:
       - name: Run dist-ai suites for this component
         ## shellcheck disable=SC2086  # CATEGORIES is an intentional flag list
         run: |
-          .dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
+          dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
             --component "${COMPONENT}" \
-            --component-root "${GITHUB_WORKSPACE}"
+            --component-root "${GITHUB_WORKSPACE}/component"
 
       - name: Emit step summary
         if: always()
-        ## Per-suite output stays in the run step's log; this panel
-        ## surfaces the headline result, component, and categories in
-        ## the PR Checks tab. job.status is routed through env: per the
-        ## org-wide convention (CodeQL flags inline ${{ }} in run:).
+        ## Per-suite detail is printed inline by dist-ai-tests-all on a
+        ## FAIL/TIMEOUT; this panel surfaces the headline result,
+        ## component, and categories in the PR Checks tab. job.status is
+        ## routed through env: per the org-wide convention (CodeQL flags
+        ## inline ${{ }} in run:).
         env:
           JOB_STATUS: ${{ job.status }}
         run: |
-          .github/dmf/ci/step-summary-emit.sh \
+          dmf/ci/step-summary-emit.sh \
             --tool 'dist-ai tests' \
             --column-header field \
             --row "outcome=${JOB_STATUS}" \
