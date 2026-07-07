@@ -149,13 +149,15 @@ jobs:
       - name: Run dist-ai suites for this component
         env:
           HS_ARG: ${{ steps.cfg.outputs.hs_arg }}
-        ## shellcheck disable=SC2086  # CATEGORIES and HS_ARG are intentional flag lists
+          SKIP_ARGS: ${{ steps.cfg.outputs.skip_args }}
+        ## shellcheck disable=SC2086  # CATEGORIES / HS_ARG / SKIP_ARGS are intentional flag lists
         run: |
           dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
             --component "${COMPONENT}" \
             --component-root "${GITHUB_WORKSPACE}/component" \
             --timeout-core 600 \
-            ${HS_ARG}
+            ${HS_ARG} \
+            ${SKIP_ARGS}
 
       - name: Emit step summary
         if: always()
