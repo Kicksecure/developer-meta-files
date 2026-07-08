@@ -123,7 +123,7 @@ jobs:
         ## inline here (no embedded shell scripts in CI files).
         run: dist-ai/ci/dist-ai-tests-ci-config.sh component/.github/dm-consumer.yml
 
-      - name: Checkout helper-scripts (for suites that drive sanitize-string)
+      - name: Checkout helper-scripts (for suites that drive its tools)
         if: steps.cfg.outputs.helper_scripts == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
@@ -131,6 +131,13 @@ jobs:
           ref: master
           path: helper-scripts
           persist-credentials: false
+
+      - name: Provide helper-scripts runtime at the system path
+        if: steps.cfg.outputs.helper_scripts == 'true'
+        ## Some tools source helper-scripts via an absolute /usr/libexec path
+        ## (genmkfile make-helper, git-meld). Logic lives in the committed
+        ## dist-ai/ci script, not inline (no embedded shell in CI files).
+        run: dist-ai/ci/dist-ai-tests-ci-hs-runtime.sh "${GITHUB_WORKSPACE}/helper-scripts"
 
       - name: Install test dependencies (apt only)
         env:
@@ -142,13 +149,15 @@ jobs:
       - name: Run dist-ai suites for this component
         env:
           HS_ARG: ${{ steps.cfg.outputs.hs_arg }}
-        ## shellcheck disable=SC2086  # CATEGORIES and HS_ARG are intentional flag lists
+          SKIP_ARGS: ${{ steps.cfg.outputs.skip_args }}
+        ## shellcheck disable=SC2086  # CATEGORIES / HS_ARG / SKIP_ARGS are intentional flag lists
         run: |
           dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
             --component "${COMPONENT}" \
             --component-root "${GITHUB_WORKSPACE}/component" \
             --timeout-core 600 \
-            ${HS_ARG}
+            ${HS_ARG} \
+            ${SKIP_ARGS}
 
       - name: Emit step summary
         if: always()
