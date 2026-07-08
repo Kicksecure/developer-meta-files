@@ -1,3 +1,61 @@
+commit 2411096fee05d8e893a1d88542440dbd2cb9b313
+Merge: 8df0e81c 0ccb2902
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 14:01:25 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 0ccb2902f2335304f318df249cbd3b5a187a36c1
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 10:17:30 2026 -0400
+
+    CI: add dist-ai tests workflow (dm-virtualbox now; git-meld pending #136)
+
+    Re-add the consumer-dist-ai-tests.yml wrapper with a .github/dm-consumer.yml
+    that skips git-meld-tests (its full-runtime + GUI-viewer work lands in PR #136),
+    so dm-virtualbox-wiki-links-tests gates PRs now. Remove the skip once
+    git-meld-tests passes. Touches only .github/ -- disjoint from #136's usr/ files.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit b3acba012d96e01658c54592295f01668d1798b1
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 10:17:11 2026 -0400
+
+    reusable-dist-ai-tests: pass dist-ai-tests.skip suites through
+
+    Forward the optional dist-ai-tests.skip list (read by the ci config helper)
+    to dist-ai-tests-all as --skip args, so a consumer can drop a temporarily
+    broken / pending-merge suite while its other suites still gate PRs.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit bee1d5ae751ce7d672606518a33f75b0d527425c
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 09:58:29 2026 -0400
+
+    Revert: remove dist-ai tests wrapper (git-meld runtime pending merge)The developer-meta-files dist-ai suite (git-meld) needs a full helper-scriptsruntime and has residual GUI-viewer findings being addressed in a pending merge.Re-add the wrapper once git-meld lands; dm-virtualbox-wiki-links is unaffected.Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 2e8abcf8f9144127062a82ccbb1c5446c3095613
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 09:58:21 2026 -0400
+
+    reusable-dist-ai-tests: provide helper-scripts runtime at /usr/libexec
+
+    Add a step (when dist-ai-tests.helper-scripts is true) that symlinks the
+    checked-out helper-scripts tree to /usr/libexec/helper-scripts via the
+    committed dist-ai/ci helper, for tools that source it by absolute path
+    (genmkfile make-helper -> trace.bsh). PATH/PYTHONPATH/HELPER_SCRIPTS_PATH are
+    wired per-suite by dist-ai-tests-all.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 8df0e81ce5999eabb54cace674b1d94e572cb543
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 13:41:32 2026 +0000
+
+    bumped changelog version
+
 commit ccf7d629f6405e825d37ba6b09dc72454e888555
 Merge: 87a535ee 1cb6df10
 Author: Patrick Schleizer <adrelanos@whonix.org>
