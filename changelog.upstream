@@ -1,9 +1,203 @@
+commit 46bd93272785000316247488f40c8b1bf9264ab9
+Merge: becf8da8 03526b56
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 9 11:15:51 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit 03526b568e1ecb31e21b8e748ff23e400f45a84b
+Merge: de422f92 a649e476
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 9 11:09:39 2026 -0400
+
+    Merge PR #140: fix 4 mock-API tests asserting the un-sanitized '->' arrow
+
+    Sanitize expected fragments through sanitize-string (as log() does) before matching, so plan-line '->' arrows (emitted as '-_') are compared correctly. ci/tests: 30 passed, 0 failed.
+
+commit a649e476effe05e3bc42fe87dec4a4cf28f1adea
+Author: claude (dev65 78b46e5b-02ea-4aa0-8b4a-115f1bffb8d1) <noreply@anthropic.com>
+Date:   Thu Jul 9 10:55:46 2026 -0400
+
+    ci: fix 4 mock-API tests that asserted the un-sanitized '->' arrow
+
+    github-org-fork / dm-github-* route every plan message through log(), which pipes
+    it through sanitize-string (helper-scripts). sanitize-string maps '>' to '_' as
+    display-injection hardening, so a plan line's '->' arrow reaches the output as
+    '-_'. These four tests grep for the raw '->' fragment and so fail ('missing
+    expected fragment'), while all the other tests in the suite already assert
+    sanitizer-safe content.
+
+    Sanitize each expected fragment the same way (pipe through sanitize-string) before
+    matching, so the assertion pins the tool's intended message rather than
+    sanitize-string's glyph mapping (which helper-scripts owns and tests). Needles stay
+    readable with '->'. sanitize-string is a no-op on the non-arrow fragments, so only
+    the arrow lines change behaviour.
+
+    Full ci/tests suite: 30 passed, 0 failed (was 26 passed, 4 failed). Not related to
+    the R-074 work merged in #139; these were pre-existing failures.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit becf8da88a5a4c1c2ebdbbe6020f25301e009e39
+Merge: 82be1e14 353ddd91
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 9 10:48:48 2026 -0400
+
+    Merge remote-tracking branch 'ArrayBolt3/arraybolt3/trixie'
+
+commit de422f92502364235882b80f2e5d9da1ee8699f5
+Merge: 60350619 0b54d481
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Thu Jul 9 10:41:34 2026 -0400
+
+    Merge PR #139: R-074 gate-enforce ';'-chained break/continue/return
+
+    Add the R-074 Tier-1 gate check (';'-chained break/continue/return, spaced form included), document it in bash-style-guide, add a functional test, and list it in the reusable-pre-push-static workflow comment.
+
+commit 0b54d481e0098d48b9c725af296bc1a63adfafa2
+Author: claude (dev65 78b46e5b-02ea-4aa0-8b4a-115f1bffb8d1) <noreply@anthropic.com>
+Date:   Thu Jul 9 10:34:58 2026 -0400
+
+    ci: list R-074 in the reusable-pre-push-static rule comment
+
+    The workflow's illustrative Tier-1 rule list omitted R-074 (enforcement was already
+    functional -- the workflow runs pre-push-static.sh directly, whose header is the
+    authoritative list). Add it for consistency. Addresses a CodeRabbit review nitpick.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 26ba8e58cb59b2d8e3a13473c287195f963141fe
+Author: claude (dev65 78b46e5b-02ea-4aa0-8b4a-115f1bffb8d1) <noreply@anthropic.com>
+Date:   Thu Jul 9 10:22:44 2026 -0400
+
+    R-074: also flag whitespace before the ';' (foo ; break)
+
+    The check anchored on '[^space];' -- a non-space immediately before the ';' --
+    so the legitimately-spaced form of the violation ('foo ; break', 'x ; continue',
+    'printf y ; return 1') slipped through. Allow optional whitespace before the ';'
+    ([^space][space]*;) so the spaced form is caught too; the trailing word-boundary
+    still spares ';;', C-style for-loops and the keyword on its own line. Found by
+    ai-review (self + third-reviewer) of the initial R-074 commit.
+
+    Add spaced-form assertions to the test, plus a gate-liveness guard so an 'absent'
+    assertion cannot pass spuriously if the gate ever errored before printing a
+    verdict.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 6d35580613354630f21cc2e91a6a645a8e0d7831
+Author: claude (dev65 78b46e5b-02ea-4aa0-8b4a-115f1bffb8d1) <noreply@anthropic.com>
+Date:   Thu Jul 9 10:02:21 2026 -0400
+
+    ci: functional test for the R-070 / R-074 style-gate checks
+
+    Add ci/tests/test_pre_push_static_style_rules.sh: it drives the real
+    agents/pre-push-static.sh against throwaway git repos and asserts R-070 (';;'
+    trailing a statement) and R-074 (';'-chained break/continue/return) FLAG a
+    violating sample and SPARE a compliant one. Violation snippets are assembled at
+    run time (the ';' comes from a variable), so neither the test nor the repo
+    carries a literal the gate would self-trip on. Auto-discovered by the ci/tests
+    runner and subject to test_shellcheck_clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 1a462073aa6172c1d75e2da57fb38c2b9922dc66
+Author: claude (dev65 78b46e5b-02ea-4aa0-8b4a-115f1bffb8d1) <noreply@anthropic.com>
+Date:   Thu Jul 9 09:42:44 2026 -0400
+
+    R-074: gate-enforce and document ';'-chained break/continue/return
+
+    R-074 (no '; next-command' chaining) was documented but not gate-enforced, so
+    ';'-chained break/continue/return slipped through. Add a Tier-1 single-grep check
+    (check_R074_flow_chaining) for that low-false-positive subset -- a ';' preceded by
+    a non-space and followed by break|continue|return at a word boundary, which is
+    never bash's syntactic ';' (';;', a C-style for-loop). filter_self keeps the gate
+    script's own regex from self-matching.
+
+    Expand the R-074 style-guide entry with the common offenders (loop bodies, one-line
+    ifs, case arms, '--) shift; break ;;' parsers) and note the subset is gate-enforced.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 353ddd918a0f53ed85d308251a284996feae1aa9
+Merge: cb17ba9b c5b24477
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Jul 8 21:24:01 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/git-review-difftool-mergetool' into arraybolt3/trixie
+
+commit cb17ba9b68a482b5873beeb4bb6f270c554948ae
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Jul 8 21:22:25 2026 -0400
+
+    Bugfixes and refactoring for git diff machinery
+
+commit 153d1a9fb0f54ca9702b4a099e874efc2453fbc0
+Merge: 3a31622a 082719af
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Jul 8 21:21:43 2026 -0400
+
+    Merge branch 'org-ai-assisted/git-review-difftool-mergetool' into arraybolt3/trixie
+
+commit 60350619174748bb02595cf7388f331e98da6b3b
+Merge: 82be1e14 a8b36456
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 8 18:57:11 2026 -0400
+
+    Merge pull request #138 from org-ai-assisted/dm-consumer-merge-not-overwrite
+
+    docs: dm-consumer.yml is a shared overlay - merge, never overwrite
+
+commit a8b364569182ffb07c4a7438214aacb24fdf2a78
+Author: claude (dev66 8bd92be9-9ef9-445b-84c0-4c454d528432) <noreply@anthropic.com>
+Date:   Wed Jul 8 18:39:22 2026 -0400
+
+    docs: dm-consumer.yml is a shared overlay - merge, never overwrite
+
+    Add explicit editing guidance to the consumer-templates spec:
+    dm-consumer.yml accumulates one independent top-level key per opted-in
+    template (coverity:, dist-ai-tests:, ...), so a key change must MERGE
+    into the existing file, never rewrite it from a single template's
+    fragment.
+
+    Documents a real regression: a commit adding dist-ai-tests: overwrote
+    helper-scripts' dm-consumer.yml and dropped the pre-existing coverity:
+    block, leaving the Coverity workflow running with no project-name /
+    canonical-repos. CI stayed green; the scan just went nowhere - the
+    easy-to-miss failure mode this note warns against.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 82be1e142be725de5f0fac8465e449037f906f4f
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Jul 8 18:09:19 2026 +0000
+
+    bumped changelog version
+
 commit 2411096fee05d8e893a1d88542440dbd2cb9b313
 Merge: 8df0e81c 0ccb2902
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Wed Jul 8 14:01:25 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit c5b244779b0a9c0f6a20c64adc861e69c943dfcc
+Merge: 082719af 0ccb2902
+Author: claude (dev62 a81d064f-de49-4ea4-b657-fb32882ac3df) <noreply@anthropic.com>
+Date:   Tue Jul 7 10:50:20 2026 -0400
+
+    Merge org-ai-assisted/master into git-review-difftool-mergetool
+
+    Resolves the conflict in git-review-driver.sh: master (76480632) added a
+    FIXME above 'exit 0' in git_review_finish(), while this branch moved that
+    whole content-hardening core out of the driver into the shared
+    git-review-scan.sh. Kept the branch's 'source git-review-scan.sh' line in
+    the driver and ported master's FIXME to git_review_finish() in
+    git-review-scan.sh, its new home, so the note is preserved.
+
+    Changelog-manual-ok: merge only; the debian/changelog delta is master's own genmkfile-generated bump, brought in by this merge, not a hand-edit.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 commit 0ccb2902f2335304f318df249cbd3b5a187a36c1
 Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
@@ -198,6 +392,69 @@ Date:   Sat Jul 4 22:33:45 2026 -0400
 
     fix
 
+commit 082719afd706e25f201f2e744e605f264d7804c2
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 17:44:08 2026 -0400
+
+    git review core: neutralize submodule/-_-stat output; authoritative mergetool exit
+
+    Third ai-review round.
+
+    Fresh-context reviewer (real): the submodule inner 'git diff' (and the main
+    --stat) were written to the terminal WITHOUT stcat -- a terminal-escape
+    injection vector for the textual reviewer, unlike every other untrusted line
+    here. Pipe both through stcat (pipefail keeps a git failure loud). Also gate the
+    GIT_REVIEW_UNICODE_NONFATAL deferral in git_review_finish on
+    git_review_display_terminal_safe, so a GUI viewer now fails closed IMMEDIATELY on
+    a fatal blob (matching the comments) rather than deferring.
+
+    Codex (real): with mergetool.review-meld trustExitCode=false, git ignored the
+    wrapper's fail-closed refuse-exit and fell back to a "was the merge successful?"
+    prompt where a careless "y" resolves an unreviewed binary/undecodable conflict.
+    Fix: git-review-mergetool now determines resolution ITSELF (did $MERGED change?),
+    so both mergetool entries use trustExitCode=true -- honoring the refuse-exit AND
+    correctly handling meld's unreliable exit code (0 on close-without-save).
+
+    Codex (rejected, again): "restore the relative-libexec fallback" -- the bare
+    absolute source path is the deliberate package convention.
+
+    Verified installed: git-meld-tests 0 hidden-change failures; difftool/mergetool
+    13/13; new guards for submodule-escape neutralization and mergetool
+    saved-vs-unsaved authoritative exit.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 3f80a523309cef475f585020b9e3404db43fec27
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 17:21:52 2026 -0400
+
+    git review core: NONFATAL deferral only for the terminal-safe textual display
+
+    Address a second ai-review round.
+
+    Fresh-context reviewer (real, taken): under GIT_REVIEW_UNICODE_NONFATAL the
+    driver's pre-open fatal gate was skipped for ALL displays, so a fatal
+    (undecodable/non-UTF-8) blob was handed to the meld/kdiff3 GUI -- and
+    git-review-scan.sh even named the GUI wrappers as blessed NONFATAL hosts. Only
+    git-diff-review is terminal-safe (stcat-neutralized); it now sets
+    git_review_display_terminal_safe=yes and the driver honors NONFATAL deferral
+    ONLY for that display. GUI viewers always fail closed on a fatal blob. Fixed the
+    scan.sh hint accordingly.
+
+    CodeRabbit (minor, taken): git-review-difftool's fail-closed / binary messages
+    named only the remote path though either scanned side can be the culprit; name
+    both (the per-side scan WARNING already pinpoints which).
+
+    Codex (rejected): "restore the relative-libexec fallback" -- the bare absolute
+    source path is the deliberate package convention (github-org-clone, dm-github-*
+    all do the same); checkout-relative execution is not a supported mode.
+
+    Verified installed: git-meld-tests 0 hidden-change failures incl. a new
+    'undecodable + NONFATAL still fails closed for a GUI viewer' guard;
+    difftool/mergetool 11/11.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
 commit 782c74a26d671e5bbd2fc3f117e08dea203fc1dc
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Jul 4 17:13:56 2026 -0400
@@ -209,6 +466,29 @@ Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Jul 4 17:11:59 2026 -0400
 
     .
+
+commit 1c7adaec4634e4e595d10d1a98fcd2a7db5e86e8
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 16:26:09 2026 -0400
+
+    git review tools: source shared libs by bare absolute path, not a lookup loop
+
+    The five wrappers and the driver located their shared lib with a
+    /usr/libexec-then-relative for-loop plus a declare -F assert. Replace each
+    with the bare-absolute source idiom every other developer-meta-files script
+    uses (e.g. github-org-clone, dm-github-*):
+
+        # shellcheck source=../libexec/developer-meta-files/<lib>
+        source /usr/libexec/developer-meta-files/<lib>
+
+    Under errexit a missing lib aborts loudly, so the loop and the explicit
+    not-found check are redundant. Drops the now-unused git_review_self/mydir in
+    the difftool/mergetool wrappers. Verified with the tools installed (source==
+    installed): git-meld-tests 0 hidden-change failures, difftool/mergetool 11/11,
+    git diff-review works.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
 
 commit 253e6b41f3049ef9178e499088db5c309fbdafc4
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -222,12 +502,141 @@ Date:   Sat Jul 4 16:12:18 2026 -0400
 
     .
 
+commit 02adcb11d51bf669ebefa4da22928c611eca7a6e
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 15:43:45 2026 -0400
+
+    git review core: use 'wc --max-line-length' instead of awk for long-line scan
+
+    Drop the awk dependency in the over-long-line check (git-review-driver.sh and
+    git-review-scan.sh): 'wc --max-line-length' returns the same value, is a more
+    fundamental coreutils tool, and reads via stdin so it emits just the number.
+    Verified equal to the awk result (6000), 0 on empty, works on binary; the
+    long-line WARNING still fires end-to-end.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
 commit 1b5e623cb34c3151b5688bf78196a7aff8e06034
 Merge: de042656 19c445d1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Sat Jul 4 15:38:35 2026 -0400
 
     Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 7c551554761c3914e779608436e949c1f28d4b3d
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 13:55:59 2026 -0400
+
+    git-review-scan.sh: mark executable (match sourced-lib convention)
+
+    CodeRabbit / the check-shebang-scripts-are-executable CI gate flagged the
+    file: it carries a #!/bin/bash shebang but was committed non-executable
+    (644). Every other sourced lib here is 755-with-shebang -- the sibling
+    git-review-driver.sh and the github-*-lib.bsh / repo-metadata.bsh libs --
+    so chmod +x to match, rather than dropping the shebang.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 021f68eb766f4749fc737bcdd255ec73515ac542
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 13:05:58 2026 -0400
+
+    git-review-mergetool: clarify meld trustExitCode=false semantics
+
+    Per an ai-review nuance: trustExitCode=false makes git check whether $MERGED
+    was MODIFIED (and prompt if not) -- a save/update check, not conflict-marker
+    validation. Reword the wrapper + gitconfig comments to say that precisely
+    instead of "git verifies $MERGED". Confirmed against git's own mergetool lib
+    (meld absent from the exit_code_trustable=true list; kdiff3 present) and meld
+    3.22.3 (no option/env makes its exit code reflect save status). Comment-only.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 24ed7a85b898486c958535fcad25918455b79821
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 12:59:28 2026 -0400
+
+    git review core: fail closed before opening; scan both sides; grep fail-closed
+
+    Address the fresh-context review pass (three defensive gaps, all making the
+    external-diff driver consistent with the difftool/mergetool wrappers):
+
+    - Fatal (undecodable / non-UTF-8) content was handed to the GUI viewer and
+      only failed AFTER (git_review_finish ran post-display). Add a pre-open
+      fatal gate so meld/kdiff3 never open a fatal blob in default mode; NONFATAL
+      deferral still shows (stcat-neutralized) and fails at the end.
+    - Over-long-line check scanned only new_file, so a deletion (new_file=
+      /dev/null) with a huge line on the OLD side was opened unwarned. Scan both
+      sides, like the binary check beside it.
+    - Binary NUL check failed OPEN if grep errored (e.g. no PCRE): 2>/dev/null
+      hid the error and it was read as "not binary". Distinguish grep rc>=2 and
+      fail CLOSED (treat as binary). Fixed in git-review-driver.sh and
+      git-review-scan.sh.
+
+    Verified: git-meld-tests 0 hidden-change failures; a new adversarial case
+    proves undecodable content fails closed without opening the viewer.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 45683a08df15875c5beecee1988a34b5ec86ada5
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 12:47:32 2026 -0400
+
+    git-review-mergetool: refuse binary conflict sides; fix meld trustExitCode
+
+    Address ai-review (Codex + CodeRabbit) findings on the mergetool path:
+
+    - git-review-mergetool never checked git_review_is_binary before opening
+      the viewer (unlike git-review-difftool and the external-diff driver), so
+      a binary conflict side was opened as noise. Capture the flag per side and
+      refuse (exit non-zero -> left UNRESOLVED, never falsely resolved).
+    - git-review-tools.gitconfig: meld's exit code is unreliable (it exits 0
+      even when closed without saving), so mergetool.review-meld now sets
+      trustExitCode = false and lets git verify $MERGED itself (as git's own
+      built-in meld tool does); kdiff3 keeps trustExitCode = true (reliable).
+    - The difftool entries now set trustExitCode = true so git HONORS the
+      wrapper's fail-closed non-zero exit instead of silently continuing.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 34f2f082fbdfff901a0067fbc8e41a5c1c01fb65
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 12:12:49 2026 -0400
+
+    git review tools: add safe difftool/mergetool backends; share hardened core
+
+    Make the git review tools usable as 'git difftool' / 'git mergetool' backends,
+    not only as external-diff drivers (the earlier 'git difftool --tool=git-meld'
+    failed with "Unknown merge tool" because they were never registered).
+
+    - Extract the shared content-hardening core (has-checks, the fatal flag,
+      Unicode/Trojan-Source surfacing, fail-closed git_review_finish, cleanup) into
+      git-review-scan.sh, sourced by the existing git-review-driver.sh
+      (behavior-preserving) and by the new wrappers. Single-sourced so every review
+      contract neutralizes identically.
+    - Add git-review-difftool (2-way: meld / kdiff3 / diff-review) and
+      git-review-mergetool (3-way: meld / kdiff3), which run the shared scan on the
+      files git materializes and fail closed on undecodable content before opening
+      the viewer.
+    - Ship usr/share/developer-meta-files/git-review-tools.gitconfig defining
+      difftool.review-{meld,kdiff3,diff} and mergetool.review-{meld,kdiff3}
+      (include it from ~/.gitconfig to activate).
+    - Fix a latent binary-detection bug: 'grep --perl-regexp \x00' needs '--text',
+      else GNU grep's binary heuristic short-circuits, a NUL is not matched, and a
+      binary blob is misclassified as text and opened in the viewer. Fixed in both
+      git-review-scan.sh and git-review-driver.sh.
+
+    Verified: dist-ai git-meld-tests regression profile unchanged; difftool
+    (meld/kdiff3/textual), binary-skip, trojan-source warn, and mergetool 3-way
+    (meld/kdiff3) all exercised with stub GUIs.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
 
 commit 19c445d1c840e4e32a651ddd1c7c8ff8ee684ba0
 Merge: a44a5af6 8f96dea9

@@ -75,6 +75,12 @@ required=(
    "synced: test-target/existing-repo/master merge_type='fast-forward'"
 )
 for needle in "${required[@]}"; do
+   ## log() runs every message through sanitize-string (helper-scripts), which
+   ## maps '>' to '_', so a plan line's '->' arrow is emitted as '-_'. Sanitize
+   ## each expected fragment the same way before matching -- the assertion pins
+   ## the tool's intended message, not sanitize-string's glyph mapping (which
+   ## helper-scripts owns and tests).
+   needle="$(printf '%s' "${needle}" | sanitize-string -- nolimit)"
    if ! grep --quiet --fixed-strings -- "${needle}" <<< "${out}"; then
       printf '%s\n' "FAIL: missing expected fragment: ${needle}" >&2
       fail=1

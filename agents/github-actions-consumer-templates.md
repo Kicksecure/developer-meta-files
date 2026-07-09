@@ -238,6 +238,29 @@ The file is read at WORKFLOW RUNTIME by the relevant
 `reusable-X.yml`, not at propagation time. This preserves the
 pure-`cp` propagation contract.
 
+### Editing dm-consumer.yml: merge, never overwrite
+
+`.github/dm-consumer.yml` is a SHARED overlay. One repo can
+install several templates, and each contributes its own
+independent top-level key (`coverity:`, `dist-ai-tests:`,
+`cppcheck:`, `codeql-cpp:`, ...). The keys accumulate over time
+as more templates are opted in.
+
+So when adding or changing a key, MERGE it into the existing
+file: read the current `dm-consumer.yml`, touch only the one
+top-level key you own, and leave the rest untouched. Never
+rewrite the whole file from a single template's fragment - a
+full-file overwrite silently drops every other template's
+section.
+
+This has regressed in practice: a commit adding `dist-ai-tests:`
+overwrote the file and dropped a pre-existing `coverity:` block,
+so the Coverity workflow kept running with no `project-name` /
+`canonical-repos` and its scans lost their target. The workflow
+file was still present; only the config it reads was gone, which
+makes the breakage easy to miss - CI stays green, the scan just
+goes nowhere.
+
 Universal templates (`consumer-claude-code.yml`,
 `consumer-codex-review.yml`, `consumer-scorecard.yml`,
 `consumer-codeql-actions.yml`, `consumer-pre-push-static.yml`,

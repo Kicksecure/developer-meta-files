@@ -20,6 +20,7 @@ shopt -s shift_verbose
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
 
 has stcat
+has unicode-show
 
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
 review_tool="git-diff-review"
@@ -45,8 +46,17 @@ display_regular_file() {
   fi
   printf '%s\n' "${diff_out}" | stcat || diff_rc=$?
   if [ "${diff_rc}" -ne 0 ]; then
-    printf '%s\n' "git-diff-review: ERROR: stcat failed (rc='${diff_rc}') for '${3}'." >&2
-    return "${diff_rc}"
+    printf '%s\n' "git-diff-review: WARNING: stcat failed (rc='${diff_rc}') for '${3}'. Piping into unicode-show..." >&2
+    printf '%s\n' "${diff_out}" | unicode-show || true
+    ## TODO: Allow continue. Useful in case of harmless unicode.
+    ## <stdin>:6: [U+0020]
+    ##  -> ' ' (U+0020, SPACE, Zs)
+    #printf '%s\n' "git-diff-review: QUESTION: continue y/n?"
+    #read -r continue_yes_no || printf '%s\n' "git-diff-review: ERROR: bash 'read' failed."
+    #printf '%s\n' "git-diff-review: continue_yes_no: '${continue_yes_no}'"
+    #if ! [ "${continue_yes_no,,}" = "y" ]; then
+    #  return "${diff_rc}"
+    #fi
   fi
 }
 
