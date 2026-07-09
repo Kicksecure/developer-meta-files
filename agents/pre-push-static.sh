@@ -15,27 +15,27 @@
 ##   3. LC_ALL=C grep -PlI '[^\x00-\x7F]' on changed files (R-001)
 ##   4. LC_ALL=C grep -P  '[^\x00-\x7F]' on the commit-range
 ##      message (R-001)
-##   5. R-010 strict-mode block present in top 30 lines
+##   5. R-010 strict-mode block present in top 100 lines
 ##   6. R-011 no 'set +o errexit' toggling
 ##   7. R-042 no blank-line printf/log separators
 ##   8. R-051 no inline trap command strings (use named function)
 ##   9. R-070 no ';;' trailing other statements on the same line
-##  10a. R-080 'shellcheck source=...' is a relative source-tree
+##  10. R-080 'shellcheck source=...' is a relative source-tree
 ##      path (no absolute /usr/..., /home/..., /dev/null)
-##  10. R-081 no 'shellcheck source=/dev/null'
-##  11. R-090 'has' not 'command -v' (allowlist for documented
+##  11. R-081 no 'shellcheck source=/dev/null'
+##  12. R-090 'has' not 'command -v' (allowlist for documented
 ##      bootstrap exceptions per R-093)
-##  12. R-102 no 'bash' / 'sh' prepend on script invocations
+##  13. R-102 no 'bash' / 'sh' prepend on script invocations
 ##      (applies to shell + yml files)
-##  13. R-120 'safe-rm' not 'rm' (with conservative carve-outs
+##  14. R-120 'safe-rm' not 'rm' (with conservative carve-outs
 ##      for comments and known safe constructs)
-##  14. R-130 No ':' as bare no-op placeholder on its own line
+##  15. R-130 No ':' as bare no-op placeholder on its own line
 ##      (does NOT flag the ': "${var:=default}"' parameter-default
 ##      idiom widely used in the codebase)
 ##  16. R-034 no 'echo' command (use printf); '## style-ok: allow-echo'
 ##  17. R-103 no process-replacement 'exec <cmd>' (fd-redirect exec
 ##      exempt); '## style-ok: allow-exec'
-##  15. pre-commit-hooks (direct binary execution, no framework)
+##  18. pre-commit-hooks (direct binary execution, no framework)
 ##      against the right file-type subsets: check-yaml,
 ##      check-json, check-toml, check-xml, check-ast,
 ##      check-added-large-files, check-merge-conflict,
@@ -45,7 +45,7 @@
 ##      aren't on PATH (developer machines that haven't installed
 ##      them still get the bash-style-guide gate; CI runs in
 ##      debian:trixie-slim with them apt-installed).
-##  16. debian/changelog is genmkfile-owned and must not be
+##  19. debian/changelog is genmkfile-owned and must not be
 ##      hand-edited. A commit touching debian/changelog passes only
 ##      if it is a genmkfile auto-bump ('bumped changelog version'
 ##      subject, changelog-family-only diff) or carries a mandatory
@@ -502,7 +502,7 @@ filter_self() {
 }
 
 check_R042_blank_logline() {
-   local hits files
+   local hits
    local -a fs
 
    mapfile -t fs < <(filter_self "${@}")

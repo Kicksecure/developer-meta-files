@@ -1,3 +1,301 @@
+commit ccf7d629f6405e825d37ba6b09dc72454e888555
+Merge: 87a535ee 1cb6df10
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 09:34:43 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 87a535ee764d432ad36cc88c3d840d0e67d0e161
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 13:28:09 2026 +0000
+
+    bumped changelog version
+
+commit 76801130728ef4e1d64c83c38885b280bf29e81e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 09:25:39 2026 -0400
+
+    .
+
+commit 1cb6df10e788af8dd2fb6fbdac9298d92cf83374
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:45:56 2026 -0400
+
+    CI: add dist-ai tests workflow (consumer wrapper)
+
+    Install the byte-identical consumer-dist-ai-tests.yml wrapper so this
+    package's dist-ai suites run on each PR and master push via the reusable in
+    developer-meta-files. Rollout of the dist-ai CI wiring.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 5fe52aa69812556b0c8c541a7d248613b0934045
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:44:49 2026 -0400
+
+    reusable-dist-ai-tests: trixie container + per-repo deps + helper-scripts co-checkout
+
+    - Run in a debian:trixie-slim container (Python 3.13), not bare ubuntu-24.04
+      (3.12): packages under test target current Debian/Python (helper-scripts'
+      stcat uses Path.read_text(newline=), 3.13+). Matches reusable-pre-push-static.
+    - Read per-repo deps from the caller's .github/dm-consumer.yml
+      (dist-ai-tests.apt-packages) via the committed dist-ai/ci helper -- no
+      embedded shell in the workflow.
+    - Optionally check out helper-scripts (dist-ai-tests.helper-scripts: true) and
+      pass --helper-scripts-root, for suites that drive sanitize-string
+      (open-link-confirmation).
+    - Raise per-suite timeout to 600s (sanitize-string-tests is subprocess-heavy).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 25191ba3a5a46380d5336c65cf790111e6907b1c
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 08:10:09 2026 -0400
+
+    reusable-dist-ai-tests: add python3-psutil to default deps
+
+    onion-grater's code imports psutil; the suite failed at import. Add it
+    to the default apt set (light, broadly useful) rather than a per-repo
+    config, keeping the consumer wrapper universal.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 79616bb1c13769746cae72b178e3e1d124093e4e
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 07:48:58 2026 -0400
+
+    reusable-dist-ai-tests: sibling checkout layout to fix pytest collection
+
+    The caller repo was checked out at the workspace root with dist-ai
+    nested at .dist-ai inside it. A suite that runs pytest (privleap-tests)
+    derives the test module name from the path relative to rootdir; the
+    leading-dot .dist-ai component yielded a leading-dot module name and
+    pytest failed collection with "the 'package' argument is required to
+    perform a relative import". Check the component, dist-ai, and
+    developer-meta-files out as sibling subdirs (component/, dist-ai/, dmf/)
+    instead, and point --component-root at component/. Keeps the suite path
+    out of the caller tree and free of dot components.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 811031b56291103df8e4fa63646401196e6bb9e7
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 07:35:10 2026 -0400
+
+    CI: add reusable-dist-ai-tests.yml + consumer template
+
+    Reusable workflow that runs a package's comprehensive dist-ai regression
+    suites (which live in org-ai-assisted/dist-ai, not in-tree) against the
+    package's own PRs and master pushes, via
+    dist-ai-tests-all --component/--component-root. The component is derived
+    from the caller repo name, so the consumer wrapper is universal
+    (byte-identical, no .github/dm-consumer.yml). Ships the byte-identical
+    consumer-templates/.github/workflows/consumer-dist-ai-tests.yml for
+    propagation by pkg_update_consumer_workflows.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 0eff09373aedd062aaf47db4840c720e377d5254
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 7 06:51:39 2026 -0400
+
+    pre-push-static.sh: fix docstring check numbering + R-010 window
+
+    The header check list had scrambled numbers (10a, 10, 11..14, 16, 17,
+    15, 16 with 16 duplicated); renumber the ten post-R-070 entries
+    sequentially 10..19. Also correct the R-010 summary line: the gate
+    checks the top 100 lines (head --lines=100), not 30. Drop an unused
+    'files' local in check_R042_blank_logline so shellcheck stays clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 047d2eb072bff5bfbf4b22d97b39aa629ca5388e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 10:33:44 2026 +0000
+
+    bumped changelog version
+
+commit 523eb1e6c07e2a38663696af1b962bdeafe0e693
+Merge: 92d59d6c 3a31622a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:04:24 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 92d59d6cbfc475e8a43efe930b7976bbeb94c516
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 06:00:42 2026 -0400
+
+    .
+
+commit a1efcecd544173f5f17d3ce60cb222a8d3432db6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 7 10:00:22 2026 +0000
+
+    bumped changelog version
+
+commit 3a31622aed75ce6fb06d084c7900281b937fe221
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sat Jul 4 22:33:45 2026 -0400
+
+    fix
+
+commit 782c74a26d671e5bbd2fc3f117e08dea203fc1dc
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 17:13:56 2026 -0400
+
+    .
+
+commit e5abd350e72c866a2be872aa47d4a70cc7bee1be
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 17:11:59 2026 -0400
+
+    .
+
+commit 253e6b41f3049ef9178e499088db5c309fbdafc4
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 16:15:39 2026 -0400
+
+    .
+
+commit 740f3e02f977db4a34d7992811b2e2f7451a0cb8
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 16:12:18 2026 -0400
+
+    .
+
+commit 1b5e623cb34c3151b5688bf78196a7aff8e06034
+Merge: de042656 19c445d1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sat Jul 4 15:38:35 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit 19c445d1c840e4e32a651ddd1c7c8ff8ee684ba0
+Merge: a44a5af6 8f96dea9
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 11:44:56 2026 -0400
+
+    Merge pull request #135 from org-ai-assisted/dm-packaging-helper-meld-own-changes
+
+    dm-packaging-helper-script: review own staged changes in meld, not git-diff-review
+
+commit 8f96dea9be8d0f9194acd7f3d4a45edf00370f7a
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 11:44:30 2026 -0400
+
+    dm-packaging-helper-script: review own staged changes in meld, not git-diff-review
+
+    These two pre-commit reviews show the maintainer's own freshly-staged
+    packaging output (README/changelog regeneration), not untrusted input.
+    For self-authored changes a GUI meld review is preferred; the
+    terminal-safe git-diff-review driver targets untrusted diffs. Comment
+    out git-diff-review (kept for quick re-enable) and use git-meld --cached.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit a44a5af672ef744f4d85a03d47c1593a10654673
+Merge: cd4ccffb 15e885b4
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 11:42:45 2026 -0400
+
+    Merge pull request #134 from org-ai-assisted/dm-packaging-helper-git-diff-review
+
+    dm-packaging-helper-script: review staged diffs via git-diff-review
+
+commit 15e885b45972ef5cac6a92da91374110a8476ca3
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 11:42:07 2026 -0400
+
+    dm-packaging-helper-script: review staged diffs via git-diff-review
+
+    The two operator-facing pre-commit review diffs used plain
+    'git diff --cached', which renders a hostile diff (Trojan-Source
+    Unicode, terminal escapes) unneutralized to the terminal. Switch both
+    to 'git-diff-review --cached' (it passes "$@" through to git diff)
+    so they get the same hardened, stcat-neutralized rendering already
+    used by dm-review-branch.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit cd4ccffb9fb3e43cda192e3a5c2dbabe5f675539
+Merge: 7a39d370 ff48f5d8
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sat Jul 4 09:22:39 2026 -0400
+
+    Merge pull request #133 from org-ai-assisted/dm-review-branch-all-three-tools
+
+    dm-review-branch: open meld and kdiff3 after the textual review
+
+commit ff48f5d80b45f478c1cbc81fcd63f150d780deb5
+Author: claude (dev52 6a6373ce-7c9c-4b48-8c7a-bea1e331259b) <noreply@anthropic.com>
+Date:   Sat Jul 4 08:58:50 2026 -0400
+
+    dm-review-branch: open meld and kdiff3 after the textual review
+
+    git-diff-review gives the terminal-safe textual pass; add git-meld and
+    git-kdiff3 so the branch review also opens the two GUI diff tools, as it
+    did before. All three share the hardened git-review-driver core.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01EkvXjdNbFRh4Xo5oEstMYw
+
+commit 76480632d5098d467b534f69c8699e9895bc8b6c
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Jul 3 20:36:10 2026 -0400
+
+    comments, fixme, minor improvements
+
+commit 7a39d3705e751307e55c9d68b0cd83adcc0f74e5
+Author: claude (dev42 08e1f373-4824-43b0-b4d4-e48187e4d900) <noreply@anthropic.com>
+Date:   Fri Jul 3 15:31:38 2026 -0400
+
+    AGENTS.md: link to the comprehensive dist-ai test suites for its tools
+
+    The git-meld and dm-virtualbox-wiki-links tools have adversarial/regression
+    suites too high-volume for human review; they live in the AI-maintained
+    dist-ai repo. Add a minimal pointer + each tool's invocation.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_014Pag3UZHFWciJjKjnUwPWS
+
+commit e7ba3db1e283772219f9fbdfcd1a87c4d722f8be
+Merge: de042656 94e879fe
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri Jul 3 14:55:44 2026 -0400
+
+    Merge pull request #132 from org-ai-assisted/claude/changelog-preserve-newlines
+
+    dm-packaging-helper-script: keep commit-body line breaks in changelog
+
+commit 94e879fece089b56512b42917c4eacfcd3525232
+Author: claude (dev45 83e78390-44e7-445e-a721-d02a129c3b80) <noreply@anthropic.com>
+Date:   Fri Jul 3 14:49:51 2026 -0400
+
+    dm-packaging-helper-script: keep commit-body line breaks in changelog
+
+    pkg_git_packages_git_log_writer collapsed each commit's full message onto
+    a single changelog line via `tr '\n' ' '`, turning a multi line body
+    (paragraphs, bullet lists, indented code blocks) into one run-on line.
+
+    Drop the flatten. Emit the commit subject as the bullet (carrying the
+    contributor credit) and each remaining body line indented beneath it, so
+    the message keeps its original structure. `IFS= read -r` preserves leading
+    indentation of body lines. Blank-line and AI-trailer stripping are folded
+    into the same sed, which now also strips trailing whitespace per line so
+    whitespace-only lines are deleted too.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_019yeVyH2vTpkhGX2U1qmKZD
+
+commit de0426564ab614a4c43123b5e2bb7ca36cef4421
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Jul 3 18:07:00 2026 +0000
+
+    bumped changelog version
+
 commit 6546dafe646711fe67aaf7a916a5c34e01734b06
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Fri Jul 3 14:01:14 2026 -0400
