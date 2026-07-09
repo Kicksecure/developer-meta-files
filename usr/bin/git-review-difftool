@@ -51,13 +51,12 @@ local_is_binary="${git_review_is_binary}"
 git_review_scan_content "${remote_file}" "remote '${remote_file}'"
 remote_is_binary="${git_review_is_binary}"
 
-## Fail closed: never hand an undecodable/non-UTF-8 blob to a viewer. (The
-## GIT_REVIEW_UNICODE_NONFATAL deferral is intentionally NOT honored here -- it
-## exists for the batch textual re-dispatch, not a per-file GUI open.)
-if [ "${git_review_fatal}" != 0 ]; then
-   printf '%s\n' "${review_tool}: ERROR: ${pair_q} has undecodable/non-UTF-8 Unicode; refusing to open the viewer. Inspect with 'git diff-review' instead." >&2
-   exit 1
-fi
+## Undecodable/non-UTF-8 content already fails closed inside
+## git_review_scan_content (via git_review_handle_unicode_show_fatal, which
+## exits non-zero in this GUI context: no fatal-flag file, no terminal-safe
+## display, so it never defers). Do NOT re-add a '[ "${git_review_fatal}" != 0 ]'
+## check here: that variable was removed with the flag-file refactor and
+## referencing it aborts under 'set -o nounset'.
 
 ## A binary side would render as noise; surface it and do not open the viewer.
 if [ "${local_is_binary}" = 'true' ] || [ "${remote_is_binary}" = 'true' ]; then

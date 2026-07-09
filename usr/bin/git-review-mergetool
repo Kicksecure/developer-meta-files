@@ -53,10 +53,12 @@ local_is_binary="${git_review_is_binary}"
 git_review_scan_content "${remote_file}" "remote '${remote_file}'"
 remote_is_binary="${git_review_is_binary}"
 
-if [ "${git_review_fatal}" != 0 ]; then
-   printf '%s\n' "${review_tool}: ERROR: a conflict side of '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the merge." >&2
-   exit 1
-fi
+## Undecodable/non-UTF-8 content already fails closed inside
+## git_review_scan_content (via git_review_handle_unicode_show_fatal, which
+## exits non-zero in this GUI context: no fatal-flag file, no terminal-safe
+## display, so it never defers). Do NOT re-add a '[ "${git_review_fatal}" != 0 ]'
+## check here: that variable was removed with the flag-file refactor and
+## referencing it aborts under 'set -o nounset'.
 
 ## A binary conflict side cannot be meaningfully merged in a text/GUI tool and
 ## would render as noise. Refuse and exit non-zero so the conflict is left
