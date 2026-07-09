@@ -325,10 +325,19 @@ own line. Bash's syntactic `;` (case-arm `;;`, C-style for-loop
 `for ((i=0; i<N; i++))`) is the only exception; using `;` to
 glue two arbitrary commands onto one line is prohibited.
 
+The control-flow keywords `break`, `continue` and `return` are the
+commonest offenders (loop bodies, one-line `if`s, `case` arms,
+`--) shift; break ;;` argument parsers). A `;`-chained
+`break`/`continue`/`return` is GATE-ENFORCED -- it fails the static
+gate -- so always put the keyword on its own line.
+
 Bad:
 
     cd "${dir}"; ls --long
     foo --quiet; bar --verbose
+    if match; then hit=1; continue; fi
+    [ -e "${x}" ] && { found="${x}"; break; }
+    --) shift; break ;;
 
 Good:
 
@@ -337,6 +346,16 @@ Good:
 
     foo --quiet
     bar --verbose
+
+    if match; then
+       hit=1
+       continue
+    fi
+
+    --)
+       shift
+       break
+       ;;
 
 
 ## Sourcing helper-scripts
