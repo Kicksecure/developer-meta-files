@@ -82,6 +82,15 @@ expect_rule() {
    body="$2"
    want="$3"
    out="$(gate_output "${body}")"
+   ## Liveness guard: every gate run prints at least one 'pre-push-static:' line
+   ## (via note/fail). If none is present the gate did not reach a verdict (it
+   ## errored early), so an 'absent' result would be meaningless -- fail loudly
+   ## rather than pass an 'absent' assertion spuriously.
+   if ! printf '%s\n' "${out}" | grep --quiet --fixed-strings -- 'pre-push-static:'; then
+      printf 'FAIL: gate produced no verdict output for body %s\n' "'${body}'" >&2
+      failures=$((failures + 1))
+      return 0
+   fi
    if printf '%s\n' "${out}" | grep --quiet --fixed-strings -- "${tag}"; then
       got="present"
    else
@@ -106,6 +115,12 @@ expect_rule "R-074" "hit=1${sc} break"       "present"
 expect_rule "R-074" "seen=1${sc} continue"   "present"
 expect_rule "R-074" "printf x${sc} return 1" "present"
 expect_rule "R-074" "break"                  "absent"
+
+## Whitespace around the ';' ('foo ; break') is the same violation and must also
+## be FLAGGED -- guards against a regex that only anchors on a non-space char
+## immediately before the ';'.
+expect_rule "R-074" "hit=1 ${sc} break"      "present"
+expect_rule "R-074" "printf y ${sc} return"  "present"
 
 ## R-070: ';;' trailing a statement must be FLAGGED; ';;' on its own line spared.
 expect_rule "R-070" "esac${dsemi}"           "present"

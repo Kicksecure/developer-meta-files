@@ -542,14 +542,15 @@ check_R074_flow_chaining() {
    ## R-074 forbids gluing a next command onto a statement with ';'. The general
    ## form is too broad to grep without false positives, but the control-flow
    ## keywords break/continue/return are the low-false-positive subset: a ';'
-   ## preceded by a non-whitespace character and followed by one of them (then a
-   ## word boundary) is almost always the chaining R-074 forbids, never bash's
-   ## syntactic ';' (';;', a C-style for-loop). filter_self keeps this script's
-   ## own regex/examples from self-matching.
+   ## that FOLLOWS a statement (a non-whitespace char earlier on the line, allowing
+   ## spaces before the ';' so 'foo ; break' is caught too) and is FOLLOWED by one
+   ## of them at a word boundary is almost always the chaining R-074 forbids, never
+   ## bash's syntactic ';' (';;', a C-style for-loop, or the keyword on its own
+   ## line). filter_self keeps this script's own regex/examples from self-matching.
    mapfile -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    hits="$(grep --line-number --extended-regexp \
-      '[^[:space:]];[[:space:]]*(break|continue|return)([[:space:];]|$)' -- "${fs[@]}" 2>/dev/null || true)"
+      '[^[:space:]][[:space:]]*;[[:space:]]*(break|continue|return)([[:space:];]|$)' -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-074 ';'-chained break/continue/return" "${hits}"
 }
 
