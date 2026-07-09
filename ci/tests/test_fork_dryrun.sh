@@ -34,7 +34,10 @@ export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 ## derivative-maker. Expected: dry-run plans 1 new fork (helper-scripts).
 out="$(github-org-fork --dry-run org-ai-assisted assisted-by-ai 2>&1)"
 
-if ! grep --quiet -- 'DRY-RUN: fork org-ai-assisted/helper-scripts -> assisted-by-ai/helper-scripts' <<< "${out}"; then
+## log() sanitizes every message via sanitize-string (helper-scripts), which maps
+## '>' to '_'; sanitize the expected fork line the same way before matching.
+fork_line="$(printf '%s' 'DRY-RUN: fork org-ai-assisted/helper-scripts -> assisted-by-ai/helper-scripts' | sanitize-string -- nolimit)"
+if ! grep --quiet -- "${fork_line}" <<< "${out}"; then
   printf '%s\n' 'FAIL: expected fork plan for helper-scripts' "${out}" >&2
   exit 1
 fi
