@@ -331,18 +331,22 @@ if [ "${new_file}" != '/dev/null' ]; then
   fi
 fi
 
-## Display a brief overview of changes. This is mostly useful to flag changes
-## in binaries. Pipe output through stcat to avoid rendering escape codes in
-## filenames.
-##
-## FIXME: Shouldn't we error out entirely if `git diff` fails here? There's no
-## good reason this command should fail.
-##
-## FIXME: Should we add "${diff_path}" as a third argument? If we don't, we'll
-## end up displaying a lot more changes than just changes for the current
-## file.
-git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" | stcat \
-  || log warn "'--stat' for '${diff_path_q}' failed; showing the diff anyway."
+## Display a brief overview of changes, mainly to flag binaries. Diff the two
+## materialized blobs with --no-index (via their file paths, not the blob
+## hashes) so it also works for an add or a delete: there git passes the
+## all-zero hash for the absent side, and 'git diff <hex> <hex>' rejects that as
+## a bad object and drops the overview for exactly those cases (a binary add
+## would then be surfaced nowhere here). --no-ext-diff keeps this from
+## re-entering the external-diff driver. --no-index exits 1 when the files
+## differ (every change that reaches this point) and >1 on a real error, so only
+## a >1 rc is a failure. Pipe through stcat to neutralize escape codes in paths;
+## read git's own rc from PIPESTATUS so a benign stcat exit is not misread.
+stat_rc=0
+git diff --no-ext-diff --no-index --stat -- "${old_file}" "${new_file}" | stcat \
+  || stat_rc="${PIPESTATUS[0]}"
+if [ "${stat_rc}" -gt 1 ]; then
+  log warn "'--stat' for '${diff_path_q}' failed; showing the diff anyway."
+fi
 
 if [ "${is_binary}" = 'true' ]; then
   log notice "'${diff_path_q}' looks BINARY (NUL byte); shown as --stat only, not opened in the viewer."

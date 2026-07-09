@@ -165,12 +165,13 @@ git_review_scan_content() {
 
   git_review_unicode_scan "${target}" "${label}"
 
-  ## Over-long lines can truncate/hang a viewer (a place to bury a change). A wc
-  ## failure (e.g. an unreadable target) must not abort the scan under errexit
-  ## with a cryptic '[: integer expression expected', nor be read as a huge
-  ## line: default to 0.
-  longest=0
-  longest="$(wc --max-line-length < "${target}")" || longest=0
+  ## Over-long lines can truncate/hang a viewer (a place to bury a change).
+  ## wc-test.sh (sourced above) guarantees wc is not a broken/core-dumping
+  ## binary, and a git-materialized blob is always readable, so wc yields a
+  ## number here. Do NOT silence wc or default the result: a genuine failure
+  ## must abort loudly under the caller's errexit at THIS line (the assignment),
+  ## not fall through to a misleading '0' or a cryptic integer test.
+  longest="$(wc --max-line-length < "${target}")"
   if [ "${longest}" -gt 5000 ]; then
     log warn "'${label}' has a '${longest}'-char line; a viewer may truncate/hang."
   fi
