@@ -55,12 +55,12 @@ remote_is_binary="${git_review_is_binary}"
 ## GIT_REVIEW_UNICODE_NONFATAL deferral is intentionally NOT honored here -- it
 ## exists for the batch textual re-dispatch, not a per-file GUI open.)
 if [ "${git_review_fatal}" != 0 ]; then
-   printf '%s\n' "${review_tool}: ERROR: ${pair_q} has undecodable/non-UTF-8 Unicode; refusing to open the viewer (fail closed). Inspect with 'git diff-review' instead. NOT hidden." >&2
+   printf '%s\n' "${review_tool}: ERROR: ${pair_q} has undecodable/non-UTF-8 Unicode; refusing to open the viewer. Inspect with 'git diff-review' instead." >&2
    exit 1
 fi
 
 ## A binary side would render as noise; surface it and do not open the viewer.
-if [ "${local_is_binary}" = yes ] || [ "${remote_is_binary}" = yes ]; then
+if [ "${local_is_binary}" = 'true' ] || [ "${remote_is_binary}" = 'true' ]; then
    printf '%s\n' "${review_tool}: NOTE: ${pair_q} looks BINARY (NUL byte); not opened in the viewer." >&2
    exit 0
 fi
@@ -74,11 +74,11 @@ case "${viewer}" in
       ;;
    diff-review)
       ## Terminal-safe textual diff: 'diff' rc 0 (same) / 1 (differ) are OK; rc
-      ## >=2 is a real error. stcat neutralizes any hostile escape sequence.
+      ## >= 2 is a real error. stcat neutralizes any hostile escape sequence.
       diff_rc=0
       diff_out="$( diff --unified -- "${local_file}" "${remote_file}" )" || diff_rc=$?
-      if [ "${diff_rc}" -gt 1 ]; then
-         printf '%s\n' "${review_tool}: ERROR: diff failed (rc=${diff_rc}) for '${diff_path_q}'." >&2
+      if [ "${diff_rc}" -ge 2 ]; then
+         printf '%s\n' "${review_tool}: ERROR: diff failed (rc='${diff_rc}') for '${diff_path_q}'." >&2
          exit "${diff_rc}"
       fi
       printf '%s\n' "${diff_out}" | stcat

@@ -26,6 +26,9 @@
 ## non-zero exit (undecodable content) and stops the review instead of silently
 ## continuing to the next file. git difftool ignores the tool's exit code
 ## without it.
+##
+## TODO: Does setting trustExitCode on individual difftool tools actually
+## work? Test.
 [difftool "review-meld"]
 	cmd = git-review-difftool meld "$LOCAL" "$REMOTE"
 	trustExitCode = true

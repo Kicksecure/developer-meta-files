@@ -5,11 +5,7 @@
 
 ## AI-Assisted
 
-## Safe git external diff driver: opens 'kdiff3' for regular-file diffs. Thin
-## wrapper over the shared hardened core (git-review-driver.sh); sibling of
-## git-meld and git-diff-review. Surfaces mode / symlink / gitlink-spoof /
-## Trojan-Source-Unicode / long-line / binary / driver-skipped changes so a
-## review is never silently blind.
+## Safe git external diff driver: opens 'kdiff3' for regular-file diffs.
 
 set -o errexit
 set -o nounset
@@ -17,6 +13,11 @@ set -o pipefail
 set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
+
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+
+has kdiff3
 
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
 review_tool="git-kdiff3"

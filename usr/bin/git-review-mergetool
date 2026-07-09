@@ -54,29 +54,29 @@ git_review_scan_content "${remote_file}" "remote '${remote_file}'"
 remote_is_binary="${git_review_is_binary}"
 
 if [ "${git_review_fatal}" != 0 ]; then
-   printf '%s\n' "${review_tool}: ERROR: a conflict side of '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the merge (fail closed). NOT hidden." >&2
+   printf '%s\n' "${review_tool}: ERROR: a conflict side of '${diff_path_q}' has undecodable/non-UTF-8 Unicode; refusing to open the merge." >&2
    exit 1
 fi
 
 ## A binary conflict side cannot be meaningfully merged in a text/GUI tool and
 ## would render as noise. Refuse and exit non-zero so the conflict is left
-## UNRESOLVED (never opened, never falsely marked resolved) -- mirrors the
-## difftool binary skip, but for a merge "skip" must signal not-resolved.
-if [ "${base_is_binary}" = yes ] || [ "${local_is_binary}" = yes ] || [ "${remote_is_binary}" = yes ]; then
-   printf '%s\n' "${review_tool}: NOTE: a conflict side of '${diff_path_q}' looks BINARY (NUL byte); refusing to open the merge -- resolve it another way. NOT hidden." >&2
+## UNRESOLVED. Mirrors the difftool binary skip, but for a merge "skip" must
+## signal not-resolved.
+if [ "${base_is_binary}" = 'true' ] || [ "${local_is_binary}" = 'true' ] || [ "${remote_is_binary}" = 'true' ]; then
+   printf '%s\n' "${review_tool}: NOTE: a conflict side of '${diff_path_q}' looks BINARY (NUL byte). Refusing to open the merge, resolve it another way." >&2
    exit 1
 fi
 
 ## THIS wrapper -- not git -- decides resolution, so its exit code is
 ## authoritative and BOTH mergetool entries set trustExitCode=true. That also
-## makes the fail-closed refusals above (exit 1) honored by git: with
-## trustExitCode=false git would ignore our refuse-exit and instead prompt "was
-## the merge successful?", where a careless "y" could mark an unreviewed binary/
-## undecodable conflict resolved. meld's own exit code is unreliable (0 even when
-## closed unsaved), so we do not trust the viewer's exit; we detect resolution
-## the same way git's check_unchanged does -- did $MERGED change? kdiff3's
-## reliable exit is subsumed by the same test. '|| true' so the viewer's own exit
-## never aborts us under errexit.
+## makes the fail-closed refusals above honored by git: with
+## trustExitCode=false git would ignore our refuse-exit and instead prompt
+## "was the merge successful?", where a careless "y" could mark an unreviewed
+## binary/ undecodable conflict resolved. meld's own exit code is unreliable
+## (0 even when closed unsaved), so we do not trust the viewer's exit.
+## Instead, if $MERGED changed, we consider the conflict resolved. kdiff3's
+## reliable exit is subsumed by the same test. '|| true' so the viewer's own
+## exit never aborts us under errexit.
 merged_before="$(sha256sum < "${merged_file}")"
 case "${viewer}" in
    meld)
@@ -94,9 +94,7 @@ case "${viewer}" in
 esac
 merged_after="$(sha256sum < "${merged_file}")"
 
-## Resolved only if the merge output actually changed (conflict markers edited
-## out / a side chosen). An unchanged $MERGED -- viewer closed without saving or
-## aborted -- is NOT resolved: exit non-zero so git leaves the conflict.
+## Resolved only if the merge output changed.
 if [ "${merged_before}" = "${merged_after}" ]; then
    printf '%s\n' "${review_tool}: NOTE: '${diff_path_q}' unchanged (viewer closed without saving or aborted); left UNRESOLVED." >&2
    exit 1
