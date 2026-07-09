@@ -16,8 +16,8 @@
 ##   - bash -n on changed shell scripts
 ##   - shellcheck --external-sources on the same set
 ##   - R-001 ASCII on files + commit-range messages
-##   - R-010, R-011, R-042, R-051, R-070, R-081, R-090, R-102,
-##     R-120, R-130 (Tier-1 single-grep style-guide rules)
+##   - R-010, R-011, R-042, R-051, R-070, R-074, R-081, R-090,
+##     R-102, R-120, R-130 (Tier-1 single-grep style-guide rules)
 ##   - pre-commit-hooks binaries (direct execution, no framework)
 ##     against the right file-type subsets: check-yaml,
 ##     check-json, check-toml, check-xml, check-ast, check-added-

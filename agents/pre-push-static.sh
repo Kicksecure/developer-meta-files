@@ -20,6 +20,7 @@
 ##   7. R-042 no blank-line printf/log separators
 ##   8. R-051 no inline trap command strings (use named function)
 ##   9. R-070 no ';;' trailing other statements on the same line
+##      R-074 no ';'-chained break/continue/return (own line)
 ##  10. R-080 'shellcheck source=...' is a relative source-tree
 ##      path (no absolute /usr/..., /home/..., /dev/null)
 ##  11. R-081 no 'shellcheck source=/dev/null'
@@ -534,6 +535,25 @@ check_R070_double_semi() {
    emit_hits "R-070 ';;' on own line" "${hits}"
 }
 
+check_R074_flow_chaining() {
+   local hits
+   local -a fs
+
+   ## R-074 forbids gluing a next command onto a statement with ';'. The general
+   ## form is too broad to grep without false positives, but the control-flow
+   ## keywords break/continue/return are the low-false-positive subset: a ';'
+   ## that FOLLOWS a statement (a non-whitespace char earlier on the line, allowing
+   ## spaces before the ';' so 'foo ; break' is caught too) and is FOLLOWED by one
+   ## of them at a word boundary is almost always the chaining R-074 forbids, never
+   ## bash's syntactic ';' (';;', a C-style for-loop, or the keyword on its own
+   ## line). filter_self keeps this script's own regex/examples from self-matching.
+   mapfile -t fs < <(filter_self "${@}")
+   if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
+   hits="$(grep --line-number --extended-regexp \
+      '[^[:space:]][[:space:]]*;[[:space:]]*(break|continue|return)([[:space:];]|$)' -- "${fs[@]}" 2>/dev/null || true)"
+   emit_hits "R-074 ';'-chained break/continue/return" "${hits}"
+}
+
 check_R081_source_devnull() {
    local hits
    local -a fs
@@ -938,6 +958,7 @@ run_file_checks() {
       check_R042_blank_logline "${shell_files[@]}"
       check_R051_trap_inline "${shell_files[@]}"
       check_R070_double_semi "${shell_files[@]}"
+      check_R074_flow_chaining "${shell_files[@]}"
       check_R080_shellcheck_source_path "${shell_files[@]}"
       check_R081_source_devnull "${shell_files[@]}"
       check_R090_command_v "${shell_files[@]}"
