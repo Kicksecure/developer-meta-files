@@ -59,6 +59,35 @@ git_review_unicode_scan() {
   fi
 }
 
+## Scan a PATH (a filename, not file content) for suspicious/undecodable bytes
+## and for tab/newline forgery, and WARN. Sets git_review_path_rc to unicode-
+## show's exit code (0 clean, 1 suspicious, >=2 undecodable) so the caller can
+## decide whether a fatal path routes through git_review_handle_unicode_show_
+## fatal -- the driver's normal-path case does, the unmerged-conflict case only
+## warns (its combined diff is already stcat-neutralized). A trailing newline is
+## appended before unicode-show, so no UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE.
+git_review_path_rc=0
+git_review_scan_path() {
+  local path path_q report
+
+  path="$1"
+  path_q="$2"
+  git_review_path_rc=0
+  report="$(printf '%s\n' "${path}" | NO_COLOR=1 unicode-show 2>&1)" || git_review_path_rc="$?"
+  if [ "${git_review_path_rc}" != 0 ]; then
+    log warn "path '${path_q}' has suspicious/undecodable bytes (unicode-show rc='${git_review_path_rc}'):"
+    printf '%s\n' "${report}" | stcat >&2 || true
+  fi
+  ## Tab / newline are the ONE gap unicode-show cannot cover: it treats them as
+  ## benign content whitespace, yet in a PATH they are anomalous and can forge
+  ## diff-output lines.
+  case "${path}" in
+    *$'\t'* | *$'\n'*)
+      log warn "path '${path_q}' contains a tab or newline byte - anomalous in a filename; it can forge diff-output lines."
+      ;;
+  esac
+}
+
 ## Interactively ask the operator whether to continue a review despite content a
 ## scan flagged. ONLY the terminal-safe reviewer (git-diff-review, which sets
 ## git_review_display_fatal_content=true and neutralizes ALL output through
@@ -153,9 +182,11 @@ git_review_cleanup() {
 ## either is found. Also checks a file for binary content and sets
 ## get_review_is_binary to 'true' if detected.
 ##
-## TODO: Right now this is used only by git-review-difftool and
-## git-review-mergetool. Equivalent functionality is also implemented for the
-## diff plugins in git-review-driver.sh. Can we deduplicate?
+## Shared by the difftool/mergetool wrappers AND by git-review-driver.sh, which
+## calls it for the old/new blob content. The driver additionally runs its own
+## side-aware scans (path bytes, symlink targets) that operate on git metadata
+## this content-only helper never receives, so those intentionally stay in the
+## driver.
 git_review_is_binary='false'
 git_review_scan_content() {
   local target label longest nul_rc

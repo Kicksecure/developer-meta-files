@@ -65,17 +65,30 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   printf '%s\n' "===== ${review_tool}: diffstat and summary of full change set ====="
   git diff --no-ext-diff --stat --summary --find-renames "$@" || true
 
-  ## Detect changes to .gitattributes files. These can be used to manipulate
-  ## diff behavior, potentially masking malicious changes, so they must be
-  ## flagged and warned about.
+  ## Detect changes to .gitattributes. It can remap diff behavior and hide OTHER
+  ## files' content from the diff, and a legitimate .gitattributes change is
+  ## vanishingly rare here -- so a detected change (or being UNABLE to check for
+  ## one, because git failed) FAILS the review closed. Override deliberately with
+  ## GIT_REVIEW_ALLOW_GITATTRIBUTES=1 (which downgrades it to a warning).
   ##
   ## Capture the name list FIRST: piping git straight into grep would, under
-  ## pipefail, let a git failure mask a real match and drop this warning.
-  ##
-  ## FIXME: Shouldn't we error out entirely if git fails here?
-  changed_names="$(git diff --no-ext-diff --name-only "$@" 2>/dev/null || true)"
-  if printf '%s\n' "${changed_names}" | grep --quiet -e '\(/\|^\)\.gitattributes$'; then
-    log warn "'.gitattributes' changed -- can hide OTHER files' contents; review it first."
+  ## pipefail, let a git failure mask a real match and drop this check.
+  names_rc=0
+  changed_names="$(git diff --no-ext-diff --name-only "$@" 2>/dev/null)" || names_rc=$?
+  gitattributes_hit='false'
+  if [ "${names_rc}" != 0 ]; then
+    gitattributes_hit='uncheckable (git rc '"'${names_rc}'"')'
+  elif printf '%s\n' "${changed_names}" | grep --quiet -e '\(/\|^\)\.gitattributes$'; then
+    gitattributes_hit='changed'
+  fi
+  if [ "${gitattributes_hit}" != 'false' ]; then
+    if [ -n "${GIT_REVIEW_ALLOW_GITATTRIBUTES:-}" ]; then
+      log warn ".gitattributes ${gitattributes_hit} -- can hide OTHER files' contents; tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
+    else
+      log error ".gitattributes ${gitattributes_hit} -- it can hide OTHER files' contents from the diff. Failing closed."
+      log notice "Hint: legitimate .gitattributes changes are rare here; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
+      exit 1
+    fi
   fi
 
   ## Display file diffs one at a time. The terminal-safe reviewer
@@ -120,14 +133,13 @@ if [ "$#" -eq 0 ]; then
   die 2 "external diff invoked without arguments."
 fi
 
-## Unmerged path: git passes a single argument, the path. Show git's combined
-## diff, stcat-neutralized.
-##
-## FIXME: Shouldn't we be scanning this path's filename and contents for
-## Unicode and warning about it? stcat neutralizes Unicode but doesn't warn
-## about it.
+## Unmerged path: git passes a single argument, the path. Warn about a
+## suspicious/undecodable or tab/newline conflict FILENAME -- warn only, do not
+## fail closed on it: the combined diff below is already stcat-neutralized and
+## the operator still needs to see the conflict. Then show it.
 if [ "$#" -lt 7 ]; then
    unmerged_path_q="$(printf '%q' "${1}")"
+   git_review_scan_path "${1}" "${unmerged_path_q}"
    log notice "'${unmerged_path_q}' is unmerged (conflict). Combined diff:"
    git diff --no-ext-diff --cc -- "${1}" | stcat >&2 || true
    exit 0
@@ -157,30 +169,13 @@ for check_mode in "${old_mode}" "${new_mode}"; do
 done
 
 ## Control bytes in the path (cf. CVE-2025-48384, a trailing CR in a gitlink
-## path). Warn on any non-zero: 1 == suspicious, 2 == non-UTF-8 path bytes
-## (fatal, handled by git_review_handle_unicode_show_fatal).
-##
-## No need for UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 here, we append a
-## newline to the filename before piping it in.
-path_rc=0
-path_report="$(printf '%s\n' "${diff_path}" | NO_COLOR=1 unicode-show 2>&1)" || path_rc="$?"
-if [ "${path_rc}" != 0 ]; then
-  log warn "path '${diff_path_q}' has suspicious/undecodable bytes (unicode-show rc='${path_rc}'):"
-  printf '%s\n' "${path_report}" | stcat >&2 || true
-  if [ "${path_rc}" -ge 2 ]; then
-    git_review_handle_unicode_show_fatal
-  fi
+## path). git_review_scan_path warns on suspicious (rc 1) / undecodable (rc 2)
+## bytes and on tab/newline forgery; a fatal (rc >= 2) path is failed closed
+## here, before any viewer opens.
+git_review_scan_path "${diff_path}" "${diff_path_q}"
+if [ "${git_review_path_rc}" -ge 2 ]; then
+  git_review_handle_unicode_show_fatal
 fi
-
-## Tab / newline are the ONE gap the scan above cannot cover: unicode-show (like
-## stcat and grep-find-unicode-wrapper) treats '\t' and '\n' as benign content
-## whitespace, so they are never flagged -- yet in a PATH they are anomalous and
-## can forge diff-output lines.
-case "${diff_path}" in
-  *$'\t'* | *$'\n'*)
-    log warn "path '${diff_path_q}' contains a tab or newline byte - anomalous in a filename; it can forge diff-output lines."
-    ;;
-esac
 
 ## Mode/type change (a content diff alone would not show a mode-only change).
 if [ "${old_mode}" != "${new_mode}" ]; then
@@ -224,8 +219,9 @@ if [ "${old_is_link}" = 'true' ] || [ "${new_is_link}" = 'true' ]; then
   ## Label each non-link side accurately: '(none)' when it is absent (a pure
   ## symlink add/delete hands /dev/null), else '(regular file)' (a type change).
   if [ "${old_file}" = /dev/null ]; then
-    ## TODO: It's not possible for old_file to be /dev/null and be a symlink,
-    ## is it?
+    ## /dev/null is the absent side of an add/delete (mode 000000), never a
+    ## symlink side (a symlink side has a real blob temp file), so old_is_link is
+    ## false here; this only labels the absent side.
     old_target='(none)'
   elif [ "${old_is_link}" = 'true' ]; then
     old_target="$(read_target "${old_file}")"
@@ -242,11 +238,10 @@ if [ "${old_is_link}" = 'true' ] || [ "${new_is_link}" = 'true' ]; then
   printf "%s: SYMLINK '%s': '%s' -> '%s'\n" "${review_tool}" "${diff_path}" "${old_target}" "${new_target}" \
     | stcat >&2 || true
 
-  ## FIXME: This logic does different things depending on what 'core.symlinks'
-  ## is set to in Git. If it is set to 'true', this will scan the files the
-  ## symlinks point to. If it is set to 'false', this will scan the symlink
-  ## paths. We probably only want to do one or the other, and should adjust
-  ## this accordingly.
+  ## Scan each symlink side's target string. In external-diff mode the side is a
+  ## regular temp file whose content IS the target path (read_target reads it the
+  ## same way, via '[ -L ]'), so this is consistent regardless of git's
+  ## core.symlinks setting.
   if [ "${old_is_link}" = 'true' ]; then
     git_review_unicode_scan "${old_file}" "'${diff_path_q}' old symlink target"
   fi
@@ -254,13 +249,13 @@ if [ "${old_is_link}" = 'true' ] || [ "${new_is_link}" = 'true' ]; then
     git_review_unicode_scan "${new_file}" "'${diff_path_q}' new symlink target"
   fi
 
-  ## If either side is not a symlink, contine so that we diff the non-symlink
-  ## and the contents of the file the symlink points to.
-  ##
-  ## TODO: Shouldn't we continue past here even if both files are symlinks? If
-  ## a symlink changed target, it might be useful to see the difference
-  ## between the old target and the new target.
+  ## If exactly ONE side is a symlink (a file<->symlink type change), fall
+  ## through so the regular side is still diffed. If BOTH sides are symlinks (a
+  ## retarget), the SYMLINK line above already shows old -> new; also show a
+  ## neutralized unified diff of the two target strings so a change inside a long
+  ## target is easy to spot, then this file is done.
   if [ "${old_is_link}" = 'true' ] && [ "${new_is_link}" = 'true' ]; then
+    diff --unified -- "${old_file}" "${new_file}" | stcat >&2 || true
     exit 0
   fi
 fi
@@ -268,9 +263,7 @@ fi
 ## Submodule gitlink -- by MODE, not content (content spoof otherwise).
 ## Git uses the 160000 file mode to signal that gitlinks are being used, see
 ## https://github.com/git/git/blob/f85a7e662054a7b0d9070e432508831afa214b47/object.h#L118
-## TODO: Match against the full 160000 mode rather than just the first two
-## digits?
-if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
+if [ "${old_mode}" = "160000" ] || [ "${new_mode}" = "160000" ]; then
   old_commit="$(extract_commit "${old_file}")"
   new_commit="$(extract_commit "${new_file}")"
   printf '%s\n' "Submodule '${diff_path_q}': '${old_commit:-<none>}' -> '${new_commit:-<none>}'"
@@ -293,21 +286,24 @@ if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
     exit 1
   fi
 
-  ## The submodule's own diff is untrusted content (a malicious commit's file
-  ## bytes) shown on the terminal, so neutralize it through stcat like every
-  ## other untrusted line here -- otherwise it is a terminal-escape injection
-  ## vector for the textual reviewer. pipefail makes a git failure (bad object)
-  ## still set sm_rc.
-  ##
-  ## TODO: Don't we want to recursively execute the review tool wrapper in the
-  ## submodules? Dumping the diff output to the terminal is only marginally
-  ## better than what we had without this tool.
+  ## First a neutralized --stat summary of the submodule's own change (untrusted
+  ## content, so through stcat), then review each changed submodule file by
+  ## running THIS review tool as the submodule's external diff -- so submodule
+  ## files get the SAME hardening/neutralization as top-level files, not a raw
+  ## dump. This is the single level of recursion the depth guard above permits:
+  ## this gitlink is git_external_level 1, the submodule's files are level 2, and
+  ## a submodule-of-a-submodule would hit the '> 2' abort. The fatal-flag file is
+  ## exported, so undecodable content inside the submodule still fails the whole
+  ## review closed; --no-pager avoids a nested pager. The recursive git diff
+  ## does NOT need '| stcat' -- the review tool neutralizes each file itself.
   sm_rc=0
-  git -C "${diff_path}" diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
-  git -C "${diff_path}" diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
+  git -C "${diff_path}" --no-pager diff --no-ext-diff --find-copies --stat \
+    "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
+  git -C "${diff_path}" --no-pager -c "diff.external=${git_review_self}" \
+    diff --find-copies "${old_commit}" "${new_commit}" || sm_rc=$?
   if [ "${sm_rc}" != 0 ]; then
-    log error "submodule '${diff_path_q}' '${old_commit}' to '${new_commit}': diff failed with exit code '${sm_rc}'. Failing closed."
-    log notice "Hint: One or more commits being diffed may be missing. Try running 'git fetch' in the submodule."
+    log error "submodule '${diff_path_q}' '${old_commit}' to '${new_commit}': inner review failed (rc '${sm_rc}'). Failing closed."
+    log notice "Hint: a missing commit (run 'git fetch' in the submodule) or fatal content inside the submodule."
     exit 1
   fi
   exit 0
