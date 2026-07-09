@@ -88,6 +88,50 @@ git_review_scan_path() {
   esac
 }
 
+## Fail-closed gate for a .gitattributes change (it can remap diff behavior to
+## HIDE other files' content from the diff, and a legitimate change is rare in
+## review). $1 = the rc of the caller's 'git ... --name-only' run, $2 = its
+## output, $3 = a context label. GIT_REVIEW_ALLOW_GITATTRIBUTES=1 downgrades the
+## failure to a warning.
+##
+## Detection uses 'grep' WITHOUT --quiet and NOT via a pipe: 'grep --quiet' exits
+## on the first match without draining stdin, and since '.gitattributes' (a
+## dotfile) sorts near the TOP of the name list, the producing 'printf' then
+## takes SIGPIPE -- under pipefail the pipeline becomes non-zero and the match is
+## masked, i.e. the gate FAILS OPEN. A '<<<' here-string (a temp file, no live
+## producer) with an explicit rc capture avoids that and also fails closed on a
+## grep error (rc >= 2).
+git_review_gitattributes_gate() {
+  local names_rc changed_names context grep_rc attr_matches hit
+
+  names_rc="$1"
+  changed_names="$2"
+  context="$3"
+  hit='false'
+  if [ "${names_rc}" != 0 ]; then
+    hit="uncheckable (git rc '${names_rc}')"
+  else
+    grep_rc=0
+    attr_matches="$(grep -e '\(/\|^\)\.gitattributes$' <<< "${changed_names}")" || grep_rc=$?
+    if [ "${grep_rc}" = 0 ] && [ -n "${attr_matches}" ]; then
+      hit='changed'
+    elif [ "${grep_rc}" -ge 2 ]; then
+      hit="uncheckable (grep rc '${grep_rc}')"
+    fi
+  fi
+
+  if [ "${hit}" = 'false' ]; then
+    return 0
+  fi
+  if [ -n "${GIT_REVIEW_ALLOW_GITATTRIBUTES:-}" ]; then
+    log warn ".gitattributes ${hit} in ${context} -- can hide OTHER files' contents; tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
+    return 0
+  fi
+  log error ".gitattributes ${hit} in ${context} -- it can hide OTHER files' contents from the diff. Failing closed."
+  log notice "Hint: legitimate .gitattributes changes are rare here; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
+  exit 1
+}
+
 ## Interactively ask the operator whether to continue a review despite content a
 ## scan flagged. ONLY the terminal-safe reviewer (git-diff-review, which sets
 ## git_review_display_fatal_content=true and neutralizes ALL output through

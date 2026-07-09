@@ -65,31 +65,12 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   printf '%s\n' "===== ${review_tool}: diffstat and summary of full change set ====="
   git diff --no-ext-diff --stat --summary --find-renames "$@" || true
 
-  ## Detect changes to .gitattributes. It can remap diff behavior and hide OTHER
-  ## files' content from the diff, and a legitimate .gitattributes change is
-  ## vanishingly rare here -- so a detected change (or being UNABLE to check for
-  ## one, because git failed) FAILS the review closed. Override deliberately with
-  ## GIT_REVIEW_ALLOW_GITATTRIBUTES=1 (which downgrades it to a warning).
-  ##
-  ## Capture the name list FIRST: piping git straight into grep would, under
-  ## pipefail, let a git failure mask a real match and drop this check.
+  ## Fail closed on a .gitattributes change in the reviewed range (it can remap
+  ## diff behavior to hide other files' content). The gate helper detects it
+  ## without a fail-open pipe; see git-review-scan.sh.
   names_rc=0
   changed_names="$(git diff --no-ext-diff --name-only "$@" 2>/dev/null)" || names_rc=$?
-  gitattributes_hit='false'
-  if [ "${names_rc}" != 0 ]; then
-    gitattributes_hit='uncheckable (git rc '"'${names_rc}'"')'
-  elif printf '%s\n' "${changed_names}" | grep --quiet -e '\(/\|^\)\.gitattributes$'; then
-    gitattributes_hit='changed'
-  fi
-  if [ "${gitattributes_hit}" != 'false' ]; then
-    if [ -n "${GIT_REVIEW_ALLOW_GITATTRIBUTES:-}" ]; then
-      log warn ".gitattributes ${gitattributes_hit} -- can hide OTHER files' contents; tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
-    else
-      log error ".gitattributes ${gitattributes_hit} -- it can hide OTHER files' contents from the diff. Failing closed."
-      log notice "Hint: legitimate .gitattributes changes are rare here; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
-      exit 1
-    fi
-  fi
+  git_review_gitattributes_gate "${names_rc}" "${changed_names}" "the change set"
 
   ## Display file diffs one at a time. The terminal-safe reviewer
   ## (git-diff-review) may prompt on /dev/tty to continue past flagged content,
@@ -155,8 +136,13 @@ new_mode="${7}"
 diff_path_q="$(printf '%q' "${diff_path}")"  ## neutralized for messages
 
 is_submodule_blob() {
-  grep --quiet -E -- '^Subproject commit [0-9a-f]{40}$' "${1}" \
-    && [ "$(wc -l < "${1}")" -eq 1 ]
+  local blob_rc
+  ## grep WITHOUT --quiet drains the whole file, so a read error surfaces as
+  ## rc >= 2 instead of being masked by an early-match exit 0 (the same rule the
+  ## scan lib documents for the NUL check).
+  blob_rc=0
+  grep -E -- '^Subproject commit [0-9a-f]{40}$' "${1}" >/dev/null || blob_rc=$?
+  [ "${blob_rc}" = 0 ] && [ "$(wc -l < "${1}")" -eq 1 ]
 }
 
 extract_commit() {
@@ -187,22 +173,21 @@ fi
 
 ## Symlink detection and handling.
 read_target() {
-  if [ "${1}" = /dev/null ] || [ ! -e "${1}" ]; then
+  ## Test '-L' FIRST: '-e' and '-s' FOLLOW a symlink to its target, so a real
+  ## on-disk symlink (working-tree side, core.symlinks=true) that is dangling or
+  ## points at an empty file would otherwise be mislabeled '(none)' / '(empty)',
+  ## hiding its target. A real symlink is read with readlink; git's regular temp
+  ## blob (external-diff mode: content IS the target path) is read as content --
+  ## discriminate by what the file actually IS, NOT by 'git config core.symlinks'
+  ## (readlink on the temp blob would fail and render the target empty).
+  if [ -L "${1}" ]; then
+    tr '\n' ' ' < <(readlink --no-newline -- "${1}")
+  elif [ "${1}" = /dev/null ] || [ ! -e "${1}" ]; then
     printf '(none)'
   elif [ ! -s "${1}" ]; then
     printf '(empty)'
   else
-    ## In external-diff mode git materializes a symlink blob as a REGULAR temp
-    ## file whose CONTENT is the target path, so read the content. Only a real
-    ## on-disk symlink (a working-tree side, core.symlinks=true) must be
-    ## readlink'd. Discriminate by what the file actually IS ('-L'), NOT by
-    ## 'git config core.symlinks': readlink on the temp blob file fails and
-    ## renders the target empty, hiding a symlink retarget from the reviewer.
-    if [ -L "${1}" ]; then
-      tr '\n' ' ' < <(readlink --no-newline -- "${1}")
-    else
-      tr '\n' ' ' < "${1}"
-    fi
+    tr '\n' ' ' < "${1}"
   fi
 }
 
@@ -285,6 +270,14 @@ if [ "${old_mode}" = "160000" ] || [ "${new_mode}" = "160000" ]; then
     log notice "Hint: Use 'git submodule update --init --recursive --progress --jobs=4' to initialize all submodules."
     exit 1
   fi
+
+  ## The recursion below reviews the submodule's files in EXTERNAL-DIFF mode,
+  ## which bypasses the top-level re-dispatch preflight -- so re-run the
+  ## .gitattributes gate here on the submodule's own change, else a submodule
+  ## bump that adds a hiding .gitattributes would slip through.
+  sm_names_rc=0
+  sm_names="$(git -C "${diff_path}" diff --no-ext-diff --name-only "${old_commit}" "${new_commit}" 2>/dev/null)" || sm_names_rc=$?
+  git_review_gitattributes_gate "${sm_names_rc}" "${sm_names}" "submodule '${diff_path_q}'"
 
   ## First a neutralized --stat summary of the submodule's own change (untrusted
   ## content, so through stcat), then review each changed submodule file by
