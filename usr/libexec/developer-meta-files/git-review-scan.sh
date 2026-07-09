@@ -124,7 +124,10 @@ git_review_handle_unicode_show_fatal() {
     ## Record the finding for the end-of-run failure. A write error must NOT be
     ## swallowed - dropping it would let a fatal finding pass as clean.
     if ! printf '%s' '.' > "${git_review_fatal_flag_file}"; then
-      die 1 "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
+      ## Explicit 'exit' (NOT 'die', which returns under allow_errors=1) so an
+      ## unrecordable fatal finding always fails closed.
+      log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
+      exit 1
     fi
     return 0
   fi
@@ -162,9 +165,12 @@ git_review_scan_content() {
 
   git_review_unicode_scan "${target}" "${label}"
 
-  ## Over-long lines can truncate/hang a viewer (a place to bury a change).
-  ## Do not silence errors from wc, if it fails something is very wrong.
-  longest="$(wc --max-line-length < "${target}" 2>/dev/null)"
+  ## Over-long lines can truncate/hang a viewer (a place to bury a change). A wc
+  ## failure (e.g. an unreadable target) must not abort the scan under errexit
+  ## with a cryptic '[: integer expression expected', nor be read as a huge
+  ## line: default to 0.
+  longest=0
+  longest="$(wc --max-line-length < "${target}")" || longest=0
   if [ "${longest}" -gt 5000 ]; then
     log warn "'${label}' has a '${longest}'-char line; a viewer may truncate/hang."
   fi

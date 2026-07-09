@@ -91,9 +91,12 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   git "${git_pager_opt[@]}" -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
 
   ## If a fatal error was encountered while checking for malicious Unicode,
-  ## warn here and exit non-zero.
+  ## warn here and exit non-zero. Explicit 'exit' (NOT 'die', which returns
+  ## instead of exiting under allow_errors=1) so a recorded fatal finding can
+  ## never report success.
   if [ -s "${git_review_fatal_flag_file}" ]; then
-    die 1 "undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing."
+    log error "undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing."
+    exit 1
   fi
   exit "${diff_rc}"
 fi
@@ -107,7 +110,10 @@ fi
 git_external_level=$((git_external_level + 1))
 export git_external_level
 if [ "${git_external_level}" -gt 2 ]; then
-   die 255 "external-diff recursion depth '${git_external_level}' reached (more than 2); aborting to avoid a diff loop. Please report this bug!"
+   ## Explicit 'exit' (NOT 'die', which returns under allow_errors=1) so a diff
+   ## loop cannot be resumed past this guard.
+   log error "external-diff recursion depth '${git_external_level}' reached (more than 2); aborting to avoid a diff loop. Please report this bug!"
+   exit 255
 fi
 
 if [ "$#" -eq 0 ]; then
@@ -191,8 +197,14 @@ read_target() {
   elif [ ! -s "${1}" ]; then
     printf '(empty)'
   else
-    if [ "$(git config get core.symlinks)" = 'true' ]; then
-      tr '\n' ' ' < <(readlink --no-newline "${1}")
+    ## In external-diff mode git materializes a symlink blob as a REGULAR temp
+    ## file whose CONTENT is the target path, so read the content. Only a real
+    ## on-disk symlink (a working-tree side, core.symlinks=true) must be
+    ## readlink'd. Discriminate by what the file actually IS ('-L'), NOT by
+    ## 'git config core.symlinks': readlink on the temp blob file fails and
+    ## renders the target empty, hiding a symlink retarget from the reviewer.
+    if [ -L "${1}" ]; then
+      tr '\n' ' ' < <(readlink --no-newline -- "${1}")
     else
       tr '\n' ' ' < "${1}"
     fi
