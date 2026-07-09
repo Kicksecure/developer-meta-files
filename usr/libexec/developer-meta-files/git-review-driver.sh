@@ -78,10 +78,17 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
     log warn "'.gitattributes' changed -- can hide OTHER files' contents; review it first."
   fi
 
-  ## Display file diffs one at a time.
+  ## Display file diffs one at a time. The terminal-safe reviewer
+  ## (git-diff-review) may prompt on /dev/tty to continue past flagged content,
+  ## so disable git's pager for it -- a pager would fight the prompt for the
+  ## terminal. GUI drivers (git-meld / git-kdiff3) keep the pager.
   printf '%s\n' "===== ${review_tool}: per-file diffs ====="
+  git_pager_opt=()
+  if [ "${git_review_display_fatal_content:-}" = 'true' ]; then
+    git_pager_opt=(--no-pager)
+  fi
   diff_rc=0
-  git -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
+  git "${git_pager_opt[@]}" -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
 
   ## If a fatal error was encountered while checking for malicious Unicode,
   ## warn here and exit non-zero.

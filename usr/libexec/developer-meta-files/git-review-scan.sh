@@ -59,43 +59,83 @@ git_review_unicode_scan() {
   fi
 }
 
+## Interactively ask the operator whether to continue a review despite content a
+## scan flagged. ONLY the terminal-safe reviewer (git-diff-review, which sets
+## git_review_display_fatal_content=true and neutralizes ALL output through
+## stcat) may prompt; a GUI wrapper never asks. The question goes to stderr via
+## 'log question' and the answer is read from /dev/tty, because in external-diff
+## mode stdin may be redirected. Consent is cached so a file that trips the scan
+## more than once (path plus content) is not re-prompted.
+##
+## Returns: 0 = proceed (operator said yes, or already consented); 1 = operator
+## explicitly declined; 2 = could not ask (not the terminal-safe reviewer, or no
+## usable controlling terminal). Callers distinguish 1 from 2: the fatal-blob
+## gate fails closed on EITHER, whereas the benign stcat-write path aborts only
+## on a real decline (1) and proceeds when nobody could be asked (2).
+git_review_continue_consented='false'
+git_review_prompt_continue() {
+  local reply
+
+  if [ "${git_review_continue_consented}" = 'true' ]; then
+    return 0
+  fi
+  if [ "${git_review_display_fatal_content:-}" != 'true' ]; then
+    return 2
+  fi
+  ## /dev/tty can be a permission-readable device node yet fail to OPEN when the
+  ## process has no controlling terminal (ENXIO), so probe by actually opening it
+  ## rather than trusting 'test -r'. No usable tty -> cannot ask (rc 2).
+  if ! { true < /dev/tty; } 2>/dev/null; then
+    return 2
+  fi
+  log question "the flagged content above was neutralized (stcat). Continue the review anyway? [y/N]"
+  reply=''
+  read -r reply < /dev/tty 2>/dev/null || return 2
+  if [ "${reply,,}" = 'y' ] || [ "${reply,,}" = 'yes' ]; then
+    git_review_continue_consented='true'
+    return 0
+  fi
+  return 1
+}
+
 git_review_handle_unicode_show_fatal() {
-  ## Usually we want to simply exit non-zero here. However, the user might
-  ## want to try to review a diff even if a UTF-8 decode error was thrown
-  ## by unicode-show. Because files that trigger such errors are liable to
-  ## exploit vulnerabilities in diff viewers, we only allow this if:
+  ## unicode-show reported a fatal (undecodable / non-UTF-8) finding. Files that
+  ## trip this are liable to exploit bugs in diff viewers, so the default is to
+  ## fail closed. There are two opt-outs, BOTH restricted to the terminal-safe
+  ## reviewer (git-diff-review, git_review_display_fatal_content=true, all output
+  ## stcat-neutralized) -- a GUI wrapper (git-meld / git-kdiff3) always fails
+  ## closed here:
   ##
-  ## * the user has set GIT_REVIEW_UNICODE_NONFATAL=1 in the environment,
-  ##   AND
-  ## * git_review_fatal_flag_file points to a file where we can store info
-  ##   about problematic files (this happens only when one of the wrappers
-  ##   is called directly, see git-review-driver.sh), AND
-  ## * the diff viewer plugin has declared itself able to display possibly
-  ##   malicious files safely.
+  ##   1. Scripted: GIT_REVIEW_UNICODE_NONFATAL=1 records the finding in the
+  ##      shared flag file and lets the batch run finish, failing at the very end
+  ##      (git-review-driver.sh checks the flag file). Needs the flag file, which
+  ##      exists only when a wrapper was run directly (see git-review-driver.sh).
+  ##   2. Interactive: git_review_prompt_continue asks the operator on /dev/tty;
+  ##      a "yes" continues this file CLEANLY (nothing recorded), a "no" or a
+  ##      non-interactive run fails closed.
   ##
-  ## At time of writing, the only diff viewer plugin that fulfills the
-  ## third requirement is git-diff-review, which pipes all output through
-  ## stcat.
-  ##
-  ## Note that git_review_fatal may have been set to non-zero for reasons
-  ## reason other than a failed UTF-8 decode attempt (e.g., unreadable
-  ## files will trigger this as well), so even if all of these conditions
-  ## hold, the diff may still fail.
+  ## A non-fatal (rc 1, decodable) finding never reaches here -- it is only
+  ## warned about. git_review_unicode_rc may also be >=2 for reasons other than
+  ## a decode error (e.g. an unreadable file), so even an opt-out may still fail.
 
   if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] \
     && [ -n "${git_review_fatal_flag_file:-}" ] \
     && [ "${git_review_display_fatal_content:-}" = 'true' ]; then
-    ## Record the finding for the end-of-run failure. A write error must
-    ## NOT be swallowed - dropping it would let a fatal finding pass as
-    ## clean.
+    ## Record the finding for the end-of-run failure. A write error must NOT be
+    ## swallowed - dropping it would let a fatal finding pass as clean.
     if ! printf '%s' '.' > "${git_review_fatal_flag_file}"; then
       die 1 "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
     fi
-  else
-    log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed."
-    log notice "Hint: To review this diff despite the errors, set GIT_REVIEW_UNICODE_NONFATAL=1 and run via the git-diff-review wrapper. GUI wrappers (git-meld, git-kdiff3) cannot be used to review this diff."
-    exit 1
+    return 0
   fi
+
+  if git_review_prompt_continue; then
+    return 0
+  fi
+
+  log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed."
+  log notice "Hint: To review this diff despite the errors, run via the git-diff-review wrapper and answer the continue prompt, or set GIT_REVIEW_UNICODE_NONFATAL=1. GUI wrappers (git-meld, git-kdiff3) cannot review this diff."
+  exit 1
 }
 
 ## Trap target: remove the fatal flag file if it exists.
