@@ -19,23 +19,22 @@
 
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/wc-test.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 ## The path to the executable tool that uses this wrapper.
 if [ -z "${git_review_self:-}" ]; then
-  printf '%s\n' "git-review-driver.sh: wrapper must set 'git_review_self'" >&2
-  exit 2
+  die 2 "git-review-driver.sh: wrapper must set 'git_review_self'"
 fi
 
 ## The name of the tool.
 if [ -z "${review_tool:-}" ]; then
-  printf '%s\n' "git-review-driver.sh: wrapper must set 'review_tool'" >&2
-  exit 2
+  die 2 "git-review-driver.sh: wrapper must set 'review_tool'"
 fi
 
 ## The function to call to render a diff and display it to the user.
 if ! declare -F display_regular_file >/dev/null 2>&1; then
-  printf '%s\n' "git-review-driver.sh: wrapper must define 'display_regular_file()'" >&2
-  exit 2
+  die 2 "git-review-driver.sh: wrapper must define 'display_regular_file()'"
 fi
 
 ## Shared content-hardening core.
@@ -76,7 +75,7 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   ## FIXME: Shouldn't we error out entirely if git fails here?
   changed_names="$(git diff --no-ext-diff --name-only "$@" 2>/dev/null || true)"
   if printf '%s\n' "${changed_names}" | grep --quiet -e '\(/\|^\)\.gitattributes$'; then
-    printf '%s\n' "${review_tool}: WARNING: '.gitattributes' changed -- can hide OTHER files' contents; review it first." >&2
+    log warn "'.gitattributes' changed -- can hide OTHER files' contents; review it first."
   fi
 
   ## Display file diffs one at a time.
@@ -87,8 +86,7 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   ## If a fatal error was encountered while checking for malicious Unicode,
   ## warn here and exit non-zero.
   if [ -s "${git_review_fatal_flag_file}" ]; then
-    printf '%s\n' "${review_tool}: ERROR: undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing." >&2
-    exit 1
+    die 1 "undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing."
   fi
   exit "${diff_rc}"
 fi
@@ -102,13 +100,11 @@ fi
 git_external_level=$((git_external_level + 1))
 export git_external_level
 if [ "${git_external_level}" -gt 2 ]; then
-   printf '%s\n' "${review_tool}: ERROR: external-diff recursion depth '${git_external_level}' reached (> 2); aborting to avoid a diff loop. Please report this bug!" >&2
-   exit 255
+   die 255 "external-diff recursion depth '${git_external_level}' reached (more than 2); aborting to avoid a diff loop. Please report this bug!"
 fi
 
 if [ "$#" -eq 0 ]; then
-  printf '%s\n' "${review_tool}: ERROR: external diff invoked without arguments." >&2
-  exit 2
+  die 2 "external diff invoked without arguments."
 fi
 
 ## Unmerged path: git passes a single argument, the path. Show git's combined
@@ -119,7 +115,7 @@ fi
 ## about it.
 if [ "$#" -lt 7 ]; then
    unmerged_path_q="$(printf '%q' "${1}")"
-   printf '%s\n' "${review_tool}: NOTE: '${unmerged_path_q}' is unmerged (conflict). Combined diff:" >&2
+   log notice "'${unmerged_path_q}' is unmerged (conflict). Combined diff:"
    git diff --no-ext-diff --cc -- "${1}" | stcat >&2 || true
    exit 0
 fi
@@ -144,7 +140,7 @@ extract_commit() {
 
 for check_mode in "${old_mode}" "${new_mode}"; do
   [[ "${check_mode}" =~ ^[0-7]{6}$ ]] \
-    || printf '%s\n' "${review_tool}: WARNING: unexpected mode '${check_mode}' for '${diff_path_q}'." >&2
+    || log warn "unexpected mode '${check_mode}' for '${diff_path_q}'."
 done
 
 ## Control bytes in the path (cf. CVE-2025-48384, a trailing CR in a gitlink
@@ -156,7 +152,7 @@ done
 path_rc=0
 path_report="$(printf '%s\n' "${diff_path}" | NO_COLOR=1 unicode-show 2>&1)" || path_rc="$?"
 if [ "${path_rc}" != 0 ]; then
-  printf '%s\n' "${review_tool}: WARNING: path '${diff_path_q}' has suspicious/undecodable bytes (unicode-show rc='${path_rc}'):" >&2
+  log warn "path '${diff_path_q}' has suspicious/undecodable bytes (unicode-show rc='${path_rc}'):"
   printf '%s\n' "${path_report}" | stcat >&2 || true
   if [ "${path_rc}" -ge 2 ]; then
     git_review_handle_unicode_show_fatal
@@ -169,7 +165,7 @@ fi
 ## can forge diff-output lines.
 case "${diff_path}" in
   *$'\t'* | *$'\n'*)
-    printf '%s\n' "${review_tool}: WARNING: path '${diff_path_q}' contains a tab or newline byte - anomalous in a filename; it can forge diff-output lines." >&2
+    log warn "path '${diff_path_q}' contains a tab or newline byte - anomalous in a filename; it can forge diff-output lines."
     ;;
 esac
 
@@ -263,7 +259,7 @@ if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
   ## already surfaces it; there is no inner diff to show, and no fetch is
   ## missing -- so do not print a misleading error.
   if [ -z "${old_commit}" ] || [ -z "${new_commit}" ]; then
-    printf '%s\n' "${review_tool}: NOTE: submodule '${diff_path_q}' added or removed; no inner diff." >&2
+    log notice "submodule '${diff_path_q}' added or removed; no inner diff."
     exit 0
   fi
   ## We can NOT use `git rev-parse --git-dir` to detect initialization; a
@@ -273,8 +269,8 @@ if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
   ## initialized, the output from `git submodule status` will start with a
   ## `-` character.
   if [[ "$(git submodule status "${diff_path}" 2>/dev/null)" =~ ^- ]]; then
-    printf '%s\n' "${review_tool}: ERROR: submodule '${diff_path_q}' not an initialized git repo; cannot show diff. Failing closed." >&2
-    printf '%s\n' "${review_tool}: Hint: Use 'git submodule update --init --recursive --progress --jobs=4' to initialize all submodules."
+    log error "submodule '${diff_path_q}' not an initialized git repo; cannot show diff. Failing closed."
+    log notice "Hint: Use 'git submodule update --init --recursive --progress --jobs=4' to initialize all submodules."
     exit 1
   fi
 
@@ -291,14 +287,14 @@ if [ "${old_mode:0:2}" = "16" ] || [ "${new_mode:0:2}" = "16" ]; then
   git -C "${diff_path}" diff --no-ext-diff --find-copies --stat "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
   git -C "${diff_path}" diff --no-ext-diff --find-copies "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
   if [ "${sm_rc}" != 0 ]; then
-    printf '%s\n' "${review_tool}: ERROR: submodule '${diff_path_q}' '${old_commit}' -> '${new_commit}': diff failed with exit code '${sm_rc}'. Failing closed." >&2
-    printf '%s\n' "${review_tool}: Hint: One or more commits being diffed may be missing. Try running 'git fetch' in the submodule."
+    log error "submodule '${diff_path_q}' '${old_commit}' to '${new_commit}': diff failed with exit code '${sm_rc}'. Failing closed."
+    log notice "Hint: One or more commits being diffed may be missing. Try running 'git fetch' in the submodule."
     exit 1
   fi
   exit 0
 fi
 if is_submodule_blob "${old_file}" || is_submodule_blob "${new_file}"; then
-  printf '%s\n' "${review_tool}: WARNING: '${diff_path_q}' content mimics a gitlink but mode ('${old_mode}' -> '${new_mode}') is not 160000; treating as a regular file. Possible obfuscation?" >&2
+  log warn "'${diff_path_q}' content mimics a gitlink but mode ('${old_mode}' to '${new_mode}') is not 160000; treating as a regular file. Possible obfuscation?"
 fi
 
 ## Scan files for Unicode, over-long lines, and binary content. Always check
@@ -327,10 +323,10 @@ fi
 ## end up displaying a lot more changes than just changes for the current
 ## file.
 git diff --no-ext-diff --find-copies --stat "${old_hex}" "${new_hex}" | stcat \
-  || printf '%s\n' "${review_tool}: WARNING: '--stat' for '${diff_path_q}' failed; showing the diff anyway." >&2
+  || log warn "'--stat' for '${diff_path_q}' failed; showing the diff anyway."
 
 if [ "${is_binary}" = 'true' ]; then
-  printf '%s\n' "${review_tool}: NOTE: '${diff_path_q}' looks BINARY (NUL byte); shown as --stat only, not opened in the viewer." >&2
+  log notice "'${diff_path_q}' looks BINARY (NUL byte); shown as --stat only, not opened in the viewer."
 else
   display_regular_file "${old_file}" "${new_file}" "${diff_path_q}"
 fi

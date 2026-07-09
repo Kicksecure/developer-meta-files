@@ -24,12 +24,14 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
+
 review_tool="git-review-difftool"
 
 if [ "$#" -ne 3 ]; then
-   printf '%s\n' "${review_tool}: ERROR: expected 3 args, got $#." >&2
-   printf '%s\n' "Usage: ${review_tool} <meld|kdiff3|diff-review> <local-file> <remote-file>" >&2
-   exit 2
+   log error "expected 3 arguments, got '$#'."
+   die 2 "usage: ${review_tool} [meld|kdiff3|diff-review] LOCAL-FILE REMOTE-FILE"
 fi
 viewer="$1"
 local_file="$2"
@@ -60,7 +62,7 @@ remote_is_binary="${git_review_is_binary}"
 
 ## A binary side would render as noise; surface it and do not open the viewer.
 if [ "${local_is_binary}" = 'true' ] || [ "${remote_is_binary}" = 'true' ]; then
-   printf '%s\n' "${review_tool}: NOTE: ${pair_q} looks BINARY (NUL byte); not opened in the viewer." >&2
+   log notice "${pair_q} looks BINARY (NUL byte); not opened in the viewer."
    exit 0
 fi
 
@@ -77,13 +79,11 @@ case "${viewer}" in
       diff_rc=0
       diff_out="$( diff --unified -- "${local_file}" "${remote_file}" )" || diff_rc=$?
       if [ "${diff_rc}" -ge 2 ]; then
-         printf '%s\n' "${review_tool}: ERROR: diff failed (rc='${diff_rc}') for '${diff_path_q}'." >&2
-         exit "${diff_rc}"
+         die "${diff_rc}" "diff failed (rc='${diff_rc}') for '${diff_path_q}'."
       fi
       printf '%s\n' "${diff_out}" | stcat
       ;;
    *)
-      printf '%s\n' "${review_tool}: ERROR: unknown viewer '${viewer}' (expected meld|kdiff3|diff-review)." >&2
-      exit 2
+      die 2 "unknown viewer '${viewer}' (expected meld|kdiff3|diff-review)."
       ;;
 esac

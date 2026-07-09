@@ -9,12 +9,10 @@
 ## git-review-driver.sh (external-diff mode) AND by the difftool/mergetool
 ## wrappers (git-review-difftool, git-review-mergetool). Holds the primitives
 ## that MUST stay identical across every review contract: Unicode/Trojan-Source
-## surfacing, the fatal-finding flag, the fail-closed finish, and a single-file
-## content scan (Unicode + over-long line + binary) shared by the wrappers.
+## surfacing, the fail-closed fatal handler, and a single-file content scan
+## (Unicode + over-long line + binary) shared by the wrappers.
 ##
 ## The caller MUST set 'review_tool' (name used in messages) before sourcing.
-## git_review_finish reads 'diff_path_q' (defaulted here when a caller -- e.g.
-## the difftool wrapper -- has not set a per-file path).
 ##
 ## style-ok: no-strict (sourced-only; the caller sets strict-mode / errexit).
 
@@ -22,6 +20,8 @@
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 has unicode-show
 has stcat
@@ -29,8 +29,7 @@ has mktemp
 has safe-rm
 
 if [ -z "${review_tool:-}" ]; then
-  printf '%s\n' "git-review-scan.sh: caller must set 'review_tool'" >&2
-  exit 2
+  die 2 "git-review-scan.sh: caller must set 'review_tool'"
 fi
 
 ## Check for Unicode in a specified file. Makes unicode-show's return value
@@ -52,7 +51,7 @@ git_review_unicode_scan() {
   report="$(UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 NO_COLOR=1 unicode-show "${target}" 2>&1)" \
     || git_review_unicode_rc="$?"
   if [ "${git_review_unicode_rc}" != 0 ]; then
-    printf '%s\n' "${review_tool}: WARNING: '${label}' suspicious/undecodable Unicode (unicode-show rc='${git_review_unicode_rc}'):" >&2
+    log warn "'${label}' suspicious/undecodable Unicode (unicode-show rc='${git_review_unicode_rc}'):"
     printf '%s\n' "${report}" | stcat >&2 || true
     if [ "${git_review_unicode_rc}" -ge 2 ]; then
       git_review_handle_unicode_show_fatal
@@ -90,12 +89,11 @@ git_review_handle_unicode_show_fatal() {
     ## NOT be swallowed - dropping it would let a fatal finding pass as
     ## clean.
     if ! printf '%s' '.' > "${git_review_fatal_flag_file}"; then
-      printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed." >&2
-      exit 1
+      die 1 "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
     fi
   else
-    printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed." >&2
-    printf '%s\n' "${review_tool}: Hint: To review this diff despite the errors, set GIT_REVIEW_UNICODE_NONFATAL=1 and run via the git-diff-review wrapper. GUI wrappers (git-meld, git-kdiff3) cannot be used to review this diff." >&2
+    log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed."
+    log notice "Hint: To review this diff despite the errors, set GIT_REVIEW_UNICODE_NONFATAL=1 and run via the git-diff-review wrapper. GUI wrappers (git-meld, git-kdiff3) cannot be used to review this diff."
     exit 1
   fi
 }
@@ -128,7 +126,7 @@ git_review_scan_content() {
   ## Do not silence errors from wc, if it fails something is very wrong.
   longest="$(wc --max-line-length < "${target}" 2>/dev/null)"
   if [ "${longest}" -gt 5000 ]; then
-    printf '%s\n' "${review_tool}: WARNING: '${label}' has a '${longest}'-char line; a viewer may truncate/hang." >&2
+    log warn "'${label}' has a '${longest}'-char line; a viewer may truncate/hang."
   fi
 
   ## A binary blob would render as noise in a text/GUI viewer. '--text' is
@@ -148,7 +146,7 @@ git_review_scan_content() {
       git_review_is_binary='true'
     elif [ "${nul_rc}" -ge 2 ]; then
       git_review_is_binary='true'
-      printf '%s\n' "${review_tool}: WARNING: NUL check for '${label}' errored (grep rc='${nul_rc}'); treating as binary." >&2
+      log warn "NUL check for '${label}' errored (grep rc='${nul_rc}'); treating as binary."
     fi
   fi
 }
