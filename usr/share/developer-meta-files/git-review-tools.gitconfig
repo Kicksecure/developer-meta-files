@@ -1,0 +1,53 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## Safe git difftool / mergetool backends (developer-meta-files).
+##
+## Each backend runs the shared content-hardening scan -- Trojan-Source Unicode,
+## over-long lines, binary detection, fail-closed on undecodable/non-UTF-8
+## content -- BEFORE opening the viewer, giving a difftool/mergetool review the
+## same neutralization as the external-diff drivers git-meld / git-kdiff3 /
+## git-diff-review.
+##
+## Activate by adding this to your ~/.gitconfig (it is not enabled automatically
+## so it never overrides your existing tool choices):
+##
+##   [include]
+##       path = /usr/share/developer-meta-files/git-review-tools.gitconfig
+##
+## Then:
+##   git difftool  --tool=review-meld    <rev>     # GUI, meld
+##   git difftool  --tool=review-kdiff3  <rev>     # GUI, kdiff3
+##   git difftool  --tool=review-diff    <rev>     # terminal-safe textual
+##   git mergetool --tool=review-meld              # 3-way GUI merge, meld
+##   git mergetool --tool=review-kdiff3            # 3-way GUI merge, kdiff3
+
+## trustExitCode = true on the difftools so git HONORS the wrapper's fail-closed
+## non-zero exit (undecodable content) and stops the review instead of silently
+## continuing to the next file. git difftool ignores the tool's exit code
+## without it.
+##
+## TODO: Does setting trustExitCode on individual difftool tools actually
+## work? Test.
+[difftool "review-meld"]
+	cmd = git-review-difftool meld "$LOCAL" "$REMOTE"
+	trustExitCode = true
+[difftool "review-kdiff3"]
+	cmd = git-review-difftool kdiff3 "$LOCAL" "$REMOTE"
+	trustExitCode = true
+[difftool "review-diff"]
+	cmd = git-review-difftool diff-review "$LOCAL" "$REMOTE"
+	trustExitCode = true
+
+## Both entries set trustExitCode = true because git-review-mergetool provides an
+## AUTHORITATIVE exit code itself: it detects resolution by whether $MERGED was
+## modified (meld's own exit is unreliable -- 0 even when closed unsaved), and it
+## exits non-zero when it refuses to open a binary/undecodable conflict. Trusting
+## that exit keeps those fail-closed refusals honored; trustExitCode = false would
+## make git ignore them and fall back to a "was the merge successful?" prompt.
+[mergetool "review-meld"]
+	cmd = git-review-mergetool meld "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+	trustExitCode = true
+[mergetool "review-kdiff3"]
+	cmd = git-review-mergetool kdiff3 "$BASE" "$LOCAL" "$REMOTE" "$MERGED"
+	trustExitCode = true

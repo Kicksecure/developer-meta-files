@@ -5,11 +5,9 @@
 
 ## AI-Assisted
 
-## Safe git external diff driver: prints a TEXTUAL diff, but neutralized for the
-## terminal via 'stcat' (a hostile blob cannot inject terminal escape sequences)
-## and with the same hardening as its GUI siblings git-meld / git-kdiff3 (mode /
-## symlink / gitlink-spoof / Trojan-Source-Unicode / long-line / binary /
-## driver-skipped surfacing). A no-GUI safe reviewer; used by dm-review-branch.
+## Safe git external diff driver: prints a TEXTUAL diff, but neutralized for
+## the terminal via 'stcat' (a hostile blob cannot inject terminal escape
+## sequences). Used by dm-review-branch.
 
 set -o errexit
 set -o nounset
@@ -18,39 +16,39 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+
+has stcat
+
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
 review_tool="git-diff-review"
+
+## This display is capable of safely displaying content that triggered fatal
+## errors in unicode-show.
+git_review_display_fatal_content='true'
 
 ## Invoked indirectly by the sourced git-review-driver.sh (not dead code).
 # shellcheck disable=SC2317
 display_regular_file() {
-   ## stcat neutralizes terminal escapes in a hostile blob (required; no
-   ## raw-diff fallback). Accept only 'diff' exit 0/1 (same/differ); a real
-   ## diff error (>=2) or any stcat failure must NOT pass as a rendered file.
-   ## Capture diff to a var (||-suffixed, no errexit toggle) so both statuses
-   ## are checkable without a two-stage-pipe PIPESTATUS dance.
-   local diff_rc diff_out
-   printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
-   has stcat
-   diff_rc=0
-   diff_out="$(diff --unified -- "${1}" "${2}")" || diff_rc=$?
-   if [ "${diff_rc}" -gt 1 ]; then
-      printf '%s\n' "git-diff-review: ERROR: diff failed (rc=${diff_rc}) for ${3}." >&2
-      return "${diff_rc}"
-   fi
-   printf '%s\n' "${diff_out}" | stcat \
-      || { diff_rc=$?; printf '%s\n' "git-diff-review: ERROR: stcat failed (rc=${diff_rc}) for ${3}." >&2; return "${diff_rc}"; }
+  ## stcat neutralizes terminal escapes in a hostile blob. Accept only 'diff'
+  ## exit 0/1 (same/differ); a real diff error (>=2) or any stcat failure
+  ## must NOT pass as a rendered file.
+  local diff_rc diff_out
+
+  printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
+  diff_rc=0
+  diff_out="$(diff --unified -- "${1}" "${2}")" || diff_rc=$?
+  if [ "${diff_rc}" -gt 1 ]; then
+    printf '%s\n' "git-diff-review: ERROR: diff failed (rc='${diff_rc}') for '${3}'." >&2
+    return "${diff_rc}"
+  fi
+  printf '%s\n' "${diff_out}" | stcat || diff_rc=$?
+  if [ "${diff_rc}" -ne 0 ]; then
+    printf '%s\n' "git-diff-review: ERROR: stcat failed (rc='${diff_rc}') for '${3}'." >&2
+    return "${diff_rc}"
+  fi
 }
 
-mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
-for git_review_driver in \
-   "/usr/libexec/developer-meta-files/git-review-driver.sh" \
-   "${mydir}/../libexec/developer-meta-files/git-review-driver.sh" ; do
-   if [ -r "${git_review_driver}" ]; then
-      # shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
-      source "${git_review_driver}"
-      exit 0
-   fi
-done
-printf '%s\n' "git-diff-review: ERROR: git-review-driver.sh not found." >&2
-exit 2
+# shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
+source /usr/libexec/developer-meta-files/git-review-driver.sh
