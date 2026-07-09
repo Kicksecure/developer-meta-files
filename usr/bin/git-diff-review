@@ -21,6 +21,12 @@ shopt -s shift_verbose
 git_review_self="$(readlink -f -- "${BASH_SOURCE[0]}")"
 review_tool="git-diff-review"
 
+## This display is terminal-safe (stcat-neutralized), so it -- and ONLY it -- may
+## DEFER a fatal (undecodable) blob under GIT_REVIEW_UNICODE_NONFATAL and show it
+## neutralized, failing at the end. The GUI wrappers (git-meld / git-kdiff3) do
+## NOT set this, so the driver fails them closed on a fatal blob regardless.
+git_review_display_terminal_safe=yes
+
 ## Invoked indirectly by the sourced git-review-driver.sh (not dead code).
 # shellcheck disable=SC2317
 display_regular_file() {
@@ -42,15 +48,5 @@ display_regular_file() {
       || { diff_rc=$?; printf '%s\n' "git-diff-review: ERROR: stcat failed (rc=${diff_rc}) for ${3}." >&2; return "${diff_rc}"; }
 }
 
-mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
-for git_review_driver in \
-   "/usr/libexec/developer-meta-files/git-review-driver.sh" \
-   "${mydir}/../libexec/developer-meta-files/git-review-driver.sh" ; do
-   if [ -r "${git_review_driver}" ]; then
-      # shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
-      source "${git_review_driver}"
-      exit 0
-   fi
-done
-printf '%s\n' "git-diff-review: ERROR: git-review-driver.sh not found." >&2
-exit 2
+# shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
+source /usr/libexec/developer-meta-files/git-review-driver.sh

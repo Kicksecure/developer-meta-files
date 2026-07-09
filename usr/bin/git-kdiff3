@@ -27,15 +27,5 @@ display_regular_file() {
    kdiff3 "${1}" "${2}"
 }
 
-mydir="$( cd -- "$( dirname -- "${git_review_self}" )" && pwd )"
-for git_review_driver in \
-   "/usr/libexec/developer-meta-files/git-review-driver.sh" \
-   "${mydir}/../libexec/developer-meta-files/git-review-driver.sh" ; do
-   if [ -r "${git_review_driver}" ]; then
-      # shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
-      source "${git_review_driver}"
-      exit 0
-   fi
-done
-printf '%s\n' "git-kdiff3: ERROR: git-review-driver.sh not found." >&2
-exit 2
+# shellcheck source=../libexec/developer-meta-files/git-review-driver.sh
+source /usr/libexec/developer-meta-files/git-review-driver.sh

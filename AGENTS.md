@@ -41,3 +41,13 @@ feedback loop.
 
 Other repos (derivative-maker, helper-scripts, etc.) cross-link
 here rather than duplicating.
+
+## Tests
+
+Comprehensive tests for two developer-meta-files tools are too high-volume for
+human review and live in the AI-maintained dist-ai repo, not here
+(https://github.com/org-ai-assisted/dist-ai). Run each against this checkout by
+passing the tool path:
+
+    git-meld-tests "$PWD/usr/bin/git-meld"   # usr/share/git-meld-tests/
+    dm-virtualbox-wiki-links-tests "$PWD/usr/bin/dm-virtualbox-update-local-and-wiki-links"   # usr/share/dm-virtualbox-wiki-links-tests/
