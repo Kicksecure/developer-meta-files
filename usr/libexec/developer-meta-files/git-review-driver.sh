@@ -152,7 +152,7 @@ done
 
 ## Control bytes in the path (cf. CVE-2025-48384, a trailing CR in a gitlink
 ## path). Warn on any non-zero: 1 == suspicious, 2 == non-UTF-8 path bytes
-## (fatal, cf. git_review_fatal).
+## (fatal, handled by git_review_handle_unicode_show_fatal).
 ##
 ## No need for UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 here, we append a
 ## newline to the filename before piping it in.
