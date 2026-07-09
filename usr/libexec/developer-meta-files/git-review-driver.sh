@@ -66,11 +66,11 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   git diff --no-ext-diff --stat --summary --find-renames "$@" || true
 
   ## Fail closed on a .gitattributes change in the reviewed range (it can remap
-  ## diff behavior to hide other files' content). The gate helper detects it
-  ## without a fail-open pipe; see git-review-scan.sh.
-  names_rc=0
-  changed_names="$(git diff --no-ext-diff --name-only "$@" 2>/dev/null)" || names_rc=$?
-  git_review_gitattributes_gate "${names_rc}" "${changed_names}" "the change set"
+  ## diff behavior to hide other files' content). The gate helper runs the given
+  ## '--name-only -z' command itself and detects robustly (raw names, no
+  ## quoting, no fail-open pipe); see git-review-scan.sh.
+  git_review_gitattributes_gate "the change set" \
+    git diff --no-ext-diff --name-only -z "$@"
 
   ## Display file diffs one at a time. The terminal-safe reviewer
   ## (git-diff-review) may prompt on /dev/tty to continue past flagged content,
@@ -136,13 +136,21 @@ new_mode="${7}"
 diff_path_q="$(printf '%q' "${diff_path}")"  ## neutralized for messages
 
 is_submodule_blob() {
-  local blob_rc
-  ## grep WITHOUT --quiet drains the whole file, so a read error surfaces as
-  ## rc >= 2 instead of being masked by an early-match exit 0 (the same rule the
-  ## scan lib documents for the NUL check).
+  local bytes blob_rc
+  ## A gitlink blob is exactly 'Subproject commit ' (18 bytes) + 40 hex = 58
+  ## bytes, plus an optional trailing newline (59). Bound on the byte size, not a
+  ## line count: 'wc -l' counts newlines, so a one-line blob with NO trailing
+  ## newline yields 0 and the spoof warning is trivially evaded. The size bound
+  ## also rejects (and avoids slurping) any larger file.
+  bytes="$(wc -c < "${1}")"
+  if [ "${bytes}" != 58 ] && [ "${bytes}" != 59 ]; then
+    return 1
+  fi
+  ## grep WITHOUT --quiet drains the (tiny) file, so a read error surfaces as
+  ## rc >= 2 instead of being masked by an early-match exit 0.
   blob_rc=0
   grep -E -- '^Subproject commit [0-9a-f]{40}$' "${1}" >/dev/null || blob_rc=$?
-  [ "${blob_rc}" = 0 ] && [ "$(wc -l < "${1}")" -eq 1 ]
+  [ "${blob_rc}" = 0 ]
 }
 
 extract_commit() {
@@ -275,9 +283,8 @@ if [ "${old_mode}" = "160000" ] || [ "${new_mode}" = "160000" ]; then
   ## which bypasses the top-level re-dispatch preflight -- so re-run the
   ## .gitattributes gate here on the submodule's own change, else a submodule
   ## bump that adds a hiding .gitattributes would slip through.
-  sm_names_rc=0
-  sm_names="$(git -C "${diff_path}" diff --no-ext-diff --name-only "${old_commit}" "${new_commit}" 2>/dev/null)" || sm_names_rc=$?
-  git_review_gitattributes_gate "${sm_names_rc}" "${sm_names}" "submodule '${diff_path_q}'"
+  git_review_gitattributes_gate "submodule '${diff_path_q}'" \
+    git -C "${diff_path}" diff --no-ext-diff --name-only -z "${old_commit}" "${new_commit}"
 
   ## First a neutralized --stat summary of the submodule's own change (untrusted
   ## content, so through stcat), then review each changed submodule file by

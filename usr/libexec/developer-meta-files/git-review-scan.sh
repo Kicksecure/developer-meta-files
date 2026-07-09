@@ -90,35 +90,48 @@ git_review_scan_path() {
 
 ## Fail-closed gate for a .gitattributes change (it can remap diff behavior to
 ## HIDE other files' content from the diff, and a legitimate change is rare in
-## review). $1 = the rc of the caller's 'git ... --name-only' run, $2 = its
-## output, $3 = a context label. GIT_REVIEW_ALLOW_GITATTRIBUTES=1 downgrades the
-## failure to a warning.
+## review). Args: $1 = a context label, $2... = the 'git ... --name-only -z'
+## command to run. GIT_REVIEW_ALLOW_GITATTRIBUTES=1 downgrades the failure to a
+## warning.
 ##
-## Detection uses 'grep' WITHOUT --quiet and NOT via a pipe: 'grep --quiet' exits
-## on the first match without draining stdin, and since '.gitattributes' (a
-## dotfile) sorts near the TOP of the name list, the producing 'printf' then
-## takes SIGPIPE -- under pipefail the pipeline becomes non-zero and the match is
-## masked, i.e. the gate FAILS OPEN. A '<<<' here-string (a temp file, no live
-## producer) with an explicit rc capture avoids that and also fails closed on a
-## grep error (rc >= 2).
+## Detection reads '-z' (RAW, NUL-separated names) into an array and matches with
+## 'case', NOT a grep over 'git diff --name-only' text, and NOT a
+## 'printf | grep --quiet' pipe:
+##   - Without -z, git QUOTES any path with a non-ASCII byte or a control char
+##     (core.quotePath), e.g. a '.gitattributes' in a non-ASCII-named directory
+##     prints double-quoted -- an anchored '.gitattributes$' match then MISSES it
+##     while git still applies the file (fail OPEN).
+##   - 'printf | grep --quiet' exits on the first match (and '.gitattributes'
+##     sorts near the top), so printf takes SIGPIPE which pipefail turns into a
+##     masked match (also fail OPEN).
+## A temp file (not a '<(...)' process substitution) is used so git's exit code
+## is captured -- a git failure is 'uncheckable' and also fails closed.
 git_review_gitattributes_gate() {
-  local names_rc changed_names context grep_rc attr_matches hit
+  local context names_rc hit name names_file
+  local -a name_list
 
-  names_rc="$1"
-  changed_names="$2"
-  context="$3"
+  context="$1"
+  shift
+
+  names_file="$(mktemp --tmpdir git-review-attrnames.XXXXXX)"
+  names_rc=0
+  "$@" > "${names_file}" 2>/dev/null || names_rc=$?
   hit='false'
   if [ "${names_rc}" != 0 ]; then
     hit="uncheckable (git rc '${names_rc}')"
   else
-    grep_rc=0
-    attr_matches="$(grep -e '\(/\|^\)\.gitattributes$' <<< "${changed_names}")" || grep_rc=$?
-    if [ "${grep_rc}" = 0 ] && [ -n "${attr_matches}" ]; then
-      hit='changed'
-    elif [ "${grep_rc}" -ge 2 ]; then
-      hit="uncheckable (grep rc '${grep_rc}')"
-    fi
+    name_list=()
+    readarray -d '' name_list < "${names_file}"
+    for name in "${name_list[@]}"; do
+      case "${name}" in
+        .gitattributes | */.gitattributes)
+          hit='changed'
+          break
+          ;;
+      esac
+    done
   fi
+  safe-rm --force -- "${names_file}"
 
   if [ "${hit}" = 'false' ]; then
     return 0
