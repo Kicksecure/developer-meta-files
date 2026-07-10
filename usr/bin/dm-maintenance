@@ -20,6 +20,8 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-update-local-and-wiki-links"
 
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-virtualbox-guest-additions-iso-update"
+
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tbb-update"
 
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-tor-update-repository"
