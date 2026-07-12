@@ -44,7 +44,7 @@ remote_vbox_version=''
 unpack_workdir="$(mktemp --directory)"
 
 dm_virtualbox_guest_additions_iso_cleanup() {
-  rm -rf "${unpack_workdir}"
+  safe-rm -r -f -- "${unpack_workdir}"
 }
 
 trap 'dm_virtualbox_guest_additions_iso_cleanup' EXIT
