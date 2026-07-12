@@ -70,16 +70,12 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   git_review_gitattributes_gate "the change set" \
     git diff --no-ext-diff --name-only -z "$@"
 
-  ## Display file diffs one at a time. The terminal-safe reviewer
-  ## (git-diff-review) may prompt on /dev/tty to continue past flagged content,
-  ## so disable git's pager for it. GUI drivers keep the pager.
+  ## Display file diffs one at a time. Always disable the pager, it causes
+  ## problems with terminal-based reviewers and is confusing for GUI-based
+  ## ones.
   printf '%s\n' "===== ${review_tool}: per-file diffs ====="
-  git_pager_opt=()
-  if [ "${git_review_outputs_to_terminal:-}" = 'true' ]; then
-    git_pager_opt=(--no-pager)
-  fi
   diff_rc=0
-  git "${git_pager_opt[@]}" -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
+  git --no-pager -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
 
   ## If a fatal error was encountered while checking for malicious Unicode,
   ## warn here and exit non-zero.
