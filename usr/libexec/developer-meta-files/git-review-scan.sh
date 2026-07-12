@@ -9,12 +9,10 @@
 ## git-review-driver.sh (external-diff mode) AND by the difftool/mergetool
 ## wrappers (git-review-difftool, git-review-mergetool). Holds the primitives
 ## that MUST stay identical across every review contract: Unicode/Trojan-Source
-## surfacing, the fatal-finding flag, the fail-closed finish, and a single-file
-## content scan (Unicode + over-long line + binary) shared by the wrappers.
+## surfacing, the fail-closed fatal handler, and a single-file content scan
+## (Unicode + over-long line + binary) shared by the wrappers.
 ##
 ## The caller MUST set 'review_tool' (name used in messages) before sourcing.
-## git_review_finish reads 'diff_path_q' (defaulted here when a caller -- e.g.
-## the difftool wrapper -- has not set a per-file path).
 ##
 ## style-ok: no-strict (sourced-only; the caller sets strict-mode / errexit).
 
@@ -22,6 +20,8 @@
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/wc-test.sh
 # shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 has unicode-show
 has stcat
@@ -29,8 +29,7 @@ has mktemp
 has safe-rm
 
 if [ -z "${review_tool:-}" ]; then
-  printf '%s\n' "git-review-scan.sh: caller must set 'review_tool'" >&2
-  exit 2
+  die 2 "git-review-scan.sh: caller must set 'review_tool'"
 fi
 
 ## Check for Unicode in a specified file. Makes unicode-show's return value
@@ -52,7 +51,7 @@ git_review_unicode_scan() {
   report="$(UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE=1 NO_COLOR=1 unicode-show "${target}" 2>&1)" \
     || git_review_unicode_rc="$?"
   if [ "${git_review_unicode_rc}" != 0 ]; then
-    printf '%s\n' "${review_tool}: WARNING: '${label}' suspicious/undecodable Unicode (unicode-show rc='${git_review_unicode_rc}'):" >&2
+    log warn "'${label}' suspicious/undecodable Unicode (unicode-show rc='${git_review_unicode_rc}'):"
     printf '%s\n' "${report}" | stcat >&2 || true
     if [ "${git_review_unicode_rc}" -ge 2 ]; then
       git_review_handle_unicode_show_fatal
@@ -60,44 +59,172 @@ git_review_unicode_scan() {
   fi
 }
 
+## Scan a PATH (a filename, not file content) for suspicious/undecodable bytes
+## and for tab/newline forgery, and WARN. Sets git_review_path_rc to unicode-
+## show's exit code (0 clean, 1 suspicious, >=2 undecodable) so the caller can
+## decide whether a fatal path routes through git_review_handle_unicode_show_
+## fatal -- the driver's normal-path case does, the unmerged-conflict case only
+## warns (its combined diff is already stcat-neutralized). A trailing newline is
+## appended before unicode-show, so no UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE.
+git_review_path_rc=0
+git_review_scan_path() {
+  local path path_q report
+
+  path="$1"
+  path_q="$2"
+  git_review_path_rc=0
+  report="$(printf '%s\n' "${path}" | NO_COLOR=1 unicode-show 2>&1)" || git_review_path_rc="$?"
+  if [ "${git_review_path_rc}" != 0 ]; then
+    log warn "path '${path_q}' has suspicious/undecodable bytes (unicode-show rc='${git_review_path_rc}'):"
+    printf '%s\n' "${report}" | stcat >&2 || true
+  fi
+  ## Tab / newline are the ONE gap unicode-show cannot cover: it treats them as
+  ## benign content whitespace, yet in a PATH they are anomalous and can forge
+  ## diff-output lines.
+  case "${path}" in
+    *$'\t'* | *$'\n'*)
+      log warn "path '${path_q}' contains a tab or newline byte - anomalous in a filename; it can forge diff-output lines."
+      ;;
+  esac
+}
+
+## Fail-closed gate for a .gitattributes change (it can remap diff behavior to
+## HIDE other files' content from the diff, and a legitimate change is rare in
+## review). Args: $1 = a context label, $2... = the 'git ... --name-only -z'
+## command to run. GIT_REVIEW_ALLOW_GITATTRIBUTES=1 downgrades the failure to a
+## warning.
+##
+## Detection reads '-z' (RAW, NUL-separated names) into an array and matches with
+## 'case', NOT a grep over 'git diff --name-only' text, and NOT a
+## 'printf | grep --quiet' pipe:
+##   - Without -z, git QUOTES any path with a non-ASCII byte or a control char
+##     (core.quotePath), e.g. a '.gitattributes' in a non-ASCII-named directory
+##     prints double-quoted -- an anchored '.gitattributes$' match then MISSES it
+##     while git still applies the file (fail OPEN).
+##   - 'printf | grep --quiet' exits on the first match (and '.gitattributes'
+##     sorts near the top), so printf takes SIGPIPE which pipefail turns into a
+##     masked match (also fail OPEN).
+## A temp file (not a '<(...)' process substitution) is used so git's exit code
+## is captured -- a git failure is 'uncheckable' and also fails closed.
+git_review_gitattributes_gate() {
+  local context names_rc hit name names_file
+  local -a name_list
+
+  context="$1"
+  shift
+
+  names_file="$(mktemp --tmpdir git-review-attrnames.XXXXXX)"
+  names_rc=0
+  "$@" > "${names_file}" 2>/dev/null || names_rc=$?
+  hit='false'
+  if [ "${names_rc}" != 0 ]; then
+    hit="uncheckable (git rc '${names_rc}')"
+  else
+    name_list=()
+    readarray -d '' name_list < "${names_file}"
+    for name in "${name_list[@]}"; do
+      case "${name}" in
+        .gitattributes | */.gitattributes)
+          hit='changed'
+          break
+          ;;
+      esac
+    done
+  fi
+  safe-rm --force -- "${names_file}"
+
+  if [ "${hit}" = 'false' ]; then
+    return 0
+  fi
+  if [ -n "${GIT_REVIEW_ALLOW_GITATTRIBUTES:-}" ]; then
+    log warn ".gitattributes ${hit} in ${context} -- can hide OTHER files' contents; tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
+    return 0
+  fi
+  log error ".gitattributes ${hit} in ${context} -- it can hide OTHER files' contents from the diff. Failing closed."
+  log notice "Hint: legitimate .gitattributes changes are rare here; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
+  exit 1
+}
+
+## Interactively ask the operator whether to continue a review despite content a
+## scan flagged. ONLY the terminal-safe reviewer (git-diff-review, which sets
+## git_review_display_fatal_content=true and neutralizes ALL output through
+## stcat) may prompt; a GUI wrapper never asks. The question goes to stderr via
+## 'log question' and the answer is read from /dev/tty, because in external-diff
+## mode stdin may be redirected. Consent is cached so a file that trips the scan
+## more than once (path plus content) is not re-prompted.
+##
+## Returns: 0 = proceed (operator said yes, or already consented); 1 = operator
+## explicitly declined; 2 = could not ask (not the terminal-safe reviewer, or no
+## usable controlling terminal). Callers distinguish 1 from 2: the fatal-blob
+## gate fails closed on EITHER, whereas the benign stcat-write path aborts only
+## on a real decline (1) and proceeds when nobody could be asked (2).
+git_review_continue_consented='false'
+git_review_prompt_continue() {
+  local reply
+
+  if [ "${git_review_continue_consented}" = 'true' ]; then
+    return 0
+  fi
+  if [ "${git_review_display_fatal_content:-}" != 'true' ]; then
+    return 2
+  fi
+  ## /dev/tty can be a permission-readable device node yet fail to OPEN when the
+  ## process has no controlling terminal (ENXIO), so probe by actually opening it
+  ## rather than trusting 'test -r'. No usable tty -> cannot ask (rc 2).
+  if ! { true < /dev/tty; } 2>/dev/null; then
+    return 2
+  fi
+  log question "the flagged content above was neutralized (stcat). Continue the review anyway? [y/N]"
+  reply=''
+  read -r reply < /dev/tty 2>/dev/null || return 2
+  if [ "${reply,,}" = 'y' ] || [ "${reply,,}" = 'yes' ]; then
+    git_review_continue_consented='true'
+    return 0
+  fi
+  return 1
+}
+
 git_review_handle_unicode_show_fatal() {
-  ## Usually we want to simply exit non-zero here. However, the user might
-  ## want to try to review a diff even if a UTF-8 decode error was thrown
-  ## by unicode-show. Because files that trigger such errors are liable to
-  ## exploit vulnerabilities in diff viewers, we only allow this if:
+  ## unicode-show reported a fatal (undecodable / non-UTF-8) finding. Files that
+  ## trip this are liable to exploit bugs in diff viewers, so the default is to
+  ## fail closed. There are two opt-outs, BOTH restricted to the terminal-safe
+  ## reviewer (git-diff-review, git_review_display_fatal_content=true, all output
+  ## stcat-neutralized) -- a GUI wrapper (git-meld / git-kdiff3) always fails
+  ## closed here:
   ##
-  ## * the user has set GIT_REVIEW_UNICODE_NONFATAL=1 in the environment,
-  ##   AND
-  ## * git_review_fatal_flag_file points to a file where we can store info
-  ##   about problematic files (this happens only when one of the wrappers
-  ##   is called directly, see git-review-driver.sh), AND
-  ## * the diff viewer plugin has declared itself able to display possibly
-  ##   malicious files safely.
+  ##   1. Scripted: GIT_REVIEW_UNICODE_NONFATAL=1 records the finding in the
+  ##      shared flag file and lets the batch run finish, failing at the very end
+  ##      (git-review-driver.sh checks the flag file). Needs the flag file, which
+  ##      exists only when a wrapper was run directly (see git-review-driver.sh).
+  ##   2. Interactive: git_review_prompt_continue asks the operator on /dev/tty;
+  ##      a "yes" continues this file CLEANLY (nothing recorded), a "no" or a
+  ##      non-interactive run fails closed.
   ##
-  ## At time of writing, the only diff viewer plugin that fulfills the
-  ## third requirement is git-diff-review, which pipes all output through
-  ## stcat.
-  ##
-  ## Note that git_review_fatal may have been set to non-zero for reasons
-  ## reason other than a failed UTF-8 decode attempt (e.g., unreadable
-  ## files will trigger this as well), so even if all of these conditions
-  ## hold, the diff may still fail.
+  ## A non-fatal (rc 1, decodable) finding never reaches here -- it is only
+  ## warned about. git_review_unicode_rc may also be >=2 for reasons other than
+  ## a decode error (e.g. an unreadable file), so even an opt-out may still fail.
 
   if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] \
     && [ -n "${git_review_fatal_flag_file:-}" ] \
     && [ "${git_review_display_fatal_content:-}" = 'true' ]; then
-    ## Record the finding for the end-of-run failure. A write error must
-    ## NOT be swallowed - dropping it would let a fatal finding pass as
-    ## clean.
+    ## Record the finding for the end-of-run failure. A write error must NOT be
+    ## swallowed - dropping it would let a fatal finding pass as clean.
     if ! printf '%s' '.' > "${git_review_fatal_flag_file}"; then
-      printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed." >&2
+      ## Explicit 'exit' (NOT 'die', which returns under allow_errors=1) so an
+      ## unrecordable fatal finding always fails closed.
+      log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
       exit 1
     fi
-  else
-    printf '%s\n' "${review_tool}: ERROR: '${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed." >&2
-    printf '%s\n' "${review_tool}: Hint: To review this diff despite the errors, set GIT_REVIEW_UNICODE_NONFATAL=1 and run via the git-diff-review wrapper. GUI wrappers (git-meld, git-kdiff3) cannot be used to review this diff." >&2
-    exit 1
+    return 0
   fi
+
+  if git_review_prompt_continue; then
+    return 0
+  fi
+
+  log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed."
+  log notice "Hint: To review this diff despite the errors, run via the git-diff-review wrapper and answer the continue prompt, or set GIT_REVIEW_UNICODE_NONFATAL=1. GUI wrappers (git-meld, git-kdiff3) cannot review this diff."
+  exit 1
 }
 
 ## Trap target: remove the fatal flag file if it exists.
@@ -112,9 +239,11 @@ git_review_cleanup() {
 ## either is found. Also checks a file for binary content and sets
 ## get_review_is_binary to 'true' if detected.
 ##
-## TODO: Right now this is used only by git-review-difftool and
-## git-review-mergetool. Equivalent functionality is also implemented for the
-## diff plugins in git-review-driver.sh. Can we deduplicate?
+## Shared by the difftool/mergetool wrappers AND by git-review-driver.sh, which
+## calls it for the old/new blob content. The driver additionally runs its own
+## side-aware scans (path bytes, symlink targets) that operate on git metadata
+## this content-only helper never receives, so those intentionally stay in the
+## driver.
 git_review_is_binary='false'
 git_review_scan_content() {
   local target label longest nul_rc
@@ -125,10 +254,14 @@ git_review_scan_content() {
   git_review_unicode_scan "${target}" "${label}"
 
   ## Over-long lines can truncate/hang a viewer (a place to bury a change).
-  ## Do not silence errors from wc, if it fails something is very wrong.
-  longest="$(wc --max-line-length < "${target}" 2>/dev/null)"
+  ## wc-test.sh (sourced above) guarantees wc is not a broken/core-dumping
+  ## binary, and a git-materialized blob is always readable, so wc yields a
+  ## number here. Do NOT silence wc or default the result: a genuine failure
+  ## must abort loudly under the caller's errexit at THIS line (the assignment),
+  ## not fall through to a misleading '0' or a cryptic integer test.
+  longest="$(wc --max-line-length < "${target}")"
   if [ "${longest}" -gt 5000 ]; then
-    printf '%s\n' "${review_tool}: WARNING: '${label}' has a '${longest}'-char line; a viewer may truncate/hang." >&2
+    log warn "'${label}' has a '${longest}'-char line; a viewer may truncate/hang."
   fi
 
   ## A binary blob would render as noise in a text/GUI viewer. '--text' is
@@ -148,7 +281,7 @@ git_review_scan_content() {
       git_review_is_binary='true'
     elif [ "${nul_rc}" -ge 2 ]; then
       git_review_is_binary='true'
-      printf '%s\n' "${review_tool}: WARNING: NUL check for '${label}' errored (grep rc='${nul_rc}'); treating as binary." >&2
+      log warn "NUL check for '${label}' errored (grep rc='${nul_rc}'); treating as binary."
     fi
   fi
 }

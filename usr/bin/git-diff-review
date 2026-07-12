@@ -16,8 +16,10 @@ set -o errtrace
 shopt -s inherit_errexit
 shopt -s shift_verbose
 
-# shellcheck source=../../../../helper-scripts/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
 has stcat
 has unicode-show
@@ -33,30 +35,33 @@ git_review_display_fatal_content='true'
 # shellcheck disable=SC2317
 display_regular_file() {
   ## stcat neutralizes terminal escapes in a hostile blob. Accept only 'diff'
-  ## exit 0/1 (same/differ); a real diff error (>=2) or any stcat failure
-  ## must NOT pass as a rendered file.
-  local diff_rc diff_out
+  ## exit 0/1 (same/differ); a real diff error (>=2) must NOT pass as a rendered
+  ## file. Track the 'diff' and the 'stcat' exit codes in SEPARATE variables:
+  ## 'diff' returns 1 for "files differ" (the normal case for any changed file),
+  ## so reusing its rc for the stcat check would mis-report every changed file as
+  ## an stcat failure.
+  local diff_rc diff_out stcat_rc prompt_rc
 
   printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
   diff_rc=0
   diff_out="$(diff --unified -- "${1}" "${2}")" || diff_rc=$?
   if [ "${diff_rc}" -gt 1 ]; then
-    printf '%s\n' "git-diff-review: ERROR: diff failed (rc='${diff_rc}') for '${3}'." >&2
+    log error "diff failed (rc='${diff_rc}') for '${3}'."
     return "${diff_rc}"
   fi
-  printf '%s\n' "${diff_out}" | stcat || diff_rc=$?
-  if [ "${diff_rc}" -ne 0 ]; then
-    printf '%s\n' "git-diff-review: WARNING: stcat failed (rc='${diff_rc}') for '${3}'. Piping into unicode-show..." >&2
+  stcat_rc=0
+  printf '%s\n' "${diff_out}" | stcat || stcat_rc=$?
+  if [ "${stcat_rc}" -ne 0 ]; then
+    log warn "stcat failed (rc='${stcat_rc}') for '${3}'. Piping into unicode-show..."
     printf '%s\n' "${diff_out}" | unicode-show || true
-    ## TODO: Allow continue. Useful in case of harmless unicode.
-    ## <stdin>:6: [U+0020]
-    ##  -> ' ' (U+0020, SPACE, Zs)
-    #printf '%s\n' "git-diff-review: QUESTION: continue y/n?"
-    #read -r continue_yes_no || printf '%s\n' "git-diff-review: ERROR: bash 'read' failed."
-    #printf '%s\n' "git-diff-review: continue_yes_no: '${continue_yes_no}'"
-    #if ! [ "${continue_yes_no,,}" = "y" ]; then
-    #  return "${diff_rc}"
-    #fi
+    ## The content is already neutralized; offer the operator a choice only when
+    ## there IS a terminal. An explicit decline (rc 1) aborts this file with the
+    ## stcat rc; a non-interactive run (rc 2, nobody to ask) continues.
+    prompt_rc=0
+    git_review_prompt_continue || prompt_rc=$?
+    if [ "${prompt_rc}" -eq 1 ]; then
+      return "${stcat_rc}"
+    fi
   fi
 }
 
