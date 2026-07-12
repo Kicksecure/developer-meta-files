@@ -29,8 +29,11 @@ export dist_build_one_parsed=true
 source "$derivative_maker_source_code_dir/help-steps/pre"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
+source "/usr/libexec/helper-scripts/has.sh"
 source "/usr/libexec/helper-scripts/strings.bsh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
+
+has ia-save scurl-download
 
 ## The Oracle APT package that embeds the Guest Additions ISO. Bump the major
 ## as new VirtualBox series appear (virtualbox-7.2 -> virtualbox-7.3 -> ...).
@@ -167,8 +170,13 @@ dm_virtualbox_guest_additions_iso_download() {
   true "INFO: Downloading and verifying VirtualBox '${remote_vbox_version}' SHA256SUMS and MD5SUMS files..."
 
   pushd -- "${unpack_workdir}"
+
   scurl-download --output 'SHA256SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
   scurl-download --output 'MD5SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+
+  #ia-save "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
+  #is-save "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
   package_sha256sum="$(sha256sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
