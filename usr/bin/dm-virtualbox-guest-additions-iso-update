@@ -170,7 +170,7 @@ dm_virtualbox_guest_additions_iso_download() {
   scurl-download --output 'MD5SUMS' "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
-  package_sha256sum="$(sha256sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  package_sha256sum="$(sha256sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
   search_line="${package_sha256sum} *${package_name}"
   if ! grep --fixed-strings -- "${search_line}" 'SHA256SUMS'; then
     true "ERROR: Package sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
@@ -178,7 +178,7 @@ dm_virtualbox_guest_additions_iso_download() {
     stcat 'SHA256SUMS'
     error 'See above!'
   fi
-  package_md5sum="$(md5sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  package_md5sum="$(md5sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
   search_line="${package_md5sum} *${package_name}"
   if ! grep --fixed-strings -- "${search_line}" 'MD5SUMS'; then
     true "ERROR: Package md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
@@ -221,7 +221,7 @@ dm_virtualbox_guest_additions_iso_unpack() {
     error 'See above!'
   fi
 
-  iso_sha256sum="$(sha256sum "${iso_path}" | cut -d' ' -f1)"
+  iso_sha256sum="$(sha256sum -- "${iso_path}" | cut -d' ' -f1)"
   search_line="${iso_sha256sum} *${iso_sum_name}"
   if ! grep --fixed-strings -- "${search_line}" 'SHA256SUMS'; then
     true "ERROR: ISO sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
@@ -229,7 +229,7 @@ dm_virtualbox_guest_additions_iso_unpack() {
     stcat 'SHA256SUMS'
     error 'See above!'
   fi
-  iso_md5sum="$(md5sum "${iso_path}" | cut -d' ' -f1)"
+  iso_md5sum="$(md5sum -- "${iso_path}" | cut -d' ' -f1)"
   search_line="${iso_md5sum} *${iso_sum_name}"
   if ! grep --fixed-strings -- "${search_line}" 'MD5SUMS'; then
     true "ERROR: ISO md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
