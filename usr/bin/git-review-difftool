@@ -71,7 +71,7 @@ case "${viewer}" in
       ## Terminal-safe textual diff: 'diff' rc 0 (same) / 1 (differ) are OK; rc
       ## >= 2 is a real error. stcat neutralizes any hostile escape sequence.
       diff_rc=0
-      diff_out="$( diff --unified -- "${local_file}" "${remote_file}" )" || diff_rc=$?
+      diff_out="$( diff --unified --color=always -- "${local_file}" "${remote_file}" )" || diff_rc=$?
       if [ "${diff_rc}" -ge 2 ]; then
          die "${diff_rc}" "diff failed (rc='${diff_rc}') for '${diff_path_q}'."
       fi

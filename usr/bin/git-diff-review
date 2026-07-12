@@ -41,7 +41,7 @@ display_regular_file() {
 
   printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
   diff_rc=0
-  diff_out="$(diff --unified -- "${1}" "${2}")" || diff_rc=$?
+  diff_out="$(diff --unified --color=always -- "${1}" "${2}")" || diff_rc=$?
   if [ "${diff_rc}" -gt 1 ]; then
     log error "diff failed (rc='${diff_rc}') for '${3}'."
     return "${diff_rc}"

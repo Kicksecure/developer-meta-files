@@ -63,7 +63,7 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   ## Display a diffstat and file change summary to the user first, since this
   ## may display changes that Git won't use a diff driver to display.
   printf '%s\n' "===== ${review_tool}: diffstat and summary of full change set ====="
-  git diff --no-ext-diff --stat --summary --find-renames "$@" || true
+  git diff --no-ext-diff --stat --summary --find-renames --color=always "$@" || true
 
   ## Fail closed on a .gitattributes change in the reviewed range (it can remap
   ## diff behavior to hide other files' content).
@@ -113,7 +113,7 @@ if [ "$#" -lt 7 ]; then
    ## filename here. stcat neutralizs anything unsafe.
    git_review_scan_path "${1}" "${unmerged_path_q}"
    log notice "'${unmerged_path_q}' is unmerged (conflict). Combined diff:"
-   git diff --no-ext-diff --cc -- "${1}" | stcat >&2 || true
+   git diff --no-ext-diff --cc --color=always -- "${1}" | stcat >&2 || true
    exit 0
 fi
 
@@ -229,7 +229,7 @@ if [ "${old_is_link}" = 'true' ] || [ "${new_is_link}" = 'true' ]; then
   ## neutralized unified diff of the two target strings so a change inside a long
   ## target is easy to spot, then this file is done.
   if [ "${old_is_link}" = 'true' ] && [ "${new_is_link}" = 'true' ]; then
-    diff --unified -- "${old_file}" "${new_file}" | stcat >&2 || true
+    diff --unified --color=always -- "${old_file}" "${new_file}" | stcat >&2 || true
     exit 0
   fi
 fi
@@ -278,7 +278,7 @@ if [ "${old_mode}" = "160000" ] || [ "${new_mode}" = "160000" ]; then
   ## does NOT need '| stcat', as the review tool neutralizes each file itself.
   sm_rc=0
   git -C "${diff_path}" --no-pager diff --no-ext-diff --find-copies --stat \
-    "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
+    --color=always "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
   git -C "${diff_path}" --no-pager -c "diff.external=${git_review_self}" \
     diff --find-copies "${old_commit}" "${new_commit}" || sm_rc=$?
   if [ "${sm_rc}" != 0 ]; then
@@ -317,8 +317,8 @@ fi
 ## escape codes in paths; read git's own rc from PIPESTATUS so a benign stcat
 ## exit is not misread.
 stat_rc=0
-git diff --no-ext-diff --no-index --stat -- "${old_file}" "${new_file}" | stcat \
-  || stat_rc="${PIPESTATUS[0]}"
+git diff --no-ext-diff --no-index --stat --color=always \
+  -- "${old_file}" "${new_file}" | stcat || stat_rc="${PIPESTATUS[0]}"
 if [ "${stat_rc}" -gt 1 ]; then
   ## FIXME: Shouldn't we error out entirely if `git diff` fails here? There's
   ## no good reason this command should fail.
