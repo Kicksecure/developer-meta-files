@@ -159,6 +159,7 @@ dm_virtualbox_guest_additions_iso_download() {
         --save-after-login \
         -- \
         /usr/bin/apt-get "${DIST_APTGETOPT[@]}" download -- "${vbox_apt_package}"
+
   package_name="${vbox_apt_package}_${full_remote_vbox_version}_amd64.deb"
 
   true 'INFO: VirtualBox package downloaded.'
