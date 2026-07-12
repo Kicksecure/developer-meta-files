@@ -42,7 +42,7 @@ reprepro_wrap() {
       "$@"
    )
 
-   printf '%s\n' "${bold}${cyan}INFO: reprepro_command:${reset} ${reprepro_command[*]}"
+   printf '%s\n' "${bold}${cyan}INFO: (#grep-ignore-marker#) reprepro_command:${reset} ${reprepro_command[*]}"
 
    reprepro_output="$("${reprepro_command[@]}" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
@@ -55,7 +55,7 @@ reprepro_wrap() {
       error "Will not copy as not found!"
    fi
 
-   printf '%s\n' "${bold}${cyan}INFO: reprepro_output:${reset}"
+   printf '%s\n' "${bold}${cyan}INFO (#grep-ignore-marker#): reprepro_output:${reset}"
    printf '%s\n' "$reprepro_output"
 
    true "INFO: Ok."

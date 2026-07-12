@@ -2647,7 +2647,8 @@ pkg_need_version_bump_show() {
          return 1
       fi
 
-      reprepro_version_source="$(printf '%s\n' "${repo_query_output}" | grep -- "source")" || true
+      reprepro_output_cleaned="$(printf '%s\n' "${repo_query_output}" | grep --fixed-strings --invert-match -- "#grep-ignore-marker#")" || true
+      reprepro_version_source="$(printf '%s\n' "${reprepro_output_cleaned}" | grep -- "source")" || true
       reprepro_version="$(printf '%s\n' "${reprepro_version_source}" | awk -- 'NF{print $NF}')" || true
       ## Example reprepro_version:
       ## 1.2.3-1
