@@ -1478,31 +1478,6 @@ pkg_git_branch_checkout_trixie() {
    return 0
 }
 
-pkg_git_branch_fetch_upstream() {
-   pkg_git_branch_fetch_one "github-${batch_current_project_name,,}"
-}
-
-pkg_git_branch_fetch_arraybolt3() {
-   pkg_git_branch_fetch_one "ArrayBolt3"
-}
-
-pkg_git_branch_fetch_bot() {
-   pkg_git_branch_fetch_one "${DM_GITHUB_MIRROR}"
-}
-
-pkg_git_branch_fetch_one() {
-   local origin_name_list package_remote_item
-
-   origin_name_list=( "$@" )
-
-   for package_remote_item in "${origin_name_list[@]}"; do
-      dry_run_or_run git fetch -- "${package_remote_item}" &
-      git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
-   done
-
-   return 0
-}
-
 ## Maps the current project to its upstream GitHub remote name: whonix ->
 ## 'github-whonix'; kicksecure and derivative-maker both -> 'github-kicksecure'
 ## (there is no 'github-derivative-maker' remote). Single source of truth so the
@@ -1521,6 +1496,20 @@ pkg_git_upstream_remote() {
    esac
 }
 
+### {{{ simple wrappers
+
+pkg_git_branch_fetch_upstream() {
+   pkg_git_branch_fetch_one "github-${batch_current_project_name,,}"
+}
+
+pkg_git_branch_fetch_arraybolt3() {
+   pkg_git_branch_fetch_one "ArrayBolt3"
+}
+
+pkg_git_branch_fetch_bot() {
+   pkg_git_branch_fetch_one "${DM_GITHUB_MIRROR}"
+}
+
 pkg_git_diff_and_merge_branch_upstream() {
    local upstream_repo
    upstream_repo="$(pkg_git_upstream_remote)"
@@ -1533,6 +1522,21 @@ pkg_git_diff_and_merge_branch_arraybolt3() {
 
 pkg_git_diff_and_merge_branch_bot() {
    pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/master"
+}
+
+### }}}
+
+pkg_git_branch_fetch_one() {
+   local origin_name_list package_remote_item
+
+   origin_name_list=( "$@" )
+
+   for package_remote_item in "${origin_name_list[@]}"; do
+      dry_run_or_run git fetch -- "${package_remote_item}" &
+      git_pid_label[$!]="fetch ${package_remote_item} (${batch_current_package_reponame})"
+   done
+
+   return 0
 }
 
 pkg_git_diff_and_merge_branch() {
