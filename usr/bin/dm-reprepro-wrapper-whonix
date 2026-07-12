@@ -15,6 +15,8 @@ shopt -s inherit_errexit
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
+make_reprepro_codename_item=local derivative_repository_name=whonix dm-reprepro-wrapper "$@"
+
 derivative_repository_name=whonix dm-reprepro-wrapper "$@"
 
 true "INFO: End of: ${BASH_SOURCE[0]} $*"
