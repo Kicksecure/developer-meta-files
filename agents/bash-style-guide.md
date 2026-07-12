@@ -352,6 +352,11 @@ Good:
        continue
     fi
 
+    if [ -e "${x}" ]; then
+      found="${x}"
+      break
+    fi
+
     --)
        shift
        break

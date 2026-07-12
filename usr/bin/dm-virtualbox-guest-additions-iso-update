@@ -1,0 +1,266 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -x
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
+
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [ "$MYDIR" = "/usr/bin" ]; then
+   true "INFO: Run from: /usr/bin"
+   ## XXX: hardcoded path
+   derivative_maker_source_code_dir="$HOME/derivative-maker"
+else
+   true "INFO: Run from: source code folder"
+   derivative_maker_source_code_dir="$(cd -- "$MYDIR" && cd -- "../../../../../" && pwd)"
+fi
+
+export dist_build_source_run=true
+export dist_build_one_parsed=true
+source "$derivative_maker_source_code_dir/help-steps/pre"
+source "$derivative_maker_source_code_dir/help-steps/variables"
+
+source "/usr/libexec/helper-scripts/strings.bsh"
+source "/usr/libexec/helper-scripts/deb822-extract.bsh"
+
+## The Oracle APT package that embeds the Guest Additions ISO. Bump the major
+## as new VirtualBox series appear (virtualbox-7.2 -> virtualbox-7.3 -> ...).
+[ -v vbox_apt_package ] || vbox_apt_package='virtualbox-7.2'
+
+virtualbox_base_url='https://download.virtualbox.org/virtualbox'
+
+do_unpack_package='false'
+package_name=''
+remote_vbox_version=''
+unpack_workdir="$(mktemp --directory)"
+
+dm_virtualbox_guest_additions_iso_cleanup() {
+  rm -rf "${unpack_workdir}"
+}
+
+trap 'dm_virtualbox_guest_additions_iso_cleanup' EXIT
+
+dm_virtualbox_guest_additions_iso_download() {
+  local local_vbox_version full_remote_vbox_version \
+    remote_vbox_version_list cowbuilder_repository_packages_file \
+    search_line package_sha256sum package_md5sum
+
+  ## Instructions:
+  ##
+  ## 1. Make sure the proxy is set up properly.
+  #"${derivative_maker_source_code_dir}/build-steps.d/1200_prepare-build-machine" --flavor source
+  ##
+  ## 2. Create a fresh chroot to work in.
+  #"${derivative_maker_source_code_dir}/build-steps.d/1300_cowbuilder-setup" --flavor source --target source
+
+  true 'INFO: Setting cowbuilder file variables.'
+  ## VirtualBox for Linux is only available for amd64. The Guest Additions ISO
+  ## we want bundles additions for multiple architectures.
+  dist_build_multiarch_package_item="amd64"
+  set_cowbuilder_folders
+
+  ## Sanity test.
+  test -d "${base_folder}"
+
+  ## Copy the VirtualBox repository sources and key into the chroot. Fix permissions on both files.
+  $SUDO_TO_ROOT cp -- "${dist_build_sources_list_oracle}" "${base_folder}/etc/apt/sources.list.d/oracle.sources"
+  $SUDO_TO_ROOT chmod -- 644 "${base_folder}/etc/apt/sources.list.d/oracle.sources"
+  $SUDO_TO_ROOT cp -- "${derivative_maker_source_code_dir}/build_sources/oracle_vbox_2016.asc" "${base_folder}/usr/share/keyrings/oracle_vbox_2016.asc"
+  $SUDO_TO_ROOT chmod 644 -- "${base_folder}/usr/share/keyrings/oracle_vbox_2016.asc"
+
+  ## Sanity test.
+  test -n "$DIST_APTGETOPT_SERIALIZED"
+  test -n "$SUDO_TO_ROOT"
+
+  ## Update the apt sources within the chroot.
+  $SUDO_TO_ROOT \
+    ${COWBUILDER_PREFIX:-} \
+      cowbuilder \
+        --architecture "$dist_build_multiarch_package_item" \
+        --configfile "$dist_build_pbuilder_config_file" \
+        --execute \
+        --basepath "$base_folder" \
+        --buildplace "$cow_folder" \
+        --save-after-login \
+        -- \
+        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" update
+
+  true 'INFO: Extracting local VirtualBox Guest Additions version number from virtualbox-guest-additions-iso changelog...'
+
+  local_vbox_version="$(head -n1 \
+    "${derivative_maker_source_code_dir}/packages/kicksecure/virtualbox-guest-additions-iso/debian/changelog" \
+    | sed 's/^.*:\([0-9]\+\.[0-9]\+\.[0-9]\+\).*$/\1/')";
+  if [ -z "${local_vbox_version}" ]; then
+    true 'ERROR: No local VirtualBox Guest Additions version detected.'
+    exit 1
+  fi
+
+  true "INFO: Local VirtualBox guest additions version: '${local_vbox_version}'"
+
+  true 'INFO: Extracting remote VirtualBox version number from apt list files...'
+
+  cowbuilder_repository_packages_file="${base_folder}/var/lib/apt/lists/127.0.0.1:9977_oracle_dists_trixie_contrib_binary-amd64_Packages"
+  remote_vbox_version_list=()
+  test -r "${cowbuilder_repository_packages_file}"
+  unicode-show "${cowbuilder_repository_packages_file}"
+
+  deb822_extract \
+    "${cowbuilder_repository_packages_file}" \
+    remote_vbox_version_list \
+    Version \
+    "Package|^${vbox_apt_package}\$"
+
+  if [ "${#remote_vbox_version_list[@]}" -eq 0 ] \
+    || [ -z "${remote_vbox_version_list[0]-}" ]; then
+    true 'ERROR: Remote VirtualBox version could not be detected!'
+    exit 1
+  fi
+
+  full_remote_vbox_version="${remote_vbox_version_list[0]}"
+  remote_vbox_version="$(cut -d'-' -f1 <<< "${full_remote_vbox_version}")"
+  true "INFO: Remote VirtualBox version: '${remote_vbox_version}'"
+
+  check_is_not_empty_and_only_one_line local_vbox_version
+  check_is_not_empty_and_only_one_line remote_vbox_version
+
+  true "INFO: Local VirtualBox Guest Additions version: '${local_vbox_version}'"
+  true "INFO: Remote VirtualBox version: '${remote_vbox_version}'"
+
+  if dpkg --compare-versions "${local_vbox_version}" gt "${remote_vbox_version}"; then
+    true 'ERROR: Remote VirtualBox version is OLDER than local VirtualBox Guest Additions version! Possible rollback attack?'
+    error 'See above!'
+  elif dpkg --compare-versions "${local_vbox_version}" eq "${remote_vbox_version}"; then
+    true 'INFO: Remote VirtualBox version matches local VirtualBox Guest Additions version, not updating, OK.'
+    exit 0
+  elif ! dpkg --compare-versions "${local_vbox_version}" lt "${remote_vbox_version}"; then
+    true 'ERROR: Remote VirtualBox version neither less than, nor greater than, nor equal to local VirtualBox Guest Additions version???'
+    error 'See above!'
+  fi
+
+  true 'INFO: Remote VirtualBox version is newer than local VirtualBox Guest Additions version, downloading package...'
+
+  $SUDO_TO_ROOT \
+    ${COWBUILDER_PREFIX:-} \
+      cowbuilder \
+        --architecture "$dist_build_multiarch_package_item" \
+        --configfile "$dist_build_pbuilder_config_file" \
+        --execute \
+        --basepath "$base_folder" \
+        --buildplace "$cow_folder" \
+        --save-after-login \
+        -- \
+        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" download "${vbox_apt_package}"
+  package_name="${vbox_apt_package}_${full_remote_vbox_version}_amd64.deb"
+
+  true 'INFO: VirtualBox package downloaded.'
+
+  true "INFO: Downloading and verifying VirtualBox '${remote_vbox_version}' SHA256SUMS and MD5SUMS files..."
+
+  pushd "${unpack_workdir}"
+  scurl-download --output 'SHA256SUMS' "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
+  scurl-download --output 'MD5SUMS' "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+  ## base_folder is defined by the set_cowbuilder_folders call in
+  ## dm_virtualbox_guest_additions_iso_download
+  package_sha256sum="$(sha256sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  search_line="${package_sha256sum} *${package_name}"
+  if ! grep --fixed-strings "${search_line}" 'SHA256SUMS'; then
+    true "ERROR: Package sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
+    true "Dump of '${unpack_workdir}/SHA256SUMS':"
+    stcat 'SHA256SUMS'
+    error 'See above!'
+  fi
+  package_md5sum="$(md5sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  search_line="${package_md5sum} *${package_name}"
+  if ! grep --fixed-strings "${search_line}" 'MD5SUMS'; then
+    true "ERROR: Package md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
+    true "Dump of '${unpack_workdir}/MD5SUMS':"
+    stcat 'MD5SUMS'
+    error 'See above!'
+  fi
+  popd
+
+  true "INFO: Done downloading and verifying VirtualBox '${remote_vbox_version}' SHA256SUMS and MD5SUMS files."
+
+  do_unpack_package='true'
+}
+
+dm_virtualbox_guest_additions_iso_unpack() {
+  local inner_tar_file iso_path install_target_dir install_package_dir \
+    iso_sum_name search_line iso_sha256sum iso_md5sum
+
+  inner_tar_file='./data.tar.xz'
+  iso_path='./usr/share/virtualbox/VBoxGuestAdditions.iso'
+  iso_sum_name="VBoxGuestAdditions_${remote_vbox_version}.iso"
+  install_package_dir="${derivative_maker_source_code_dir}/packages/kicksecure/virtualbox-guest-additions-iso"
+  install_target_dir="${install_package_dir}/usr/share/virtualbox"
+
+  true 'INFO: Unpacking, verifying, and packaging VirtualBox Guest Additions...'
+
+  pushd "${unpack_workdir}"
+
+  ## base_folder is defined by the set_cowbuilder_folders call in
+  ## dm_virtualbox_guest_additions_iso_download
+  ar x "${base_folder}/${package_name}"
+  if ! [ -f "${inner_tar_file}" ]; then
+    true "ERROR: No '${inner_tar_file}' file found within VirtualBox deb package!"
+    error 'See above!'
+  fi
+
+  tar --extract --file "${inner_tar_file}"
+  if ! [ -f "${iso_path}" ]; then
+    true "ERROR: No '${iso_path}' file found within VirtualBox deb package!"
+    error 'See above!'
+  fi
+
+  iso_sha256sum="$(sha256sum "${iso_path}" | cut -d' ' -f1)"
+  search_line="${iso_sha256sum} *${iso_sum_name}"
+  if ! grep --fixed-strings "${search_line}" 'SHA256SUMS'; then
+    true "ERROR: ISO sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
+    true "Dump of '${unpack_workdir}/SHA256SUMS':"
+    stcat 'SHA256SUMS'
+    error 'See above!'
+  fi
+  iso_md5sum="$(md5sum "${iso_path}" | cut -d' ' -f1)"
+  search_line="${iso_md5sum} *${iso_sum_name}"
+  if ! grep --fixed-strings "${search_line}" 'MD5SUMS'; then
+    true "ERROR: ISO md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
+    true "Dump of '${unpack_workdir}/MD5SUMS':"
+    stcat 'MD5SUMS'
+    error 'See above!'
+  fi
+
+  cp "${iso_path}" "${install_target_dir}/VBoxGuestAdditions.iso"
+  cp 'SHA256SUMS' "${install_target_dir}/SHA256SUMS"
+  cp 'MD5SUMS' "${install_target_dir}/MD5SUMS"
+
+  popd
+
+  true 'INFO: Done unpacking, verifying, and packaging VirtualBox Guest Additions.'
+
+  true 'Updating virtualbox-guest-additions-iso changelog...'
+
+  pushd "${install_package_dir}"
+  debchange --newversion "1:${remote_vbox_version}.0-1" 'New upstream version (local package).'
+  debchange --release ""
+  popd
+
+  true 'Done updating virtualbox-guest-additions-iso changelog.'
+}
+
+true 'INFO: Start.'
+
+dm_virtualbox_guest_additions_iso_download
+if [ "${do_unpack_package}" = 'true' ]; then
+  dm_virtualbox_guest_additions_iso_unpack
+fi
+
+true 'INFO: End.'
