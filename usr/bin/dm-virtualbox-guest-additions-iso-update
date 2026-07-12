@@ -167,8 +167,8 @@ dm_virtualbox_guest_additions_iso_download() {
   true "INFO: Downloading and verifying VirtualBox '${remote_vbox_version}' SHA256SUMS and MD5SUMS files..."
 
   pushd -- "${unpack_workdir}"
-  scurl-download --output 'SHA256SUMS' "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
-  scurl-download --output 'MD5SUMS' "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+  scurl-download --output 'SHA256SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
+  scurl-download --output 'MD5SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
   package_sha256sum="$(sha256sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
