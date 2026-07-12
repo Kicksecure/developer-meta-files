@@ -66,31 +66,25 @@ if [ -z "${GIT_DIFF_PATH_TOTAL:-}" ]; then
   git diff --no-ext-diff --stat --summary --find-renames "$@" || true
 
   ## Fail closed on a .gitattributes change in the reviewed range (it can remap
-  ## diff behavior to hide other files' content). The gate helper runs the given
-  ## '--name-only -z' command itself and detects robustly (raw names, no
-  ## quoting, no fail-open pipe); see git-review-scan.sh.
+  ## diff behavior to hide other files' content).
   git_review_gitattributes_gate "the change set" \
     git diff --no-ext-diff --name-only -z "$@"
 
   ## Display file diffs one at a time. The terminal-safe reviewer
   ## (git-diff-review) may prompt on /dev/tty to continue past flagged content,
-  ## so disable git's pager for it -- a pager would fight the prompt for the
-  ## terminal. GUI drivers (git-meld / git-kdiff3) keep the pager.
+  ## so disable git's pager for it. GUI drivers keep the pager.
   printf '%s\n' "===== ${review_tool}: per-file diffs ====="
   git_pager_opt=()
-  if [ "${git_review_display_fatal_content:-}" = 'true' ]; then
+  if [ "${git_review_outputs_to_terminal:-}" = 'true' ]; then
     git_pager_opt=(--no-pager)
   fi
   diff_rc=0
   git "${git_pager_opt[@]}" -c "diff.external=${git_review_self}" diff "$@" || diff_rc="$?"
 
   ## If a fatal error was encountered while checking for malicious Unicode,
-  ## warn here and exit non-zero. Explicit 'exit' (NOT 'die', which returns
-  ## instead of exiting under allow_errors=1) so a recorded fatal finding can
-  ## never report success.
+  ## warn here and exit non-zero.
   if [ -s "${git_review_fatal_flag_file}" ]; then
-    log error "undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing."
-    exit 1
+    die 1 "undecodable/non-UTF-8 Unicode found during this review (GIT_REVIEW_UNICODE_NONFATAL was set); failing."
   fi
   exit "${diff_rc}"
 fi
@@ -104,22 +98,19 @@ fi
 git_external_level=$((git_external_level + 1))
 export git_external_level
 if [ "${git_external_level}" -gt 2 ]; then
-   ## Explicit 'exit' (NOT 'die', which returns under allow_errors=1) so a diff
-   ## loop cannot be resumed past this guard.
-   log error "external-diff recursion depth '${git_external_level}' reached (more than 2); aborting to avoid a diff loop. Please report this bug!"
-   exit 255
+   die 255 "external-diff recursion depth '${git_external_level}' reached (more than 2); aborting to avoid a diff loop. Please report this bug!"
 fi
 
 if [ "$#" -eq 0 ]; then
   die 2 "external diff invoked without arguments."
 fi
 
-## Unmerged path: git passes a single argument, the path. Warn about a
-## suspicious/undecodable or tab/newline conflict FILENAME -- warn only, do not
-## fail closed on it: the combined diff below is already stcat-neutralized and
-## the operator still needs to see the conflict. Then show it.
+## Unmerged path: git passes a single argument, the path. Show git's combined
+## diff, stcat-neutralized.
 if [ "$#" -lt 7 ]; then
    unmerged_path_q="$(printf '%q' "${1}")"
+   ## Better to show the diff than to error out because of a suspicious
+   ## filename here. stcat neutralizs anything unsafe.
    git_review_scan_path "${1}" "${unmerged_path_q}"
    log notice "'${unmerged_path_q}' is unmerged (conflict). Combined diff:"
    git diff --no-ext-diff --cc -- "${1}" | stcat >&2 || true
@@ -138,16 +129,12 @@ diff_path_q="$(printf '%q' "${diff_path}")"  ## neutralized for messages
 is_submodule_blob() {
   local bytes blob_rc
   ## A gitlink blob is exactly 'Subproject commit ' (18 bytes) + 40 hex = 58
-  ## bytes, plus an optional trailing newline (59). Bound on the byte size, not a
-  ## line count: 'wc -l' counts newlines, so a one-line blob with NO trailing
-  ## newline yields 0 and the spoof warning is trivially evaded. The size bound
-  ## also rejects (and avoids slurping) any larger file.
-  bytes="$(wc -c < "${1}")"
+  ## bytes, plus an optional trailing newline (59).
+  bytes="$(du -b -- "${1}" | cut -f1)"
   if [ "${bytes}" != 58 ] && [ "${bytes}" != 59 ]; then
     return 1
   fi
-  ## grep WITHOUT --quiet drains the (tiny) file, so a read error surfaces as
-  ## rc >= 2 instead of being masked by an early-match exit 0.
+  ## Do not use --quiet with grep, it silences errors.
   blob_rc=0
   grep -E -- '^Subproject commit [0-9a-f]{40}$' "${1}" >/dev/null || blob_rc=$?
   [ "${blob_rc}" = 0 ]
@@ -162,10 +149,9 @@ for check_mode in "${old_mode}" "${new_mode}"; do
     || log warn "unexpected mode '${check_mode}' for '${diff_path_q}'."
 done
 
-## Control bytes in the path (cf. CVE-2025-48384, a trailing CR in a gitlink
-## path). git_review_scan_path warns on suspicious (rc 1) / undecodable (rc 2)
-## bytes and on tab/newline forgery; a fatal (rc >= 2) path is failed closed
-## here, before any viewer opens.
+## Warn if there are control bytes in the path, fail closed if unicode-show
+## encounters a fatal error. (CVE-2025-48384 is an example of what can go
+## wrong if control bytes are allowed.)
 git_review_scan_path "${diff_path}" "${diff_path_q}"
 if [ "${git_review_path_rc}" -ge 2 ]; then
   git_review_handle_unicode_show_fatal
@@ -181,13 +167,9 @@ fi
 
 ## Symlink detection and handling.
 read_target() {
-  ## Test '-L' FIRST: '-e' and '-s' FOLLOW a symlink to its target, so a real
-  ## on-disk symlink (working-tree side, core.symlinks=true) that is dangling or
-  ## points at an empty file would otherwise be mislabeled '(none)' / '(empty)',
-  ## hiding its target. A real symlink is read with readlink; git's regular temp
-  ## blob (external-diff mode: content IS the target path) is read as content --
-  ## discriminate by what the file actually IS, NOT by 'git config core.symlinks'
-  ## (readlink on the temp blob would fail and render the target empty).
+  ## Test '-L' first: '-e' and '-s' follow a symlink to its target, so a real
+  ## on-disk symlink that is dangling or points at an empty file would
+  ## otherwise be mislabeled '(none)' / '(empty)'.
   if [ -L "${1}" ]; then
     tr '\n' ' ' < <(readlink --no-newline -- "${1}")
   elif [ "${1}" = /dev/null ] || [ ! -e "${1}" ]; then
@@ -213,8 +195,7 @@ if [ "${old_is_link}" = 'true' ] || [ "${new_is_link}" = 'true' ]; then
   ## symlink add/delete hands /dev/null), else '(regular file)' (a type change).
   if [ "${old_file}" = /dev/null ]; then
     ## /dev/null is the absent side of an add/delete (mode 000000), never a
-    ## symlink side (a symlink side has a real blob temp file), so old_is_link is
-    ## false here; this only labels the absent side.
+    ## symlink side, so old_is_link is false here.
     old_target='(none)'
   elif [ "${old_is_link}" = 'true' ]; then
     old_target="$(read_target "${old_file}")"
@@ -280,22 +261,21 @@ if [ "${old_mode}" = "160000" ] || [ "${new_mode}" = "160000" ]; then
   fi
 
   ## The recursion below reviews the submodule's files in EXTERNAL-DIFF mode,
-  ## which bypasses the top-level re-dispatch preflight -- so re-run the
-  ## .gitattributes gate here on the submodule's own change, else a submodule
-  ## bump that adds a hiding .gitattributes would slip through.
+  ## which bypasses the top-level re-dispatch block. Re-run the .gitattributes
+  ## gate here on the submodule's own change, else a submodule bump that adds
+  ## a hiding .gitattributes would slip through.
   git_review_gitattributes_gate "submodule '${diff_path_q}'" \
     git -C "${diff_path}" diff --no-ext-diff --name-only -z "${old_commit}" "${new_commit}"
 
-  ## First a neutralized --stat summary of the submodule's own change (untrusted
-  ## content, so through stcat), then review each changed submodule file by
-  ## running THIS review tool as the submodule's external diff -- so submodule
-  ## files get the SAME hardening/neutralization as top-level files, not a raw
-  ## dump. This is the single level of recursion the depth guard above permits:
+  ## First show a neutralized --stat summary of the submodule's own change
+  ## (untrusted content, so pipe through stcat), then review each changed
+  ## submodule file by running THIS review tool as the submodule's external
+  ## diff. This is the single level of recursion the depth guard above permits:
   ## this gitlink is git_external_level 1, the submodule's files are level 2, and
   ## a submodule-of-a-submodule would hit the '> 2' abort. The fatal-flag file is
   ## exported, so undecodable content inside the submodule still fails the whole
   ## review closed; --no-pager avoids a nested pager. The recursive git diff
-  ## does NOT need '| stcat' -- the review tool neutralizes each file itself.
+  ## does NOT need '| stcat', as the review tool neutralizes each file itself.
   sm_rc=0
   git -C "${diff_path}" --no-pager diff --no-ext-diff --find-copies --stat \
     "${old_commit}" "${new_commit}" | stcat || sm_rc=$?
@@ -330,17 +310,18 @@ fi
 ## Display a brief overview of changes, mainly to flag binaries. Diff the two
 ## materialized blobs with --no-index (via their file paths, not the blob
 ## hashes) so it also works for an add or a delete: there git passes the
-## all-zero hash for the absent side, and 'git diff <hex> <hex>' rejects that as
-## a bad object and drops the overview for exactly those cases (a binary add
-## would then be surfaced nowhere here). --no-ext-diff keeps this from
-## re-entering the external-diff driver. --no-index exits 1 when the files
-## differ (every change that reaches this point) and >1 on a real error, so only
-## a >1 rc is a failure. Pipe through stcat to neutralize escape codes in paths;
-## read git's own rc from PIPESTATUS so a benign stcat exit is not misread.
+## all-zero hash for the absent side, and 'git diff <hex> <hex> <file>'
+## rejects that as a bad object. --no-ext-diff keeps this from re-entering the
+## external-diff driver. --no-index exits 1 when the files differ and >1 on a
+## real error, so only a >1 rc is a failure. Pipe through stcat to neutralize
+## escape codes in paths; read git's own rc from PIPESTATUS so a benign stcat
+## exit is not misread.
 stat_rc=0
 git diff --no-ext-diff --no-index --stat -- "${old_file}" "${new_file}" | stcat \
   || stat_rc="${PIPESTATUS[0]}"
 if [ "${stat_rc}" -gt 1 ]; then
+  ## FIXME: Shouldn't we error out entirely if `git diff` fails here? There's
+  ## no good reason this command should fail.
   log warn "'--stat' for '${diff_path_q}' failed; showing the diff anyway."
 fi
 

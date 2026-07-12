@@ -59,13 +59,12 @@ git_review_unicode_scan() {
   fi
 }
 
-## Scan a PATH (a filename, not file content) for suspicious/undecodable bytes
-## and for tab/newline forgery, and WARN. Sets git_review_path_rc to unicode-
-## show's exit code (0 clean, 1 suspicious, >=2 undecodable) so the caller can
-## decide whether a fatal path routes through git_review_handle_unicode_show_
-## fatal -- the driver's normal-path case does, the unmerged-conflict case only
-## warns (its combined diff is already stcat-neutralized). A trailing newline is
-## appended before unicode-show, so no UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE.
+## Scan a path (not file content) for suspicious/undecodable bytes and for
+## tab/newline forgery. Sets git_review_path_rc to unicode-show's exit code (0
+## clean, 1 suspicious, >=2 undecodable) so the caller can decide whether a
+## fatal path routes through git_review_handle_unicode_show_fatal. A trailing
+## newline is appended before unicode-show, so no
+## UNICODE_SHOW_ALLOW_MISSING_FINAL_NEWLINE.
 git_review_path_rc=0
 git_review_scan_path() {
   local path path_q report
@@ -100,10 +99,10 @@ git_review_scan_path() {
 ##   - Without -z, git QUOTES any path with a non-ASCII byte or a control char
 ##     (core.quotePath), e.g. a '.gitattributes' in a non-ASCII-named directory
 ##     prints double-quoted -- an anchored '.gitattributes$' match then MISSES it
-##     while git still applies the file (fail OPEN).
+##     while git still applies the file.
 ##   - 'printf | grep --quiet' exits on the first match (and '.gitattributes'
 ##     sorts near the top), so printf takes SIGPIPE which pipefail turns into a
-##     masked match (also fail OPEN).
+##     masked match.
 ## A temp file (not a '<(...)' process substitution) is used so git's exit code
 ## is captured -- a git failure is 'uncheckable' and also fails closed.
 git_review_gitattributes_gate() {
@@ -113,7 +112,7 @@ git_review_gitattributes_gate() {
   context="$1"
   shift
 
-  names_file="$(mktemp --tmpdir git-review-attrnames.XXXXXX)"
+  names_file="$(mktemp git-review-attrnames.XXXXXX)"
   names_rc=0
   "$@" > "${names_file}" 2>/dev/null || names_rc=$?
   hit='false'
@@ -137,34 +136,28 @@ git_review_gitattributes_gate() {
     return 0
   fi
   if [ -n "${GIT_REVIEW_ALLOW_GITATTRIBUTES:-}" ]; then
-    log warn ".gitattributes ${hit} in ${context} -- can hide OTHER files' contents; tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
+    log warn ".gitattributes ${hit} in ${context}, can hide OTHER files' contents. Tolerated via GIT_REVIEW_ALLOW_GITATTRIBUTES. Review it first."
     return 0
   fi
-  log error ".gitattributes ${hit} in ${context} -- it can hide OTHER files' contents from the diff. Failing closed."
-  log notice "Hint: legitimate .gitattributes changes are rare here; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
+  log error ".gitattributes ${hit} in ${context}, can hide OTHER files' contents. Failing closed."
+  log notice "Hint: legitimate .gitattributes changes are rare; set GIT_REVIEW_ALLOW_GITATTRIBUTES=1 to review anyway."
   exit 1
 }
 
-## Interactively ask the operator whether to continue a review despite content a
-## scan flagged. ONLY the terminal-safe reviewer (git-diff-review, which sets
-## git_review_display_fatal_content=true and neutralizes ALL output through
-## stcat) may prompt; a GUI wrapper never asks. The question goes to stderr via
-## 'log question' and the answer is read from /dev/tty, because in external-diff
-## mode stdin may be redirected. Consent is cached so a file that trips the scan
-## more than once (path plus content) is not re-prompted.
+## Interactively ask the operator whether to continue a review despite content
+## a scan flagged. Requires that the review tool be able to handle text that
+## triggers unicode-show fatal errors. The question goes to stderr via
+## `log question` and the answer is read from /dev/tty, because in
+## external-diff mode stdin may be redirected. Consent is not cached; a file
+## that trips the scan more than has multiple issues, each of which should
+## require separate acknowledgement.
 ##
 ## Returns: 0 = proceed (operator said yes, or already consented); 1 = operator
-## explicitly declined; 2 = could not ask (not the terminal-safe reviewer, or no
-## usable controlling terminal). Callers distinguish 1 from 2: the fatal-blob
-## gate fails closed on EITHER, whereas the benign stcat-write path aborts only
-## on a real decline (1) and proceeds when nobody could be asked (2).
-git_review_continue_consented='false'
+## explicitly declined; 2 = could not ask (not a terminal-safe reviewer, or no
+## usable controlling terminal).
 git_review_prompt_continue() {
   local reply
 
-  if [ "${git_review_continue_consented}" = 'true' ]; then
-    return 0
-  fi
   if [ "${git_review_display_fatal_content:-}" != 'true' ]; then
     return 2
   fi
@@ -174,7 +167,7 @@ git_review_prompt_continue() {
   if ! { true < /dev/tty; } 2>/dev/null; then
     return 2
   fi
-  log question "the flagged content above was neutralized (stcat). Continue the review anyway? [y/N]"
+  log question "Continue the review anyway? [y/N]"
   reply=''
   read -r reply < /dev/tty 2>/dev/null || return 2
   if [ "${reply,,}" = 'y' ] || [ "${reply,,}" = 'yes' ]; then
@@ -185,44 +178,44 @@ git_review_prompt_continue() {
 }
 
 git_review_handle_unicode_show_fatal() {
-  ## unicode-show reported a fatal (undecodable / non-UTF-8) finding. Files that
-  ## trip this are liable to exploit bugs in diff viewers, so the default is to
-  ## fail closed. There are two opt-outs, BOTH restricted to the terminal-safe
-  ## reviewer (git-diff-review, git_review_display_fatal_content=true, all output
-  ## stcat-neutralized) -- a GUI wrapper (git-meld / git-kdiff3) always fails
-  ## closed here:
+  ## Usually we want to simply exit non-zero here. However, the user might
+  ## want to try to review a diff even if a UTF-8 decode error was thrown
+  ## by unicode-show. Because files that trigger such errors are liable to
+  ## exploit vulnerabilities in diff viewers, we only allow this if:
   ##
-  ##   1. Scripted: GIT_REVIEW_UNICODE_NONFATAL=1 records the finding in the
-  ##      shared flag file and lets the batch run finish, failing at the very end
-  ##      (git-review-driver.sh checks the flag file). Needs the flag file, which
-  ##      exists only when a wrapper was run directly (see git-review-driver.sh).
-  ##   2. Interactive: git_review_prompt_continue asks the operator on /dev/tty;
-  ##      a "yes" continues this file CLEANLY (nothing recorded), a "no" or a
-  ##      non-interactive run fails closed.
+  ## * the diff viewer plugin has declared itself able to display possibly
+  ##   malicious files safely, AND one of the following is true:
+  ##   * The user explicitly confirms they want to continue the review, OR
+  ##   * the user has set GIT_REVIEW_UNICODE_NONFATAL=1 in the environment,
+  ##     AND git_review_fatal_flag_file points to a file where we can store
+  ##     info about problematic files (this happens only when one of the
+  ##     wrappers is called directly, see git-review-driver.sh).
   ##
-  ## A non-fatal (rc 1, decodable) finding never reaches here -- it is only
-  ## warned about. git_review_unicode_rc may also be >=2 for reasons other than
-  ## a decode error (e.g. an unreadable file), so even an opt-out may still fail.
+  ## At time of writing, the only diff viewer plugin that fulfills the
+  ## first requirement is git-diff-review, which pipes all output through
+  ## stcat.
+  ##
+  ## Note that a fatal error may have occurred for reasons other than a failed
+  ## UTF-8 decode attempt (e.g., unreadable files will trigger this as well),
+  ## so even if all of these conditions hold, the diff may still fail.
 
   if [ -n "${GIT_REVIEW_UNICODE_NONFATAL:-}" ] \
     && [ -n "${git_review_fatal_flag_file:-}" ] \
     && [ "${git_review_display_fatal_content:-}" = 'true' ]; then
-    ## Record the finding for the end-of-run failure. A write error must NOT be
-    ## swallowed - dropping it would let a fatal finding pass as clean.
+    ## Record the finding for the end-of-run failure. A write error must NOT
+    ## be swallowed - dropping it would let a fatal finding pass as clean.
     if ! printf '%s' '.' > "${git_review_fatal_flag_file}"; then
-      ## Explicit 'exit' (NOT 'die', which returns under allow_errors=1) so an
-      ## unrecordable fatal finding always fails closed.
-      log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
-      exit 1
+      die 1 "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show and its finding could not be recorded. Failing closed."
     fi
     return 0
   fi
 
+  log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show."
   if git_review_prompt_continue; then
     return 0
   fi
 
-  log error "'${diff_path_q:-(file)}' triggered a fatal error in unicode-show. Failing closed."
+  log error 'Failing closed.'
   log notice "Hint: To review this diff despite the errors, run via the git-diff-review wrapper and answer the continue prompt, or set GIT_REVIEW_UNICODE_NONFATAL=1. GUI wrappers (git-meld, git-kdiff3) cannot review this diff."
   exit 1
 }
@@ -238,12 +231,6 @@ git_review_cleanup() {
 ## Check a specified file for Unicode and overly long lines, and warn if
 ## either is found. Also checks a file for binary content and sets
 ## get_review_is_binary to 'true' if detected.
-##
-## Shared by the difftool/mergetool wrappers AND by git-review-driver.sh, which
-## calls it for the old/new blob content. The driver additionally runs its own
-## side-aware scans (path bytes, symlink targets) that operate on git metadata
-## this content-only helper never receives, so those intentionally stay in the
-## driver.
 git_review_is_binary='false'
 git_review_scan_content() {
   local target label longest nul_rc
@@ -254,11 +241,7 @@ git_review_scan_content() {
   git_review_unicode_scan "${target}" "${label}"
 
   ## Over-long lines can truncate/hang a viewer (a place to bury a change).
-  ## wc-test.sh (sourced above) guarantees wc is not a broken/core-dumping
-  ## binary, and a git-materialized blob is always readable, so wc yields a
-  ## number here. Do NOT silence wc or default the result: a genuine failure
-  ## must abort loudly under the caller's errexit at THIS line (the assignment),
-  ## not fall through to a misleading '0' or a cryptic integer test.
+  ## Do not silence errors from wc, if it fails something is very wrong.
   longest="$(wc --max-line-length < "${target}")"
   if [ "${longest}" -gt 5000 ]; then
     log warn "'${label}' has a '${longest}'-char line; a viewer may truncate/hang."

@@ -31,7 +31,7 @@ review_tool="git-review-mergetool"
 
 if [ "$#" -ne 5 ]; then
    log error "expected 5 arguments, got '$#'."
-   die 2 "usage: ${review_tool} [meld|kdiff3] BASE LOCAL REMOTE MERGED"
+   die 2 "usage: ${review_tool} <meld|kdiff3> BASE LOCAL REMOTE MERGED"
 fi
 viewer="$1"
 base_file="$2"
@@ -48,19 +48,13 @@ diff_path_q="$( printf '%q' "${merged_file}" )"
 ## Scan the three inputs before opening the merge. $BASE can be absent (an
 ## add/add conflict hands /dev/null); git_review_scan_content handles /dev/null.
 ## git_review_is_binary is a global overwritten per call, so capture each side.
+## The scans will abort this script if a fatal error occurs in unicode-show.
 git_review_scan_content "${base_file}"   "base '${base_file}'"
 base_is_binary="${git_review_is_binary}"
 git_review_scan_content "${local_file}"  "local '${local_file}'"
 local_is_binary="${git_review_is_binary}"
 git_review_scan_content "${remote_file}" "remote '${remote_file}'"
 remote_is_binary="${git_review_is_binary}"
-
-## Undecodable/non-UTF-8 content already fails closed inside
-## git_review_scan_content (via git_review_handle_unicode_show_fatal, which
-## exits non-zero in this GUI context: no fatal-flag file, no terminal-safe
-## display, so it never defers). Do NOT re-add a '[ "${git_review_fatal}" != 0 ]'
-## check here: that variable was removed with the flag-file refactor and
-## referencing it aborts under 'set -o nounset'.
 
 ## A binary conflict side cannot be meaningfully merged in a text/GUI tool and
 ## would render as noise. Refuse and exit non-zero so the conflict is left

@@ -31,7 +31,7 @@ review_tool="git-review-difftool"
 
 if [ "$#" -ne 3 ]; then
    log error "expected 3 arguments, got '$#'."
-   die 2 "usage: ${review_tool} [meld|kdiff3|diff-review] LOCAL-FILE REMOTE-FILE"
+   die 2 "usage: ${review_tool} <meld|kdiff3|diff-review> LOCAL-FILE REMOTE-FILE"
 fi
 viewer="$1"
 local_file="$2"
@@ -47,18 +47,12 @@ source /usr/libexec/developer-meta-files/git-review-scan.sh
 pair_q="$( printf '%q and %q' "${local_file}" "${remote_file}" )"
 diff_path_q="$( printf '%q' "${remote_file}" )"
 
-## Scan BOTH sides before opening anything.
+## Scan BOTH sides before opening anything. The scans will abort this script
+## if a fatal error occurs in unicode-show.
 git_review_scan_content "${local_file}"  "local '${local_file}'"
 local_is_binary="${git_review_is_binary}"
 git_review_scan_content "${remote_file}" "remote '${remote_file}'"
 remote_is_binary="${git_review_is_binary}"
-
-## Undecodable/non-UTF-8 content already fails closed inside
-## git_review_scan_content (via git_review_handle_unicode_show_fatal, which
-## exits non-zero in this GUI context: no fatal-flag file, no terminal-safe
-## display, so it never defers). Do NOT re-add a '[ "${git_review_fatal}" != 0 ]'
-## check here: that variable was removed with the flag-file refactor and
-## referencing it aborts under 'set -o nounset'.
 
 ## A binary side would render as noise; surface it and do not open the viewer.
 if [ "${local_is_binary}" = 'true' ] || [ "${remote_is_binary}" = 'true' ]; then

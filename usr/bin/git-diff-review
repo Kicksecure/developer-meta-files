@@ -31,15 +31,12 @@ review_tool="git-diff-review"
 ## errors in unicode-show.
 git_review_display_fatal_content='true'
 
+## This display outputs to a terminal.
+git_review_outputs_to_terminal='true'
+
 ## Invoked indirectly by the sourced git-review-driver.sh (not dead code).
 # shellcheck disable=SC2317
 display_regular_file() {
-  ## stcat neutralizes terminal escapes in a hostile blob. Accept only 'diff'
-  ## exit 0/1 (same/differ); a real diff error (>=2) must NOT pass as a rendered
-  ## file. Track the 'diff' and the 'stcat' exit codes in SEPARATE variables:
-  ## 'diff' returns 1 for "files differ" (the normal case for any changed file),
-  ## so reusing its rc for the stcat check would mis-report every changed file as
-  ## an stcat failure.
   local diff_rc diff_out stcat_rc prompt_rc
 
   printf '%s\n' "--- diff (stcat-neutralized) for ${3} ---"
