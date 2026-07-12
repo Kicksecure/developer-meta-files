@@ -39,7 +39,7 @@ fail=0
 
 ## --- --report mode: code-fixable tools only ---
 rc=0
-out_report="$(dm-github-org-security-report --report 2>/dev/null)" || rc=$?
+out_report="$(ORGS_OVERRIDE='org-ai-assisted' dm-github-org-security-report --report 2>/dev/null)" || rc=$?
 
 if [ "${rc}" -ne 0 ]; then
    printf '%s\n' "FAIL: --report exited rc='${rc}'" >&2
@@ -71,7 +71,7 @@ done
 
 ## --- --all mode: every alert ---
 rc=0
-out_all="$(dm-github-org-security-report --all 2>/dev/null)" || rc=$?
+out_all="$(ORGS_OVERRIDE='org-ai-assisted' dm-github-org-security-report --all 2>/dev/null)" || rc=$?
 
 if [ "${rc}" -ne 0 ]; then
    printf '%s\n' "FAIL: --all exited rc='${rc}'" >&2

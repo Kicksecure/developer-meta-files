@@ -39,7 +39,7 @@ FIXTURES_DIR="$(cd -- "${SCRIPT_DIR}/../fixtures" && pwd)"
 export GHORG_MOCK=true
 export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
-out="$(dm-github-org-policy --audit 2>&1)"
+out="$(ORGS_OVERRIDE='org-ai-assisted' dm-github-org-policy --audit 2>&1)"
 
 fail=0
 ## NOTE: order in this array must match the chronological output order

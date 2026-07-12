@@ -41,7 +41,7 @@ export GHORG_MOCK=true
 export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 
 rc=0
-out="$(dm-github-org-policy --apply 2>&1)" || rc=$?
+out="$(ORGS_OVERRIDE='org-ai-assisted' dm-github-org-policy --apply 2>&1)" || rc=$?
 
 fail=0
 
