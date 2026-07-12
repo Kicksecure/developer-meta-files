@@ -209,7 +209,7 @@ dm_virtualbox_guest_additions_iso_unpack() {
 
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
-  ar x "${base_folder}/${package_name}"
+  ar x -- "${base_folder}/${package_name}"
   if ! [ -f "${inner_tar_file}" ]; then
     true "ERROR: No '${inner_tar_file}' file found within VirtualBox deb package!"
     error 'See above!'
@@ -238,9 +238,9 @@ dm_virtualbox_guest_additions_iso_unpack() {
     error 'See above!'
   fi
 
-  cp "${iso_path}" "${install_target_dir}/VBoxGuestAdditions.iso"
-  cp 'SHA256SUMS' "${install_target_dir}/SHA256SUMS"
-  cp 'MD5SUMS' "${install_target_dir}/MD5SUMS"
+  cp -- "${iso_path}" "${install_target_dir}/VBoxGuestAdditions.iso"
+  cp -- 'SHA256SUMS' "${install_target_dir}/SHA256SUMS"
+  cp -- 'MD5SUMS' "${install_target_dir}/MD5SUMS"
 
   popd
 
