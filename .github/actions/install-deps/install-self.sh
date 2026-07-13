@@ -28,7 +28,8 @@ INSTALL_SELF_MODE="${INSTALL_SELF_MODE:-install}"
 readonly INSTALL_SELF_MODE
 
 case "${INSTALL_SELF_MODE}" in
-   install|deb-icup) ;;
+   install|deb-icup)
+      ;;
    *)
       printf '%s\n' "error: INSTALL_SELF_MODE must be 'install' or 'deb-icup', got '${INSTALL_SELF_MODE}'" >&2
       exit 1

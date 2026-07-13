@@ -139,10 +139,24 @@ if [ "${staged_mode}" -eq 1 ] && [ "${per_commit_mode}" -eq 1 ]; then
    printf '%s\n' 'pre-push-static: --staged and --per-commit are mutually exclusive' >&2
    exit 2
 fi
+if [ "${staged_all}" -eq 1 ] && [ "${staged_mode}" -eq 0 ]; then
+   printf '%s\n' 'pre-push-static: --all only applies with --staged' >&2
+   exit 2
+fi
 
 if [ -n "${message_file}" ] && [ ! -f "${message_file}" ]; then
    printf '%s\n' "pre-push-static: --message-file '${message_file}' not found" >&2
    exit 2
+fi
+## Canonicalize to an absolute path now, at the invocation directory:
+## main() cd's to the repo root before any cat/head reads the message file,
+## so a relative --message-file passed from a subdirectory would otherwise
+## resolve against the wrong directory after the cd.
+if [ -n "${message_file}" ]; then
+   message_file="$(readlink --canonicalize -- "${message_file}")" || {
+      printf '%s\n' "pre-push-static: could not resolve --message-file path" >&2
+      exit 2
+   }
 fi
 
 ## Nested-brace expansion `${1:-@{u}}` mis-parses: bash terminates
@@ -168,6 +182,10 @@ else
 fi
 fail_count=0
 
+## Untrusted content (a flagged source line, a commit-message line) is
+## emitted as-is. Terminal-safe rendering is the DISPLAY layer's job, not
+## this dependency-free hook's: pipe the output through 'sanitize-string' /
+## 'stcat' if you need ANSI/control-byte defanging (R-140 display sink).
 note() {
    printf '%s\n' "pre-push-static: ${1}" >&2
 }
@@ -188,16 +206,23 @@ resolve_base() {
    fi
 }
 
+## Emits the changed paths NUL-terminated. 'core.quotePath=false' stops git
+## from C-quoting (wrapping in '"..."' with backslash escapes) paths that
+## contain a tab, a byte >= 0x80, etc.; '-z' NUL-terminates so a path
+## containing a newline or tab stays one record. Consumers must read with
+## 'read -r -d ""' / 'mapfile -d ""'. Without this a hostile or merely
+## awkward filename (e.g. $'x\ty.sh') was emitted as a quoted string that
+## exists on no disk path, so every content check silently skipped it.
 list_changed_files() {
    if [ "${staged_mode}" -eq 1 ]; then
       if [ "${staged_all}" -eq 1 ] && git rev-parse --verify --quiet HEAD >/dev/null; then
-         git diff --name-only --diff-filter=ACMRT HEAD
+         git -c core.quotePath=false diff -z --name-only --diff-filter=ACMRT HEAD
       else
-         git diff --name-only --diff-filter=ACMRT --cached
+         git -c core.quotePath=false diff -z --name-only --diff-filter=ACMRT --cached
       fi
       return 0
    fi
-   git diff --name-only --diff-filter=ACMRT "${base_ref}"...HEAD
+   git -c core.quotePath=false diff -z --name-only --diff-filter=ACMRT "${base_ref}"...HEAD
 }
 
 is_shell_file() {
@@ -214,8 +239,20 @@ is_shell_file() {
    esac
    first=""
    read -r first < "${path}" || true
+   ## Match ONLY a bash/sh/dash interpreter, anchored so the shell NAME is
+   ## the command (preceded by '/' as in '#!/bin/bash', or by a space as in
+   ## '#!/usr/bin/env bash'), optionally followed by args. The old '*sh'
+   ## glob matched any interpreter ENDING in 'sh' -- '#!/bin/zsh',
+   ## '#!/usr/bin/fish' -- which then failed 'bash -n' with a spurious
+   ## parse error on valid zsh/fish syntax.
    case "${first}" in
-      '#!'*bash*|'#!'*sh|'#!'*sh' '*)
+      '#!'*/bash|'#!'*/bash' '*|'#!'*' bash'|'#!'*' bash '*)
+         return 0
+         ;;
+      '#!'*/sh|'#!'*/sh' '*|'#!'*' sh'|'#!'*' sh '*)
+         return 0
+         ;;
+      '#!'*/dash|'#!'*/dash' '*|'#!'*' dash'|'#!'*' dash '*)
          return 0
          ;;
    esac
@@ -336,13 +373,21 @@ check_changelog_no_manual() {
          continue
       fi
       changed=()
-      mapfile -t changed < <(git diff-tree --no-commit-id --name-only -r "${sha}")
+      ## '-c' takes the COMBINED diff so a merge commit's own edits (an
+      ## "evil merge" that hand-edits debian/changelog in the merge itself)
+      ## are seen; a plain 'diff-tree -r' can emit nothing for a merge and
+      ## the check would skip it. '-z' + quotePath=false keep awkward paths
+      ## intact (see list_changed_files).
+      mapfile -d '' -t changed < <(git -c core.quotePath=false diff-tree --no-commit-id --name-only -z -c -r "${sha}")
       if [ "${#changed[@]}" -eq 0 ]; then
          continue
       fi
       touches_changelog=0
       only_family=1
       for file in "${changed[@]}"; do
+         if [ -z "${file}" ]; then
+            continue
+         fi
          if is_changelog_path "${file}"; then
             touches_changelog=1
          fi
@@ -380,13 +425,20 @@ check_changelog_no_manual_staged() {
    local -a changed
 
    changed=()
-   mapfile -t changed < <(list_changed_files)
+   ## list_changed_files emits NUL-terminated records; read them NUL-safely
+   ## (mapfile -d ''). A plain 'mapfile -t' collapses the whole NUL stream
+   ## into one mangled element, so with more than one staged file the
+   ## changelog paths are never recognized and a hand edit slips the gate.
+   mapfile -d '' -t changed < <(list_changed_files)
    if [ "${#changed[@]}" -eq 0 ]; then
       return 0
    fi
    touches_changelog=0
    only_family=1
    for file in "${changed[@]}"; do
+      if [ -z "${file}" ]; then
+         continue
+      fi
       if is_changelog_path "${file}"; then
          touches_changelog=1
       fi
@@ -430,7 +482,9 @@ emit_hits() {
 
 is_self_referential() {
    case "${1}" in
-      agents/pre-push-static.sh) return 0 ;;
+      agents/pre-push-static.sh)
+         return 0
+         ;;
    esac
    return 1
 }
@@ -439,13 +493,29 @@ is_self_referential() {
 ## docstrings before the strict-mode block; head -120 is generous
 ## enough to accommodate them without missing the rule's intent.
 check_R010_strict_block() {
-   local script count
+   local script header directive present
+   local -a required
 
+   required=(
+      'set -o errexit'
+      'set -o nounset'
+      'set -o pipefail'
+      'set -o errtrace'
+      'shopt -s inherit_errexit'
+      'shopt -s shift_verbose'
+   )
    for script in "${@}"; do
-      count="$(head --lines=120 -- "${script}" \
-         | grep --count --extended-regexp \
-            '^(set -o (errexit|nounset|pipefail|errtrace)|shopt -s (inherit_errexit|shift_verbose))$' \
-         || true)"
+      ## Count DISTINCT required directives present at column 0 (whole-line,
+      ## fixed-string match), not matching LINES: six copies of
+      ## 'set -o errexit' must NOT satisfy the block. head -120 accommodates
+      ## the long header docstrings some scripts carry before the block.
+      header="$(head --lines=120 -- "${script}")"
+      present=0
+      for directive in "${required[@]}"; do
+         if grep --quiet --line-regexp --fixed-strings -- "${directive}" <<< "${header}"; then
+            present=$((present + 1))
+         fi
+      done
       ## Source-able dual-mode scripts (executed AND sourced for code
       ## reuse, e.g. usr/bin/update-torbrowser sourced by
       ## dist-installer-gui; or pure helper-script .bsh libraries) MUST
@@ -454,15 +524,18 @@ check_R010_strict_block() {
       ## shell. Such scripts therefore keep ZERO column-0 strict lines
       ## and guard the block behind the helper-scripts
       ## was_executed()/was_sourced() runtime check (indented, invisible
-      ## to the regex above). Skip R-010 for exactly that shape: fully
-      ## guarded (count 0) AND the guard present. A partial top-level
-      ## block (count 1..5) is not a clean source-able script and stays
-      ## subject to the count check below. This condition also leaves
-      ## this script itself enforced: it keeps its own count-6 column-0
-      ## block, so it never enters the skip despite naming the tokens.
-      if [ "${count}" -eq 0 ] \
+      ## to the whole-line match above). Skip R-010 for exactly that shape:
+      ## fully guarded (present 0) AND the guard present. A partial top-level
+      ## block (present 1..5) is not a clean source-able script and stays
+      ## subject to the check below. This condition also leaves this script
+      ## itself enforced: it keeps all six distinct column-0 directives, so
+      ## it never enters the skip despite naming the tokens.
+      ## '^[^#]*' requires the guard call in CODE, not a comment: without it
+      ## a mere '## TODO: add was_executed guard' would exempt a script that
+      ## has no strict-mode block at all -- an unauditable bypass.
+      if [ "${present}" -eq 0 ] \
          && grep --quiet --extended-regexp \
-            '\b(was_executed|was_sourced)\b' -- "${script}"; then
+            '^[^#]*\b(was_executed|was_sourced)\b' -- "${script}"; then
          note "R-010 skipped: source-able guarded script '${script}'"
          continue
       fi
@@ -479,8 +552,8 @@ check_R010_strict_block() {
          note "R-010 skipped: 'style-ok: no-strict' waiver in '${script}'"
          continue
       fi
-      if [ "${count}" -lt 6 ]; then
-         fail "R-010 strict-mode block" "'${script}' has only ${count}/6 strict-mode lines in head -120"
+      if [ "${present}" -lt 6 ]; then
+         fail "R-010 strict-mode block" "'${script}' has only ${present}/6 distinct strict-mode directives in head -120"
       fi
    done
 }
@@ -488,7 +561,11 @@ check_R010_strict_block() {
 check_R011_errexit_toggle() {
    local hits
 
-   hits="$(grep --line-number --extended-regexp '^[[:space:]]*set[[:space:]]+\+o[[:space:]]+errexit' -- "${@}" 2>/dev/null || true)"
+   ## Both the long form ('set +o errexit') and the short form ('set +e',
+   ## 'set +ex', 'set +xe'): '\+([a-z]*e[a-z]*)' matches a short option
+   ## bundle that contains 'e'. 'set +u'/'set +o pipefail' (no errexit) do
+   ## not match. Anchored at 'set', so a '## set +e' comment is spared.
+   hits="$(grep --with-filename --line-number --extended-regexp '^[[:space:]]*set[[:space:]]+\+(o[[:space:]]+errexit|[a-z]*e[a-z]*)' -- "${@}" 2>/dev/null || true)"
    emit_hits "R-011 errexit toggle" "${hits}"
 }
 
@@ -496,11 +573,15 @@ check_R011_errexit_toggle() {
 ## passed in; needed for R-042/R-051/R-081/R-102 whose grep
 ## needles appear literally in this script's own doc comments
 ## and/or code lines.
+## Emits the kept paths NUL-terminated (not newline), so a path containing
+## a newline survives the round trip; callers read with 'mapfile -d ""'.
+## A newline-delimited re-emit here would undo run_file_checks's NUL-safe
+## read and silently split/drop such a path from the self-filtered checks.
 filter_self() {
    local f
    for f in "${@}"; do
       is_self_referential "${f}" && continue
-      printf '%s\n' "${f}"
+      printf '%s\0' "${f}"
    done
 }
 
@@ -508,11 +589,15 @@ check_R042_blank_logline() {
    local hits
    local -a fs
 
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
-   ## Bad pattern: a printf or log call that produces a blank line.
-   hits="$(grep --line-number --extended-regexp \
-      "printf[[:space:]]+'%s\\\\n'[[:space:]]+\"\"[[:space:]]*\$|log[[:space:]]+notice[[:space:]]+\"\"[[:space:]]*\$" \
+   ## Bad pattern: a printf or log call that produces a blank line. The
+   ## format string may be single- OR double-quoted ('printf "%s\n" ""').
+   ## A redirected form ('printf %s\n "" >&2') is intentionally NOT matched
+   ## here: that is the deliberate-separator case (see the keymap usage
+   ## blocks), and R-030/R-031 already governs the newline spelling.
+   hits="$(grep --with-filename --line-number --extended-regexp \
+      "printf[[:space:]]+['\"]%s\\\\n['\"][[:space:]]+\"\"[[:space:]]*\$|log[[:space:]]+notice[[:space:]]+\"\"[[:space:]]*\$" \
       -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-042 blank-line separator" "${hits}"
 }
@@ -521,7 +606,7 @@ check_R031_bare_newline() {
    local hits
    local -a fs
 
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    ## Bad pattern: a printf that emits a newline without passing the
    ## data as an explicit argument -- 'printf \n' (newline baked into
@@ -534,7 +619,7 @@ check_R031_bare_newline() {
    ## 'printf %s\n' "" (which has a following data arg) never trips it while
    ## a commented bare form ('printf %s\n' # x) still does. Covers single-
    ## and double-quoted format strings and repeated '\n'.
-   hits="$(grep --line-number --extended-regexp \
+   hits="$(grep --with-filename --line-number --extended-regexp \
       "printf[[:space:]]+['\"](%s)?(\\\\n)+['\"][[:space:]]*(\$|[|;&>#])" \
       -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-030/R-031 newline printf needs explicit \"\" arg" "${hits}"
@@ -544,19 +629,26 @@ check_R051_trap_inline() {
    local hits
    local -a fs
 
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
-   ## Bad pattern: trap followed by a single-quoted inline command.
-   ## Named-function form is: trap NAME SIG (no leading quote).
-   hits="$(grep --line-number --extended-regexp "\\btrap[[:space:]]+'" -- "${fs[@]}" 2>/dev/null || true)"
+   ## Bad pattern: trap followed by a single- OR double-quoted inline
+   ## command string ('trap "rm -f ${t}" EXIT' as well as the single-quoted
+   ## form). Named-function form is 'trap NAME SIG' (no quote). The
+   ## '[^'\"]' after the opening quote requires a non-quote character
+   ## inside, so 'trap "" EXIT' / 'trap '' EXIT' (clear/ignore a trap, not
+   ## an inline command) are not flagged.
+   hits="$(grep --with-filename --line-number --extended-regexp "\\btrap[[:space:]]+['\"][^'\"]" -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-051 trap inline command" "${hits}"
 }
 
 check_R070_double_semi() {
    local hits
 
-   ## ';;' preceded by a non-whitespace character on the same line.
-   hits="$(grep --line-number --extended-regexp '[^[:space:]];;[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
+   ## R-070: ';;' must be on its own line (optional indent + ';;' only).
+   ## Flag any ';;' at end-of-line with other non-whitespace before it --
+   ## spaced ('bar ;;') OR jammed ('bar;;'). A compact one-line case arm is
+   ## thus always caught; the arm must be written multi-line.
+   hits="$(grep --with-filename --line-number --extended-regexp '[^[:space:]][[:space:]]*;;[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
    emit_hits "R-070 ';;' on own line" "${hits}"
 }
 
@@ -569,9 +661,12 @@ check_R074_flow_chaining() {
    ## keywords break/continue/return are the low-false-positive subset: a ';'
    ## that FOLLOWS a statement (a non-whitespace char earlier on the line, allowing
    ## spaces before the ';' so 'foo ; break' is caught too) and is FOLLOWED by one
-   ## of them at a word boundary is almost always the chaining R-074 forbids, never
-   ## bash's syntactic ';' (';;', a C-style for-loop, or the keyword on its own
-   ## line). filter_self keeps this script's own regex/examples from self-matching.
+   ## of them is almost always the chaining R-074 forbids, never bash's syntactic
+   ## ';' (';;', a C-style for-loop, or the keyword on its own line). The trailing
+   ## group '([[:space:];&|]|$)' enforces a real word boundary after the keyword,
+   ## so a mere prefix ('x=1; return_value=1', '; continue_calls') does NOT match;
+   ## the leading '^[^#]*' excludes '#'-comment lines. filter_self keeps this
+   ## script's own regex/examples from self-matching.
    ##
    ## 'exit' is deliberately NOT in the set. Unlike break/continue/return it
    ## is a frequent statement separator INSIDE inline awk/sed program strings
@@ -580,10 +675,10 @@ check_R074_flow_chaining() {
    ## guard idiom '|| { printf ... >&2; exit 1; }' used by self-contained
    ## bootstrap scripts. So it is not the low-false-positive subset a
    ## single-grep Tier-1 rule needs.
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
-   hits="$(grep --line-number --extended-regexp \
-      '[^[:space:]][[:space:]]*;[[:space:]]*(break|continue|return)([[:space:];]*|$)' -- "${fs[@]}" 2>/dev/null || true)"
+   hits="$(grep --with-filename --line-number --extended-regexp \
+      '^[^#]*[^#[:space:]][[:space:]]*;[[:space:]]*(break|continue|return)([[:space:];&|]|$)' -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-074 ';'-chained break/continue/return" "${hits}"
 }
 
@@ -591,9 +686,9 @@ check_R081_source_devnull() {
    local hits
    local -a fs
 
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
-   hits="$(grep --line-number 'shellcheck source=/dev/null' -- "${fs[@]}" 2>/dev/null || true)"
+   hits="$(grep --with-filename --line-number 'shellcheck source=/dev/null' -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-081 source=/dev/null" "${hits}"
 }
 
@@ -622,7 +717,12 @@ check_R090_command_v() {
          -- "${script}"; then
          continue
       fi
-      hits="$(grep --line-number 'command -v' -- "${script}" 2>/dev/null || true)"
+      ## Match 'command -v' only in CODE, not in a comment or string: the
+      ## '[^#]*' prefix cannot cross a '#', so a line whose 'command -v'
+      ## sits in a '##' comment (or a trailing comment, e.g. a script that
+      ## documents 'use has, not command -v') is not flagged. A 'command -v'
+      ## embedded in a string is a rare residual, same class as R-034/R-120.
+      hits="$(grep --line-number --extended-regexp '^[[:space:]]*[^#]*command[[:space:]]+-v' -- "${script}" 2>/dev/null || true)"
       if [ -z "${hits}" ]; then
          continue
       fi
@@ -642,15 +742,26 @@ check_R102_interpreter_prepend() {
    ##
    ## Two regexes:
    ##   1. 'bash foo.sh' / 'sh foo.bsh' / etc - explicit extension.
-   ##   2. 'bash foo' / 'sh foo' where 'foo' doesn't look like a
-   ##      flag (no leading '-') and isn't a builtin keyword that
-   ##      commonly follows bash/sh in CI commands ('-c', '-e',
-   ##      '-x', '-l', '-n'). Catches 'bash my-extensionless-script'
-   ##      patterns that the original first regex missed.
-   mapfile -t fs < <(filter_self "${@}")
+   ##   2. 'bash foo' / 'sh foo' where the operand is a PATH: it starts with
+   ##      a path character (not '-', so a flag is skipped; not '$'/'"', so a
+   ##      variable is skipped) and CONTAINS a '/'. Requiring a slash is what
+   ##      separates a real extensionless invocation ('bash ci/dry-run-start',
+   ##      'bash ./build', 'bash /usr/bin/x') from English prose ('a bash
+   ##      script', 'foo.sh as a subprocess') which has no slash. The previous
+   ##      regex 2 required a literal leading '.', so a bare 'bash ci/foo'
+   ##      slipped; a slash-anywhere test catches it without matching prose.
+   ##
+   ## The interpreter word must sit at line start or after a genuine command
+   ## separator/space -- NOT a plain '\b' word boundary. '\b' also matches
+   ## after '-' and '.', so a short flag ending in sh ('du -sh /path') and a
+   ## script run AS the command with a path argument ('wrapper.sh /etc/x')
+   ## both false-positived as an 'sh' prepend. The explicit prefix class
+   ## keeps every real form: line start, 'cd x && bash y', '$(bash y)',
+   ## 'true; bash y', 'timeout 5 bash y'.
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
-   hits="$(grep --line-number --extended-regexp \
-      '\b(bash|sh)[[:space:]]+[^-[:space:]][^[:space:]]*\.(sh|bsh|bash)\b|\b(bash|sh)[[:space:]]+\./?[A-Za-z0-9_/-]+(\b|$)' \
+   hits="$(grep --with-filename --line-number --extended-regexp \
+      '(^|[[:space:]([;&|])(bash|sh)[[:space:]]+[^-[:space:]][^[:space:]]*\.(sh|bsh|bash)\b|(^|[[:space:]([;&|])(bash|sh)[[:space:]]+[^-$"[:space:]][A-Za-z0-9._-]*/[A-Za-z0-9._/-]*(\b|$)' \
       -- "${fs[@]}" 2>/dev/null \
       | grep --invert-match --extended-regexp \
          '\b(bash|sh)[[:space:]]+-[ceilnsxv]+(\b|[[:space:]])' \
@@ -662,6 +773,10 @@ check_R120_rm() {
    local script hits line
 
    for script in "${@}"; do
+      ## Skip this script: it carries 'rm' in fail messages and regex
+      ## needles (not filesystem deletes), which the invert no longer
+      ## spares now that 'safe-rm' left it.
+      is_self_referential "${script}" && continue
       ## Script-wide waiver: '## style-ok: no-safe-rm' anywhere in
       ## the file disables R-120 for that file. Anchored regex (not
       ## --fixed-strings) so a typo'd superset doesn't silently
@@ -671,19 +786,20 @@ check_R120_rm() {
          -- "${script}"; then
          continue
       fi
-      ## Conservative: 'rm' as a word at start-of-line or after
-      ## whitespace, NOT preceded by 'safe-'. Three alternatives in
-      ## the regex catch the cases:
-      ##   1. 'rm' after whitespace later in the line
-      ##   2. 'rm <args>' at start of line followed by whitespace
-      ##   3. bare 'rm' at start of line followed by EOL (or '$')
-      ## Excludes comments (lines starting with optional whitespace
-      ## then '#') and the non-filesystem-rm carve-outs (safe-rm,
-      ## shred, git rm, git remote rm).
+      ## 'rm' as a command word: at start-of-line, or preceded by
+      ## whitespace OR a command separator (; & | (), so a separator-glued
+      ## form like 'true;rm -rf x' is caught too), then followed by
+      ## whitespace or end-of-line. 'safe-rm' never matches because its
+      ## 'rm' is preceded by '-' (not in the class), so it is NOT in the
+      ## invert below: dropping it there would have spared a whole line
+      ## carrying a REAL 'rm' next to a safe-rm ('safe-rm a; rm -rf b').
+      ## Comments are excluded via the '[^#]*' prefix. The invert keeps the
+      ## non-filesystem-rm carve-outs (shred, git rm, git remote rm); those
+      ## remain whole-line, a narrow accepted residual.
       hits="$(grep --line-number --extended-regexp \
-         '^[[:space:]]*[^#]*[[:space:]]rm[[:space:]]|^[[:space:]]*rm[[:space:]]|^[[:space:]]*rm$' \
+         '^[[:space:]]*[^#]*[[:space:];&|(]rm([[:space:]]|$)|^[[:space:]]*rm([[:space:]]|$)' \
          -- "${script}" 2>/dev/null \
-         | grep --invert-match --extended-regexp 'safe-rm|shred[[:space:]]|git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]' \
+         | grep --invert-match --extended-regexp 'shred[[:space:]]|git[[:space:]]+(remote[[:space:]]+)?rm[[:space:]]' \
          || true)"
       if [ -z "${hits}" ]; then
          continue
@@ -701,7 +817,7 @@ check_R130_null_command() {
    ## catch `: "${var:=default}"` (legit parameter-default idiom
    ## used in usr/libexec/.../github-org-lib.bsh) nor `: > file`
    ## (truncate) -- those have trailing content past the colon.
-   hits="$(grep --line-number --extended-regexp '^[[:space:]]*:[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
+   hits="$(grep --with-filename --line-number --extended-regexp '^[[:space:]]*:[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
    emit_hits "R-130 bare ':' no-op" "${hits}"
 }
 
@@ -712,7 +828,7 @@ check_R034_echo() {
    ## R-034: 'echo' as a command (use printf). Per-script so a script-wide
    ## '## style-ok: allow-echo' waiver can exempt a file that genuinely needs it.
    ## filter_self drops this script (its own tag/comment text contains 'echo').
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    for script in "${fs[@]}"; do
       if grep --quiet --extended-regexp \
@@ -759,7 +875,7 @@ check_R103_exec() {
    ## / '<' / '>' / '&' immediately follows 'exec'). Per-script
    ## '## style-ok: allow-exec' waiver for surfaces that must genuinely hand off the
    ## process. filter_self drops this script.
-   mapfile -t fs < <(filter_self "${@}")
+   mapfile -d '' -t fs < <(filter_self "${@}")
    if [ "${#fs[@]}" -eq 0 ]; then return 0; fi
    for script in "${fs[@]}"; do
       if grep --quiet --extended-regexp \
@@ -784,17 +900,23 @@ check_R103_exec() {
 check_R080_shellcheck_source_path() {
    local hits
 
-   ## R-080: 'source=' must point at a relative source-tree path.
-   ## /dev/null is also covered by R-081 but rejected here too.
-   hits="$(grep --line-number --extended-regexp \
-      '^[[:space:]]*#[[:space:]]*shellcheck[[:space:]]+source=(/[A-Za-z]|/dev/null\b)' \
+   ## R-080: a 'shellcheck source=' path must be a RELATIVE source-tree path
+   ## anchored with './' or '../', i.e. it must start with '.'. This flags an
+   ## absolute path ('source=/usr/...', and /dev/null), AND a bare relative
+   ## name ('source=get_colors.sh' instead of './get_colors.sh') -- shellcheck
+   ## resolves the bare form the same, but it breaks the codebase convention
+   ## that anchors a same-directory sibling as './<file>'.
+   hits="$(grep --with-filename --line-number --extended-regexp \
+      '^[[:space:]]*#[[:space:]]*shellcheck[[:space:]]+source=[^.]' \
       -- "${@}" 2>/dev/null || true)"
-   emit_hits "R-080 shellcheck source= must be relative" "${hits}"
+   emit_hits "R-080 shellcheck source= must be relative (start with ./ or ../)" "${hits}"
 }
 
 is_yaml_file() {
    case "${1}" in
-      *.yml|*.yaml) return 0 ;;
+      *.yml|*.yaml)
+         return 0
+         ;;
    esac
    return 1
 }
@@ -855,12 +977,69 @@ is_text_file() {
 
 run_precommit_hook() {
    local hook
+   local -a flags files
+
+   hook="${1}"
+   shift
+   ## Split the remaining args at '--' into leading hook flags and the
+   ## trailing FILE list. Untrusted filenames MUST go after '--' so a path
+   ## named like an option ('--fix=lf', '--maxkb=99999999') is a positional
+   ## argument, not a flag the argparse-based hook honors (R-062). Without
+   ## this a changed file could flip a fixer into rewrite mode or neuter a
+   ## checker. Callers always pass '<hook> [flags...] -- <files...>'.
+   flags=()
+   while [ "$#" -ge 1 ] && [ "${1}" != "--" ]; do
+      flags+=("${1}")
+      shift
+   done
+   if [ "${1:-}" = "--" ]; then
+      shift
+   fi
+   files=("${@}")
+   if [ "${#files[@]}" -eq 0 ]; then
+      return 0
+   fi
+   "${hook}" "${flags[@]}" -- "${files[@]}" \
+      || fail "${hook}" "exited non-zero (hook output printed above)"
+}
+
+## Fixer hooks (end-of-file-fixer, trailing-whitespace-fixer, ...) REWRITE
+## files in place. Run each against throwaway COPIES so the working tree
+## (default mode) and the detached --per-commit checkout are never mutated:
+## an in-place fix would silently edit the user's tree, and in --per-commit
+## mode it dirties the checkout so the next 'git checkout <sha>' aborts and
+## leaves a wedged detached HEAD. The non-zero exit (the hook's "would
+## modify" signal) still fails the gate. Only pure file-content fixers use
+## this; the git-aware hooks (check-added-large-files, ...) must see the
+## real repo and stay on run_precommit_hook.
+run_precommit_fixer() {
+   local hook rc mirror f dir
+
    hook="${1}"
    shift
    if [ "$#" -eq 0 ]; then
       return 0
    fi
-   "${hook}" "${@}" || fail "${hook}" "exited non-zero (hook output printed above)"
+   mirror=""
+   mirror="$(mktemp --directory)" || true
+   if [ -z "${mirror}" ] || [ ! -d "${mirror}" ]; then
+      fail "${hook}" "mktemp failed; cannot sandbox the fixer run"
+      return 0
+   fi
+   for f in "${@}"; do
+      dir="$(dirname -- "${f}")"
+      mkdir --parents -- "${mirror}/${dir}"
+      cp --no-dereference --preserve=mode -- "${f}" "${mirror}/${f}"
+   done
+   rc=0
+   ## '--' so a filename that looks like a flag stays a positional arg (R-062).
+   ( cd -- "${mirror}" && "${hook}" -- "${@}" ) || rc=$?
+   ## Plain 'rm' on our own mktemp dir: this bootstrap script cannot depend
+   ## on safe-rm (same deviation as the command -v use), and R-120 skips it.
+   rm --recursive --force -- "${mirror}"
+   if [ "${rc}" -ne 0 ]; then
+      fail "${hook}" "would modify file(s) -- run '${hook}' locally and commit the result"
+   fi
 }
 
 check_precommit_hooks() {
@@ -899,11 +1078,21 @@ check_precommit_hooks() {
          fi
       fi
       case "${f}" in
-         *.yml|*.yaml) yaml_files+=("${f}") ;;
-         *.json)       json_files+=("${f}") ;;
-         *.toml)       toml_files+=("${f}") ;;
-         *.xml)        xml_files+=("${f}") ;;
-         *.py)         python_files+=("${f}") ;;
+         *.yml|*.yaml)
+            yaml_files+=("${f}")
+            ;;
+         *.json)
+            json_files+=("${f}")
+            ;;
+         *.toml)
+            toml_files+=("${f}")
+            ;;
+         *.xml)
+            xml_files+=("${f}")
+            ;;
+         *.py)
+            python_files+=("${f}")
+            ;;
       esac
       case "${f}" in
          requirements*.txt|constraints*.txt \
@@ -914,54 +1103,66 @@ check_precommit_hooks() {
    done
 
    ## filename-blind:
-   run_precommit_hook check-added-large-files                            "${@}"
-   run_precommit_hook check-case-conflict                                "${@}"
-   run_precommit_hook destroyed-symlinks                                 "${@}"
-   run_precommit_hook forbid-new-submodules                              "${@}"
+   ## '--enforce-all' so check-added-large-files inspects the files we pass
+   ## instead of intersecting with 'git diff --staged' (empty at push time,
+   ## which left it dead in default/union/per-commit mode).
+   run_precommit_hook check-added-large-files --enforce-all -- "${@}"
+   run_precommit_hook check-case-conflict     -- "${@}"
+   run_precommit_hook destroyed-symlinks      -- "${@}"
+   run_precommit_hook forbid-new-submodules   -- "${@}"
 
    ## text-only:
-   run_precommit_hook check-merge-conflict                               "${text_files[@]}"
-   run_precommit_hook check-vcs-permalinks                               "${text_files[@]}"
-   run_precommit_hook detect-aws-credentials --allow-missing-credentials "${text_files[@]}"
-   run_precommit_hook detect-private-key                                 "${text_files[@]}"
-   run_precommit_hook fix-byte-order-marker                              "${text_files[@]}"
-   run_precommit_hook end-of-file-fixer                                  "${text_files[@]}"
-   run_precommit_hook trailing-whitespace-fixer                          "${text_files[@]}"
-   run_precommit_hook mixed-line-ending --fix=no                         "${text_files[@]}"
-   run_precommit_hook check-shebang-scripts-are-executable               "${text_files[@]}"
+   run_precommit_hook check-merge-conflict    -- "${text_files[@]}"
+   run_precommit_hook check-vcs-permalinks    -- "${text_files[@]}"
+   run_precommit_hook detect-aws-credentials --allow-missing-credentials -- "${text_files[@]}"
+   run_precommit_hook detect-private-key      -- "${text_files[@]}"
+   run_precommit_fixer fix-byte-order-marker     "${text_files[@]}"
+   run_precommit_fixer end-of-file-fixer         "${text_files[@]}"
+   run_precommit_fixer trailing-whitespace-fixer "${text_files[@]}"
+   run_precommit_hook mixed-line-ending --fix=no -- "${text_files[@]}"
+   run_precommit_hook check-shebang-scripts-are-executable -- "${text_files[@]}"
 
    ## text AND executable:
-   run_precommit_hook check-executables-have-shebangs                    "${exec_text_files[@]}"
+   run_precommit_hook check-executables-have-shebangs -- "${exec_text_files[@]}"
 
    ## symlinks:
-   run_precommit_hook check-symlinks                                     "${symlink_files[@]}"
+   run_precommit_hook check-symlinks -- "${symlink_files[@]}"
 
    ## type by extension:
-   run_precommit_hook check-yaml                "${yaml_files[@]}"
-   run_precommit_hook check-json                "${json_files[@]}"
-   run_precommit_hook check-toml                "${toml_files[@]}"
-   run_precommit_hook check-xml                 "${xml_files[@]}"
-   run_precommit_hook check-ast                 "${python_files[@]}"
-   run_precommit_hook check-builtin-literals    "${python_files[@]}"
-   run_precommit_hook debug-statement-hook      "${python_files[@]}"
-   run_precommit_hook double-quote-string-fixer "${python_files[@]}"
-   run_precommit_hook pretty-format-json        "${json_files[@]}"
-   run_precommit_hook requirements-txt-fixer    "${req_files[@]}"
+   run_precommit_hook check-yaml             -- "${yaml_files[@]}"
+   run_precommit_hook check-json             -- "${json_files[@]}"
+   run_precommit_hook check-toml             -- "${toml_files[@]}"
+   run_precommit_hook check-xml              -- "${xml_files[@]}"
+   run_precommit_hook check-ast              -- "${python_files[@]}"
+   run_precommit_hook check-builtin-literals -- "${python_files[@]}"
+   run_precommit_hook debug-statement-hook   -- "${python_files[@]}"
+   run_precommit_fixer double-quote-string-fixer "${python_files[@]}"
+   run_precommit_fixer pretty-format-json        "${json_files[@]}"
+   run_precommit_fixer requirements-txt-fixer    "${req_files[@]}"
 }
 
-## Staged mode reads working-tree copies, not staged blobs. Warn (do not
-## fail) for any checked path whose working tree differs from the index,
-## so a "passed" result is not mistaken for a check of the exact blob the
-## commit will record. Skipped under --all (there the working tree IS the
-## set being recorded).
-warn_staged_worktree_skew() {
-   local file rc
+## Warn (do not fail) when a checked path's working-tree content differs
+## from what the current mode actually records, so a "passed" result is not
+## mistaken for a check of the exact bytes. 'ref' is the diff target: empty
+## for STAGED mode (working tree vs the index), 'HEAD' for UNION/push mode
+## (working tree vs the pushed commit). 'hint' is the mode-specific advice.
+## Both modes would otherwise pass silently on content the check never saw.
+warn_worktree_skew() {
+   local mode ref hint file rc
 
+   mode="${1}"
+   ref="${2}"
+   hint="${3}"
+   shift 3
    for file in "${@}"; do
       rc=0
-      git diff --quiet -- "${file}" || rc=$?
+      if [ -n "${ref}" ]; then
+         git diff --quiet "${ref}" -- "${file}" 2>/dev/null || rc=$?
+      else
+         git diff --quiet -- "${file}" 2>/dev/null || rc=$?
+      fi
       if [ "${rc}" -ne 0 ]; then
-         note "staged mode: '${file}' has unstaged changes; checks ran against the working tree, not the staged blob (re-stage to verify the exact committed content)"
+         note "${mode}: '${file}' ${hint}"
       fi
    done
 }
@@ -977,7 +1178,7 @@ run_file_checks() {
    yaml_files=()
    shell_or_yaml=()
    file_list=()
-   while IFS= read -r line; do
+   while IFS= read -r -d '' line; do
       if [ -z "${line}" ]; then
          continue
       fi
@@ -1018,7 +1219,14 @@ run_file_checks() {
 
    if [ "${#file_list[@]}" -gt 0 ]; then
       if [ "${staged_mode}" -eq 1 ] && [ "${staged_all}" -eq 0 ]; then
-         warn_staged_worktree_skew "${file_list[@]}"
+         warn_worktree_skew "staged mode" "" \
+            "has unstaged changes; checks ran against the working tree, not the staged blob (re-stage to verify the exact committed content)" \
+            "${file_list[@]}"
+      fi
+      if [ "${staged_mode}" -eq 0 ] && [ "${per_commit_mode}" -eq 0 ]; then
+         warn_worktree_skew "push mode" "HEAD" \
+            "differs between the working tree and HEAD; checks ran against the working tree, not the pushed commit (use --per-commit to check commit content exactly)" \
+            "${file_list[@]}"
       fi
       check_ascii_files "${file_list[@]}"
       check_precommit_hooks "${file_list[@]}"
@@ -1034,7 +1242,20 @@ restore_head() {
 }
 
 main() {
-   local sha saved_base_ref
+   local sha saved_base_ref toplevel
+
+   ## Resolve everything from the repo root. list_changed_files yields
+   ## repo-root-relative paths, but every content check reads them relative
+   ## to the CWD. Invoked from a subdirectory (or by a hook whose CWD is not
+   ## the root, e.g. the Claude commit-gate) each path would be missing and
+   ## every check would silently pass. cd to the top level so the path list
+   ## and the on-disk reads agree.
+   toplevel="$(git rev-parse --show-toplevel 2>/dev/null)" || true
+   if [ -z "${toplevel}" ]; then
+      note "not inside a git repository; cannot run"
+      exit 2
+   fi
+   cd -- "${toplevel}"
 
    if [ "${staged_mode}" -eq 0 ]; then
       resolve_base

@@ -137,7 +137,10 @@ ghorg_token() {
   ## stderr suppressed: check_is_alpha_numeric prints the value on
   ## failure, which would leak the secret.
   check_is_alpha_numeric token 2>/dev/null \
-    || { log error "'${token_file}' contains disallowed characters"; return 1; }
+    || {
+      log error "'${token_file}' contains disallowed characters"
+      return 1
+    }
   printf '%s' "${token}"
 }
 
@@ -146,7 +149,10 @@ ghorg_require_deps() {
 
   ## No Git dependency, as none of the github-org-tools use Git.
   for cmd in curl jq; do
-    has "${cmd}" || { log error "required command not found: '${cmd}'"; return 1; }
+    has "${cmd}" || {
+      log error "required command not found: '${cmd}'"
+      return 1
+    }
   done
 }
 
@@ -352,8 +358,14 @@ ghorg_api() {
     return 0
   fi
 
-  is_whole_number "${GHORG_MAX_RETRIES}" || { log error 'GHORG_MAX_RETRIES must be a whole number'; return 1; }
-  is_whole_number "${GHORG_MAX_BACKOFF_SECONDS}" || { log error 'GHORG_MAX_BACKOFF_SECONDS must be a whole number'; return 1; }
+  is_whole_number "${GHORG_MAX_RETRIES}" || {
+    log error 'GHORG_MAX_RETRIES must be a whole number'
+    return 1
+  }
+  is_whole_number "${GHORG_MAX_BACKOFF_SECONDS}" || {
+    log error 'GHORG_MAX_BACKOFF_SECONDS must be a whole number'
+    return 1
+  }
 
   ## Fail closed when auth was explicitly configured but invalid;
   ## silently downgrading to anonymous would mask a bad token and
@@ -486,8 +498,11 @@ ghorg_status_of() {
   local last
   last="$(printf '%s\n' "$1" | tail --lines=1)"
   case "${last}" in
-    HTTP_STATUS:*) printf '%s\n' "${last#HTTP_STATUS:}" ;;
-    *)             ;;
+    HTTP_STATUS:*)
+      printf '%s\n' "${last#HTTP_STATUS:}"
+      ;;
+    *)
+      ;;
   esac
 }
 
@@ -562,7 +577,8 @@ ghorg_account_type() {
   type="$(printf '%s' "${body}" | ghorg_jq_capped --raw-output \
     -- '.type')"
   case "${type}" in
-    User|Organization) ;;
+    User|Organization)
+      ;;
     *)
       log error "unexpected account type for '${owner}': '${type}'"
       return 1
