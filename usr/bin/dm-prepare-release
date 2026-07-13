@@ -494,8 +494,9 @@ Please donate! [C]
    ## '$UNSHARE_PID_NS' (see derivative-maker 'help-steps/pre', sourced
    ## above) runs cowbuilder as the init of a private PID namespace so
    ## nothing started inside the chroot session can outlive this step; the
-   ## clean daemon shutdown is 'vboxsvc_shutdown' in
-   ## 'pbuilder-chroot-script-export-vbox-vm', which runs first. Mirrors
+   ## chroot script separately unlinks stale VirtualBox IPC files
+   ## ('vbox_stale_ipc_cleanup' in derivative-maker
+   ## 'help-steps/vbox-chroot-shared'). Mirrors
    ## 'build-steps.d/4600_create-vbox-vm'.
    $SUDO_TO_ROOT \
       --preserve-env \
