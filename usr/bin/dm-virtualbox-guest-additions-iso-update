@@ -87,6 +87,7 @@ dm_virtualbox_guest_additions_iso_download() {
   ## Update the apt sources within the chroot.
   $SUDO_TO_ROOT \
     ${COWBUILDER_PREFIX:-} \
+      ${UNSHARE_PID_NS:-} \
       cowbuilder \
         --architecture "$dist_build_multiarch_package_item" \
         --configfile "$dist_build_pbuilder_config_file" \
@@ -153,6 +154,7 @@ dm_virtualbox_guest_additions_iso_download() {
 
   $SUDO_TO_ROOT \
     ${COWBUILDER_PREFIX:-} \
+      ${UNSHARE_PID_NS:-} \
       cowbuilder \
         --architecture "$dist_build_multiarch_package_item" \
         --configfile "$dist_build_pbuilder_config_file" \
