@@ -50,7 +50,7 @@ dm_virtualbox_guest_additions_iso_cleanup() {
   safe-rm -r -f -- "${unpack_workdir}"
 }
 
-trap 'dm_virtualbox_guest_additions_iso_cleanup' EXIT
+trap dm_virtualbox_guest_additions_iso_cleanup EXIT
 
 dm_virtualbox_guest_additions_iso_download() {
   local local_vbox_version full_remote_vbox_version \
