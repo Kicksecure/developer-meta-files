@@ -559,13 +559,35 @@ check_R010_strict_block() {
 }
 
 check_R011_errexit_toggle() {
-   local hits
+   local script hits
+   local -a unwaived_scripts
+
+   ## Script-wide waiver: '## style-ok: allow-errexit-toggle' anywhere in a
+   ## file disables R-011 for that file (same shape as the 'no-has' /
+   ## 'no-safe-rm' waivers). R-011 targets the capture-an-exit-code toggle
+   ## anti-pattern; a deliberate GLOBAL mode switch is legitimate --
+   ## derivative-maker 'help-steps/pre' turns errexit off so its ERR-trap
+   ## exception handler can RESUME execution (auto-retry / interactive
+   ## continue), which errexit makes impossible. Anchored regex (not
+   ## --fixed-strings) so a typo'd superset does not silently disable the
+   ## check.
+   unwaived_scripts=()
+   for script in "${@}"; do
+      if grep --quiet --extended-regexp \
+         '^[[:space:]]*##[[:space:]]*style-ok:[[:space:]]*allow-errexit-toggle([[:space:]]|$)' \
+         -- "${script}"; then
+         note "R-011 skipped: 'style-ok: allow-errexit-toggle' waiver in '${script}'"
+         continue
+      fi
+      unwaived_scripts+=( "${script}" )
+   done
+   [ "${#unwaived_scripts[@]}" -gt 0 ] || return 0
 
    ## Both the long form ('set +o errexit') and the short form ('set +e',
    ## 'set +ex', 'set +xe'): '\+([a-z]*e[a-z]*)' matches a short option
    ## bundle that contains 'e'. 'set +u'/'set +o pipefail' (no errexit) do
    ## not match. Anchored at 'set', so a '## set +e' comment is spared.
-   hits="$(grep --with-filename --line-number --extended-regexp '^[[:space:]]*set[[:space:]]+\+(o[[:space:]]+errexit|[a-z]*e[a-z]*)' -- "${@}" 2>/dev/null || true)"
+   hits="$(grep --with-filename --line-number --extended-regexp '^[[:space:]]*set[[:space:]]+\+(o[[:space:]]+errexit|[a-z]*e[a-z]*)' -- "${unwaived_scripts[@]}" 2>/dev/null || true)"
    emit_hits "R-011 errexit toggle" "${hits}"
 }
 
