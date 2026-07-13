@@ -162,6 +162,14 @@ shell-escaping is genuinely required), no extra `\n` in the format.
 newlines.** Multiple separate lines: one `printf '%s\n'` per line.
 Blank line: `printf '%s\n' ""`, NOT `printf '\n'` by itself.
 
+A standalone newline is ALWAYS `printf '%s\n' ""`, with the empty
+string passed as an explicit data argument. Both `printf '\n'` (the
+newline baked into the format string) and a bare `printf '%s\n'`
+(the `%s` format kept but the data argument omitted) are forbidden
+and GATE-ENFORCED -- they fail the static gate. Whether the blank
+line should exist at all is R-042's separate call; this rule only
+fixes its form once you decide to write one.
+
 **R-032: Quote choice.** Double quotes preferred. Single quotes
 acceptable when the body has many doubles to escape:
 

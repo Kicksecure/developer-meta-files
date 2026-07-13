@@ -6,8 +6,10 @@
 ## AI-Assisted
 
 ## Functional test for the pre-push-static single-grep style checks: assert that
-## R-070 (';;' trailing a statement) and R-074 (';'-chained break/continue/return)
-## actually FLAG a violating shell file and SPARE a compliant one. It drives the
+## R-070 (';;' trailing a statement), R-074 (';'-chained break/continue/return),
+## R-030/R-031 (a newline printf missing its explicit "" data argument), R-042
+## (a blank-line separator), and R-034 (echo run as a command) actually FLAG a
+## violating shell file and SPARE a compliant one. It drives the
 ## real, shipped agents/pre-push-static.sh as a subprocess against a throwaway git
 ## repo, so it exercises the check end to end (regex + file selection + reporting),
 ## not a private copy of the regex.
@@ -109,6 +111,14 @@ expect_rule() {
 sc=';'
 dsemi=';;'
 
+## Fragments for the printf-newline assertions, assembled the same way so a
+## literal bad-form printf never appears in this tracked file (which the gate
+## would, correctly, trip over).
+sq="'"
+dq='"'
+## Literal backslash-n (two chars), single-quoted so it is not interpreted.
+nl='\n'
+
 ## R-074: a ';'-chained break / continue / return must be FLAGGED; the same
 ## keyword on its own line must be SPARED.
 expect_rule "R-074" "hit=1${sc} break"       "present"
@@ -116,9 +126,10 @@ expect_rule "R-074" "seen=1${sc} continue"   "present"
 expect_rule "R-074" "printf x${sc} return 1" "present"
 expect_rule "R-074" "break"                  "absent"
 
-## Whitespace around the ';' ('foo ; break') is the same violation and must also
-## be FLAGGED -- guards against a regex that only anchors on a non-space char
-## immediately before the ';'.
+## Whitespace on either side of the ';' is the same violation and must also be
+## FLAGGED -- guards against a regex that only anchors on a non-space char
+## immediately before the ';'. The bodies below assemble the separator from
+## ${sc} at run time, so the literal never appears in this tracked file.
 expect_rule "R-074" "hit=1 ${sc} break"      "present"
 expect_rule "R-074" "printf y ${sc} return"  "present"
 
@@ -126,8 +137,35 @@ expect_rule "R-074" "printf y ${sc} return"  "present"
 expect_rule "R-070" "esac${dsemi}"           "present"
 expect_rule "R-070" "${dsemi}"               "absent"
 
+## R-030/R-031: a newline emitted without an explicit '' data argument must be
+## FLAGGED -- both 'printf \n' (newline in the format) and a bare 'printf %s\n'
+## (data arg omitted). The compliant 'printf %s\n' "" and a normal data printf
+## must be SPARED by this rule (the blank-separator form is R-042's job, below).
+expect_rule "R-030/R-031" "printf ${sq}${nl}${sq}"              "present"
+expect_rule "R-030/R-031" "printf ${sq}%s${nl}${sq}"            "present"
+expect_rule "R-030/R-031" "printf ${sq}%s${nl}${sq} ${dq}${dq}" "absent"
+expect_rule "R-030/R-031" "printf ${sq}%s${nl}${sq} hello"      "absent"
+## A trailing comment does not supply a data argument, so a commented bare
+## form is still a violation; the compliant form stays spared even commented.
+expect_rule "R-030/R-031" "printf ${sq}%s${nl}${sq} # blank"        "present"
+expect_rule "R-030/R-031" "printf ${sq}%s${nl}${sq} ${dq}${dq} # ok" "absent"
+
+## The compliant 'printf %s\n' "" IS a blank-line separator, so R-042 (not
+## R-031) is the rule that owns it -- proves the two checks divide the work
+## cleanly rather than both firing or both missing.
+expect_rule "R-042" "printf ${sq}%s${nl}${sq} ${dq}${dq}"       "present"
+
+## R-034: 'echo' run as a command must be FLAGGED; 'echo' as a bareword inside
+## a string or as another command's argument must be SPARED (the command-
+## position anchoring that replaced the old '[[:space:]]echo' form).
+expect_rule "R-034" "echo hi"                                   "present"
+## echo run as a condition command (line-start keyword) must also be FLAGGED.
+expect_rule "R-034" "if echo hi${sc} then"                      "present"
+expect_rule "R-034" "printf ${sq}%s${nl}${sq} ${dq}a echo b${dq}" "absent"
+expect_rule "R-034" "has echo"                                  "absent"
+
 if [ "${failures}" -ne 0 ]; then
    printf '%s\n' "test_pre_push_static_style_rules: ${failures} assertion(s) FAILED." >&2
    exit 1
 fi
-printf '%s\n' "test_pre_push_static_style_rules: OK -- R-070 and R-074 enforced as expected."
+printf '%s\n' "test_pre_push_static_style_rules: OK -- R-070, R-074, R-030/R-031, R-042 and R-034 enforced as expected."
