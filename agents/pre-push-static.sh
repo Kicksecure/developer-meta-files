@@ -648,7 +648,7 @@ check_R031_bare_newline() {
 }
 
 check_R051_trap_inline() {
-   local hits
+   local hits allow_regexp
    local -a fs
 
    mapfile -d '' -t fs < <(filter_self "${@}")
@@ -660,6 +660,21 @@ check_R051_trap_inline() {
    ## inside, so 'trap "" EXIT' / 'trap '' EXIT' (clear/ignore a trap, not
    ## an inline command) are not flagged.
    hits="$(grep --with-filename --line-number --extended-regexp "\\btrap[[:space:]]+['\"][^'\"]" -- "${fs[@]}" 2>/dev/null || true)"
+   ## Spare the PARAMETERIZED named-function form: bash passes a trap
+   ## handler no information about the firing signal, so
+   ## 'trap "handler $signal" "$signal"' is the standard idiom for
+   ## signal-aware dispatch to a named function -- the rule targets inline
+   ## command LOGIC, not arguments. Spared iff the quoted string is exactly
+   ## one function/variable name followed by VARIABLE-EXPANSION arguments
+   ## only ('$signal', '${kind}'): literal arguments keep e.g.
+   ## 'trap "rm -f ${t}" EXIT' (the rule's canonical bad case) flagged.
+   ## PCRE with \x27 escapes for the quotes keeps the expression
+   ## shell-quoting-safe; \1 backreference matches the closing quote to
+   ## the opening one.
+   allow_regexp='\btrap[[:space:]]+([\x27"])[$]?[A-Za-z_][A-Za-z0-9_]*([[:space:]]+[$][{]?[A-Za-z_][A-Za-z0-9_]*[}]?)*\1'
+   if [ -n "${hits}" ]; then
+      hits="$(printf '%s\n' "${hits}" | grep --invert-match --perl-regexp -- "${allow_regexp}" || true)"
+   fi
    emit_hits "R-051 trap inline command" "${hits}"
 }
 
