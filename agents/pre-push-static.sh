@@ -641,8 +641,12 @@ check_R031_bare_newline() {
    ## 'printf %s\n' "" (which has a following data arg) never trips it while
    ## a commented bare form ('printf %s\n' # x) still does. Covers single-
    ## and double-quoted format strings and repeated '\n'.
+   ## '(^|[^-[:alnum:]])' guards the needle: find(1)'s '-printf' action
+   ## ('find ... -printf '\n'' prints one newline per match, e.g. for
+   ## counting with 'wc --lines') is a find flag, not the printf command,
+   ## and must not be flagged.
    hits="$(grep --with-filename --line-number --extended-regexp \
-      "printf[[:space:]]+['\"](%s)?(\\\\n)+['\"][[:space:]]*(\$|[|;&>#])" \
+      "(^|[^-[:alnum:]])printf[[:space:]]+['\"](%s)?(\\\\n)+['\"][[:space:]]*(\$|[|;&>#])" \
       -- "${fs[@]}" 2>/dev/null || true)"
    emit_hits "R-030/R-031 newline printf needs explicit \"\" arg" "${hits}"
 }
