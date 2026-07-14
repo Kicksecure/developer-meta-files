@@ -749,3 +749,13 @@ functions that print a string.
 
 Why: Code that expects comments to provide user interface components
 is liable to break if a comment-only change is made.
+
+
+## File search
+
+**R-160: Never use the --quiet option of grep.** According to grep's
+manpage, "if the -q or --quiet or --silent is used and a line is
+selected, the exit status is 0 even if an error occurred." Silencing
+errors is not acceptable. To silence grep's *output* (but not exit
+code), append `>/dev/null 2>&1` to the end of the grep command. To
+prevent grep from looking for more than one match, use `--max-count=1`.
