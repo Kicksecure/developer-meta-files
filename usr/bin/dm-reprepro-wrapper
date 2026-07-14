@@ -34,9 +34,17 @@ source "$derivative_maker_source_code_dir/help-steps/variables"
 
 reprepro_wrap() {
    reprepro_exit_code="0"
-   reprepro_output="$(reprepro \
+
+   local reprepro_command
+   reprepro_command=(
+      reprepro \
       "${dist_build_reprepro_folder_options[@]}" \
-      "$@" 2>&1)" \
+      "$@"
+   )
+
+   printf '%s\n' "${bold}${cyan}INFO: (#grep-ignore-marker#) reprepro_command:${reset} ${reprepro_command[*]}"
+
+   reprepro_output="$("${reprepro_command[@]}" 2>&1)" \
       || { reprepro_exit_code="$?" ; true; };
 
    if printf '%s\n' "$reprepro_output" | grep --ignore-case "is already registered with different checksums!" &>/dev/null; then
@@ -47,6 +55,7 @@ reprepro_wrap() {
       error "Will not copy as not found!"
    fi
 
+   printf '%s\n' "${bold}${cyan}INFO (#grep-ignore-marker#): reprepro_output:${reset}"
    printf '%s\n' "$reprepro_output"
 
    true "INFO: Ok."

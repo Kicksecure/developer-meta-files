@@ -1,0 +1,22 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## usage:
+## dm-reprepro-wrapper listmatched local "*"
+
+#set -x
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
+
+make_reprepro_codename_item=local derivative_repository_name=kicksecure dm-reprepro-wrapper "$@"
+
+derivative_repository_name=kicksecure dm-reprepro-wrapper "$@"
+
+true "INFO: End of: ${BASH_SOURCE[0]} $*"

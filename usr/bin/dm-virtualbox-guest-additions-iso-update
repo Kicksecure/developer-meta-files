@@ -29,8 +29,11 @@ export dist_build_one_parsed=true
 source "$derivative_maker_source_code_dir/help-steps/pre"
 source "$derivative_maker_source_code_dir/help-steps/variables"
 
+source "/usr/libexec/helper-scripts/has.sh"
 source "/usr/libexec/helper-scripts/strings.bsh"
 source "/usr/libexec/helper-scripts/deb822-extract.bsh"
+
+has ia-save scurl-download
 
 ## The Oracle APT package that embeds the Guest Additions ISO. Bump the major
 ## as new VirtualBox series appear (virtualbox-7.2 -> virtualbox-7.3 -> ...).
@@ -44,7 +47,7 @@ remote_vbox_version=''
 unpack_workdir="$(mktemp --directory)"
 
 dm_virtualbox_guest_additions_iso_cleanup() {
-  rm -rf "${unpack_workdir}"
+  safe-rm -r -f -- "${unpack_workdir}"
 }
 
 trap 'dm_virtualbox_guest_additions_iso_cleanup' EXIT
@@ -158,29 +161,35 @@ dm_virtualbox_guest_additions_iso_download() {
         --buildplace "$cow_folder" \
         --save-after-login \
         -- \
-        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" download "${vbox_apt_package}"
+        /usr/bin/apt-get "${DIST_APTGETOPT[@]}" download -- "${vbox_apt_package}"
+
   package_name="${vbox_apt_package}_${full_remote_vbox_version}_amd64.deb"
 
   true 'INFO: VirtualBox package downloaded.'
 
   true "INFO: Downloading and verifying VirtualBox '${remote_vbox_version}' SHA256SUMS and MD5SUMS files..."
 
-  pushd "${unpack_workdir}"
-  scurl-download --output 'SHA256SUMS' "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
-  scurl-download --output 'MD5SUMS' "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+  pushd -- "${unpack_workdir}"
+
+  scurl-download --output 'SHA256SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
+  scurl-download --output 'MD5SUMS' -- "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+
+  #ia-save "${virtualbox_base_url}/${remote_vbox_version}/SHA256SUMS"
+  #is-save "${virtualbox_base_url}/${remote_vbox_version}/MD5SUMS"
+
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
-  package_sha256sum="$(sha256sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  package_sha256sum="$(sha256sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
   search_line="${package_sha256sum} *${package_name}"
-  if ! grep --fixed-strings "${search_line}" 'SHA256SUMS'; then
+  if ! grep --fixed-strings -- "${search_line}" 'SHA256SUMS'; then
     true "ERROR: Package sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
     true "Dump of '${unpack_workdir}/SHA256SUMS':"
     stcat 'SHA256SUMS'
     error 'See above!'
   fi
-  package_md5sum="$(md5sum "${base_folder}/${package_name}" | cut -d' ' -f1)"
+  package_md5sum="$(md5sum -- "${base_folder}/${package_name}" | cut -d' ' -f1)"
   search_line="${package_md5sum} *${package_name}"
-  if ! grep --fixed-strings "${search_line}" 'MD5SUMS'; then
+  if ! grep --fixed-strings -- "${search_line}" 'MD5SUMS'; then
     true "ERROR: Package md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
     true "Dump of '${unpack_workdir}/MD5SUMS':"
     stcat 'MD5SUMS'
@@ -205,11 +214,11 @@ dm_virtualbox_guest_additions_iso_unpack() {
 
   true 'INFO: Unpacking, verifying, and packaging VirtualBox Guest Additions...'
 
-  pushd "${unpack_workdir}"
+  pushd -- "${unpack_workdir}"
 
   ## base_folder is defined by the set_cowbuilder_folders call in
   ## dm_virtualbox_guest_additions_iso_download
-  ar x "${base_folder}/${package_name}"
+  ar x -- "${base_folder}/${package_name}"
   if ! [ -f "${inner_tar_file}" ]; then
     true "ERROR: No '${inner_tar_file}' file found within VirtualBox deb package!"
     error 'See above!'
@@ -221,26 +230,26 @@ dm_virtualbox_guest_additions_iso_unpack() {
     error 'See above!'
   fi
 
-  iso_sha256sum="$(sha256sum "${iso_path}" | cut -d' ' -f1)"
+  iso_sha256sum="$(sha256sum -- "${iso_path}" | cut -d' ' -f1)"
   search_line="${iso_sha256sum} *${iso_sum_name}"
-  if ! grep --fixed-strings "${search_line}" 'SHA256SUMS'; then
+  if ! grep --fixed-strings -- "${search_line}" 'SHA256SUMS'; then
     true "ERROR: ISO sha256sum check failed (no line '${search_line}' found in '${unpack_workdir}/SHA256SUMS')!"
     true "Dump of '${unpack_workdir}/SHA256SUMS':"
     stcat 'SHA256SUMS'
     error 'See above!'
   fi
-  iso_md5sum="$(md5sum "${iso_path}" | cut -d' ' -f1)"
+  iso_md5sum="$(md5sum -- "${iso_path}" | cut -d' ' -f1)"
   search_line="${iso_md5sum} *${iso_sum_name}"
-  if ! grep --fixed-strings "${search_line}" 'MD5SUMS'; then
+  if ! grep --fixed-strings -- "${search_line}" 'MD5SUMS'; then
     true "ERROR: ISO md5sum check failed (no line '${search_line}' found in '${unpack_workdir}/MD5SUMS')!"
     true "Dump of '${unpack_workdir}/MD5SUMS':"
     stcat 'MD5SUMS'
     error 'See above!'
   fi
 
-  cp "${iso_path}" "${install_target_dir}/VBoxGuestAdditions.iso"
-  cp 'SHA256SUMS' "${install_target_dir}/SHA256SUMS"
-  cp 'MD5SUMS' "${install_target_dir}/MD5SUMS"
+  cp -- "${iso_path}" "${install_target_dir}/VBoxGuestAdditions.iso"
+  cp -- 'SHA256SUMS' "${install_target_dir}/SHA256SUMS"
+  cp -- 'MD5SUMS' "${install_target_dir}/MD5SUMS"
 
   popd
 
@@ -248,7 +257,7 @@ dm_virtualbox_guest_additions_iso_unpack() {
 
   true 'Updating virtualbox-guest-additions-iso changelog...'
 
-  pushd "${install_package_dir}"
+  pushd -- "${install_package_dir}"
   debchange --newversion "1:${remote_vbox_version}.0-1" 'New upstream version (local package).'
   debchange --release ""
   popd

@@ -1,3 +1,119 @@
+commit b790218186b2d29f6ae0ef5398cdebe196b845e5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:40:51 2026 -0400
+
+    .
+
+commit a7203380e00ca82c6605bc28316b153dcbf6c5ba
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:34:30 2026 -0400
+
+    .
+
+commit d71533689f5017abe32b1c4b8aeb21b5c59423f9
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 17:23:24 2026 +0000
+
+    bumped changelog version
+
+commit 4b4ebf155825f0d0ccd51e1d4331fb5d50e89957
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:20:17 2026 -0400
+
+    .
+
+commit 93cc9ae13da06c6e4903dfb3d49a685a7b3def2b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:13:54 2026 -0400
+
+    move
+
+commit 4cad0f72b63ca1f2cbec742e73d7361426da9dab
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:07:52 2026 -0400
+
+    .
+
+commit 3f900d262ed750eb1aea1a656f652764eb7c2e16
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:02:45 2026 -0400
+
+    .
+
+commit 0a69e5fe594a88b3125d245e103c46da9744707d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:01:39 2026 -0400
+
+    .
+
+commit aa41a9019355796e6b04d94910a3debc11fe3ee7
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 13:01:02 2026 -0400
+
+    .
+
+commit 850a1d60b9d482c009253a8a224e5f075baf9a59
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 12:59:51 2026 -0400
+
+    .
+
+commit 7090e34f60a2f416f2f6202186320b0e291ca8aa
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 12:58:49 2026 -0400
+
+    .
+
+commit 082cc36853ce909f9e1f502c3361b3d0f72906f6
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 12:57:56 2026 -0400
+
+    .
+
+commit f780b2b55a449546661f21f02036e424cfded19a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 12:54:00 2026 -0400
+
+    .
+
+commit 52fd1686035572798e2bdfd7651f561439fa18d6
+Merge: ff6d24e9 62a21672
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Sun Jul 12 11:46:03 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 62a21672f77c7d26f78bbc6ff821698937ac0754
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Jul 9 20:03:14 2026 -0400
+
+    Add VirtualBox Guest Additions ISO update script
+
+commit 8601e7165d5d9b02b223c51f19ca86254b936c39
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Jul 9 14:57:31 2026 -0400
+
+    minor
+
+commit a9d2d0d280952d16b5037ddcca0bf9f05ab2e194
+Merge: 5332e8c1 ff6d24e9
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Jul 9 14:03:32 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit ff6d24e916bee24e9a4d9e7b785e728b77df8007
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 9 11:56:58 2026 -0400
+
+    improve
+
+commit fa8beb534323f3938778bb78cf8804d361f06e2b
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 9 15:18:08 2026 +0000
+
+    bumped changelog version
+
 commit 46bd93272785000316247488f40c8b1bf9264ab9
 Merge: becf8da8 03526b56
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -118,6 +234,13 @@ Date:   Thu Jul 9 09:42:44 2026 -0400
     ifs, case arms, '--) shift; break ;;' parsers) and note the subset is gate-enforced.
 
     Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 5332e8c15b717fd7fec12b19fcc69a4406d7ca49
+Merge: 353ddd91 82be1e14
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Jul 9 00:02:34 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
 
 commit 353ddd918a0f53ed85d308251a284996feae1aa9
 Merge: cb17ba9b c5b24477
