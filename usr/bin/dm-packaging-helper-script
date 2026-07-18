@@ -1596,7 +1596,6 @@ pkg_git_diff_and_merge_branch() {
       dry_run_or_run git merge --no-ff "${origin_ref}"
    elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
       ## TODO: Can't we verify against Claude's SSH key?
-      ## TODO: Is it ever really safe to mass-merge from the AI branches?
       #git verify-commit "${origin_ref}"
       ## '--no-ff': same sq-git policy rationale as above; maintainer
       ## merge commit authenticates the AI-generated commits below it.

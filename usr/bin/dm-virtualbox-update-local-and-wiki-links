@@ -152,10 +152,6 @@ replace_wiki_string () {
    [ -z "${wiki_content}" ] && return 1
 
    tmpfile="$(mktemp)"
-   ## 'overwrite', not 'append-once': the tmpfile is a fresh empty mktemp, and
-   ## 'append-once' would prepend a newline to it (its "fix a missing
-   ## terminating newline" path treats the empty file as needing one), leaving
-   ## a blank line at the top of the wiki page. 'overwrite' just writes.
    overwrite "${tmpfile}" "${wiki_content}" >/dev/null
    str_replace "${orig_string}" "${new_string}" "${tmpfile}"
    wiki_content="$(cat -- "${tmpfile}")"
@@ -192,7 +188,6 @@ save_cached_page_to_wiki () {
    tmpfile="$(mktemp)"
 
    get_wiki_page_cached "${wiki_page}"
-   ## 'overwrite', not 'append-once' -- see replace_wiki_string.
    overwrite "${tmpfile}" "${wiki_content}" >/dev/null
 
    mw-edit "${WIKI_URL}" "${tmpfile}" "${wiki_page}"
