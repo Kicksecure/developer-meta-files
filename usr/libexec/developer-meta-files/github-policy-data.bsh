@@ -109,6 +109,27 @@ readonly POLICY_ACTIONS_SCOPE_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
 readonly POLICY_ACTIONS_SCOPE_METHOD='PUT'
 readonly POLICY_ACTIONS_SCOPE_LABEL='actions enabled=all, allowed=selected'
 
+## SOURCE orgs (Kicksecure / Whonix): disable GitHub Actions entirely,
+## org-wide. enabled_repositories:"none" stops every workflow run on
+## every repo in the org. Rationale: the canonical SOURCE repos run
+## their own CI (not GitHub Actions), while the AI-assisted test +
+## scanner CI runs on the MIRROR org (org-ai-assisted). Turning Actions
+## off org-wide on SOURCE also removes the fork-PR workflow-abuse
+## surface and saves the org's Actions minutes. Parallels
+## POLICY_ACTIONS_DISABLED on PERSON/BOT (repo-level enabled:false); the
+## org endpoint uses enabled_repositories:"none" instead - the
+## repo-level enabled:false field does not exist at org scope. No
+## allowlist follow-up: allowed_actions is moot when Actions are off
+## (and GET /selected-actions returns 409 while enabled_repositories !=
+## "selected", which audit_org_state already tolerates). See
+## agents/github-policy-canonical-vs-mirror.md.
+readonly POLICY_ACTIONS_DISABLED_ORG='{
+   enabled_repositories: "none"
+}'
+readonly POLICY_ACTIONS_DISABLED_ORG_ENDPOINT_ORG='/orgs/__ORG__/actions/permissions'
+readonly POLICY_ACTIONS_DISABLED_ORG_METHOD='PUT'
+readonly POLICY_ACTIONS_DISABLED_ORG_LABEL='actions enabled_repositories=none (CI disabled org-wide)'
+
 ## PAID PLAN ONLY: see POLICY_CODE_SECURITY note above.
 # readonly POLICY_CODE_SECURITY_ATTACH='{
 #    scope: "all"

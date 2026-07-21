@@ -75,7 +75,7 @@ Notes:
 | Project boards / discussions / wikis | (default on, unset) | off |
 | Ruleset bypass | `[OrgAdmin]` (org owner can bypass; non-admins still blocked) | `[OrgAdmin]` on MIRROR; `[User: target_user_id]` on PERSON (computed at apply time from `GET /users/{login}` since user-owned repos have no org-admin actor); `[]` on BOT (no rule needs a bypass and the bot must not be able to force-push or delete its own branches) |
 | Ruleset `required_signatures` ("allow only signed commits") | **on** (org owner bypasses via `[OrgAdmin]`) | **on PERSON** (owner bypasses via `[User]`); **off on MIRROR / BOT** (AI-assisted automation pushes commits without a verifiable GPG key for the bot identity) |
-| CI / Actions | enabled, allow-list = github-owned + verified-creators | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on (it is where AI-assisted dev runs) |
+| CI / Actions | **disabled entirely, org-wide** (`enabled_repositories=none`); canonical CI runs on the org's own infra, not GitHub Actions | disabled entirely on PERSON/BOT (mirrors only); MIRROR keeps CI on, allow-list = github-owned + verified-creators (it is where AI-assisted dev + CI run) |
 | Dependabot alerts + security updates | on | off (would duplicate upstream alerts) |
 | PVR (Private Vulnerability Reporting) | **off everywhere** (canonical disclosure is the wiki - see `.github/SECURITY.md`) | off |
 | GitHub Pages site | not touched | `DELETE /pages` on PERSON/BOT (mirror should not host Pages) |
@@ -115,9 +115,13 @@ Net deliberate diffs after this split:
    Dispatched via `POLICY_RULESET_RULES_<ROLE>` in
    `github-policy-data.bsh` (same naming pattern as
    `POLICY_RULESET_BYPASS_<ROLE>`).
-4. CI disabled entirely on PERSON/BOT (no workflows run on the
-   personal mirrors); SOURCE/MIRROR run CI under the same selected-
-   actions allow-list.
+4. CI disabled entirely on SOURCE (Kicksecure / Whonix -
+   `enabled_repositories=none`, org-wide) and on PERSON/BOT (no
+   workflows run on the personal mirrors). Only MIRROR
+   (org-ai-assisted / output-lies) runs GitHub Actions CI, under the
+   selected-actions allow-list - it is where the AI-assisted test +
+   scanner suites run. The canonical SOURCE repos run their own CI,
+   not GitHub Actions.
 5. Dependabot enabled only on SOURCE; PVR (Private Vulnerability
    Reporting) actively disabled everywhere because the canonical
    disclosure channel is the wiki (per `.github/SECURITY.md`),
@@ -248,7 +252,7 @@ appetite for the friction trade-off.
 
   | Role | Code Quality | Why |
   | --- | --- | --- |
-  | SOURCE | on | Canonical baseline; drift detection between fork-syncs |
+  | SOURCE | (blocked) | Would need Actions; SOURCE has Actions disabled org-wide (see the CI / Actions row above), so GitHub-Actions-based Code Quality cannot run here until Actions are re-enabled or a non-Actions mechanism exists |
   | MIRROR | on | PR-time feedback where AI-assisted PRs land; `dm-github-org-security-report`'s MIRROR-default already routes the alerts here |
   | PERSON | off | No PRs land here |
   | BOT | off | No PRs land here; Actions disabled entirely |
