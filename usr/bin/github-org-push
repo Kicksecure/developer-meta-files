@@ -17,7 +17,7 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
-source /usr/libexec/developer-meta-files/github-org-lib.bsh
+source "${DEVELOPER_META_FILES_PATH:-}"/usr/libexec/developer-meta-files/github-org-lib.bsh
 
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
@@ -69,7 +69,7 @@ Refusal modes:
     feature; github-org-fork is the supported way to fork repos in an
     automated fashion.
   - Lookup itself fails for a non-404 reason (auth/rate-limit/network):
-    refuse to push to that repo and report; continue with other repos.
+    refuse to push to that repo and report, then continue with other repos.
 
 Auth: ${GITHUB_TOKEN} env var, or ~/.config/github-token with
 permissions 0600. The token must have 'repo' scope to push.
@@ -195,8 +195,12 @@ remote_url() {
   repo="$1"
 
   case "${url_scheme}" in
-    ssh)   printf '%s' "git@github.com:${target_owner}/${repo}.git" ;;
-    https) printf '%s' "https://github.com/${target_owner}/${repo}.git" ;;
+    ssh)
+      printf '%s' "git@github.com:${target_owner}/${repo}.git"
+      ;;
+    https)
+      printf '%s' "https://github.com/${target_owner}/${repo}.git"
+      ;;
   esac
 }
 
@@ -221,7 +225,8 @@ push_one() {
   repo_lookup_ret=0
   ghorg_repo_lookup "${target_owner}" "${repo}" || repo_lookup_ret="$?"
   case "${repo_lookup_ret}" in
-    0) ;;
+    0)
+      ;;
     1)
       log warn "'${target_owner}/${repo}' does not exist on target, skipping"
       return 0
