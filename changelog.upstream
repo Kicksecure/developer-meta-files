@@ -1,3 +1,22 @@
+commit c6a7fa1f9f750219abb4fcb55e52dbf3ca92ce49
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 06:30:36 2026 -0400
+
+    .
+
+commit ac37cc78b602553179bfe1f6459b20a064270605
+Merge: dfe70e5b 10f38444
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 06:05:35 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/org-ai-assisted/master'
+
+commit dfe70e5b2fefccb67c4dc24cc54614c579ecaf9a
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 09:20:09 2026 +0000
+
+    bumped changelog version
+
 commit 4bbe48e00a875611a99a7b375607260966b1e478
 Merge: cff10aa9 6955603e
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -18,6 +37,57 @@ Date:   Fri Jul 17 17:43:25 2026 -0400
 
     Merge branch 'master' into arraybolt3/trixie
 
+commit 10f38444f4468b304fede957934d073dbc37f273
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Fri Jul 17 04:16:48 2026 -0400
+
+    Add dm-reproducible-compare-artifacts (reproducibility CI compare entry point) (#149)
+
+    ## Problem
+
+    derivative-maker's `local-reproducible.yml` compare job runs:
+
+    ```
+    ./packages/kicksecure/developer-meta-files/usr/bin/dm-reproducible-compare-artifacts --target ... --dir-a build-a --dir-b build-b --output report
+    ```
+
+    but that tool did not exist in this repo, so the compare step -- whose
+    job conclusion IS the reproducibility pass/fail signal -- could not run.
+
+    ## Change
+
+    Add `usr/bin/dm-reproducible-compare-artifacts`. Given `--target
+    <iso|virtualbox|qcow2>` and two build-output directories, it:
+
+    1. Locates the single artifact of that type in each dir (`*.iso` /
+    `*.ova` / `*.qcow2`; 0 or >1 is a setup error).
+    2. Compares them by whole-file `sha256` -- the definitive,
+    format-agnostic bit-for-bit check for a single-file released image (no
+    mounting or format knowledge needed).
+    3. On a mismatch, appends a bounded, best-effort `diffoscope`
+    explanation to the report. diffoscope's exit 1 ("found differences") is
+    expected and not treated as a failure; only exit >= 2 (crash / OOM) is.
+
+    Exit codes: `0` identical (reproducible), `1` differ, `2`
+    usage/not-found.
+
+    Complements `ci/reproducible-manifest` in derivative-maker (the OOM-safe
+    mount-and-hash localizer): this is the thin per-target entry point CI
+    calls.
+
+    ## Testing
+
+    Exercised against synthetic artifacts: identical pair -> exit 0
+    `REPRODUCIBLE`; differing pair -> exit 1 with a correct diffoscope diff
+    in the report; missing artifact -> exit 2; bad usage -> exit 2. `bash
+    -n` and `shellcheck -x` clean.
+
+    Assisted-by-AI.
+
+    ---------
+
+    Co-authored-by: assisted-by-ai <noreply@anthropic.com>
+
 commit cff10aa92760b7215241d14530870985c7620b82
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jul 14 18:54:08 2026 +0000
@@ -37,17 +107,308 @@ Date:   Tue Jul 14 00:53:38 2026 -0400
 
     Merge branch 'master' into arraybolt3/trixie
 
+commit 007dc08324594e470b3e553f4c9a45d1560bbe64
+Merge: 5de22637 6bb11338
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 15:39:24 2026 -0400
+
+    Merge pull request #147 from org-ai-assisted/gate-r031-find-printf
+
+    pre-push-static: R-030/R-031 must not flag find(1)'s -printf action
+
+commit 6bb11338298b49dc47088cb7f5305382035a2e75
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 15:35:02 2026 -0400
+
+    pre-push-static: R-030/R-031 must not flag find(1)'s -printf action
+
+    'find ... -printf '\n' | wc --lines' (one newline per match, the
+    standard find counting idiom, used by derivative-maker
+    2100_create-debian-packages) is a find action flag, not the printf
+    command, but the bare-newline check matched it. Guard the needle so
+    'printf' only matches as a standalone word not preceded by '-' (or any
+    alphanumeric). Probe-tested: find -printf spared; 'printf '\n'',
+    bare 'printf '%s\n'' and the redirected form stay flagged; the
+    compliant 'printf '%s\n' ""' stays unflagged.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit 5de2263786598b2dc890be9d2663e781d6bf68f5
+Merge: 5bff43f9 25e7c609
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 15:23:33 2026 -0400
+
+    Merge pull request #146 from org-ai-assisted/gate-r011-waiver
+
+    pre-push-static: R-011 allow-errexit-toggle waiver; dm-prepare-release comment fix
+
+commit 25e7c6096d62085f8005200d59ec06e91aec0596
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 15:17:42 2026 -0400
+
+    pre-push-static: R-051 spares parameterized named-function traps
+
+    bash passes a trap handler no information about the firing signal, so
+    'trap "handler $signal" "$signal"' is the standard idiom for
+    signal-aware dispatch to a named function (derivative-maker
+    help-steps/pre exception_handler_setup uses it). R-051 targets inline
+    command LOGIC, not arguments: spare a quoted trap string iff it is
+    exactly one function/variable name followed by variable-expansion
+    arguments only. Literal arguments stay flagged, so the rule's canonical
+    bad case 'trap "rm -f ${t}" EXIT' still fails, as do ';', '|', '&&'
+    compositions. Probe-tested against eight good/bad forms.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit bf445ccdf863c02e844abcedf401c73e95891f4c
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 15:13:17 2026 -0400
+
+    pre-push-static: R-011 'style-ok: allow-errexit-toggle' waiver; comment fix
+
+    R-011 exists to catch the capture-an-exit-code errexit toggle
+    anti-pattern. derivative-maker help-steps/pre carries a legitimate,
+    deliberate GLOBAL toggle instead: its ERR-trap exception handler must be
+    able to RESUME execution (auto-retry / interactive continue), which
+    errexit makes impossible (bash exits after the ERR trap regardless).
+    Give R-011 the same script-wide waiver shape as no-has / no-safe-rm:
+    '## style-ok: allow-errexit-toggle' anywhere in the file skips the check
+    for that file, with a note in the gate output. Anchored regex so a
+    typo'd superset does not silently disable the check.
+
+    Also update the dm-prepare-release comment that still referenced the
+    removed vboxsvc_shutdown (derivative-maker replaced the in-chroot daemon
+    shutdown with the stale-IPC unlink; process reaping is the PID
+    namespace's job).
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit 5bff43f911951f342347e16b0b2474a3bfa524aa
+Merge: bb49e815 58e60783
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 13:32:10 2026 -0400
+
+    Merge pull request #145 from org-ai-assisted/ci-vbox-pid-namespace
+
+    developer-meta-files: run all cowbuilder invocations in a private PID namespace
+
+commit 58e6078347efd4b234f58c2252167f0abaabd1a2
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 13:13:22 2026 -0400
+
+    dm-virtualbox-guest-additions-iso-update: unquoted named-function trap target
+
+    The PR gate (pre-push static, R-051) flags the quoted form
+    "trap 'func' EXIT" as an inline command string on this touched file;
+    the compliant form is the bare function name. Pre-existing debt,
+    cleared per the touched-files-fully-green rule; no behavior change.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
 commit b6b05d1e8c923a548e16e4bcafabbeb8e20bb0de
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jul 13 12:39:18 2026 -0400
 
     .
 
+commit bb49e815515ddcedda6362a3508508d7eb29fb26
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 11:48:21 2026 -0400
+
+    pre-push-static: harden the gate + simplify R-070 + R-080 bare-name (#144)
+
+    ## What
+
+    Hardens `agents/pre-push-static.sh` against a set of issues surfaced by
+    two AI-review rounds (Codex + CodeRabbit + fresh-context reviewers) on
+    the previous gate PR (#143). Four commits, each self-contained; every
+    fix is verified end-to-end and covered by a regression test where it
+    fits the harness.
+
+    ## Silent whole-gate bypasses (highest severity)
+
+    - **Quoted paths**: `git diff --name-only` C-quotes a path with a tab /
+    byte >= 0x80, yielding a string that exists on no disk path, so every
+    content check skipped it. Now `git -c core.quotePath=false diff -z` with
+    NUL-delimited reads throughout (`read -r -d ''` / `mapfile -d ''`),
+    including `filter_self` (which had re-introduced newline-splitting) and
+    the staged-changelog consumer.
+    - **Subdirectory**: the script never `cd`'d to the repo root, so from a
+    subdir every repo-root-relative path was missing and all checks passed.
+    `main()` now `cd`s to `git rev-parse --show-toplevel`.
+    - **Merge commits**: the changelog-manual-edit check used a plain
+    `diff-tree -r`, which can emit nothing for a merge, so an evil merge
+    editing `debian/changelog` slipped. Now `diff-tree -c`.
+    - **Staged changelog**: the staged consumer still read the NUL stream
+    with `mapfile -t`, collapsing multiple staged paths into one mangled
+    element (a hand-edited `debian/changelog` beside another file slipped).
+    Now `mapfile -d ''`.
+
+    ## Per-rule regex fixes
+
+    - **R-011**: also flag the short toggle `set +e`.
+    - **R-051**: also flag a double-quoted inline trap; spare `trap "" SIG`.
+    - **R-090**: match `command -v` only in code, not a comment.
+    - **R-102**: match an extensionless *slashed* path operand (`bash
+    ci/foo`), not just a dot-prefixed one, without matching English prose
+    (`a bash script`).
+    - **R-120**: catch a separator-glued `true;rm -rf x`; drop `safe-rm`
+    from the invert so `safe-rm a; rm -rf b` is no longer spared whole-line.
+    - **R-010**: count DISTINCT required directives, not matching lines (six
+    copies of `set -o errexit` no longer satisfy the block).
+    - **R-042**: also match a double-quoted format `printf "%s\n" ""`.
+    - **R-074**: enforce a word boundary after the keyword (`x=1;
+    return_value=1` no longer false-positives) and exclude comment lines.
+    - **is_shell_file**: match only bash/sh/dash so `#!/bin/zsh` /
+    `#!/usr/bin/fish` are not misclassified and failed by `bash -n`.
+    - All emit_hits-style checks: `--with-filename` so a single changed file
+    still reports its name.
+
+    ## Mutation / robustness
+
+    - **Fixer hooks** (`end-of-file-fixer`, `trailing-whitespace-fixer`,
+    ...) rewrote files in place, silently editing the working tree and
+    wedging the `--per-commit` detached checkout. New `run_precommit_fixer`
+    runs each against a throwaway `mktemp` mirror; the non-zero "would
+    modify" exit still fails the gate.
+    - **Union-mode skew**: default push mode reads working-tree content, but
+    `base...HEAD` names the commits being pushed. Added a loud
+    `warn_push_worktree_skew` (parity with staged mode) pointing at
+    `--per-commit` for exact content.
+    - **Untrusted output**: flagged line content and commit messages
+    (attacker-influenced, and ESC is ASCII so R-001 misses it) are now run
+    through a `sanitize()` that strips C0 control bytes before reaching the
+    terminal.
+    - **Relative `--message-file`**: canonicalized to an absolute path
+    before the `cd`, so it works from a subdirectory.
+
+    ## Docs
+
+    - `bash-style-guide.md`: `pipefail` yields the LAST (rightmost) non-zero
+    status (was "first"); the R-012 rc claim is qualified (a genuine
+    arithmetic error still fails under errexit).
+
+    ## Deliberately NOT changed (reviewer pushbacks)
+
+    - **R-070**: the spaced single-line arm `bar ;;` is a deliberate,
+    pervasive codebase style; only the no-space jam `bar;;` is flagged, as
+    before.
+    - Per-commit fixer wedge and the R-012 wording: verified already
+    handled.
+
+    ## Verification
+
+    - `bash -n`, `shellcheck --external-sources`, and the full gate pass
+    green vs base.
+    - `ci/tests/test_pre_push_static_style_rules.sh` extended to 35
+    assertions (added
+    R-011/R-051/R-090/R-102/R-120/R-010/R-042/R-074-boundary/R-070-pushback
+    coverage), all passing.
+    - Every silent-bypass fix integration-tested in a throwaway repo (tab
+    filename, newline filename, subdir, multi-file staged changelog, ESC
+    sanitization).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+    ## Summary by CodeRabbit
+
+    * **Bug Fixes**
+    * Hardened pre-push/static checks with safer path/argument handling,
+    improved NUL-safe file iteration, and sanitized terminal output.
+    * Reduced false positives in shell script detection and tightened rule
+    enforcement (including strict-mode and merge-commit handling).
+    * Prevented fixer hooks from directly modifying the working tree;
+    improved behavior when running checks from subdirectories and in
+    union/push mode.
+
+    * **Tests**
+    * Expanded end-to-end coverage for multiple static-analysis rules,
+    including boundary cases and stricter pass/fail result validation.
+
+    * **Documentation**
+    * Updated Bash style guidance for `pipefail` status behavior and
+    arithmetic assignment handling under `errexit`.
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    ---------
+
+    Co-authored-by: claude (dev71 31548627-e7c1-43cd-bd41-8b0900c72576) <noreply@anthropic.com>
+
+commit 2d2338ac187908bbb4f0c87909706edabd479beb
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 10:39:21 2026 -0400
+
+    wrap the remaining cowbuilder call sites in UNSHARE_PID_NS
+
+    Extend the private-PID-namespace backstop to the other cowbuilder
+    invocations in this repo: both sessions in
+    dm-virtualbox-guest-additions-iso-update and the one in
+    dm-tor-update-repository. Same pattern as dm-prepare-release: the
+    '${UNSHARE_PID_NS:-}' expansion comes from derivative-maker
+    help-steps/pre (sourced by these tools) and degrades to a no-op while
+    that side has not landed, so merge order stays free.
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit 17b16b7f6d0e7daa5dfa9d252f2abdd42b2c2896
+Author: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+Date:   Mon Jul 13 09:29:44 2026 -0400
+
+    dm-prepare-release: run the VBox export cowbuilder in a private PID namespace
+
+    Kernel-guaranteed backstop that nothing started inside the VBox export
+    chroot session survives the step: cowbuilder runs as the init of a
+    private PID namespace, so on its exit the kernel SIGKILLs every process
+    left in the namespace (a lingering VBoxSVC in particular; suspected
+    contributor to the flaky 'Failed to create the VirtualBox object!'
+    arm64 CI failure, Kicksecure run 29204833299). Upstream pbuilder
+    deliberately has no process reaper.
+
+    The wrapper comes from the new overridable UNSHARE_PID_NS variable in
+    derivative-maker help-steps/pre (sourced by this script), the single
+    source of truth shared with build-steps.d/4600_create-vbox-vm; set it
+    to the empty string to opt out in an unprivileged environment. Until
+    the derivative-maker side lands, UNSHARE_PID_NS is unset here and the
+    '${UNSHARE_PID_NS:-}' expansion degrades to a no-op, so this change is
+    safe to merge in either order.
+
+    Layering: the clean shutdown remains 'vboxsvc_shutdown' in
+    'help-steps/pbuilder-chroot-script-export-vbox-vm' (SIGKILL leaves
+    stale runtime state by design, so the namespace kill is last resort
+    only). pbuilder mounts a fresh 'proc' instance from inside the
+    namespace, so the chroot's /proc correctly shows the namespace view;
+    environment passes through 'unshare' unchanged; the CI container is
+    '--privileged' (CAP_SYS_ADMIN).
+
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+commit b350c7d59c10ae1e6abcf2ac4a2ac95f040e5b61
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Mon Jul 13 07:03:15 2026 -0400
+
+    pre-push-static: gate bare-newline printf (R-030/R-031) + refinements (#143)
+
+    Add check_R031_bare_newline flagging 'printf \n' and bare 'printf %s\n' (newline must be 'printf %s\n' ""); widen the R-010 window 100->120; rework R-034 to command-position echo (resolves FIXME); document the R-074 exit-exclusion decision (resolves TODO); add test coverage; close two AI-review false-negatives (R-034 condition-position echo, R-031 trailing-comment bare printf).
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
 commit 33d4b04e89202c064884f8195e1ab01535ef37f6
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Sun Jul 12 15:18:04 2026 -0400
 
     Move git review scripts to helper-scripts
+
+commit c7ba3fb937360f8ab0d6b81b272e190d7781a37d
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Sun Jul 12 15:15:56 2026 -0400
+
+    Register output-lies as a mirror org (#142)
+
+    Register output-lies (output-lies.github.io plus the git-diffs-lie corpus) as a mirror org in dm-github-org-policy and dm-github-org-security-report, so the same MIRROR security policy applies and it appears in the security report. Not added to dm-github-fork-sync (it has no upstream to sync from). Also fixes pre-existing R-074 in the touched files and pins the org-iterating mock tests to org-ai-assisted so they stay deterministic as MIRROR_ORGS grows. Mock suite: 30 passed.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 commit 10ecdd4d9a361b6e0f46586f8611d1a80e078556
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
