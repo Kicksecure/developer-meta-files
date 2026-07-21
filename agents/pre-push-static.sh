@@ -688,8 +688,11 @@ check_R070_double_semi() {
    ## R-070: ';;' must be on its own line (optional indent + ';;' only).
    ## Flag any ';;' at end-of-line with other non-whitespace before it --
    ## spaced ('bar ;;') OR jammed ('bar;;'). A compact one-line case arm is
-   ## thus always caught; the arm must be written multi-line.
-   hits="$(grep --with-filename --line-number --extended-regexp '[^[:space:]][[:space:]]*;;[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
+   ## thus always caught; the arm must be written multi-line. The leading
+   ## '^[^#]*' with a non-'#' char before the ';;' excludes a ';;' that sits in
+   ## a '#' comment (e.g. an illustrative '#   ;;' in documentation), mirroring
+   ## how R-074 skips comment lines -- those are prose, not a real case arm.
+   hits="$(grep --with-filename --line-number --extended-regexp '^[^#]*[^[:space:]#][[:space:]]*;;[[:space:]]*$' -- "${@}" 2>/dev/null || true)"
    emit_hits "R-070 ';;' on own line" "${hits}"
 }
 
