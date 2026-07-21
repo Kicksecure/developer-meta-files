@@ -1,6 +1,0 @@
-[
-  {"name":"backup-mirror","archived":false,"fork":false,"private":false},
-  {"name":"old-archived","archived":true,"fork":false,"private":false},
-  {"name":"upstream-fork","archived":false,"fork":true,"private":false}
-]
-HTTP_STATUS:200

@@ -1,5 +1,0 @@
-[
-  {"id":1,"name":"web","active":true,"events":["push"],"config":{"url":"https://example.com/hook","content_type":"json","secret":"********"}},
-  {"id":2,"name":"web","active":true,"events":["push"],"config":{"url":"https://example.com/insecure","content_type":"json","secret":null}}
-]
-HTTP_STATUS:200
