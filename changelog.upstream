@@ -1,8 +1,71 @@
+commit 4bbe48e00a875611a99a7b375607260966b1e478
+Merge: cff10aa9 6955603e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 05:05:53 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 6955603e951d335997d8f561d9ae0c640878eab2
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Jul 17 20:58:23 2026 -0400
+
+    comment
+
+commit 8320d6a18abd2231acd398955990d28b0eca19ac
+Merge: 8a56a9b9 cff10aa9
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Jul 17 17:43:25 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
+
+commit cff10aa92760b7215241d14530870985c7620b82
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 14 18:54:08 2026 +0000
+
+    bumped changelog version
+
+commit 8a56a9b965830220d9db646186c079657773ff53
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Jul 14 01:09:41 2026 -0400
+
+    Tell AI to stop using grep --quiet
+
+commit 318326cfdea88e8bf72e6419e583d361abb72b6f
+Merge: 33d4b04e d2839019
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Jul 14 00:53:38 2026 -0400
+
+    Merge branch 'master' into arraybolt3/trixie
+
 commit b6b05d1e8c923a548e16e4bcafabbeb8e20bb0de
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Jul 13 12:39:18 2026 -0400
 
     .
+
+commit 33d4b04e89202c064884f8195e1ab01535ef37f6
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jul 12 15:18:04 2026 -0400
+
+    Move git review scripts to helper-scripts
+
+commit 10ecdd4d9a361b6e0f46586f8611d1a80e078556
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jul 12 15:03:10 2026 -0400
+
+    Always disable the pager when doing per-file diffs
+
+commit f7656fda3f5e211970bae95ba91dd87019e0fbf9
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jul 12 14:52:11 2026 -0400
+
+    Enable color display in git diff review scripts
+
+commit 700565e66eeebb28790ca11b68523112837a6399
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jul 12 14:34:46 2026 -0400
+
+    Git diff script adjustments
 
 commit d2839019bba711ed8356c63d9a18808482946aad
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -95,11 +158,117 @@ Date:   Sun Jul 12 11:46:03 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
 
+commit 504cca69ecaa1e944bb9b2fc28a29fd0d6d5aaaa
+Merge: 62a21672 049138eb
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Jul 12 01:39:16 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/git-review-tools-fixes-and-log-port' into arraybolt3/trixie
+
 commit 62a21672f77c7d26f78bbc6ff821698937ac0754
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Thu Jul 9 20:03:14 2026 -0400
 
     Add VirtualBox Guest Additions ISO update script
+
+commit 049138eb8a5c621d3ce60c1b6c335e06388dd06d
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 16:13:51 2026 -0400
+
+    git review: fix .gitattributes quotePath fail-open; robust gitlink-mimic check
+
+    The final review round found the .gitattributes gate still failed OPEN on quoted
+    paths: 'git diff --name-only' QUOTES any path with a non-ASCII byte or control
+    char (core.quotePath default), so a '.gitattributes' in a non-ASCII-named
+    directory prints double-quoted and an anchored '.gitattributes$' match misses it
+    -- while git still applies the file. Both call sites (top-level and the submodule
+    recursion) inherited the hole.
+
+    Rework git_review_gitattributes_gate to run the given '--name-only -z' command
+    itself and match RAW, NUL-separated names via a 'case' (no quoting, no fail-open
+    pipe; a temp file captures git's rc so a git failure still fails closed).
+
+    Also harden is_submodule_blob: it gated the gitlink-mimic warning on 'wc -l == 1',
+    but wc -l counts newlines, so a one-line blob with NO trailing newline yields 0
+    and the warning was trivially evaded. Bound on the exact byte size (58, or 59
+    with a trailing newline) instead.
+
+    Verified: full dist-ai git-meld-tests suite passes (125 checks, 0 failures), with
+    new regressions for a .gitattributes in a non-ASCII-named directory and one
+    buried in a >64KB name list.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 4be19f42afb6e99513a2d44173255799d2118f59
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 15:50:03 2026 -0400
+
+    git review: harden .gitattributes gate + read_target (final ai-review)
+
+    A final external review (Codex + a fresh-context reviewer) of the latest commits
+    found real gaps:
+
+    - .gitattributes gate FAILED OPEN on a large diff. 'printf | grep --quiet' exits
+      on the first match; since '.gitattributes' (a dotfile) sorts near the top of
+      the name list, printf then takes SIGPIPE and -- under pipefail -- the pipeline
+      is non-zero, so the match was masked and the change went undetected. Extract a
+      git_review_gitattributes_gate helper that detects via a '<<<' here-string with
+      an explicit rc capture (grep without --quiet, no live producer to SIGPIPE),
+      and also fails closed on a grep error.
+
+    - .gitattributes gate was BYPASSED for submodule inner diffs: the recursion runs
+      in external-diff mode, which skips the re-dispatch preflight. Apply the gate to
+      the submodule's own change before recursing.
+
+    - read_target rendered a dangling / empty-target real symlink as '(none)' /
+      '(empty)': '-e' and '-s' FOLLOW the link. Test '-L' first so a real symlink is
+      always readlink'd and its target is never hidden.
+
+    - is_submodule_blob used 'grep --quiet', which can exit 0 on an early match
+      despite a later read error (the codebase's own rule); drain with grep + an
+      explicit rc instead.
+
+    Verified: full dist-ai git-meld-tests suite passes (119 checks, 0 failures),
+    including new tests for the submodule .gitattributes gate and the dangling
+    symlink target.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 8f5d74a44bccaf22ec33f20187df442ccd397bb4
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 15:05:00 2026 -0400
+
+    git review: resolve all TODO/FIXME; .gitattributes fail-closed; submodule recursion
+
+    Resolve every remaining TODO/XXX/FIXME marker in the tools and harden a few
+    paths (all in one PR, no follow-ups):
+
+    - .gitattributes: a change in the reviewed range now FAILS the review closed
+      (it can remap diff behavior to hide other files' content, and legitimate
+      changes are rare here) unless GIT_REVIEW_ALLOW_GITATTRIBUTES=1. Also fails
+      closed if git cannot list the changed names.
+    - Submodule recursion: a changed submodule is now reviewed by re-running the
+      tool as the submodule's external diff (depth guard: gitlink = level 1,
+      submodule files = level 2, nested submodule = the '> 2' abort; the fatal-flag
+      file is inherited so submodule content still fails closed). GUI drivers open
+      the viewer per submodule file, as they do for top-level files.
+    - Unmerged conflict path: now scanned + warned for suspicious/undecodable/tab-
+      newline FILENAME bytes (extracted a shared git_review_scan_path helper, reused
+      by the normal-path case which additionally fails closed on a fatal path).
+    - Symlink retarget: when both sides are symlinks, also show a neutralized diff
+      of the two target strings.
+    - gitlink mode: match the full 160000, not just the first two digits.
+    - difftool trustExitCode: git ignores the PER-TOOL key (verified on git 2.47);
+      only the global difftool.trustExitCode works. Removed the dead per-tool config
+      and documented it; the per-file fail-closed (viewer never opened) is enforced
+      by the wrapper regardless.
+    - Rewrote stale comments made moot by earlier fixes (core.symlinks scan, the
+      scan_content dedup note, the /dev/null-symlink question).
+
+    Verified: full dist-ai git-meld-tests suite passes (64 checks, 0 failures);
+    shellcheck + pre-push-static gate clean.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 commit 8601e7165d5d9b02b223c51f19ca86254b936c39
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
@@ -113,6 +282,224 @@ Author: Aaron Rainbolt <arraybolt3@gmail.com>
 Date:   Thu Jul 9 14:03:32 2026 -0400
 
     Merge branch 'master' into arraybolt3/trixie
+
+commit e8561ef83ba7d03855af7c98c526cf87987d4786
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 13:50:57 2026 -0400
+
+    git review: fix add/delete --stat overview; correct the wc guard
+
+    - The per-file overview used 'git diff --stat <old_hex> <new_hex>', but for an
+      add or a delete git passes the all-zero hash for the absent side, which git
+      rejects as a bad object -- so the overview (which flags binaries) was dropped
+      for exactly those cases; e.g. a binary ADD was surfaced nowhere per-file. Diff
+      the two materialized blobs with 'git diff --no-index' via their file paths
+      instead: it handles add/delete and still flags binaries ('Bin 0 -> N bytes').
+      --no-index exits 1 when files differ (every change here), so only a >1 rc is a
+      real failure. Addresses reviewer finding #4.
+
+    - Correct the wc long-line guard. An earlier commit added '|| longest=0', but
+      wc-test.sh (sourced) already guarantees wc is not a broken/core-dumping
+      binary, and a git blob is always readable, so the assignment cannot leave
+      'longest' empty: a genuine wc failure aborts loudly at the assignment under
+      errexit (the cryptic '[: integer expression expected' path is unreachable).
+      The masking fallback only weakened that fail-loud behavior; drop it and the
+      now-contradictory '2>/dev/null'.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit c9c25463cbd6352e6c555acaf86f6fc02da22095
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 13:41:05 2026 -0400
+
+    git review: harden fail-closed and symlink display (ai-review follow-up)
+
+    Address findings from an external code review (Codex + a fresh-context
+    reviewer):
+
+    - Fail-closed paths must be unconditional. 'die' from log_run_die.sh RETURNS
+      instead of exiting when allow_errors=1 is in the environment, so the
+      security/safety fail-closed exits (the recorded-fatal-Unicode check in the
+      driver re-dispatch, the unrecordable-finding branch in
+      git_review_handle_unicode_show_fatal, and the recursion-depth guard) now use
+      an explicit 'log error; exit N'. Verified: with GIT_REVIEW_UNICODE_NONFATAL=1
+      and allow_errors=1 a fatal blob previously reported success (exit 0); it now
+      fails closed (exit 1). allow_errors is not set anywhere in the tools today;
+      this is defense-in-depth for a security boundary.
+
+    - Symlink retargets were rendered empty and dismissed. read_target keyed the
+      readlink-vs-read-content choice on 'git config core.symlinks', but in
+      external-diff mode git materializes a symlink blob as a REGULAR temp file
+      whose content is the target path -- so on core.symlinks=true (common Linux)
+      'readlink' failed and the SYMLINK line showed empty targets, hiding a
+      malicious retarget (e.g. to /etc/passwd) while the file was dismissed via
+      'exit 0'. Discriminate by what the file actually IS ([ -L ]) instead. A
+      both-sides-symlink retarget regression is added to the dist-ai git-meld-tests
+      suite.
+
+    - wc failure no longer aborts the scan cryptically. git_review_scan_content
+      silenced wc's stderr but dropped the numeric fallback, so an empty result
+      made '[ "" -gt 5000 ]' raise 'integer expression expected' and abort under
+      errexit. Default to 0.
+
+    Not changed (reviewer finding assessed as a non-issue): the shared
+    git_review_continue_consented cache does NOT leak a "yes" across files -- git
+    spawns diff.external as a fresh process per file, so the flag resets per file;
+    within one file it only prevents double-prompting.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit cdf5f8ac944d7b885c962d7f8ac23c54a6f3037f
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 13:14:06 2026 -0400
+
+    ci: drop test_git_review_tools.sh; coverage lives in dist-ai git-meld-tests
+
+    The safe git review tools have a dedicated dist-ai suite (git-meld-tests:
+    adversarial-comprehensive-lib.sh + difftool-mergetool-lib.sh) that already
+    covers the nounset crash (viewer-gets-the-pair cases fail if the wrapper
+    aborts), binary refusal, undecodable fail-closed, and -- newly added there --
+    the stcat false-positive regression. This developer-meta-files-local duplicate
+    is therefore removed.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit eaa7b6d5a2a9aac98904c39840bcc49fc10e72a1
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 12:58:43 2026 -0400
+
+    docs: fix stale git_review_fatal reference in a driver comment
+
+    The path-scan comment still pointed at the removed git_review_fatal flag;
+    point it at git_review_handle_unicode_show_fatal, which now handles the
+    fatal (non-UTF-8 path bytes) case.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 7f0f8b137e574abba5a02f7ebc5e5badfc093514
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 12:54:51 2026 -0400
+
+    ci: regression tests for the safe git review tools
+
+    Add ci/tests/test_git_review_tools.sh (discovered by test-github-org-tools.sh)
+    covering the non-interactive, non-GUI behaviour that previously regressed or
+    was untested:
+
+    - git-review-difftool renders a harmless diff and exits 0 (it once aborted
+      with 'git_review_fatal: unbound variable' under nounset for every
+      non-fatal file).
+    - git-review-difftool wrong-arg-count fails with a usage line and exit 2.
+    - git-review-mergetool refuses a binary conflict side (exit 1, no GUI).
+    - git-diff-review shows a plain changed file with NO false 'stcat failed'
+      (the 'diff' rc-1 "files differ" leak).
+    - undecodable / non-UTF-8 content with no controlling terminal FAILS CLOSED
+      and does not hang (setsid + timeout guard the interactive prompt path).
+
+    The tools hard-code their libexec source path, so the test stages the in-tree
+    copies into a temp prefix with that path rewritten -- it verifies the source
+    tree under review, not a possibly-stale installed package. The interactive
+    continue prompt needs a real tty and is verified separately with a pty harness.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 15ec8507c052b81858b1b93ce185bf20543941cb
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 12:51:59 2026 -0400
+
+    git review: interactive continue past flagged content; fix stcat false-positive
+
+    Two coupled changes to the terminal-safe reviewer (git-diff-review):
+
+    1. Fix a false "stcat failed" on every changed file. display_regular_file
+       reused one 'diff_rc' variable for both the 'diff' and the 'stcat' exit
+       codes. 'diff' returns 1 for "files differ" (every changed file), and that
+       1 leaked into the stcat check, so each changed file wrongly reported
+       "stcat failed" and dumped a redundant unicode-show report -- this is what
+       made a mere unicode space look like an stcat failure. Track the two exit
+       codes in separate variables.
+
+    2. Interactive continue. When content really trips a scan, offer the operator
+       a choice instead of hard-stopping:
+       - git_review_prompt_continue (git-review-scan.sh) asks via 'log question'
+         and reads the answer from /dev/tty (stdin may be redirected in
+         external-diff mode). Returns 0 (proceed), 1 (declined), or 2 (cannot ask:
+         not the terminal-safe reviewer, or no controlling terminal -- /dev/tty is
+         probed by actually opening it, since 'test -r' passes on a node that
+         fails to open with ENXIO). Consent is cached per file.
+       - The fatal-unicode gate continues only on an explicit yes; a decline OR
+         no-tty fails closed, so a fatal blob never reaches a viewer just because
+         nobody could be asked. GUI wrappers never set
+         git_review_display_fatal_content, so they never prompt.
+       - The benign stcat-write path aborts only on an explicit decline (1) and
+         proceeds when nobody could be asked (2).
+       - git-review-driver.sh runs git with --no-pager for the terminal-safe
+         reviewer so the prompt is not fighting a pager for the terminal.
+
+    Verified with a pty harness: harmless changed file exits 0 with no spurious
+    warning; invalid-UTF-8 content fails closed non-interactively and on a "no",
+    and continues on an interactive "yes".
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 54cf961ea96e9b6faaa4006f3fa322dc97651bf6
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 12:29:46 2026 -0400
+
+    git review tools: colorized logging via log_run_die (log/die)
+
+    Route the tools' operator-facing diagnostics through the log/die helpers
+    (helper-scripts/log_run_die.sh) instead of ad-hoc 'printf ... >&2; exit N',
+    per the repo style rules R-040 / R-110. Each diagnostic now carries the
+    script name and a colorized severity tag (e.g. 'git-review-difftool
+    [ERROR]: ...').
+
+    Scope:
+    - git-review-scan.sh, git-review-driver.sh, git-review-difftool,
+      git-review-mergetool, git-diff-review: source log_run_die.sh directly
+      (R-082) and convert ERROR/WARNING/NOTE stderr diagnostics to
+      log error/warn/notice, and 'printf err >&2; exit N' to die.
+    - The stdout diff-display stream (===== section headers, MODE CHANGE,
+      SYMLINK, Submodule transitions, the +x note, and stcat-neutralized
+      content) stays on stdout as printf, so it still interleaves with the
+      diff under git's pager. log always writes to stderr; routing display
+      lines through it would split them from the diff.
+    - log/die pipe messages through sanitize-string, which strips '<...>' and
+      turns '>' into '_'. Reworded the affected usage/recursion/submodule/
+      gitlink messages to avoid angle brackets and '->' arrows (e.g. usage
+      is now '[meld|kdiff3] LOCAL REMOTE'; 'a -> b' became 'a to b').
+    - Fixed the wrappers' shellcheck 'source=' directive depth (usr/bin is
+      three levels above helper-scripts, not four) while adding the new source.
+
+    Verified: shellcheck -x clean, pre-push-static gate green, and
+    git-review-difftool renders a diff (exit 0) and reports arg-count and
+    unknown-viewer errors via colorized die with usage placeholders intact.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit f1d3ffee694682721a96f3a150659aefded1785b
+Author: claude (dev70 3a82410b-863a-4533-a9a6-cfd732a46d45) <noreply@anthropic.com>
+Date:   Thu Jul 9 12:17:51 2026 -0400
+
+    git review difftool/mergetool: fix nounset crash on removed git_review_fatal
+
+    The flag-file refactor (cb17ba9b) removed the git_review_fatal variable
+    from git-review-scan.sh, but git-review-difftool and git-review-mergetool
+    still tested '[ "${git_review_fatal}" != 0 ]' after scanning. Under
+    'set -o nounset' that is an unbound-variable abort, so both wrappers died
+    before opening the viewer for ANY non-fatal file (i.e. almost every diff
+    or merge).
+
+    Fail-closed on undecodable/non-UTF-8 content is already enforced inside
+    git_review_scan_content -> git_review_handle_unicode_show_fatal, which
+    exits non-zero in the GUI wrapper context (no fatal-flag file, no
+    terminal-safe display, so it never defers). Remove the dead post-scan
+    check and document why it must not be re-added.
+
+    Verified: git-review-difftool now renders a diff and exits 0 on harmless
+    input instead of aborting with 'git_review_fatal: unbound variable'.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
 
 commit ff6d24e916bee24e9a4d9e7b785e728b77df8007
 Author: Patrick Schleizer <adrelanos@whonix.org>
