@@ -193,6 +193,9 @@ expect_rule "R-011" "set +e"                                     "present"
 ## with an empty string is SPARED.
 expect_rule "R-051" "trap ${dq}${del} -f x${dq} EXIT"            "present"
 expect_rule "R-051" "trap ${dq}${dq} EXIT"                       "absent"
+## A trap in a '#' comment is documentation, not a live trap, so it is SPARED
+## (the leading '^[^#]*' skips it), mirroring R-070's comment handling.
+expect_rule "R-051" "#trap ${dq}${del} -f x${dq} EXIT"           "absent"
 
 ## R-090: 'command -v' in code is FLAGGED; in a comment it is SPARED.
 expect_rule "R-090" "if ! command${sp}-v foo"                    "present"

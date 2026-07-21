@@ -662,8 +662,11 @@ check_R051_trap_inline() {
    ## form). Named-function form is 'trap NAME SIG' (no quote). The
    ## '[^'\"]' after the opening quote requires a non-quote character
    ## inside, so 'trap "" EXIT' / 'trap '' EXIT' (clear/ignore a trap, not
-   ## an inline command) are not flagged.
-   hits="$(grep --with-filename --line-number --extended-regexp "\\btrap[[:space:]]+['\"][^'\"]" -- "${fs[@]}" 2>/dev/null || true)"
+   ## an inline command) are not flagged. The leading '^[^#]*' excludes a
+   ## trap that sits in a '#' comment (e.g. a commented-out '#trap "sleep 1"
+   ## DEBUG' debug line) -- that is documentation, not a live trap -- mirroring
+   ## how R-070/R-074 skip comment lines.
+   hits="$(grep --with-filename --line-number --extended-regexp "^[^#]*\\btrap[[:space:]]+['\"][^'\"]" -- "${fs[@]}" 2>/dev/null || true)"
    ## Spare the PARAMETERIZED named-function form: bash passes a trap
    ## handler no information about the firing signal, so
    ## 'trap "handler $signal" "$signal"' is the standard idiom for
