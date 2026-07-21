@@ -22,22 +22,26 @@
 ##   git mergetool --tool=review-meld              # 3-way GUI merge, meld
 ##   git mergetool --tool=review-kdiff3            # 3-way GUI merge, kdiff3
 
-## trustExitCode = true on the difftools so git HONORS the wrapper's fail-closed
-## non-zero exit (undecodable content) and stops the review instead of silently
-## continuing to the next file. git difftool ignores the tool's exit code
-## without it.
+## The git-review-difftool wrapper is the fail-closed boundary itself: it refuses
+## to open the viewer (and exits non-zero) for undecodable/non-UTF-8 or binary
+## content, per file, regardless of any trustExitCode setting -- so a fatal blob
+## never reaches the viewer either way.
 ##
-## TODO: Does setting trustExitCode on individual difftool tools actually
-## work? Test.
+## git does NOT honor a PER-TOOL 'difftool.<tool>.trustExitCode' (verified on git
+## 2.47: git difftool ignores the wrapper's exit code and keeps going to the next
+## file), so it is not set here -- it would be dead config. Only the GLOBAL
+## 'difftool.trustExitCode' makes 'git difftool' itself stop and propagate a
+## non-zero exit on a refused file. Enable it in your own config if you want that
+## (note it affects ALL your difftools, so this opt-in fragment does not set it):
+##
+##   [difftool]
+##       trustExitCode = true
 [difftool "review-meld"]
 	cmd = git-review-difftool meld "$LOCAL" "$REMOTE"
-	trustExitCode = true
 [difftool "review-kdiff3"]
 	cmd = git-review-difftool kdiff3 "$LOCAL" "$REMOTE"
-	trustExitCode = true
 [difftool "review-diff"]
 	cmd = git-review-difftool diff-review "$LOCAL" "$REMOTE"
-	trustExitCode = true
 
 ## Both entries set trustExitCode = true because git-review-mergetool provides an
 ## AUTHORITATIVE exit code itself: it detects resolution by whether $MERGED was
