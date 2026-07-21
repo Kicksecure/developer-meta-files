@@ -13,7 +13,11 @@ shopt -s shift_verbose
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
+## Scan the ref's new commits (content, messages, author identity)...
 check-ref-commits-for-unicode "${1}"
+
+## ...and the ref NAME itself, for spoofing via non-ASCII unicode.
+check-ref-names-for-unicode "${1}"
 
 git log "...${1}"
 
