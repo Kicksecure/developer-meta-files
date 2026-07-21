@@ -16,8 +16,14 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 ## Scan the ref's new commits (content, messages, author identity)...
 check-ref-commits-for-unicode "${1}"
 
-## ...and the ref NAME itself, for spoofing via non-ASCII unicode.
-check-ref-names-for-unicode "${1}"
+## ...and every ref NAME in the repo, for spoofing via non-ASCII unicode.
+## check-ref-names-for-unicode takes ref-name GLOBS (git for-each-ref), not a
+## single ref -- with no argument it scans all refs (its documented default).
+## Passing the reviewed ref instead would only check that one name (missing a
+## spoofed sibling), and a look-alike name would make for-each-ref fail to
+## match ("No refs matched") rather than be flagged as suspicious. Scanning
+## every ref catches a spoofed name anywhere the fetch introduced one.
+check-ref-names-for-unicode
 
 git log "...${1}"
 
