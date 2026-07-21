@@ -71,9 +71,15 @@ oracle_valid() {
    [ "${#name}" -le "${max_len}" ] || return 1
    [[ "${name}" =~ ${allowed_re} ]] || return 1
    case "${name}" in
-      '.'|'..'|'.git') return 1 ;;
-      '-'*|'/'*)       return 1 ;;
-      *'..'*|*'//'*)   return 1 ;;
+      '.'|'..'|'.git')
+         return 1
+         ;;
+      '-'*|'/'*)
+         return 1
+         ;;
+      *'..'*|*'//'*)
+         return 1
+         ;;
    esac
    return 0
 }
@@ -98,9 +104,18 @@ oracle_valid() {
 gen_input() {
    local kind="$1" len bytes max_len raw allowed
    case "${kind}" in
-      user) max_len="${GHORG_MAX_USER_LOGIN_LEN}"; allowed='A-Za-z0-9._-' ;;
-      ref)  max_len="${GHORG_MAX_BRANCH_NAME_LEN}"; allowed='A-Za-z0-9._/-' ;;
-      *)    max_len="${GHORG_MAX_REPO_NAME_LEN}"; allowed='A-Za-z0-9._-' ;;
+      user)
+         max_len="${GHORG_MAX_USER_LOGIN_LEN}"
+         allowed='A-Za-z0-9._-'
+         ;;
+      ref)
+         max_len="${GHORG_MAX_BRANCH_NAME_LEN}"
+         allowed='A-Za-z0-9._/-'
+         ;;
+      *)
+         max_len="${GHORG_MAX_REPO_NAME_LEN}"
+         allowed='A-Za-z0-9._-'
+         ;;
    esac
    case "$((RANDOM % 5))" in
       0)
@@ -120,12 +135,24 @@ gen_input() {
          ;;
       3)
          case "$((RANDOM % 6))" in
-            0) bytes='' ;;
-            1) bytes='a' ;;
-            2) bytes="$(printf 'a%.0s' $(seq 1 "${max_len}"))" ;;
-            3) bytes="$(printf 'a%.0s' $(seq 1 $((max_len + 1))))" ;;
-            4) bytes='.' ;;
-            5) bytes='..' ;;
+            0)
+               bytes=''
+               ;;
+            1)
+               bytes='a'
+               ;;
+            2)
+               bytes="$(printf 'a%.0s' $(seq 1 "${max_len}"))"
+               ;;
+            3)
+               bytes="$(printf 'a%.0s' $(seq 1 $((max_len + 1))))"
+               ;;
+            4)
+               bytes='.'
+               ;;
+            5)
+               bytes='..'
+               ;;
          esac
          ;;
       4)
@@ -150,9 +177,15 @@ for i in $(seq 1 "${iters}"); do
    ## Rotate over the three kinds to exercise each length cap and
    ## allowlist.
    case "$(( i % 3 ))" in
-      0) kind='repo' ;;
-      1) kind='user' ;;
-      2) kind='ref' ;;
+      0)
+         kind='repo'
+         ;;
+      1)
+         kind='user'
+         ;;
+      2)
+         kind='ref'
+         ;;
    esac
 
    input="$(gen_input "${kind}")"

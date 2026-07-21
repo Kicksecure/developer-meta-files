@@ -55,8 +55,9 @@ policy.
     shopt -s shift_verbose
 
 Why: `errexit` aborts on first uncaught failure. `nounset` catches
-unset-variable typos. `pipefail` makes the exit code of a pipeline
-the first non-zero (so failures earlier in the pipe propagate).
+unset-variable typos. `pipefail` makes a pipeline's exit code the
+last (rightmost) non-zero status, so a failure anywhere in the pipe
+is not masked by a later command's success.
 `errtrace` makes ERR traps inherit into shell functions.
 `inherit_errexit` makes `$()` subshells respect errexit (bash >= 4.4).
 `shift_verbose` logs when `shift` runs past argv end.
@@ -96,8 +97,11 @@ Good:
 
 Why: `(( expr ))` returns rc=1 when `expr` evaluates to 0 (POSIX
 arithmetic-expression semantics), which `errexit` interprets as a
-command failure. `var=$((expr))` is an assignment - rc is always
-the assignment's rc (0), not the computed value.
+command failure. `var=$((expr))` is an assignment: for a well-formed
+expression its rc is the assignment's (0), not the computed value. A
+genuine evaluation error (division by zero, a malformed expression)
+still fails and, under `errexit`, still aborts - the fix is about the
+value-zero case, not a claim that arithmetic can never fail.
 
 
 ## Variables
@@ -161,6 +165,14 @@ shell-escaping is genuinely required), no extra `\n` in the format.
 **R-031: Multi-line block: ONE quoted string with embedded
 newlines.** Multiple separate lines: one `printf '%s\n'` per line.
 Blank line: `printf '%s\n' ""`, NOT `printf '\n'` by itself.
+
+A standalone newline is ALWAYS `printf '%s\n' ""`, with the empty
+string passed as an explicit data argument. Both `printf '\n'` (the
+newline baked into the format string) and a bare `printf '%s\n'`
+(the `%s` format kept but the data argument omitted) are forbidden
+and GATE-ENFORCED -- they fail the static gate. Whether the blank
+line should exist at all is R-042's separate call; this rule only
+fixes its form once you decide to write one.
 
 **R-032: Quote choice.** Double quotes preferred. Single quotes
 acceptable when the body has many doubles to escape:
@@ -292,11 +304,25 @@ adding `--` to a new tool invocation.
 
 ## Case statements
 
-**R-070: `;;` on its own line, never trailing the last
-statement.**
+**R-070: A case arm is fully multi-line: the pattern label, each
+statement, and the closing `;;` each on their own line.** No compact
+one-liner arms, spaced or jammed (`amd64) arch="x86_64" ;;` and
+`amd64) arch="x86_64";;` are both wrong).
 
-**R-071: One statement per line in a case arm.** Multi-statement
-single-line arms get split.
+    amd64)
+       arch="x86_64"
+       ;;
+    "")
+       arch=""
+       ;;
+
+The `;;`-on-its-own-line half is GATE-ENFORCED: any `;;` with other
+content on the line fails the static gate. The one-element-per-line
+half (a label or statement must not share a line) is manual review;
+a bare `)` is too ambiguous to grep (`$(...)`, `func()`, arithmetic,
+globs), but a compact arm trips the `;;` check anyway.
+
+**R-071: (folded into R-070.)** One element per line in a case arm.
 
 **R-072: Reserved-name and metachar-looking literals are quoted.**
 `'.git'` not `.git`, `'-'*` not `-*`.
@@ -326,10 +352,10 @@ own line. Bash's syntactic `;` (case-arm `;;`, C-style for-loop
 glue two arbitrary commands onto one line is prohibited.
 
 The control-flow keywords `break`, `continue` and `return` are the
-commonest offenders (loop bodies, one-line `if`s, `case` arms,
-`--) shift; break ;;` argument parsers). A `;`-chained
+commonest offenders (loop bodies, one-line `if`s). A `;`-chained
 `break`/`continue`/`return` is GATE-ENFORCED -- it fails the static
-gate -- so always put the keyword on its own line.
+gate -- so always put the keyword on its own line. (A case arm cannot
+produce this form under R-070, which already forbids the one-liner.)
 
 Bad:
 
@@ -337,7 +363,6 @@ Bad:
     foo --quiet; bar --verbose
     if match; then hit=1; continue; fi
     [ -e "${x}" ] && { found="${x}"; break; }
-    --) shift; break ;;
 
 Good:
 
@@ -394,6 +419,13 @@ Forbidden forms:
   not portable across machines / CI.
 - `# shellcheck source=/dev/null`: silences cross-file checks
   entirely (also covered by R-081).
+- `# shellcheck source=<bare-name>` with no `./` or `../` prefix
+  (e.g. `source=get_colors.sh`): shellcheck resolves it the same, but
+  the convention anchors a same-directory sibling as `./get_colors.sh`.
+
+GATE-ENFORCED: the `source=` path must start with `.` (a `./` or `../`
+relative source-tree path); an absolute or bare-name path fails the
+static gate.
 - Omitting the directive when shellcheck can resolve the path on
   its own: works for installed-path sources but doesn't track the
   source-tree copy; mandate the directive uniformly for predict-

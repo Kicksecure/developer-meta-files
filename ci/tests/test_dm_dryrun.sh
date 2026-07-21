@@ -32,7 +32,7 @@ export GHORG_MOCK_DIR="${FIXTURES_DIR}"
 ## Capture combined stdout+stderr; the lib routes everything through
 ## log_run_die.sh's stecho >&2.
 rc=0
-out="$(dm-github-org-policy --dry-run 2>&1)" || rc=$?
+out="$(ORGS_OVERRIDE='org-ai-assisted' dm-github-org-policy --dry-run 2>&1)" || rc=$?
 
 fail=0
 

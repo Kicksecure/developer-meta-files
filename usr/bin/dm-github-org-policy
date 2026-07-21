@@ -45,7 +45,7 @@ die_if_not_has github-org-fork
 ##
 ## Vocabulary aligns with dm-github-fork-sync.
 readonly SOURCE_ORGS=( 'Kicksecure' 'Whonix' )
-readonly MIRROR_ORGS=( 'org-ai-assisted' )
+readonly MIRROR_ORGS=( 'org-ai-assisted' 'output-lies' )
 
 ## SOURCE_ORGS currently commented out pending an admin token scoped
 ## to those orgs. ORGS_OVERRIDE (comma-separated, since bash arrays
@@ -66,10 +66,16 @@ org_kind() {
    local org name
    org="$1"
    for name in "${SOURCE_ORGS[@]}"; do
-      [ "${name}" = "${org}" ] && { printf '%s\n' source; return 0; }
+      if [ "${name}" = "${org}" ]; then
+         printf '%s\n' source
+         return 0
+      fi
    done
    for name in "${MIRROR_ORGS[@]}"; do
-      [ "${name}" = "${org}" ] && { printf '%s\n' mirror; return 0; }
+      if [ "${name}" = "${org}" ]; then
+         printf '%s\n' mirror
+         return 0
+      fi
    done
    log error "org_kind: '${org}' not in SOURCE_ORGS or MIRROR_ORGS"
    return 1

@@ -1,0 +1,184 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Compare two independent builds of the SAME target for bit-for-bit
+## reproducibility. This is the entry point the local-reproducible CI workflow
+## invokes; its exit code IS the reproducibility pass/fail signal.
+##
+## Usage:
+##   dm-reproducible-compare-artifacts --target <iso|virtualbox|qcow2> \
+##       --dir-a DIR --dir-b DIR --output REPORT
+##
+## --target  which image type to locate in each directory:
+##             iso        -> *.iso   virtualbox -> *.ova   qcow2 -> *.qcow2
+## --dir-a   directory holding the first build's artifact (searched recursively).
+## --dir-b   directory holding the second build's artifact.
+## --output  report file written with the sha256 of each artifact and, when they
+##           differ, a diffoscope explanation of WHAT differs.
+##
+## The definitive verdict is a whole-file sha256 comparison of the two artifacts
+## (a released image is a single file; equal sha256 == bit-for-bit identical, for
+## every target, with no mounting or format knowledge needed). diffoscope is run
+## ONLY when they differ, purely to EXPLAIN the mismatch in the report -- its own
+## success is never the pass/fail signal (it can OOM on multi-gigabyte images), so
+## it is best-effort. To LOCALIZE a difference to a specific in-image file, run
+## 'ci/reproducible-manifest generate --deep' on each artifact and compare.
+##
+## Exit: 0 identical (reproducible), 1 artifacts differ, 2 usage / not-found error.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+usage() {
+   printf '%s\n' "Usage:
+  ${0##*/} --target <iso|virtualbox|qcow2> --dir-a DIR --dir-b DIR --output REPORT" >&2
+   exit 2
+}
+
+target=""
+dir_a=""
+dir_b=""
+report=""
+while [ "$#" -gt 0 ]; do
+   case "$1" in
+      --target)
+         [ "$#" -ge 2 ] || usage
+         target="$2"
+         shift 2
+         ;;
+      --dir-a)
+         [ "$#" -ge 2 ] || usage
+         dir_a="$2"
+         shift 2
+         ;;
+      --dir-b)
+         [ "$#" -ge 2 ] || usage
+         dir_b="$2"
+         shift 2
+         ;;
+      --output)
+         [ "$#" -ge 2 ] || usage
+         report="$2"
+         shift 2
+         ;;
+      *)
+         printf '%s\n' "${0##*/}: unexpected argument: $1" >&2
+         usage
+         ;;
+   esac
+done
+
+if [ -z "$target" ] || [ -z "$dir_a" ] || [ -z "$dir_b" ] || [ -z "$report" ]; then
+   usage
+fi
+
+case "$target" in
+   iso)
+      artifact_glob="*.iso"
+      ;;
+   virtualbox)
+      artifact_glob="*.ova"
+      ;;
+   qcow2)
+      artifact_glob="*.qcow2"
+      ;;
+   *)
+      printf '%s\n' "${0##*/}: unknown target: $target (want iso|virtualbox|qcow2)" >&2
+      usage
+      ;;
+esac
+
+## Locate the single artifact of the wanted type under a directory and store it in
+## the global 'found_artifact'. A build emits exactly one image of a given
+## extension; 0 or >1 is a setup error, not a diff. Returning through a global,
+## rather than echoing and capturing with "$(find_artifact ...)", keeps the
+## 'exit 2' below exiting the whole script instead of only a command-substitution
+## subshell (which would let the caller continue with an empty artifact).
+found_artifact=""
+find_artifact() {
+   local dir="$1"
+   local -a matches=()
+   ## A directory whose name starts with '-' would be read by find(1) as an option
+   ## or expression; prefix './' so it is unambiguously a path operand.
+   [ "${dir#-}" = "$dir" ] || dir="./$dir"
+   if [ ! -d "$dir" ]; then
+      printf '%s\n' "${0##*/}: no such directory: $dir" >&2
+      exit 2
+   fi
+   mapfile -t matches < <(find "$dir" -type f -name "$artifact_glob" | LC_ALL=C sort)
+   if [ "${#matches[@]}" -ne 1 ]; then
+      printf '%s\n' "${0##*/}: expected exactly one ${artifact_glob} under ${dir}, found ${#matches[@]}" >&2
+      exit 2
+   fi
+   found_artifact="${matches[0]}"
+}
+
+find_artifact "$dir_a"
+artifact_a="$found_artifact"
+find_artifact "$dir_b"
+artifact_b="$found_artifact"
+
+## Reject a setup where both sides are the SAME file: hashing one image twice is
+## trivially "identical" and would mask a misconfigured comparison (e.g. --dir-a
+## and --dir-b naming the same directory) as a genuine reproducibility pass. Use
+## '-ef' (same device + inode), which also catches hard links and bind mounts that
+## a canonical-path string compare would miss. Setup error, not a diff result.
+if [ "$artifact_a" -ef "$artifact_b" ]; then
+   printf '%s\n' "${0##*/}: A and B are the same file ($artifact_a); need two independent builds" >&2
+   exit 2
+fi
+
+## The report is written by truncating $report; refuse to point it at an input
+## artifact, which would destroy that image (after its hash was read) and could
+## make the two sides falsely compare equal. '-ef' is false when $report does not
+## exist yet (nothing to clobber) and catches a hard-linked alias that a pathname
+## compare would miss.
+if [ "$report" -ef "$artifact_a" ] || [ "$report" -ef "$artifact_b" ]; then
+   printf '%s\n' "${0##*/}: --output would overwrite an input artifact ($report)" >&2
+   exit 2
+fi
+
+sha_a="$(sha256sum -- "$artifact_a")"
+sha_a="${sha_a%% *}"
+sha_b="$(sha256sum -- "$artifact_b")"
+sha_b="${sha_b%% *}"
+
+{
+   printf '%s\n' "reproducibility artifact comparison"
+   printf '  target: %s\n' "$target"
+   printf '  A: %s\n' "$artifact_a"
+   printf '     sha256 %s\n' "$sha_a"
+   printf '  B: %s\n' "$artifact_b"
+   printf '     sha256 %s\n' "$sha_b"
+} > "$report"
+
+if [ "$sha_a" = "$sha_b" ]; then
+   printf '%s\n' "RESULT: identical (reproducible)" | tee --append -- "$report"
+   exit 0
+fi
+
+{
+   printf '%s\n' "RESULT: artifacts DIFFER (not bit-reproducible)"
+   printf '%s\n' "diffoscope explanation follows (best-effort; may be truncated or skipped):"
+} | tee --append -- "$report"
+
+## Explain the mismatch. diffoscope is heavy on large images, so bound its output
+## and never let its result change the (sha-based) verdict above. diffoscope exits
+## 1 when it FINDS differences -- expected here, not a failure -- so only exit >= 2
+## (a real crash / OOM kill) warrants the "could not explain" note.
+diffoscope_rc=0
+diffoscope --text - --max-report-size 4194304 --max-diff-block-lines 512 \
+   -- "$artifact_a" "$artifact_b" >> "$report" 2>&1 || diffoscope_rc="$?"
+if [ "$diffoscope_rc" -gt 1 ]; then
+   printf '%s\n' "(diffoscope could not explain the diff (exit ${diffoscope_rc}); the sha256 mismatch above is the verdict)" >> "$report"
+fi
+
+exit 1
