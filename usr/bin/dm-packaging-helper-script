@@ -1576,6 +1576,7 @@ pkg_git_diff_and_merge_branch() {
    check-ref-commits-for-unicode "${origin_ref}"
    dry_run_or_run git --no-pager diff -C --stat ..."${origin_ref}"
    dry_run_or_run git --no-pager diff -C ..."${origin_ref}"
+   dry_run_or_run git-meld ..."${origin_ref}"
    dry_run_or_run git --no-pager kdiff -C ..."${origin_ref}"
 
    if [ "${origin_branch}" = "${upstream_repo}/master" ]; then
