@@ -1,0 +1,119 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Emit a reproducibility buildinfo for a built image -- the image-level analogue
+## of a Debian '.buildinfo'. It records the PARAMETERS needed to reproduce the
+## image so a verifier needs no flags: given the image URL it fetches the sibling
+## '<image>.dm-buildinfo' (+ signatures), and rebuilds from the recorded
+## parameters. See 'dm-reproducible-verify'.
+##
+## No standardized image-level buildinfo format exists (Debian '.buildinfo' is
+## package-only; Tails, Guix, mkosi, osbuild each rolled their own), so this is a
+## small signed Deb822 file modeled on Debian '.buildinfo' conventions and the
+## live-build 'summary.txt' that 'live-build/test/rebuild.sh' already emits.
+##
+## Extension is '.dm-buildinfo', deliberately NOT '.buildinfo': it must not
+## shadow Debian's package '.buildinfo' (nor collide with an image-level
+## '.buildinfo' should Debian standardize one later). 'dm-' namespaces it to
+## derivative-maker, and '*.buildinfo' globs do not match '*.dm-buildinfo'.
+##
+## Intentionally records NO checksum: 'dm-prepare-release' already writes and
+## signs '<image>.sha512sums' in the same folder -- the buildinfo must not
+## duplicate it. This script also does NOT sign: the buildinfo is added to
+## 'dm-prepare-release's signature set so it is signed and verified by the SAME
+## 'sign_and_verify' function as every other release artifact (both OpenPGP
+## '.asc' and signify '.sig'); no 'sq'/'signify' is invoked here.
+##
+## The build metadata is read from the environment the build already exports
+## (dist_build_flavor, dist_build_target_arch, ...), so wiring this into the
+## build is a single call per built image.
+##
+## Usage:
+##   dm-reproducible-buildinfo --target TARGET --image IMAGE_PATH [--output FILE]
+##
+## Exit codes: 0 written; 2 usage/environment error.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+error() {
+   printf '%s\n' "ERROR: $*" >&2
+   exit 2
+}
+
+target=""
+image=""
+output=""
+
+while [ "$#" -gt 0 ]; do
+   case "${1:-}" in
+      --target)
+         [ "$#" -ge 2 ] || error "--target requires a value."
+         target="$2"
+         shift 2
+         ;;
+      --image)
+         [ "$#" -ge 2 ] || error "--image requires a value."
+         image="$2"
+         shift 2
+         ;;
+      --output)
+         [ "$#" -ge 2 ] || error "--output requires a value."
+         output="$2"
+         shift 2
+         ;;
+      -h|--help)
+         grep '^##' -- "${BASH_SOURCE[0]}" | sed 's/^## \{0,1\}//'
+         exit 0
+         ;;
+      *)
+         error "unknown argument: '$1'."
+         ;;
+   esac
+done
+
+[ -n "${target}" ] || error "--target is required."
+[ -n "${image}" ]  || error "--image is required."
+[ -f "${image}" ]  || error "image does not exist: '${image}'"
+[ -n "${output}" ] || output="${image}.dm-buildinfo"
+
+## Read a build-exported variable; 'unknown' when unset so the record is always
+## well-formed (the verifier validates the ones it needs to rebuild).
+val() { local v="${!1:-}"; printf '%s' "${v:-unknown}"; }
+
+## Deb822 (RFC822-style): greppable, signable, and the shop's idiom. The trailing
+## blank line is the Deb822 record terminator. Fields follow Debian '.buildinfo'
+## + live-build 'summary.txt' + the Tails apt-snapshot-pinning discipline.
+##  - Source-Commit + Source-Version pin the derivative-maker tree.
+##  - Debian-Suite + APT-Snapshot pin the package world (determinism).
+##  - Source-Date-Epoch is derived from debian/changelog, so a rebuild from the
+##    same Source-Commit reproduces it automatically.
+##  - Flavor/Target/Build-Type/Architecture/Freedom are the build selectors a
+##    rebuild replays; NO checksum (see header).
+printf '%s\n' "\
+Format: 1.0
+Buildinfo-Type: derivative-image
+Source-Repo: $(val project_clearnet)
+Source-Commit: $(val dist_build_current_git_head)
+Source-Version: $(val dist_build_version)
+Flavor: $(val dist_build_flavor)
+Target: ${target}
+Build-Type: $(val dist_build_type)
+Architecture: $(val dist_build_target_arch)
+Freedom: $(val build_freedom_only)
+Debian-Suite: $(val dist_build_apt_stable_release)
+APT-Snapshot: $(val dist_build_apt_sources_mirror)
+Source-Date-Epoch: $(val SOURCE_DATE_EPOCH)
+Image-File: $(basename -- "${image}")
+" > "${output}"
+
+printf '%s\n' "INFO: wrote buildinfo -> ${output}" >&2
+printf '%s\n' "INFO: register '${output}' with dm-prepare-release so it is signed alongside the image." >&2

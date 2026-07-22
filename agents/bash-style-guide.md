@@ -788,6 +788,16 @@ functions that print a string.
 Why: Code that expects comments to provide user interface components
 is liable to break if a comment-only change is made.
 
+**R-154: No history in comments.** Comment the CURRENT state and why,
+never how the code got there. Ban change-narrative: "formerly X",
+"was broken", "moved from Y", "used to", "no longer", "renamed from".
+A comment is not a changelog; keep it terse, bullet-style. Bad:
+`## shared with foo (formerly inline here)`. Good: `## shared with foo`.
+
+Why: git carries the history. A comment narrating a past state goes
+stale, misleads a reader who never saw that state, and grows on every
+change. The diff and the log are the record.
+
 
 ## File search
 

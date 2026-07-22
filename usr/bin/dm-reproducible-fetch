@@ -1,0 +1,278 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Download a PUBLISHED image plus its reproducibility sidecars (the signed
+## '.dm-buildinfo' and '.sha512sums' and their signatures), all siblings in the
+## same remote folder, into a local directory. The image is UNTRUSTED here --
+## it is only fetched; nothing is executed, booted, or verified. Verification +
+## rebuild + compare is the job of the separate 'dm-reproducible-verify', which
+## operates on the LOCAL file this leaves behind (or on a file copied by hand).
+##
+## Usage:
+##   dm-reproducible-fetch VERSION|URL [--output-dir DIR]
+##   dm-reproducible-fetch --version VER --arch ARCH --target TARGET --flavor FLAVOR [--project DOMAIN] [--output-dir DIR]
+##   dm-reproducible-fetch --url IMAGE_URL [--output-dir DIR]
+##
+## Pass EITHER a published version OR a full download URL: as a single positional
+## argument (auto-detected -- a URL contains '://'), or explicitly with --version
+## / --url. Exactly one is required.
+##
+## With a VERSION the tool builds the Kicksecure download URL; --arch, --target
+## and --flavor are then required (--arch is NOT defaulted, so you never fetch the
+## wrong architecture by accident). With a URL the version, arch, project and
+## target are auto-detected from it and printed.
+##
+##   --version VER      published version, e.g. 18.2.1.7.
+##   --url IMAGE_URL    full download URL (same as the positional URL form).
+##   --arch ARCH        amd64 | arm64 (MANDATORY with --version).
+##   --target TARGET    iso | virtualbox | raw | qcow2 (with --version).
+##   --flavor FLAVOR    kicksecure-lxqt | kicksecure-cli | kicksecure-xfce (with --version).
+##   --project DOMAIN   download domain (default: kicksecure.com).
+##   --output-dir DIR   where to place the downloads (default: current dir).
+##
+## Then:
+##   dm-reproducible-verify DIR/<image>
+##
+## Exit codes: 0 all sidecars fetched; 2 usage / download error.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
+
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+## Shared target->released-{url_part,extension} map (also used by
+## dm-reproducible-compare-artifacts) so the download URL and the comparison
+## never disagree on the artifact name.
+# shellcheck source=../libexec/developer-meta-files/reproducible-target-map.bsh
+source "${MYDIR}/../libexec/developer-meta-files/reproducible-target-map.bsh"
+
+## style-ok: no-has
+## Self-contained downloader (runs outside a build tree); probes for scurl/curl
+## with 'command -v' rather than sourcing the 'has' helper.
+
+error() {
+   printf '%s\n' "ERROR: $*" >&2
+   exit 2
+}
+
+url=""
+out_dir="."
+version=""
+target=""
+flavor=""
+arch=""
+project="kicksecure.com"
+
+while [ "$#" -gt 0 ]; do
+   case "${1:-}" in
+      --output-dir)
+         [ "$#" -ge 2 ] || error "--output-dir requires a value."
+         out_dir="$2"
+         shift 2
+         ;;
+      --url)
+         [ "$#" -ge 2 ] || error "--url requires a value."
+         url="$2"
+         shift 2
+         ;;
+      --version)
+         [ "$#" -ge 2 ] || error "--version requires a value."
+         version="$2"
+         shift 2
+         ;;
+      --target)
+         [ "$#" -ge 2 ] || error "--target requires a value."
+         target="$2"
+         shift 2
+         ;;
+      --flavor)
+         [ "$#" -ge 2 ] || error "--flavor requires a value."
+         flavor="$2"
+         shift 2
+         ;;
+      --arch)
+         [ "$#" -ge 2 ] || error "--arch requires a value."
+         arch="$2"
+         shift 2
+         ;;
+      --project)
+         [ "$#" -ge 2 ] || error "--project requires a value."
+         project="$2"
+         shift 2
+         ;;
+      -h|--help)
+         grep '^##' -- "${BASH_SOURCE[0]}" | sed 's/^## \{0,1\}//'
+         exit 0
+         ;;
+      --)
+         shift
+         break
+         ;;
+      -*)
+         error "unknown option: '$1' (run with --help)."
+         ;;
+      *)
+         ## A single positional VERSION|URL, auto-detected: a URL contains '://'.
+         case "$1" in
+            *://*)
+               [ -z "${url}" ] || error "URL given more than once."
+               url="$1"
+               ;;
+            *)
+               [ -z "${version}" ] || error "version given more than once."
+               version="$1"
+               ;;
+         esac
+         shift
+         ;;
+   esac
+done
+
+## After '--', remaining args are the positional VERSION|URL (same auto-detection).
+while [ "$#" -gt 0 ]; do
+   case "$1" in
+      *://*)
+         [ -z "${url}" ] || error "URL given more than once."
+         url="$1"
+         ;;
+      *)
+         [ -z "${version}" ] || error "version given more than once."
+         version="$1"
+         ;;
+   esac
+   shift
+done
+
+[ -z "${url}" ] || [ -z "${version}" ] || error "pass EITHER a version OR a URL, not both."
+[ -n "${url}" ] || [ -n "${version}" ] || error "pass a version or a URL: dm-reproducible-fetch VERSION|URL (see --help)."
+
+## VERSION mode: build the download URL. Mirrors the image naming in
+## help-steps/variables:
+##   https://download.<domain>/<url_part>/<version>/Kicksecure-<desktop>-<version>.<arch_pretty>.<ext>
+## A naming drift here just yields a 404, never a wrong download.
+if [ -n "${version}" ]; then
+   [ -n "${arch}" ]   || error "--version requires --arch (amd64|arm64); it is not defaulted."
+   [ -n "${target}" ] || error "--version requires --target (iso|virtualbox|raw|qcow2)."
+   [ -n "${flavor}" ] || error "--version requires --flavor (e.g. kicksecure-lxqt)."
+
+   case "${flavor}" in
+      kicksecure-lxqt)
+         desktop="LXQt"
+         ;;
+      kicksecure-xfce)
+         desktop="Xfce"
+         ;;
+      kicksecure-cli)
+         desktop="CLI"
+         ;;
+      *)
+         error "unsupported --flavor '${flavor}' (Kicksecure flavors only)."
+         ;;
+   esac
+
+   case "${arch}" in
+      amd64)
+         arch_pretty="Intel_AMD64"
+         ;;
+      arm64)
+         arch_pretty="arm64"
+         ;;
+      *)
+         error "unsupported --arch '${arch}' (amd64|arm64)."
+         ;;
+   esac
+
+   url_part=""
+   ext=""
+   dm_reproducible_target_url_part url_part "${target}" \
+      || error "unsupported --target '${target}' (iso|virtualbox|raw|qcow2)."
+   dm_reproducible_target_ext ext "${target}"
+
+   url="https://download.${project}/${url_part}/${version}/Kicksecure-${desktop}-${version}.${arch_pretty}.${ext}"
+   printf '%s\n' "INFO: built download URL from --version: ${url}" >&2
+fi
+
+## URL mode: auto-detect version, project, target and arch from the link, but
+## only when the URL actually matches the published layout
+## (.../<url_part>/<version>/Kicksecure-...). Otherwise report nothing detected
+## rather than manufacture misleading values. The download always uses the URL
+## verbatim, so detection is purely informational.
+if [ -n "${url}" ] && [ -z "${version}" ]; then
+   det_hostpath="${url#*://}"
+   det_host="${det_hostpath%%/*}"
+   det_project="${det_host#download.}"
+   det_pathonly="${det_hostpath#*/}"
+   det_url_part="${det_pathonly%%/*}"
+   det_afterpart="${det_pathonly#*/}"
+   det_version="${det_afterpart%%/*}"
+   det_file="$(basename -- "${url%%\?*}")"
+   det_after="${det_file#*-"${det_version}".}"
+   det_arch_pretty="${det_after%%.*}"
+   case "${det_url_part}" in
+      iso)
+         det_target="iso"
+         ;;
+      ova)
+         det_target="virtualbox"
+         ;;
+      raw)
+         det_target="raw"
+         ;;
+      libvirt)
+         det_target="qcow2"
+         ;;
+      *)
+         det_target=""
+         ;;
+   esac
+   case "${det_arch_pretty}" in
+      Intel_AMD64)
+         det_arch="amd64"
+         ;;
+      *)
+         det_arch="${det_arch_pretty}"
+         ;;
+   esac
+   if [ -n "${det_target}" ] && [ "${det_file#Kicksecure-}" != "${det_file}" ]; then
+      printf '%s\n' "INFO: detected from URL: project=${det_project} target=${det_target} version=${det_version} arch=${det_arch}" >&2
+   else
+      printf '%s\n' "INFO: URL not in the recognized download layout; fetching verbatim (no metadata detected)." >&2
+   fi
+fi
+command -v scurl >/dev/null 2>&1 || command -v curl >/dev/null 2>&1 || error "neither scurl nor curl found."
+
+mkdir --parents -- "${out_dir}"
+
+## Resumable, https-only. scurl (hardened wrapper) preferred.
+fetch() {
+   local src="$1" dst="$2"
+   local dl=( curl --tlsv1.3 --proto '=https' --location --fail --retry 5 --retry-all-errors --retry-delay 10 --continue-at - )
+   if command -v scurl >/dev/null 2>&1; then
+      dl=( scurl --location --fail --retry 5 --retry-all-errors --retry-delay 10 --continue-at - )
+   fi
+   "${dl[@]}" --output "${dst}" -- "${src}" || error "download failed: ${src}"
+}
+
+image_name="$(basename -- "${url%%\?*}")"
+dest="${out_dir}/${image_name}"
+
+printf '%s\n' "INFO: fetching image (UNTRUSTED) + reproducibility sidecars into '${out_dir}'..." >&2
+fetch "${url}"                    "${dest}"
+fetch "${url}.dm-buildinfo"       "${dest}.dm-buildinfo"
+fetch "${url}.dm-buildinfo.asc"   "${dest}.dm-buildinfo.asc"
+fetch "${url}.dm-buildinfo.sig"   "${dest}.dm-buildinfo.sig"
+fetch "${url}.sha512sums"         "${dest}.sha512sums"
+fetch "${url}.sha512sums.asc"     "${dest}.sha512sums.asc"
+fetch "${url}.sha512sums.sig"     "${dest}.sha512sums.sig"
+
+printf '%s\n' "INFO: downloaded to '${dest}'." >&2
+printf '%s\n' "INFO: verify with: dm-reproducible-verify '${dest}'" >&2
