@@ -16,8 +16,8 @@
 ##
 ## ## Trust footprint
 ##
-## anthropics/claude-code-action - SHA-pinned, calls the Anthropic
-## API with the caller's ANTHROPIC_API_KEY. Posts review comments
+## anthropics/claude-code-action - SHA-pinned, authenticates with the
+## caller's CLAUDE_CODE_OAUTH_TOKEN (Claude subscription). Posts review comments
 ## via the runner's GITHUB_TOKEN scoped to the permissions block on
 ## the calling job.
 ##
@@ -93,8 +93,9 @@
 ##
 ## ## Secrets
 ##
-## - ANTHROPIC_API_KEY  (required)  Anthropic API key. Set at org
-##                                  level; every consumer wrapper
+## - CLAUDE_CODE_OAUTH_TOKEN  (required)  Claude subscription OAuth
+##                                  token (claude setup-token). Set at
+##                                  org level; every consumer wrapper
 ##                                  forwards it explicitly via the
 ##                                  'secrets:' map.
 ##
@@ -113,7 +114,7 @@
 ##     review:
 ##       uses: org-ai-assisted/developer-meta-files/.github/workflows/reusable-claude-code-review.yml@master
 ##       secrets:
-##         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+##         CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 ##       permissions:
 ##         contents: read
 ##         pull-requests: write
@@ -138,7 +139,7 @@ on:
         type: number
         default: 30
     secrets:
-      ANTHROPIC_API_KEY:
+      CLAUDE_CODE_OAUTH_TOKEN:
         required: true
 
 permissions:
@@ -171,7 +172,7 @@ jobs:
     ##    'allowed-users' roster. This prevents unauthorized actors
     ##    from even spinning up a runner. Defense in depth: API budget
     ##    protection (random external commenter cannot exhaust the
-    ##    org's ANTHROPIC_API_KEY by spam-mentioning @claude) and
+    ##    org's Claude subscription budget by spam-mentioning @claude) and
     ##    blast-radius reduction (a compromised allowed_users action
     ##    arg cannot bypass this check).
     ##
@@ -199,7 +200,7 @@ jobs:
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@787c5a0ce96a9a6cfb050ea0c8f4c05f2447c251  # v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ## Note: the action no longer accepts an 'allowed_users'
           ## input (verified against live workflow log: "Unexpected
           ## input(s) 'allowed_users', valid inputs are [...]").
