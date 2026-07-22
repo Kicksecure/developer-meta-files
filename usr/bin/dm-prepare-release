@@ -19,7 +19,8 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
-## variables (sourced below) reassigns MYDIR; capture the libexec dir first.
+## variables (sourced below) reassigns MYDIR; capture the dirs we need first.
+dm_prepare_release_dir="${MYDIR}"
 signing_lib_dir="${MYDIR}/../libexec/developer-meta-files"
 
 if [ "$MYDIR" = "/usr/bin" ]; then
@@ -650,7 +651,7 @@ signatures_create() {
       local dm_target_item
       dm_target_item="${target_names[i]}"
       if [ -n "${dm_target_item}" ]; then
-         "${MYDIR}/dm-reproducible-buildinfo" --target "${dm_target_item}" --image "${file_item}"
+         "${dm_prepare_release_dir}/dm-reproducible-buildinfo" --target "${dm_target_item}" --image "${file_item}"
          sign_and_verify "${file_item}.dm-buildinfo"
       fi
    done
