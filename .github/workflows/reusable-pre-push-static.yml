@@ -3,7 +3,8 @@
 
 ## AI-Assisted
 
-## Reusable workflow: CI mirror of agents/pre-push-static.sh.
+## Reusable workflow: CI mirror of the pre-push-static gate (which now
+## ships in dist-ai as usr/bin/pre-push-static).
 ##
 ## Runs the unified static-checks gate developers run locally as
 ## .git/hooks/pre-push. Local hook installation is opt-in per
@@ -11,8 +12,8 @@
 ## hook misses (developers who didn't install it, AI sessions that
 ## didn't read the docs, environments lacking pre-commit-hooks).
 ##
-## Checks enforced (see agents/pre-push-static.sh head comment for
-## the authoritative list):
+## Checks enforced (see dist-ai's usr/bin/pre-push-static head comment
+## for the authoritative list):
 ##   - bash -n on changed shell scripts
 ##   - shellcheck --external-sources on the same set
 ##   - R-001 ASCII on files + commit-range messages
@@ -60,10 +61,10 @@ jobs:
 
     ## Fork-PR guard: a no-op unless the caller routes pull_request
     ## events into us, in which case it blocks PRs from forks. The
-    ## dogfooding arm below checks out developer-meta-files at
-    ## github.sha when the caller IS developer-meta-files - a fork
-    ## PR there would mean attacker-controlled gate-script content
-    ## runs in the runner. Same-repo branch PRs still run; those go
+    ## dogfooding arm below checks out dist-ai at github.sha when the
+    ## caller IS dist-ai - a fork PR there would mean attacker-controlled
+    ## gate-script content runs in the runner. Same-repo branch PRs
+    ## still run; those go
     ## through code review (members all have write) and are trusted
     ## by the threat model in agents/security.md. Matches the guard
     ## on reusable-bandit/codeql/scorecard/cppcheck. Closes CodeQL
@@ -89,6 +90,10 @@ jobs:
       ## BASE_REF / JOB_STATUS). The job-level fork-PR guard above is
       ## the actual mitigation for actions/untrusted-checkout.
       DMF_REF: ${{ github.repository == 'org-ai-assisted/developer-meta-files' && github.sha || 'master' }}
+      ## Dogfood ref for the gate script, which now lives in dist-ai: the
+      ## caller's commit when dist-ai is its own caller (so a PR that
+      ## modifies pre-push-static gets exercised), 'master' otherwise.
+      DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
     steps:
       - name: Install dependencies (apt only)
         ## R-100: 4 lines, no control flow -- inline is acceptable.
@@ -106,7 +111,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Checkout developer-meta-files (gate script)
+      - name: Checkout developer-meta-files (ci/step-summary-emit.sh)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
@@ -115,9 +120,18 @@ jobs:
           path: .github/dmf
           persist-credentials: false
 
-      - name: Run pre-push-static.sh
+      - name: Checkout dist-ai (gate script)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        run: ./.github/dmf/agents/pre-push-static.sh "${BASE_REF}"
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/dist-ai
+          ref: ${{ env.DIST_AI_REF }}
+          path: .github/dist-ai
+          persist-credentials: false
+
+      - name: Run pre-push-static
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        run: ./.github/dist-ai/usr/bin/pre-push-static "${BASE_REF}"
 
       - name: Emit step summary
         if: always()

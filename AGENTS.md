@@ -4,13 +4,13 @@ Index for AI tools. Read only the file relevant to your task.
 
 ## Before any push (everyone)
 
-Run the static gate. One-shot:
+Run the static gate (ships in dist-ai as `pre-push-static`). One-shot:
 
-    agents/pre-push-static.sh origin/master
+    pre-push-static origin/master
 
-Or install once and forget:
+Or install once and forget (dist-ai ships `pre-push-static` on PATH):
 
-    ln -s ../../agents/pre-push-static.sh .git/hooks/pre-push
+    ln -s /usr/bin/pre-push-static .git/hooks/pre-push
 
 It catches R-001 ASCII (commit messages too), `bash -n`,
 `shellcheck -x`, Tier-1 single-grep rules from

@@ -22,7 +22,7 @@ only. No smart quotes, em dashes, zero-width spaces, emoji.
 Why: AI tools reflexively render text with cosmetic unicode (U+2014 em
 dash, U+2192 right-arrow); strip them. ASCII-only files make
 `LC_ALL=C grep -PlI '[^\x00-\x7F]'` a useful pre-push gate. The
-runnable gate [`agents/pre-push-static.sh`](pre-push-static.sh)
+runnable gate `pre-push-static` (ships in dist-ai)
 applies that grep to both changed files and the commit-range message;
 install it as `.git/hooks/pre-push` to make R-001 violations
 impossible to push.
@@ -507,7 +507,7 @@ when the shared pre-flight already covers it.
 **R-093: Exception for `.github/actions/install-deps/install-helper-scripts.sh`.**
 That script runs BEFORE helper-scripts is installed, so it falls
 back to plain `command -v`. The same exception applies to
-`agents/pre-push-static.sh`, which must run as a bare git hook
+`pre-push-static` (dist-ai), which must run as a bare git hook
 without sourcing helper-scripts.
 
 
@@ -762,6 +762,12 @@ Why: obvious comments dilute attention from the ones that matter;
 reviewers learn to skim past them and miss the rare comment
 documenting a real gotcha. Be concise: if removing the comment
 wouldn't confuse a future reader, don't write it.
+
+Tooling: the `comments-audit` heuristic (ships in dist-ai on PATH; run
+`comments-audit <repo_root>` or `comments-audit --files FILE...`) flags
+likely R-151 candidates. The `pre-push-static` gate runs it over the
+changed files as an ADVISORY -- it prints candidates but never fails the
+gate, because the heuristic has false positives and a human decides.
 
 
 **R-152: Match the file's existing comment style.** Before
