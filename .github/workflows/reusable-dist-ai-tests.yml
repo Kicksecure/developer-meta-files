@@ -95,13 +95,13 @@ jobs:
 
       - name: Checkout component (code under test)
         ## https://github.com/actions/checkout/releases/tag/v6.0.2
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           path: component
           persist-credentials: false
 
       - name: Checkout dist-ai (test suites)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/dist-ai
           ref: ${{ inputs.dist-ai-ref }}
@@ -109,7 +109,7 @@ jobs:
           persist-credentials: false
 
       - name: Checkout developer-meta-files (summary script)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: master
@@ -125,7 +125,7 @@ jobs:
 
       - name: Checkout helper-scripts (for suites that drive its tools)
         if: steps.cfg.outputs.helper_scripts == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/helper-scripts
           ref: master
