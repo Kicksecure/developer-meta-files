@@ -1,3 +1,372 @@
+commit 1ec097168dae28cbb94bafc88eb6d01234bbbb41
+Merge: 7160a29a dc3a61bf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Thu Jul 23 06:48:39 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/master'
+
+commit dc3a61bf24f9575328767e9ee75a24afe5de191a
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 22 15:22:42 2026 -0400
+
+    dm-prepare-release: fix dm-reproducible-buildinfo path clobbered by variables (#161)
+
+    help-steps/variables reassigns MYDIR, so the buildinfo call resolved to
+    help-steps/dm-reproducible-buildinfo instead of the submodule usr/bin/
+    -> exit 127, failing every real ISO build in 5200_prepare-release (build
+    a/b died ~54min in; dry-run never hits this path). Capture the script
+    dir before the variables source, matching the signing-lib.bsh fix.
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+
+    ## Summary by CodeRabbit
+
+    * **Bug Fixes**
+    * Improved reproducible build information generation by ensuring the
+    correct release preparation tools are referenced, regardless of later
+    environment or directory changes.
+
+
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    Co-authored-by: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+
+commit 093dcdc06a7efe1534d1e3c9e2825f9e3a6378e1
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 22 10:48:15 2026 -0400
+
+    reproducibility: consolidate dm-reproducible-* tooling + shared signing lib (#148)
+
+    Consolidates the image-reproducibility tooling into this package next to
+    `dm-prepare-release`, so it shares the release signing code (the design
+    ask: reuse dm-prepare-release's verify functions, do not hand-roll
+    sq/signify).
+
+    ## What
+    - **`usr/libexec/developer-meta-files/signing-lib.bsh`** - the
+    sign/verify functions factored VERBATIM out of `dm-prepare-release`
+    (behaviour unchanged, 1000 MB signify skip preserved) +
+    `verify_and_check` (verify-only, for the downstream verifier).
+    `dm-prepare-release` now sources it.
+    -
+    **`usr/bin/dm-reproducible-{compare,compare-artifacts,buildinfo,verify}`**
+    + **`usr/share/developer-meta-files/reproducible-allowlist.conf`** -
+    moved from derivative-maker (`help-steps/` + `ci/`), `dm-` prefixed,
+    cross-references rewired to the installed layout.
+    - **`dm-reproducible-verify`** sources the lib and reuses
+    `verify_and_check` (sq + signify) instead of hand-rolled signify; fixes
+    the pubkey default to `variables`' `$HOMEVAR/.signify/keyname.pub`.
+    - **`dm-prepare-release`** generates `<image>.dm-buildinfo` per
+    reproducible image target (virtualbox/raw/qcow2/iso) and signs it with
+    the same `sign_and_verify`.
+
+    The buildinfo records only rebuild parameters (no checksum - the signed
+    `.sha512sums` covers integrity) and uses the `.dm-buildinfo` extension
+    so it never shadows a future Debian image `.buildinfo`.
+
+    ## Pairs with
+    The derivative-maker PR that removes the moved files and points
+    `5100_create-report` + `local-reproducible.yml` at these
+    `dm-reproducible-*` commands. Land this first (the parent references
+    these paths).
+
+    ## Verified
+    signing-lib signify round-trip through the lib; buildinfo Deb822
+    emission; verify sources the lib, parses, and rejects a tampered
+    buildinfo; all scripts shellcheck + `bash -n` + developer-meta-files
+    static gate clean. End-to-end (real release signing + rebuild) needs the
+    build environment.
+
+    Generated with Claude Code.
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+    ## Summary by CodeRabbit
+
+    - **New Features**
+    - Added signed reproducible buildinfo generation for reproducible
+    derivative images.
+    - Added reproducibility tools: fetch published images with sidecars,
+    locally verify reproducibility, and compare artifacts with diffoscope
+    using an allowlist.
+    - Added automated artifact selection/comparison for
+    ISO/RAW/QCOW2/VirtualBox/UTM images.
+    - **Bug Fixes**
+    - Release preparation now generates and signs buildinfo for the correct
+    reproducible targets.
+    - **Documentation**
+    - Added allowlist configuration and policy documentation for diffoscope
+    exclusions.
+    - **Maintenance**
+    - Added a utility to bump the pinned frozen Debian snapshot to keep
+    reproducible builds aligned.
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    ---------
+
+    Co-authored-by: claude (dev74 3cdbae8e-30ec-412d-8ce2-ba63d1c9b6af) <noreply@anthropic.com>
+
+commit 21eb171ddc46e65851ee607940832d6c19acad4e
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 22 10:39:26 2026 -0400
+
+    Move the pre-push-static style gate to dist-ai (#159)
+
+    ## What
+
+    The bash style **gate script** moves to dist-ai
+    (`usr/bin/pre-push-static`, shipped by the new `pre-push-static`
+    package). This repo keeps the **rule docs** it enforces
+    (`agents/bash-style-guide.md`, `pre-push-checklist.md`, etc.).
+
+    - Remove `agents/pre-push-static.sh`.
+    - `reusable-pre-push-static.yml`: check out **dist-ai** for the gate
+    (new `DIST_AI_REF` dogfood ref) and run
+    `./.github/dist-ai/usr/bin/pre-push-static`; the developer-meta-files
+    checkout stays only for `ci/step-summary-emit.sh`.
+    - `AGENTS.md` / `pre-push-checklist.md` / `bash-style-guide.md`: point
+    at `pre-push-static` (installed CLI) instead of the in-tree
+    `agents/pre-push-static.sh`.
+
+    ## Paired changes (already on their masters / repointed)
+
+    - **dist-ai** (`9f4dcfc`, master): adds `usr/bin/pre-push-static` + the
+    `pre-push-static` package, updates the gate's self-exemption paths, and
+    repoints its `test_pre_push_static_style_rules.sh` at the in-tree gate
+    (no longer needs `DMF_REPO`).
+    - **dist-ai-config**: the commit-gate hook (`dmf-gate.py`) + the `style`
+    skill repointed at the dist-ai gate.
+
+    ## Review note
+
+    The reusable-workflow change affects **every consumer's pre-push CI**
+    and can't be fully exercised locally (it's a dual-checkout: dmf for
+    `step-summary-emit`, dist-ai for the gate). Worth a careful look at the
+    two checkout steps + the `DIST_AI_REF` dogfood. The relocated gate was
+    dogfooded locally (runs, self-exemption intact, passes on this PR's own
+    diff).
+
+    Co-Authored-By: Claude Opus 4.8
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+    ## Summary by CodeRabbit
+
+    - **New Features**
+    - The pre-push static gate is now run via `dist-ai` tooling and invoked
+    using the `pre-push-static` command on PATH.
+    - CI can select which `dist-ai` ref to use via `DIST_AI_REF`, and the
+    shared gate now runs from the `dist-ai` source.
+
+    - **Documentation**
+    - Updated push/hook instructions in contributor guidance, the Bash style
+    guide, and the pre-push checklist to reference `pre-push-static
+    (dist-ai)`.
+
+    - **Chores**
+    - Removed the old repository-local pre-push static gate script and
+    switched all references accordingly.
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    ---------
+
+    Co-authored-by: claude (dev100 03987f25-26a2-4e00-807f-e46c67d5d062) <noreply@anthropic.com>
+
+commit 0c11332657abdff8e3b8e5c7794f162fd80a45dc
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Wed Jul 22 10:20:44 2026 -0400
+
+    claude review: full port to Claude subscription OAuth token (#160)
+
+    Port claude review auth from `ANTHROPIC_API_KEY` to
+    `claude_code_oauth_token` / `CLAUDE_CODE_OAUTH_TOKEN` (Claude Max
+    subscription, from `claude setup-token`). No backward-compat. Reusable +
+    developer-meta-files' own consumer copy + the consumer-templates source.
+    Org secret `CLAUDE_CODE_OAUTH_TOKEN` is set (visibility: all).
+
+    Rollout (done alongside merge): all 8 consumer repos'
+    consumer-claude-code.yml updated to forward the OAuth secret;
+    `ANTHROPIC_API_KEY` org secret deleted.
+
+    Co-Authored-By: Claude Opus 4.8
+
+    ---------
+
+    Co-authored-by: claude (dev100 03987f25-26a2-4e00-807f-e46c67d5d062) <noreply@anthropic.com>
+
+commit 575b8615c6cb753adbc6f1815bda0e99f92a2c2a
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 19:20:02 2026 -0400
+
+    org-policy: disable GitHub Actions org-wide on SOURCE orgs (Kicksecure/Whonix) (#158)
+
+    ## What
+
+    `dm-github-org-policy` applied `ACTIONS_SCOPE`
+    (`enabled_repositories=all, allowed_actions=selected`) uniformly to
+    every org. This pivots the Actions/CI scope on **org kind**:
+
+    - **SOURCE (Kicksecure / Whonix):** disable Actions entirely, org-wide,
+    via `PUT /orgs/{org}/actions/permissions {enabled_repositories:"none"}`.
+    The canonical SOURCE repos run their own CI, not GitHub Actions; the
+    AI-assisted test + scanner CI runs on the MIRROR org. Disabling org-wide
+    also removes the fork-PR workflow-abuse surface and saves the org's
+    Actions minutes. No allowlist follow-up (allowed_actions is moot when
+    Actions are off).
+    - **MIRROR (org-ai-assisted / output-lies):** unchanged - Actions on,
+    restricted to the github-owned + verified-creators allow-list.
+
+    New `POLICY_ACTIONS_DISABLED_ORG` body in `github-policy-data.bsh`
+    parallels the existing repo-level `POLICY_ACTIONS_DISABLED` on
+    PERSON/BOT (the repo-level `enabled:false` field does not exist at org
+    scope, so the org endpoint uses `enabled_repositories:"none"`).
+
+    ## Docs
+
+    `github-policy-canonical-vs-mirror.md`: updated the CI / Actions row and
+    summary point 4 to reflect SOURCE=disabled; flagged that the
+    aspirational SOURCE "Code Quality" row is blocked while Actions are off
+    (GitHub code-scanning runs via Actions).
+
+    ## Scope / not in this PR
+
+    Live application to the real Kicksecure/Whonix orgs stays gated on an
+    admin-scoped token - `SOURCE_ORGS` is still commented out of the active
+    `ORGS` list. This lands the **definition + tests** only; the bot is a
+    read-only member on those orgs and cannot apply it live.
+
+    ## Tested
+
+    dist-ai `github-org-tools-tests` source-vs-mirror dry-run now asserts
+    SOURCE emits the org-wide-disable line and neither the `enabled=all`
+    scope nor the selected-actions allow-list, while MIRROR keeps both. Full
+    suite: 29/29 pass. (The matching test assertions ship in a dist-ai
+    commit that lands after this merges.)
+
+    Co-Authored-By: Claude Opus 4.8
+
+    <!-- This is an auto-generated comment: release notes by coderabbit.ai
+    -->
+
+    ## Summary by CodeRabbit
+
+    * **Policy Updates**
+    * GitHub Actions are now disabled by default for canonical repositories.
+    * Mirror repositories continue to run CI using an approved actions
+    allow-list.
+    * Code quality checks are blocked for canonical repositories while
+    Actions remain disabled.
+    * **Documentation**
+    * Updated the canonical-versus-mirror policy guidance to reflect the
+    revised CI behavior.
+
+    <!-- end of auto-generated comment: release notes by coderabbit.ai -->
+
+    Co-authored-by: claude (dev100 03987f25-26a2-4e00-807f-e46c67d5d062) <noreply@anthropic.com>
+
+commit b1919282768e04ca5832e7542a7770d3ec7150cf
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 11:15:35 2026 -0400
+
+    ci: retire the in-tree github-org-tools mock suite (moved to dist-ai) (#157)
+
+    The github-org-tools mock-API tests moved to the dist-ai github-org-tools-tests suite (checkout-based, via DEVELOPER_META_FILES_PATH). Remove ci/tests, ci/fixtures, the runner and local-org-tools-mock-tests.yml. Opt the consumer into helper-scripts + the needed apt packages so github-org-tools-tests AND developer-meta-files-tests actually run (both PASS in CI) instead of skipping.
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit e8492308c7960e39ef901d49421ae9e5e4dd3e53
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 10:36:11 2026 -0400
+
+    github-org tools: resolve own libs via DEVELOPER_META_FILES_PATH (#156)
+
+    The dm-github-* / github-org-* tools sourced their own libexec libs by absolute path, so they only ran installed. Prefix those source lines with "${DEVELOPER_META_FILES_PATH:-}" (mirroring the existing HELPER_SCRIPTS_PATH idiom): unset -> /usr/libexec (installed, unchanged), set -> a checkout. Foundation for moving the mock tests to dist-ai checkout-based. Full mock suite: 29 passed. Also cleared pre-existing gate debt in the touched tools (compact case arms, ;-chained returns).
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 5f0d93723601409c7ad377e5b3fe9c4abd183719
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 08:56:06 2026 -0400
+
+    dm-review-branch: scan ref names with a glob, not the reviewed ref (#155)
+
+    check-ref-names-for-unicode takes ref-name globs; passing the bare reviewed ref aborted every review with 'No refs matched' (interactive case) and, even when it matched, scanned only that one name (missing a spoofed sibling). Call it with no argument to scan all refs. Covered by the new dist-ai developer-meta-files-tests/test_dm_review_branch.sh.
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 006759c863d7d17bc489fea454dcfc156db7053d
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 08:34:15 2026 -0400
+
+    ci: move the style-gate test to the dist-ai developer-meta-files-tests suite (#154)
+
+    test_pre_push_static_style_rules moved to the dist-ai developer-meta-files-tests suite (checkout-based, resolves the gate via DMF_REPO). consumer-dist-ai-tests already runs this repo's dist-ai suites (dist-ai-tests green), so the gate test keeps gating PRs from there. The github-org-tools mock tests stay in-tree (install-based, separate migration).
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 502664b08ca36560faae9432c59c2fb1527fda33
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 08:04:08 2026 -0400
+
+    org-policy live workflows: run under org-ai-assisted, not Kicksecure (#153)
+
+    Repoint the audit+probe job-level 'if:' gate from Kicksecure/developer-meta-files to org-ai-assisted/developer-meta-files (its PAT is already org-ai-assisted-scoped; secrets live there). workflow_dispatch, read-only; only the org it runs under changes.
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 6619b55362a3862451aa2d9a97b19f94be6f91e3
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 07:55:13 2026 -0400
+
+    pre-push-static: R-051 skips a trap inside a '#' comment (gate root-fix) (#152)
+
+    Anchor the R-051 inline-trap check with ^[^#]* so a '#'-commented trap is spared (mirrors the #150 R-070 fix). Adds a test.
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 6a9543aaf921fc7068f7ed4314dcd91120f0a6ee
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 07:46:18 2026 -0400
+
+    dm-review-branch: scan ref NAMES for unicode; delegate merge-helper review (#151)
+
+    dm-review-branch now also runs check-ref-names-for-unicode (ref-name spoofing), not just check-ref-commits-for-unicode. pkg_git_diff_and_merge_branch delegates its inline review to dm-review-branch so both unicode checks run and there is one source of truth.
+
+    AI-Assisted
+
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+commit 7b22ade5ce139b5d46754cd3400b9bccc53140bf
+Author: assisted-by-ai (Bot Account) (Machine Account) <228987186+assisted-by-ai@users.noreply.github.com>
+Date:   Tue Jul 21 07:31:55 2026 -0400
+
+    pre-push-static: clear pre-existing gate debt (R-010 reprepro, R-070 comments) (#150)
+
+    R-010: add the missing shopt -s shift_verbose to the three dm-reprepro-wrapper scripts (5/6 -> 6/6 strict-mode directives). R-070 gate root-fix: the ';;' check now excludes ';;' inside '#' comments (anchored ^[^#]* plus a non-'#' char before ';;'), mirroring R-074; real spaced/jammed case arms are still caught.
+
+    Assisted-by-AI
+
+commit 7160a29ad58f185d4a2dca017ed0860de16d07fe
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Jul 21 10:34:16 2026 +0000
+
+    bumped changelog version
+
 commit c6a7fa1f9f750219abb4fcb55e52dbf3ca92ce49
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Jul 21 06:30:36 2026 -0400
