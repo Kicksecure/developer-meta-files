@@ -18,7 +18,7 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
-source /usr/libexec/developer-meta-files/github-org-lib.bsh
+source "${DEVELOPER_META_FILES_PATH:-}"/usr/libexec/developer-meta-files/github-org-lib.bsh
 ## R-082: source every helper-scripts file used directly.
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
@@ -321,8 +321,10 @@ configure_one() {
       case "${status}" in
         ## Docs document 204 only; 200 is observed in practice. Accept
         ## both.
-        204|200) [ "${verbose}" = '1' ] && \
-          log notice "actions=${actions_state} on ${target_owner}/${repo}" ;;
+        204|200)
+          [ "${verbose}" = '1' ] && \
+            log notice "actions=${actions_state} on ${target_owner}/${repo}"
+          ;;
         *)
           response_body="$(ghorg_body_of "${result}")"
           log warn "actions ${actions_state} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"
@@ -343,8 +345,10 @@ configure_one() {
       case "${status}" in
         ## Docs document 204 only; 200 is observed in practice. Accept
         ## both.
-        204|200) [ "${verbose}" = '1' ] && \
-          log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}" ;;
+        204|200)
+          [ "${verbose}" = '1' ] && \
+            log notice "workflow-perms=${workflow_perms} on ${target_owner}/${repo}"
+          ;;
         *)
           response_body="$(ghorg_body_of "${result}")"
           log warn "workflow-perms ${workflow_perms} on ${target_owner}/${repo}: HTTP ${status}: ${response_body:0:512}"

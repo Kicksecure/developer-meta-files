@@ -33,6 +33,13 @@ version_check() {
    fi
 }
 
+## Trap target (R-051): report the deliberately-kept RecommendedTBBVersions tmp
+## file on every exit path. RecommendedTBBVersions is exported before the trap is
+## registered, so it is in scope when the trap fires.
+pkg_tor_browser_version_report_tmp_file() {
+   printf '%s\n' "INFO: RecommendedTBBVersions tmp file kept for review: ${RecommendedTBBVersions}"
+}
+
 pkg_tor_browser_version_update() {
    local tbb_hardcoded_version_file tbb_hardcoded_version_alpha_file \
       tbb_stable_json_url tbb_alpha_json_url \
@@ -55,8 +62,7 @@ pkg_tor_browser_version_update() {
    ## can inspect them after a failure. Print the path on every exit
    ## path (including the early `exit 0` for "nothing to commit") so
    ## the operator can find it.
-   # shellcheck disable=SC2317
-   trap 'printf '%s\n' "INFO: RecommendedTBBVersions tmp file kept for review: ${RecommendedTBBVersions}"' EXIT
+   trap pkg_tor_browser_version_report_tmp_file EXIT
 
    pushd -- "${derivative_maker_source_code_dir}/packages/kicksecure/tb-updater"
    if ! nothing_to_commit; then

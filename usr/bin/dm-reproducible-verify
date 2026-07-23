@@ -1,0 +1,202 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Verify a LOCAL published image against a LOCAL rebuild -- image-level
+## reproducible build verification (the analogue of a Debian package rebuilder,
+## applied to the derivative's disk/ISO images).
+##
+## Operates on a LOCAL file so it does not care how the image arrived: fetched by
+## 'dm-reproducible-fetch', or copied by hand. Its reproducibility sidecars must
+## sit NEXT TO it in the same directory (as published, and as dm-reproducible-fetch
+## leaves them): '<image>.dm-buildinfo' (+ '.asc'/'.sig') and '<image>.sha512sums'
+## (+ '.asc'/'.sig'). Everything needed to reproduce is read from the signed
+## '.dm-buildinfo', so no build flags are required. This:
+##   1. verifies the '.dm-buildinfo' + '.sha512sums' signatures (sq + signify),
+##   2. checks the image against the signed sha512sum,
+##   3. rebuilds the recorded target locally and diffoscope-compares.
+##
+## The image is only ever read by diffoscope -- never executed, booted, or
+## rw-mounted. SOURCE_DATE_EPOCH derives from debian/changelog, so a rebuild from
+## the recorded Source-Commit reproduces the image; run inside the standard build
+## container so the build path is canonical (see the reproducibility docs).
+##
+## Usage:
+##   dm-reproducible-verify IMAGE_FILE [--signify-pubkey KEY] [--output REPORT] \
+##      [--skip-build]
+##
+## Exit codes:
+##   0  reproduced bit-for-bit
+##   1  differences remain -- NOT reproducible (report written)
+##   2  usage / signature / environment error
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o errtrace
+shopt -s inherit_errexit
+shopt -s shift_verbose
+
+true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
+
+## style-ok: no-has
+## Self-contained downstream verifier (runs outside a build tree), so it probes
+## for signify / sq / git with 'command -v' rather than sourcing the 'has' helper
+## from helper-scripts.
+
+error() {
+   printf '%s\n' "ERROR: $*" >&2
+   exit 2
+}
+
+MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
+## The derivative-maker source root: this submodule lives under
+## <derivative-maker>/packages/kicksecure/developer-meta-files, so five levels up
+## from usr/bin (same walk dm-prepare-release uses). Needed to run the rebuild
+## and read the source git state.
+dm_source_root="$( cd -- "${MYDIR}/../../../../.." 2>/dev/null && pwd || true )"
+
+## Reuse dm-prepare-release's exact sign/verify code -- no hand-rolled sq/signify.
+# shellcheck source=../libexec/developer-meta-files/signing-lib.bsh
+source "${MYDIR}/../libexec/developer-meta-files/signing-lib.bsh"
+
+image_file=""
+## Verification trust anchors the lib's verify_cmd_* read; defaults match
+## help-steps/variables. For a real release, provide the maintainer OpenPGP cert
+## to sq and point --signify-pubkey at the maintainer signify public key.
+signify_public_key="${signify_public_key:-${HOMEVAR:-${HOME}}/.signify/keyname.pub}"
+DEBEMAIL="${DEBEMAIL:-derivative-distribution@local-signing.key}"
+output_file=""
+skip_build="false"
+
+while [ "$#" -gt 0 ]; do
+   case "${1:-}" in
+      --signify-pubkey)
+         [ "$#" -ge 2 ] || error "--signify-pubkey requires a value."
+         signify_public_key="$2"
+         shift 2
+         ;;
+      --output)
+         [ "$#" -ge 2 ] || error "--output requires a value."
+         output_file="$2"
+         shift 2
+         ;;
+      --skip-build)
+         skip_build="true"
+         shift
+         ;;
+      -h|--help)
+         grep '^##' -- "${BASH_SOURCE[0]}" | sed 's/^## \{0,1\}//'
+         exit 0
+         ;;
+      -*)
+         error "unknown option: '$1' (run with --help)."
+         ;;
+      *)
+         [ -z "${image_file}" ] || error "unexpected extra argument: '$1'"
+         image_file="$1"
+         shift
+         ;;
+   esac
+done
+
+[ -n "${image_file}" ] || error "a local image file is required: dm-reproducible-verify IMAGE_FILE"
+[ -f "${image_file}" ] || error "image file does not exist: '${image_file}'"
+
+command -v signify-openbsd >/dev/null 2>&1 || error "signify-openbsd not found; cannot verify signatures."
+command -v sq >/dev/null 2>&1 || error "sq (Sequoia OpenPGP) not found; cannot verify signatures."
+
+## The sidecars sit next to the image in the same directory.
+image_dir="$( cd -- "$( dirname -- "${image_file}" )" && pwd )"
+image_name="$( basename -- "${image_file}" )"
+image_path="${image_dir}/${image_name}"
+buildinfo_file="${image_path}.dm-buildinfo"
+sha_file="${image_path}.sha512sums"
+
+for required in "${buildinfo_file}" "${sha_file}"; do
+   [ -f "${required}" ] || error "missing sidecar '${required}' (fetch with dm-reproducible-fetch, or copy it next to the image)."
+done
+
+## Verify signatures BEFORE trusting any recorded parameter: an unverified
+## buildinfo would let an attacker choose the rebuild inputs. Reuse the SAME
+## verification as dm-prepare-release (OpenPGP '.asc' via sq + signify '.sig'),
+## via the shared signing lib -- not a hand-rolled invocation.
+[ -f "${signify_public_key}" ] || error "signify public key not found: '${signify_public_key}' (pass --signify-pubkey)."
+printf '%s\n' "INFO: verifying buildinfo + sha512sums signatures (sq + signify)..." >&2
+verify_and_check "${buildinfo_file}" \
+   || error "buildinfo signature verification FAILED -- refusing to trust it."
+verify_and_check "${sha_file}" \
+   || error "sha512sums signature verification FAILED."
+
+## The buildinfo carries no checksum by design; the signed sha512sums covers the
+## image. Check the image against it (in its own dir, relative path).
+printf '%s\n' "INFO: checking image against the signed sha512sums..." >&2
+( cd -- "${image_dir}" && sha512sum --check --strict -- "${sha_file}" ) \
+   || error "image does not match the signed sha512sums -- corrupt or tampered."
+
+## Parse the now-trusted buildinfo (Deb822: 'Field: value').
+bi_field() {
+   local field="$1" line
+   line="$(grep -m1 -E "^${field}:[[:space:]]" -- "${buildinfo_file}" || true)"
+   printf '%s' "${line#*: }"
+}
+bi_flavor="$(bi_field Flavor)"
+bi_target="$(bi_field Target)"
+bi_type="$(bi_field Build-Type)"
+bi_arch="$(bi_field Architecture)"
+bi_freedom="$(bi_field Freedom)"
+bi_commit="$(bi_field Source-Commit)"
+
+[ -n "${bi_target}" ] || error "buildinfo has no Target field."
+printf '%s\n' "INFO: verified buildinfo: flavor=${bi_flavor} target=${bi_target} type=${bi_type} arch=${bi_arch} freedom=${bi_freedom} commit=${bi_commit}" >&2
+
+## Warn if the local source is not at the recorded commit -- a rebuild from a
+## different tree will not reproduce.
+if [ -n "${dm_source_root}" ] && command -v git >/dev/null 2>&1 && git -C "${dm_source_root}" rev-parse --git-dir >/dev/null 2>&1; then
+   head_commit="$(git -C "${dm_source_root}" rev-parse HEAD 2>/dev/null || printf '%s' unknown)"
+   case "${bi_commit}" in
+      "${head_commit}"|unknown|'')
+         ;;
+      *)
+         printf '%s\n' "WARNING: local HEAD (${head_commit}) != buildinfo Source-Commit (${bi_commit}); check out the matching commit for a valid comparison." >&2
+         ;;
+   esac
+fi
+
+## Rebuild the recorded target locally (reproduce inside the standard container
+## for a canonical build path).
+build_out="${binary_build_folder_dist:-${HOMEVAR:-${HOME}}/derivative-binary}"
+if [ "${skip_build}" = "true" ]; then
+   printf '%s\n' "INFO: --skip-build set; comparing against the existing build under '${build_out}'." >&2
+else
+   [ -n "${dm_source_root}" ] && [ -x "${dm_source_root}/derivative-maker" ] || error "derivative-maker source not found at '${dm_source_root}'; run from a derivative-maker source tree (or use --skip-build)."
+   build_cmd=( "${dm_source_root}/derivative-maker" --flavor "${bi_flavor}" --target "${bi_target}" --arch "${bi_arch}" )
+   [ -z "${bi_type}" ]    || [ "${bi_type}" = unknown ]    || build_cmd+=( --type "${bi_type}" )
+   [ -z "${bi_freedom}" ] || [ "${bi_freedom}" = unknown ] || build_cmd+=( --freedom "${bi_freedom}" )
+   printf '%s\n' "INFO: rebuilding locally: ${build_cmd[*]}" >&2
+   "${build_cmd[@]}" || error "local rebuild failed."
+fi
+
+## Compare the local image against the rebuild (diffoscope). dir-a is the image's
+## own directory; the comparator finds the image by target extension.
+compare_args=( --target "${bi_target}" --dir-a "${image_dir}" --dir-b "${build_out}" )
+[ -z "${output_file}" ] || compare_args+=( --output "${output_file}" )
+
+verify_exit="0"
+"${MYDIR}/dm-reproducible-compare-artifacts" "${compare_args[@]}" || verify_exit="$?"
+
+case "${verify_exit}" in
+   0)
+      printf '%s\n' "INFO: REPRODUCIBLE -- the published image matches the local rebuild." >&2
+      ;;
+   1)
+      printf '%s\n' "INFO: NOT reproducible -- differences remain${output_file:+ (report: ${output_file})}." >&2
+      ;;
+   *)
+      printf '%s\n' "ERROR: verification could not complete (exit ${verify_exit})." >&2
+      ;;
+esac
+exit "${verify_exit}"

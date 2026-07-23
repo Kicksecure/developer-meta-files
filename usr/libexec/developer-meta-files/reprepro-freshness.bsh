@@ -1,0 +1,69 @@
+#!/bin/bash
+
+## Copyright (C) 2012 - 2025 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+# shellcheck shell=bash
+
+## style-ok: no-strict -- sourced library; a strict-mode preamble would leak
+## errexit/nounset into the caller's shell.
+
+## Reusable per-package rebuild detection: is a package already published in the
+## local reprepro repository at its current 'debian/changelog' version? Uses the
+## same changelog-version-vs-published-version mechanism as
+## 'dm-packaging-helper-script' (dpkg --compare-versions against the source
+## version reprepro reports), so a build can skip packages that have not been
+## version-bumped since the last build. Meant to be sourced; defines no strict
+## 'set' preamble so it inherits the caller's shell options.
+
+## Echo the source version currently published for a package in the local
+## reprepro repository, or nothing if the package is absent.
+##   dm_reprepro_published_source_version <apt_codename> <source_pkg> <repository_name>
+## 'derivative_repository_name' selects the reprepro folder; it is exported only
+## inside the command substitution's subshell so it does not leak to the caller.
+dm_reprepro_published_source_version() {
+   local apt_codename source_pkg repository_name query_output source_line
+   local -a fields
+   apt_codename="$1"
+   source_pkg="$2"
+   repository_name="$3"
+
+   query_output="$(
+      export derivative_repository_name="$repository_name"
+      "$dist_developer_meta_files_folder/usr/bin/dm-reprepro-wrapper" \
+         --architecture source list "$apt_codename" "$source_pkg" 2>/dev/null || true
+   )"
+
+   ## reprepro reports e.g.: local|main|source: sdwdate 1.2.3-1
+   source_line="$(printf '%s\n' "$query_output" | grep -- "source:")" || true
+   [ -n "$source_line" ] || return 0
+   read -r -a fields <<< "$source_line"
+   printf '%s\n' "${fields[-1]}"
+}
+
+## Decide whether a package source tree needs (re)building.
+##   dm_package_needs_rebuild <package_source_dir> <apt_codename> <repository_name>
+## Return 0 (needs rebuild) when the package is absent from the repository or its
+## changelog version differs from the published one. Return 1 (skip) only when
+## the published source version exactly equals the changelog version.
+dm_package_needs_rebuild() {
+   local package_source_dir apt_codename repository_name
+   local changelog_version source_pkg published_version
+   package_source_dir="$1"
+   apt_codename="$2"
+   repository_name="$3"
+
+   changelog_version="$(dpkg-parsechangelog --show-field Version --file "$package_source_dir/debian/changelog")"
+   source_pkg="$(dpkg-parsechangelog --show-field Source --file "$package_source_dir/debian/changelog")"
+
+   published_version="$(dm_reprepro_published_source_version "$apt_codename" "$source_pkg" "$repository_name")"
+
+   if [ -n "$published_version" ] && dpkg --compare-versions "$changelog_version" eq "$published_version"; then
+      true "INFO: skip $source_pkg: version $changelog_version already published."
+      return 1
+   fi
+   true "INFO: rebuild $source_pkg: changelog $changelog_version, published ${published_version:-none}."
+   return 0
+}

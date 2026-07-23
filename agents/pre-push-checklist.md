@@ -4,21 +4,21 @@ Skim before every push.
 
 * Scope: any change to bash script, or `agents/`.
 * Bash style: [agents/bash-style-guide.md](bash-style-guide.md).
-* Mechanical gate: [agents/pre-push-static.sh](pre-push-static.sh).
+* Mechanical gate: `pre-push-static` (ships in dist-ai; on PATH once installed).
 
 The list is grouped by phase. Skip items that don't apply to your
 diff; don't skip a phase. Each item cites the relevant rule.
 
 ## Static checks
 
-    [ ] Run pre-push-static.sh; it enforces all four items in
+    [ ] Run pre-push-static; it enforces all four items in
         one call: bash -n, shellcheck --external-sources,
         ASCII-only files (R-001), and ASCII-only commit-range
         message (R-001).
 
 Wire as a hook so the gate is unmissable:
 
-    ln -sf ../../agents/pre-push-static.sh .git/hooks/pre-push
+    ln -sf /usr/bin/pre-push-static .git/hooks/pre-push
 
 ## Style spot-check (touched code only)
 
@@ -83,11 +83,11 @@ Wire as a hook so the gate is unmissable:
 
     [ ] Every new file from scratch has 'AI-Assisted' marker
         (R-002). NB: R-001 (no emoji / smart quotes / em dashes
-        in commit messages) is enforced by pre-push-static.sh
+        in commit messages) is enforced by pre-push-static
         on the commit-range message; no manual sub-item.
     [ ] debian/changelog NOT hand-edited: it is genmkfile-owned
         (bump via 'genmkfile deb-chl-bumpup-major', which commits
         with the 'bumped changelog version' subject). An
         intentional manual edit needs a 'Changelog-manual-ok:
-        <reason>' commit trailer; pre-push-static.sh enforces
+        <reason>' commit trailer; pre-push-static enforces
         this (hard fail) on the commit-range.

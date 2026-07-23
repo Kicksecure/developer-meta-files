@@ -6,6 +6,16 @@
 ## Per-repo parameters for developer-meta-files consumer workflows, read at
 ## workflow runtime.
 dist-ai-tests:
+  ## github-org-tools-tests drives jq-using tools and validates workflow YAML
+  ## (python3-yaml); test_shellcheck_clean needs shellcheck. These are hard
+  ## requirements (the tests error, not skip, without them).
+  apt-packages: "jq python3-yaml shellcheck safe-rm curl"
+  ## The developer-meta-files-tests (style gate, dm-review-branch) and
+  ## github-org-tools-tests suites drive this repo's tools, which source
+  ## helper-scripts (sanitize-string, has.sh, log_run_die) via
+  ## HELPER_SCRIPTS_PATH; check that repo out so the suites run instead of
+  ## skipping.
+  helper-scripts: true
   ## git-meld-tests needs the full helper-scripts runtime + GUI-viewer work
   ## that is landing in PR #136; skip it until that merges so dm-virtualbox
   ## still gates PRs. Remove this skip once git-meld-tests passes.

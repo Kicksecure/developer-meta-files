@@ -1,8 +1,0 @@
-[
-  {"name":"derivative-maker","archived":false,"fork":false,"private":false},
-  {"name":"helper-scripts","archived":false,"fork":false,"private":false},
-  {"name":"old-archived","archived":true,"fork":false,"private":false},
-  {"name":"some-fork","archived":false,"fork":true,"private":false},
-  {"name":"private-thing","archived":false,"fork":false,"private":true}
-]
-HTTP_STATUS:200

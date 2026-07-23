@@ -36,14 +36,15 @@ name: github-org tools (live)
 on:
   workflow_dispatch:
 
-## Upstream-only gate. The literal "Kicksecure/developer-meta-files"
-## in the job-level `if:` below prevents forks (and the
-## org-ai-assisted mirror) from running this workflow's upstream-only
-## paths - the upstream-only secret(s) referenced below (vault
-## password / Coverity token / GHORG_AUDIT_TOKEN) are only set on the
-## canonical repo. A fork would either see those secrets as empty and
-## fail mid-flight, or - worse - run the heavy ops with its own
-## arbitrary-named secret.
+## org-ai-assisted-only gate. The literal "org-ai-assisted/developer-meta-files"
+## in the job-level `if:` below pins this workflow to our CI home and
+## prevents any other repo (including the Kicksecure upstream mirror)
+## from running this workflow's secret-dependent paths - the secret(s)
+## referenced below (Coverity token / GHORG_AUDIT_TOKEN, an
+## org-ai-assisted-scoped read-only PAT) are only set on
+## org-ai-assisted/developer-meta-files. Another repo would either see
+## those secrets as empty and fail mid-flight, or - worse - run the
+## heavy ops with its own arbitrary-named secret.
 ##
 ## The canonical owner/repo is inlined in the `if:` rather than
 ## hoisted to a workflow-level `env:` constant because GitHub Actions
@@ -66,10 +67,10 @@ jobs:
     container:
       image: debian:trixie
 
-    ## Skip on forks so a fork's workflow can never use the upstream
+    ## Pin to org-ai-assisted so no other repo's workflow can use the
     ## secret (GitHub also blocks this by default for forked PRs, but
     ## the explicit guard documents intent).
-    if: ${{ github.repository == 'Kicksecure/developer-meta-files' }}
+    if: ${{ github.repository == 'org-ai-assisted/developer-meta-files' }}
 
     steps:
       - name: Checkout developer-meta-files

@@ -1,0 +1,72 @@
+#!/bin/bash
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## style-ok: no-strict -- sourced function library; the strict 'set'/'shopt'
+## preamble belongs to the executables that source this, not here.
+
+## Single source of truth for the RELEASED-artifact naming per build target,
+## shared by dm-reproducible-fetch (constructs the download URL) and
+## dm-reproducible-compare-artifacts (locates the released image to diff) so the
+## two can never drift.
+##
+## raw and qcow2 are released COMPRESSED, so their extension carries the
+## '.libvirt.xz' suffix: comparing '*.raw' / '*.qcow2' would pick the uncompressed
+## build INTERMEDIATE, not the artifact users actually download (and would miss any
+## non-determinism the xz step introduces). The extension is therefore matched
+## with its full compound suffix.
+##
+## Both functions take the caller's OUTPUT variable name as $1 (a literal, trusted
+## internal name at every call site, so no check_variable_name guard) and the
+## build target as $2, and return 1 on an unknown target.
+
+## Set $1 to the released-image filename extension for target $2.
+dm_reproducible_target_ext() {
+   local -n ext_ref="$1"
+   case "$2" in
+      iso)
+         ext_ref="iso"
+         ;;
+      virtualbox)
+         ext_ref="ova"
+         ;;
+      raw)
+         ext_ref="raw.libvirt.xz"
+         ;;
+      qcow2)
+         ext_ref="qcow2.libvirt.xz"
+         ;;
+      utm)
+         ext_ref="utm"
+         ;;
+      *)
+         return 1
+         ;;
+   esac
+}
+
+## Set $1 to the download-URL path segment (<url_part>) for target $2. Covers the
+## targets published for download (utm is not, so it is absent here).
+dm_reproducible_target_url_part() {
+   local -n url_part_ref="$1"
+   case "$2" in
+      iso)
+         url_part_ref="iso"
+         ;;
+      virtualbox)
+         url_part_ref="ova"
+         ;;
+      raw)
+         url_part_ref="raw"
+         ;;
+      qcow2)
+         url_part_ref="libvirt"
+         ;;
+      *)
+         return 1
+         ;;
+   esac
+}

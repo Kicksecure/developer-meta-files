@@ -1573,11 +1573,12 @@ pkg_git_diff_and_merge_branch() {
    fi
 
    printf '%s\n' "${batch_current_package_reponame}"
-   check-ref-commits-for-unicode "${origin_ref}"
-   dry_run_or_run git --no-pager diff -C --stat ..."${origin_ref}"
-   dry_run_or_run git --no-pager diff -C ..."${origin_ref}"
-   dry_run_or_run git-meld ..."${origin_ref}"
-   dry_run_or_run git --no-pager kdiff -C ..."${origin_ref}"
+   ## Delegate the review to the single-source-of-truth reviewer instead of
+   ## duplicating it here. dm-review-branch runs BOTH unicode checks (commit
+   ## content via check-ref-commits-for-unicode AND the ref name via
+   ## check-ref-names-for-unicode) plus the range log/diff. It is read-only, so
+   ## it runs unconditionally (not dry-run gated); only the merge below is.
+   dm-review-branch "${origin_ref}"
 
    if [ "${origin_branch}" = "${upstream_repo}/master" ]; then
       ## Real upstream master (github-whonix / github-kicksecure): a

@@ -17,11 +17,11 @@ shopt -s inherit_errexit
 shopt -s shift_verbose
 
 # shellcheck source=../libexec/developer-meta-files/github-org-lib.bsh
-source /usr/libexec/developer-meta-files/github-org-lib.bsh
+source "${DEVELOPER_META_FILES_PATH:-}"/usr/libexec/developer-meta-files/github-org-lib.bsh
 # shellcheck source=../libexec/developer-meta-files/github-policy-lib.bsh
-source /usr/libexec/developer-meta-files/github-policy-lib.bsh
+source "${DEVELOPER_META_FILES_PATH:-}"/usr/libexec/developer-meta-files/github-policy-lib.bsh
 # shellcheck source=../libexec/developer-meta-files/github-policy-data.bsh
-source /usr/libexec/developer-meta-files/github-policy-data.bsh
+source "${DEVELOPER_META_FILES_PATH:-}"/usr/libexec/developer-meta-files/github-policy-data.bsh
 ## R-082: source every helper-scripts file used directly.
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
@@ -224,8 +224,24 @@ apply_org_policy() {
 
    policy_apply_org "${org}" WORKFLOW_PERMS
 
-   policy_apply_org "${org}" ACTIONS_SCOPE
-   policy_apply_org "${org}" ACTIONS_ALLOWLIST ENDPOINT
+   ## Actions / CI scope pivots on org kind:
+   ##   SOURCE (Kicksecure / Whonix): disable Actions entirely,
+   ##     org-wide (enabled_repositories=none). The canonical SOURCE
+   ##     repos run their own CI, not GitHub Actions; the AI-assisted
+   ##     test + scanner CI runs on the MIRROR org. Disabling org-wide
+   ##     also removes the fork-PR workflow-abuse surface and saves
+   ##     Actions minutes. No allowlist follow-up: allowed_actions is
+   ##     moot when Actions are off.
+   ##   MIRROR (org-ai-assisted / output-lies): Actions on, restricted
+   ##     to the github-owned + verified-creators allowlist - it is
+   ##     where AI-assisted dev + CI run.
+   ## See agents/github-policy-canonical-vs-mirror.md.
+   if [ "${kind}" = 'source' ]; then
+      policy_apply_org "${org}" ACTIONS_DISABLED_ORG
+   else
+      policy_apply_org "${org}" ACTIONS_SCOPE
+      policy_apply_org "${org}" ACTIONS_ALLOWLIST ENDPOINT
+   fi
 
    policy_apply_org "${org}" MEMBERS
 

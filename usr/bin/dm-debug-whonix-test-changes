@@ -28,6 +28,10 @@ trap "build_all_error_handler" ERR
 ## XXX: hardcoded path
 [ -v derivative_maker_main_source_code ] || derivative_maker_main_source_code="$HOME/derivative-maker"
 
+## derivative-maker requires an explicit --freshness. Debug wrapper: default all
+## invocations below to 'current'; override with dist_build_apt_freshness=frozen.
+[ -v dist_build_apt_freshness ] || export dist_build_apt_freshness="current"
+
 pushd -- "$derivative_maker_main_source_code"
 
 ./derivative-maker --flavor whonix-gateway-lxqt "$@"

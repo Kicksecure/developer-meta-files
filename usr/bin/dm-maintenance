@@ -28,4 +28,8 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 "$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-timesanitycheck-update"
 
+## Bump the pinned snapshot.debian.org timestamp so '--freshness frozen' reproducible builds track a
+## recent valid snapshot. Leaves a reviewable diff in build_sources/ to commit.
+"$HOME/derivative-maker/packages/kicksecure/developer-meta-files/usr/bin/dm-update-frozen-snapshot"
+
 true "$0: OK."

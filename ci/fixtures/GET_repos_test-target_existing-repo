@@ -1,6 +1,0 @@
-{
-  "name":"existing-repo",
-  "default_branch":"master",
-  "parent":{"full_name":"test-source/existing-repo"}
-}
-HTTP_STATUS:200

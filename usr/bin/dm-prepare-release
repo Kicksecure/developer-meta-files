@@ -19,6 +19,10 @@ true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
 
+## variables (sourced below) reassigns MYDIR; capture the dirs we need first.
+dm_prepare_release_dir="${MYDIR}"
+signing_lib_dir="${MYDIR}/../libexec/developer-meta-files"
+
 if [ "$MYDIR" = "/usr/bin" ]; then
    true "INFO: Run from: /usr/bin"
    ## XXX: hardcoded path
@@ -30,6 +34,10 @@ fi
 
 source "$derivative_maker_source_code_dir/help-steps/pre"
 source "$derivative_maker_source_code_dir/help-steps/variables"
+
+## Release signing + verification helpers (shared with dm-reproducible-verify).
+# shellcheck source=../libexec/developer-meta-files/signing-lib.bsh
+source "${signing_lib_dir}/signing-lib.bsh"
 
 cd -- "${dist_binary_build_folder}"
 
@@ -533,102 +541,57 @@ Please donate! [C]
    sync
 }
 
-sign_cmd_openpgp() {
-   local base_name
-   base_name="$(basename -- "$1")"
-   test -f "$1"
-   test -n "${DEBEMAIL:-}"
-   safe-rm -f -- "$2"
-   ## OpenPGP signatures do not authenticate filenames by default, therefore add
-   ## the name of the file as a OpenPGP notation so at least users that look
-   ## at OpenPGP notations have a chance to detect if file names have been
-   ## tampered with.
-   sq sign --signature-notation "file@name" "$base_name" --signer-email "$DEBEMAIL" --signature-file="$2" -- "$1"
-   test -f "$2"
-}
-
-sign_cmd_signify() {
-   ## To create a key for signify-openbsd, see:
-   ## derivative-maker help-steps/signing-key-create
-
-   ## Big file are unfortunately unsupported by signify.
-   if [ "$file_size_mb" -ge "1000" ]; then
-      return 0
-   fi
-   ## https://forums.whonix.org/t/signify-openbsd/7842
-   signify-openbsd -S -s "${signify_private_key}" -m "$1" -x "$2"
-   ## Sanity test.
-   test -f "$2"
-}
-
-verify_cmd_openpgp() {
-   test -f "$1"
-   test -f "$2"
-   test -n "${DEBEMAIL:-}"
-   sq verify --signer-email "$DEBEMAIL" --signature-file="$2" -- "$1"
-}
-
-verify_cmd_signinfy() {
-   ## Match the threshold in sign_cmd_signify; otherwise files in the
-   ## 100..999 MB band would be signed but never re-verified, and any
-   ## bug in signing would go undetected.
-   if [ "$file_size_mb" -ge "1000" ]; then
-      return 0
-   fi
-   signify-openbsd -V -p "${signify_public_key}" -m "$1" -x "$2"
-}
-
-sign_and_verify() {
-   file_size_bytes=$(stat -c%s "$1")
-   # Convert bytes to megabytes
-   file_size_mb=$(printf '%s\n' "scale=0; $file_size_bytes / 1024 / 1024" | bc)
-
-   sign_cmd_openpgp "${1}" "${1}.asc"
-   verify_cmd_openpgp "${1}" "${1}.asc"
-   sign_cmd_signify "${1}" "${1}.sig"
-   verify_cmd_signinfy "${1}" "${1}.sig"
-}
 
 signatures_create() {
-   local var_names file_list upload_url_part
+   local var_names file_list upload_url_part target_names
    var_names=()
    file_list=()
    upload_url_part=()
+   ## Derivative target per artifact for the reproducibility buildinfo; empty =
+   ## no buildinfo (installer / windows / source are not reproducible-image targets).
+   target_names=()
 
    if [ "${dist_build_virtualbox:-}" = "true" ]; then
       var_names+=("binary_image_ova_file")
       file_list+=("${binary_image_ova_file}")
       upload_url_part+=("ova")
+      target_names+=("virtualbox")
    fi
    if [ "${dist_build_raw:-}" = "true" ]; then
       var_names+=("libvirt_target_raw_xz_archive_file")
       file_list+=("${libvirt_target_raw_xz_archive_file}")
       upload_url_part+=("raw")
+      target_names+=("raw")
    fi
    if [ "${dist_build_qcow2:-}" = "true" ]; then
       var_names+=("libvirt_target_qcow2_xz_archive_file")
       file_list+=("${libvirt_target_qcow2_xz_archive_file}")
       upload_url_part+=("libvirt")
+      target_names+=("qcow2")
    fi
    if [ "${dist_build_iso:-}" = "true" ]; then
       var_names+=("binary_image_iso_file")
       file_list+=("${binary_image_iso_file}")
       upload_url_part+=("iso")
+      target_names+=("iso")
    fi
    if [ "${dist_build_installer_dist:-}" = "true" ]; then
       var_names+=("binary_image_installer_dist_file")
       file_list+=("${binary_image_installer_dist_file}")
       upload_url_part+=("dist-installer-cli")
+      target_names+=("")
    fi
    if [ "${dist_build_windows_installer:-}" = "true" ]; then
       var_names+=("binary_image_windows_installer_file")
       file_list+=("${binary_image_windows_installer_file}")
       upload_url_part+=("windows")
+      target_names+=("")
    fi
    if [ "${dist_build_source_archive:-}" = "true" ]; then
       var_names+=("source_archive_xz_file")
       file_list+=("${source_archive_xz_file}")
       upload_url_part+=("source")
+      target_names+=("")
    fi
 
    ## Thanks to:
@@ -681,6 +644,16 @@ signatures_create() {
       sign_and_verify "${file_item}"
       sign_and_verify "${file_item}.torrent"
       sign_and_verify "${file_item}.sha512sums"
+
+      ## Reproducibility buildinfo: record the parameters needed to rebuild this
+      ## image, published next to it and signed by the SAME sign_and_verify.
+      ## Only for reproducible image targets (skip installer/windows/source).
+      local dm_target_item
+      dm_target_item="${target_names[i]}"
+      if [ -n "${dm_target_item}" ]; then
+         "${dm_prepare_release_dir}/dm-reproducible-buildinfo" --target "${dm_target_item}" --image "${file_item}"
+         sign_and_verify "${file_item}.dm-buildinfo"
+      fi
    done
 }
 
