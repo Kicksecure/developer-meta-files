@@ -106,14 +106,14 @@ jobs:
           git config --global --add safe.directory '*'
 
       - name: Checkout caller repo (full history for git diff)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Checkout developer-meta-files (ci/step-summary-emit.sh)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/developer-meta-files
           ref: ${{ env.DMF_REF }}
@@ -122,7 +122,7 @@ jobs:
 
       - name: Checkout dist-ai (gate script)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/dist-ai
           ref: ${{ env.DIST_AI_REF }}
