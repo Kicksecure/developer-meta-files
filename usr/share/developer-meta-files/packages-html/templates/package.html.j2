@@ -1,0 +1,100 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ pkg.name }} ({{ suite }}) -- {{ site_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumbs">
+<a href="{{ base_url }}">{{ site_name }}</a> /
+<a href="{{ base_url }}{{ suite }}/">{{ suite }}</a> /
+<span>{{ pkg.name }}</span>
+</nav>
+
+<h1>Package: <span class="pkg-name">{{ pkg.name }}</span></h1>
+<p class="summary">{{ pkg.summary }}</p>
+
+<dl class="meta">
+<dt>Version</dt><dd>{{ pkg.version }}</dd>
+<dt>Suite</dt><dd>{{ suite }}</dd>
+<dt>Component</dt><dd>{{ pkg.component }}</dd>
+<dt>Architectures</dt>
+<dd>{{ pkg.arch_list|join(", ") }}</dd>
+{% if pkg.stanza.Section %}
+<dt>Section</dt><dd>{{ pkg.stanza.Section }}</dd>
+{% endif %}
+{% if pkg.stanza.Priority %}
+<dt>Priority</dt><dd>{{ pkg.stanza.Priority }}</dd>
+{% endif %}
+{% if pkg.stanza.Maintainer %}
+<dt>Maintainer</dt><dd>{{ pkg.stanza.Maintainer }}</dd>
+{% endif %}
+{% if pkg.stanza.Homepage %}
+{# safe_url: escaping does not neutralize a 'javascript:' href, so a
+   non-http(s) URL is shown as inert text instead of being linked. #}
+{% set homepage = pkg.stanza.Homepage|safe_url %}
+<dt>Homepage</dt>
+{% if homepage %}
+<dd><a href="{{ homepage }}" rel="nofollow noopener noreferrer">{{ homepage }}</a></dd>
+{% else %}
+<dd><code>{{ pkg.stanza.Homepage }}</code></dd>
+{% endif %}
+{% endif %}
+{% if pkg.stanza['Installed-Size'] %}
+<dt>Installed-Size</dt><dd>{{ pkg.stanza['Installed-Size'] }} KB</dd>
+{% endif %}
+{% if pkg.stanza.Size %}
+<dt>Download-Size</dt><dd>{{ pkg.stanza.Size }} bytes</dd>
+{% endif %}
+{% if pkg.stanza['Multi-Arch'] %}
+<dt>Multi-Arch</dt><dd>{{ pkg.stanza['Multi-Arch'] }}</dd>
+{% endif %}
+<dt>Source package</dt>
+<dd>
+{% if pkg.source_link %}
+<a href="{{ base_url }}source/{{ suite }}/{{ pkg.source_name }}/">{{ pkg.source_name }}</a>
+{% else %}
+{{ pkg.source_name }}
+{% endif %}
+</dd>
+</dl>
+
+{% if pkg.long_html %}
+<section class="long-description">
+<h2>Description</h2>
+{# long_html is built by format_long_description(), which html.escape()s
+   every line and adds only <p>/<br>. |safe is required here and correct. #}
+{{ pkg.long_html|safe }}
+</section>
+{% endif %}
+
+{% if pkg.relations_html %}
+<section class="relations">
+<h2>Package relationships</h2>
+<dl>
+{% for field, rendered in pkg.relations_html.items() %}
+{# rendered is built by render_relations(), which html.escape()s every
+   package name, version and href. |safe is required here and correct. #}
+<dt>{{ field }}</dt>
+<dd>{{ rendered|safe }}</dd>
+{% endfor %}
+</dl>
+</section>
+{% endif %}
+
+{% if pkg.stanza.Filename or pkg.stanza.SHA256 or pkg.stanza.SHA1 or pkg.stanza.MD5sum %}
+<section class="download">
+<h2>Download</h2>
+<dl>
+{% if pkg.stanza.Filename %}
+<dt>Filename</dt><dd><code>{{ pkg.stanza.Filename }}</code></dd>
+{% endif %}
+{% if pkg.stanza.SHA256 %}
+<dt>SHA256</dt><dd><code>{{ pkg.stanza.SHA256 }}</code></dd>
+{% endif %}
+{% if pkg.stanza.SHA1 %}
+<dt>SHA1</dt><dd><code>{{ pkg.stanza.SHA1 }}</code></dd>
+{% endif %}
+{% if pkg.stanza.MD5sum %}
+<dt>MD5sum</dt><dd><code>{{ pkg.stanza.MD5sum }}</code></dd>
+{% endif %}
+</dl>
+</section>
+{% endif %}
+{% endblock %}

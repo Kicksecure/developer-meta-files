@@ -1,0 +1,110 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ src.name }} (source, {{ suite }}) -- {{ site_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumbs">
+<a href="{{ base_url }}">{{ site_name }}</a> /
+<a href="{{ base_url }}{{ suite }}/">{{ suite }}</a> /
+<span>source: {{ src.name }}</span>
+</nav>
+
+<h1>Source package: <span class="pkg-name">{{ src.name }}</span></h1>
+
+<dl class="meta">
+<dt>Version</dt><dd>{{ src.version }}</dd>
+<dt>Suite</dt><dd>{{ suite }}</dd>
+<dt>Component</dt><dd>{{ src.component }}</dd>
+{% if src.stanza.Section %}
+<dt>Section</dt><dd>{{ src.stanza.Section }}</dd>
+{% endif %}
+{% if src.stanza.Priority %}
+<dt>Priority</dt><dd>{{ src.stanza.Priority }}</dd>
+{% endif %}
+{% if src.stanza.Maintainer %}
+<dt>Maintainer</dt><dd>{{ src.stanza.Maintainer }}</dd>
+{% endif %}
+{% if src.stanza.Uploaders %}
+<dt>Uploaders</dt><dd>{{ src.stanza.Uploaders }}</dd>
+{% endif %}
+{% if src.stanza['Standards-Version'] %}
+<dt>Standards-Version</dt><dd>{{ src.stanza['Standards-Version'] }}</dd>
+{% endif %}
+{% if src.stanza.Format %}
+<dt>Format</dt><dd>{{ src.stanza.Format }}</dd>
+{% endif %}
+{% if src.stanza.Architecture %}
+<dt>Architecture</dt><dd>{{ src.stanza.Architecture }}</dd>
+{% endif %}
+{% if src.stanza.Homepage %}
+{# safe_url: escaping does not neutralize a 'javascript:' href, so a
+   non-http(s) URL is shown as inert text instead of being linked. #}
+{% set homepage = src.stanza.Homepage|safe_url %}
+<dt>Homepage</dt>
+{% if homepage %}
+<dd><a href="{{ homepage }}" rel="nofollow noopener noreferrer">{{ homepage }}</a></dd>
+{% else %}
+<dd><code>{{ src.stanza.Homepage }}</code></dd>
+{% endif %}
+{% endif %}
+{% if src.stanza['Vcs-Browser'] %}
+{% set vcs_browser = src.stanza['Vcs-Browser']|safe_url %}
+<dt>Vcs-Browser</dt>
+{% if vcs_browser %}
+<dd><a href="{{ vcs_browser }}" rel="nofollow noopener noreferrer">{{ vcs_browser }}</a></dd>
+{% else %}
+<dd><code>{{ src.stanza['Vcs-Browser'] }}</code></dd>
+{% endif %}
+{% endif %}
+{% if src.stanza['Vcs-Git'] %}
+<dt>Vcs-Git</dt><dd><code>{{ src.stanza['Vcs-Git'] }}</code></dd>
+{% endif %}
+</dl>
+
+{% if src.binaries %}
+<section class="binaries-built">
+<h2>Binary packages built from this source</h2>
+<ul>
+{% for b in src.binaries %}
+<li>
+{% if b.local %}
+<a href="{{ base_url }}{{ suite }}/{{ b.name }}/">{{ b.name }}</a>
+{% else %}
+{{ b.name }}
+{% endif %}
+</li>
+{% endfor %}
+</ul>
+</section>
+{% endif %}
+
+{% if src.build_relations_html %}
+<section class="relations">
+<h2>Build dependencies</h2>
+<dl>
+{% for field, rendered in src.build_relations_html.items() %}
+{# rendered is built by render_relations(), which html.escape()s every
+   package name, version and href. |safe is required here and correct. #}
+<dt>{{ field }}</dt>
+<dd>{{ rendered|safe }}</dd>
+{% endfor %}
+</dl>
+</section>
+{% endif %}
+
+{% if src.files %}
+<section class="download">
+<h2>Source files</h2>
+<table class="files">
+<thead><tr><th>Name</th><th class="num">Size</th><th>Hash</th></tr></thead>
+<tbody>
+{% for f in src.files %}
+<tr>
+<td><code>{{ f.name }}</code></td>
+<td class="num">{{ f.size }}</td>
+<td><code>{{ f.hash }}</code></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
+{% endif %}
+{% endblock %}

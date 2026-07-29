@@ -1,0 +1,1018 @@
+#!/usr/bin/python3 -su
+
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Generate a static HTML browse interface (packages.debian.org-style)
+## from a reprepro-managed Debian apt repository on disk. Output is
+## intended to be uploaded alongside the binary repository (e.g.
+## packages.whonix.org). No JavaScript, no NPM, build is fully offline.
+
+# pylint: disable=invalid-name
+
+"""
+Static HTML generator for Debian apt repositories.
+
+Reads a reprepro-managed repository tree
+(dists/<suite>/<component>/binary-<arch>/Packages.gz and
+dists/<suite>/<component>/source/Sources.gz) and renders
+packages.debian.org-style HTML using Jinja2.
+
+URL scheme (suite-first, Debian-style):
+    /                            site index
+    /<suite>/                    binary package list for suite
+    /<suite>/<package>/          binary package page
+    /source/<suite>/<srcpkg>/    source package page
+
+Dependencies declared by Whonix packages on Whonix packages are
+linked locally; dependencies on Debian-stock packages are linked
+to packages.debian.org (with the suite-suffix stripped, so
+'trixie-testers' deps resolve against Debian's 'trixie').
+
+Usage:
+    dm-packages-html-generator \\
+        --repo   /path/to/aptrepo/<derivative> \\
+        --output /path/to/output \\
+        --site-name "Whonix Packages" \\
+        --base-url "https://packages.whonix.org/" \\
+        --suites trixie,trixie-testers,trixie-proposed-updates,trixie-developers
+"""
+
+import argparse
+import datetime
+import gzip
+import html
+import io
+import os
+import re
+import shutil
+import sys
+import tempfile
+import zlib
+from collections.abc import Mapping
+from pathlib import Path
+
+from debian.deb822 import Deb822Dict, Packages, Sources, PkgRelation
+from debian.debian_support import version_compare
+from jinja2 import ChainableUndefined, Environment, FileSystemLoader
+
+## Debian Policy 5.6.1/5.6.7 package name grammar. Enforced because a
+## package name reaches both an output path and an href; an index file
+## is untrusted input, not a validated database.
+## fullmatch() is used at every call site: '$' also matches immediately
+## before a trailing newline, so "evil\n" passed a '$'-anchored test and
+## reached an output path and an href.
+NAME_RE = re.compile(r"[a-z0-9][a-z0-9+.-]+")
+
+## Suite, component and architecture names land in output paths too.
+PATH_COMPONENT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9+._-]*")
+
+
+## Only absolute http(s) URLs may reach an href. A strict pattern is
+## preferred over urlsplit(), which strips embedded tabs/newlines and
+## accepts scheme-relative forms.
+SAFE_URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
+
+## Bound decompression and per-field size so one crafted upload cannot
+## exhaust build host memory.
+MAX_INDEX_BYTES = 512 * 1024 * 1024
+MAX_FIELD_CHARS = 64 * 1024
+
+## Written into the generated site root so the staging swap can tell a
+## previously generated tree from an unrelated directory.
+SITE_MARKER = ".dm-packages-html-generator"
+
+## A package page lives at <output>/<suite>/<name>/, so the only name it can
+## collide with is the suite index FILE. 'static' and 'source' are root-level
+## only, so reserving them for packages would reject legitimate names -- and
+## since a rejection now blocks publishing, over-reserving is an outage.
+RESERVED_PACKAGE_NAMES = frozenset({"index.html"})
+
+## A suite directory sits in the output root, alongside the asset dir, the
+## source tree, the site index and the marker file.
+RESERVED_SUITE_NAMES = frozenset({"index.html", "static", "source", SITE_MARKER})
+
+## Bound the pre-parsed multi-line fields (Files, Checksums-*, Package-List).
+## clamp_field only binds scalars, so without this a single stanza can carry
+## millions of rows and MAX_INDEX_BYTES is the only remaining limit.
+MAX_FIELD_ROWS = 4096
+
+
+class IndexTooLargeError(Exception):
+    """A package index exceeded MAX_INDEX_BYTES when decompressed."""
+
+
+class BoundedReader(io.RawIOBase):
+    """Wrap a binary stream and fail once more than `limit` bytes have
+    been read, so a decompression bomb cannot exhaust memory."""
+
+    def __init__(self, raw, limit: int) -> None:
+        super().__init__()
+        self._raw = raw
+        self._limit = limit
+        self._seen = 0
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, buffer) -> int:
+        count = self._raw.readinto(buffer)
+        if not count:
+            return count
+        self._seen += count
+        if self._seen > self._limit:
+            raise IndexTooLargeError(
+                "index exceeds {0} bytes when decompressed".format(self._limit)
+            )
+        return count
+
+    def close(self) -> None:
+        try:
+            self._raw.close()
+        finally:
+            super().close()
+
+
+def safe_url(value) -> str:
+    """Return `value` if it is an absolute http(s) URL, else the empty
+    string. Escaping alone does not stop a 'javascript:' href, because
+    the browser decodes entities before dereferencing the URI."""
+
+    text = str(value or "").strip()
+    if any(ord(char) < 0x20 or ord(char) == 0x7F for char in text):
+        return ""
+    return text if SAFE_URL_RE.fullmatch(text) else ""
+
+
+def safe_base_url(value: str) -> bool:
+    """True when --base-url is safe to interpolate into an href. It is the
+    one href source that does not come from package metadata, so it skipped
+    safe_url -- but 'javascript:...' passed there lands on every page."""
+
+    text = str(value or "").strip()
+    if any(ord(char) < 0x20 or ord(char) == 0x7F for char in text):
+        return False
+    if text.startswith("/"):
+        return True
+    return bool(SAFE_URL_RE.fullmatch(text))
+
+
+def clamp_field(value) -> str:
+    """Bound a single control field so one oversized value cannot blow
+    up a generated page."""
+
+    text = str(value or "")
+    if len(text) > MAX_FIELD_CHARS:
+        return text[:MAX_FIELD_CHARS] + " [truncated]"
+    return text
+
+
+def is_generated_site(path: Path) -> bool:
+    """True when `path` is a directory this tool previously generated.
+    Guards the output swap: --output is deleted wholesale, so it must
+    never be pointed at a shared docroot by mistake."""
+
+    if path.is_symlink() or not path.is_dir():
+        return False
+    if (path / SITE_MARKER).is_file():
+        return True
+    return not any(path.iterdir())
+
+
+## Incremented by warn(). A run that skipped input produced an incomplete
+## site, so it must not report success to the caller or to CI.
+WARNING_COUNT = 0
+
+
+def warn(message: str) -> None:
+    """Report a skipped or malformed input. Skipping input silently
+    would make a truncated site look like a complete one."""
+
+    global WARNING_COUNT  # pylint: disable=global-statement
+
+    WARNING_COUNT += 1
+    print("WARNING: {0}".format(message), file=sys.stderr)
+
+
+def clamp_stanza(stanza) -> Deb822Dict:
+    """Copy a control stanza, bounding scalar fields by length and
+    pre-parsed multi-line fields by row count.
+
+    The copy stays a Deb822Dict: Debian field names are case-insensitive
+    (Policy 5.1), and a plain dict would make every later exact-case
+    lookup miss on a stanza written as 'depends:' -- silently rendering a
+    package as having no dependencies."""
+
+    out = Deb822Dict()
+    for key, value in stanza.items():
+        if isinstance(value, str):
+            out[key] = clamp_field(value)
+        elif isinstance(value, (list, tuple)) and len(value) > MAX_FIELD_ROWS:
+            out[key] = list(value[:MAX_FIELD_ROWS])
+        else:
+            out[key] = value
+    return out
+
+
+def iter_stanzas(parser, handle, index_path: Path):
+    """Yield stanzas from one index, converting a malformed or oversized
+    index into a warning plus a truncated read rather than a traceback
+    that aborts every remaining suite."""
+
+    ## use_apt_pkg=False pins the pure-Python parser. The apt_pkg path
+    ## reads the file descriptor directly, bypassing both the size cap and
+    ## errors="replace", and python3-apt is only Suggests: of
+    ## python3-debian -- so its presence would silently change behavior.
+    iterator = parser.iter_paragraphs(handle, use_apt_pkg=False)
+    while True:
+        try:
+            stanza = next(iterator)
+        except StopIteration:
+            return
+        except IndexTooLargeError as exc:
+            warn("{0}: {1}; remainder skipped".format(index_path, exc))
+            return
+        except (OSError, EOFError, ValueError, zlib.error) as exc:
+            warn("{0}: malformed index ({1}); remainder skipped".format(
+                index_path, exc))
+            return
+        yield stanza
+
+
+def find_data_dir() -> Path:
+    """Locate the templates+static asset dir. Prefer the in-tree
+    copy when run from a source checkout so dev iteration does not
+    need a reinstall."""
+
+    script_dir = Path(__file__).resolve().parent
+    if str(script_dir) != "/usr/bin":
+        candidate = (script_dir.parent / "share" / "developer-meta-files"
+                     / "packages-html")
+        if candidate.is_dir():
+            return candidate
+    return Path("/usr/share/developer-meta-files/packages-html")
+
+
+def open_index(path: Path) -> io.TextIOBase:
+    """Open a Packages or Sources index file. Transparently handles
+    .gz; falls back to the uncompressed sibling if present."""
+
+    ## errors="replace": a control file is not guaranteed valid UTF-8,
+    ## and one bad byte must not abort the whole site build.
+    if path.suffix == ".gz" and path.is_file():
+        bounded = BoundedReader(gzip.open(path, "rb"), MAX_INDEX_BYTES)
+        return io.TextIOWrapper(
+            io.BufferedReader(bounded), encoding="utf-8", errors="replace"
+        )
+    uncompressed = path.with_suffix("")
+    if uncompressed.is_file():
+        return bounded_text(uncompressed)
+    if path.is_file():
+        return bounded_text(path)
+    raise FileNotFoundError(str(path))
+
+
+def bounded_text(path: Path) -> io.TextIOBase:
+    """Open a plain-text index under the same size cap as the gzip path.
+    An uncompressed index is attacker-sized too."""
+
+    bounded = BoundedReader(path.open("rb"), MAX_INDEX_BYTES)
+    return io.TextIOWrapper(
+        io.BufferedReader(bounded), encoding="utf-8", errors="replace"
+    )
+
+
+def discover_suites(repo: Path) -> list[str]:
+    """List subdirectories of dists/ that contain a Release file.
+    Skips symlinks (reprepro sometimes points 'stable' at a
+    codename); we want the canonical names only."""
+
+    dists = repo / "dists"
+    if not dists.is_dir():
+        return []
+    out: list[str] = []
+    for entry in sorted(dists.iterdir()):
+        if entry.is_symlink() or not entry.is_dir():
+            continue
+        if (entry / "Release").is_file():
+            out.append(entry.name)
+    return out
+
+
+def collect_binaries(
+    repo: Path,
+    suite: str,
+) -> dict[str, dict]:
+    """Walk binary-<arch>/Packages.gz for one suite. Returns a dict
+    keyed by binary package name with merged architecture list and
+    a representative stanza (highest version wins on ties)."""
+
+    suite_dir = repo / "dists" / suite
+    out: dict[str, dict] = {}
+    if not suite_dir.is_dir():
+        return out
+    for component_dir in sorted(suite_dir.iterdir()):
+        if not component_dir.is_dir():
+            continue
+        component = component_dir.name
+        for arch_dir in sorted(component_dir.iterdir()):
+            if not arch_dir.is_dir() or not arch_dir.name.startswith("binary-"):
+                continue
+            arch = arch_dir.name[len("binary-"):]
+            index_path = arch_dir / "Packages.gz"
+            if not index_path.is_file():
+                index_path = arch_dir / "Packages"
+                if not index_path.is_file():
+                    continue
+            if (not PATH_COMPONENT_RE.fullmatch(component)
+                    or not PATH_COMPONENT_RE.fullmatch(arch)):
+                warn("skipping unsafe component/arch path: {0}".format(arch_dir))
+                continue
+            try:
+                index_fh = open_index(index_path)
+            except OSError as exc:
+                warn("cannot read {0}: {1}".format(index_path, exc))
+                continue
+            with index_fh as fh:
+                for stanza in iter_stanzas(Packages, fh, index_path):
+                    name = stanza.get("Package")
+                    if (not name or not NAME_RE.fullmatch(name)
+                            or name in RESERVED_PACKAGE_NAMES):
+                        warn("skipping invalid package name {0!r} in {1}".format(
+                            name, index_path))
+                        continue
+                    version = clamp_field(stanza.get("Version", ""))
+                    ## reprepro copies an 'Architecture: all' binary into
+                    ## every binary-<arch>/ dir, so the directory name would
+                    ## misreport it as arch-specific. Trust the stanza.
+                    stanza_arch = stanza.get("Architecture", "").strip()
+                    listed_arch = "all" if stanza_arch == "all" else arch
+                    entry = out.get(name)
+                    if entry is None:
+                        out[name] = {
+                            "name": name,
+                            "version": version,
+                            "component": component,
+                            "stanza": clamp_stanza(stanza),
+                            "architectures": {listed_arch},
+                        }
+                        continue
+                    if version_greater(version, entry["version"]):
+                        ## A newer version supersedes the older one, so the
+                        ## architecture set restarts: the arches the OLD
+                        ## version shipped on say nothing about the new one.
+                        entry["version"] = version
+                        entry["component"] = component
+                        entry["stanza"] = clamp_stanza(stanza)
+                        entry["architectures"] = {listed_arch}
+                    elif not version_greater(entry["version"], version):
+                        entry["architectures"].add(listed_arch)
+    return out
+
+
+def collect_sources(
+    repo: Path,
+    suite: str,
+) -> dict[str, dict]:
+    """Walk source/Sources.gz for one suite."""
+
+    suite_dir = repo / "dists" / suite
+    out: dict[str, dict] = {}
+    if not suite_dir.is_dir():
+        return out
+    for component_dir in sorted(suite_dir.iterdir()):
+        if not component_dir.is_dir():
+            continue
+        component = component_dir.name
+        index_path = component_dir / "source" / "Sources.gz"
+        if not index_path.is_file():
+            index_path = component_dir / "source" / "Sources"
+            if not index_path.is_file():
+                continue
+        if not PATH_COMPONENT_RE.fullmatch(component):
+            warn("skipping unsafe component path: {0}".format(component_dir))
+            continue
+        try:
+            index_fh = open_index(index_path)
+        except OSError as exc:
+            warn("cannot read {0}: {1}".format(index_path, exc))
+            continue
+        with index_fh as fh:
+            for stanza in iter_stanzas(Sources, fh, index_path):
+                name = stanza.get("Package")
+                ## No RESERVED_* check here: a source page lives at
+                ## <output>/source/<suite>/<name>/ and collides with no
+                ## site-owned file, and a rejection blocks publishing.
+                if not name or not NAME_RE.fullmatch(name):
+                    warn("skipping invalid source name {0!r} in {1}".format(
+                        name, index_path))
+                    continue
+                version = clamp_field(stanza.get("Version", ""))
+                entry = out.get(name)
+                if entry is None or version_greater(version, entry["version"]):
+                    out[name] = {
+                        "name": name,
+                        "version": version,
+                        "component": component,
+                        "stanza": clamp_stanza(stanza),
+                    }
+    return out
+
+
+def version_is_valid(value: str) -> bool:
+    """True when python-debian can order `value` against itself."""
+
+    try:
+        version_compare(value, value)
+    except ValueError:
+        return False
+    return True
+
+
+def version_greater(a: str, b: str) -> bool:
+    """True when Debian version `a` sorts above `b`. Uses python-debian's
+    dpkg-compatible comparator so epochs, tildes and non-numeric revisions
+    order correctly.
+
+    Validity is compared separately, because version_compare() raises in
+    BOTH argument orders when either side is malformed. Returning False
+    both ways would make the caller treat the two as EQUAL, which merges
+    architectures across different versions and can retain the malformed
+    stanza; a malformed version must simply sort last."""
+
+    if a == b:
+        return False
+    a_valid = version_is_valid(a)
+    b_valid = version_is_valid(b)
+    if a_valid != b_valid:
+        return a_valid
+    if not a_valid:
+        return False
+    return version_compare(a, b) > 0
+
+
+def debian_suite_for(suite: str) -> str:
+    """Map a Whonix-side suite name to the Debian codename used by
+    packages.debian.org. 'trixie-testers' -> 'trixie' etc. If the
+    suffix is one of Debian's own pocket names ('backports',
+    'updates', 'security') keep it; those route correctly on
+    packages.debian.org."""
+
+    ## Only pockets that packages.debian.org actually serves. It has no
+    ## '-security' or '-proposed-updates' suite, so keeping those suffixes
+    ## produces dead dependency links.
+    keep_pockets = {"backports", "updates"}
+    parts = suite.split("-", 1)
+    if len(parts) == 1:
+        return suite
+    base, suffix = parts
+    if suffix in keep_pockets:
+        return suite
+    return base
+
+
+SHORT_DESC_RE = re.compile(r"^([^\n]*)")
+
+
+def split_description(raw: str) -> tuple[str, str]:
+    """Split a Debian-format Description: field into (summary,
+    long). The first line is the short summary; remaining lines
+    (de-indented; ' .' -> blank paragraph break) are the long
+    description."""
+
+    if not raw:
+        return ("", "")
+    lines = raw.splitlines()
+    summary = lines[0].strip()
+    body_lines: list[str] = []
+    for line in lines[1:]:
+        if line.startswith(" "):
+            stripped = line[1:]
+        else:
+            stripped = line
+        if stripped == ".":
+            body_lines.append("")
+        else:
+            body_lines.append(stripped)
+    body = "\n".join(body_lines).strip("\n")
+    return (summary, body)
+
+
+def format_long_description(body: str) -> str:
+    """Render the long description as escaped HTML with paragraph
+    breaks on blank lines and <br> inside paragraphs. No Markdown
+    parsing -- Debian descriptions are plain text."""
+
+    if not body:
+        return ""
+    paragraphs: list[str] = []
+    current: list[str] = []
+    for line in body.split("\n"):
+        if line.strip() == "":
+            if current:
+                paragraphs.append("<br>\n".join(html.escape(x) for x in current))
+                current = []
+        else:
+            current.append(line)
+    if current:
+        paragraphs.append("<br>\n".join(html.escape(x) for x in current))
+    return "\n".join("<p>{0}</p>".format(p) for p in paragraphs)
+
+
+RELATION_FIELDS = [
+    "Pre-Depends",
+    "Depends",
+    "Recommends",
+    "Suggests",
+    "Enhances",
+    "Breaks",
+    "Conflicts",
+    "Replaces",
+    "Provides",
+]
+
+BUILD_RELATION_FIELDS = [
+    "Build-Depends",
+    "Build-Depends-Indep",
+    "Build-Depends-Arch",
+    "Build-Conflicts",
+    "Build-Conflicts-Indep",
+    "Build-Conflicts-Arch",
+]
+
+
+def render_relations(
+    raw: str,
+    local_names: set[str],
+    suite: str,
+    base_url: str,
+) -> str:
+    """Render a Debian relation field (e.g. Depends) as an HTML
+    fragment. Each top-level alternative group is separated by
+    ', '; alternatives within a group by ' | '. Each package name
+    is hyperlinked: to the local site if the name is one of our
+    own packages in this suite, otherwise to packages.debian.org."""
+
+    if not raw:
+        return ""
+    try:
+        parsed = PkgRelation.parse_relations(raw)
+    except Exception:  # ruff: ignore[blind-except] # pylint: disable=broad-exception-caught
+        ## A relation field is untrusted text and python-debian raises a
+        ## variety of types on malformed input. Degrading to escaped raw
+        ## text is strictly safer than letting one bad field kill the run.
+        return html.escape(raw)
+    debian_suite = debian_suite_for(suite)
+    pieces: list[str] = []
+    for alt_group in parsed:
+        alts: list[str] = []
+        for alt in alt_group:
+            pkg = alt.get("name", "")
+            arch_q = alt.get("archqual") or ""
+            version = alt.get("version")
+            arches = alt.get("arch")
+            restrictions = alt.get("restrictions")
+            label_pkg = html.escape(pkg)
+            if arch_q:
+                label_pkg = "{0}:{1}".format(label_pkg, html.escape(arch_q))
+            if pkg in local_names:
+                href = "{0}{1}/{2}/".format(base_url, suite, pkg)
+            else:
+                href = "https://packages.debian.org/{0}/{1}".format(debian_suite, pkg)
+            text = "<a href=\"{0}\">{1}</a>".format(
+                html.escape(href, quote=True), label_pkg)
+            if version is not None:
+                op, ver = version
+                text += " ({0} {1})".format(html.escape(op), html.escape(ver))
+            ## ArchRestriction/BuildRestriction field 0 is `enabled`, so the
+            ## '!' prefix belongs on the DISABLED entries. Getting this
+            ## backwards publishes the exact negation of the control field.
+            if arches:
+                arch_parts = []
+                for entry in arches:
+                    sign = "" if entry.enabled else "!"
+                    arch_parts.append("{0}{1}".format(sign, entry.arch))
+                text += " [{0}]".format(html.escape(" ".join(arch_parts)))
+            if restrictions:
+                restr_parts = []
+                for restr in restrictions:
+                    inner = " ".join(
+                        ("" if entry.enabled else "!") + entry.profile
+                        for entry in restr
+                    )
+                    restr_parts.append("<{0}>".format(inner))
+                text += " {0}".format(html.escape(" ".join(restr_parts)))
+            alts.append(text)
+        pieces.append(" | ".join(alts))
+    return ", ".join(pieces)
+
+
+def file_entry(item) -> dict:
+    """Normalize one pre-parsed Files/Checksums-* row."""
+
+    hash_val = (
+        item.get("sha256")
+        or item.get("md5sum")
+        or item.get("sha1")
+        or ""
+    )
+    return {
+        "hash": hash_val,
+        "size": str(item.get("size", "")),
+        "name": item.get("name", ""),
+    }
+
+
+def collect_files_field(raw) -> list[dict]:
+    """Parse a Sources Files: / Checksums-Sha256: block into a list of
+    {hash, size, name} dicts. python-debian pre-parses these multi-line
+    fields, yielding Deb822Dict rows -- a Mapping, NOT a dict subclass,
+    so these must be matched on Mapping. A single-file stanza arrives as
+    one bare Mapping rather than a list. Raw strings still occur when a
+    stanza is built by hand."""
+
+    out: list[dict] = []
+    if not raw:
+        return out
+    if isinstance(raw, Mapping):
+        return [file_entry(raw)]
+    if isinstance(raw, (list, tuple)):
+        for item in raw:
+            if not isinstance(item, Mapping):
+                continue
+            out.append(file_entry(item))
+        return out
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+        out.append({"hash": parts[0], "size": parts[1], "name": parts[2]})
+    return out
+
+
+def merge_source_files(stanza: dict) -> list[dict]:
+    """Prefer Checksums-Sha256 when present; fall back to Files
+    (MD5)."""
+
+    sha = collect_files_field(stanza.get("Checksums-Sha256", ""))
+    if sha:
+        return sha
+    return collect_files_field(stanza.get("Files", ""))
+
+
+def build_jinja_env(data_dir: Path) -> Environment:
+    """Construct the Jinja2 environment used to render all pages."""
+
+    ## autoescape is set unconditionally, NOT via select_autoescape():
+    ## that helper matches the FINAL filename extension, and every
+    ## template here ends in '.j2', so it silently resolved to False and
+    ## disabled escaping on every page. All templates are HTML.
+    env = Environment(
+        loader=FileSystemLoader(str(data_dir / "templates")),
+        autoescape=True,
+        undefined=ChainableUndefined,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True,
+    )
+    env.globals["generator"] = "dm-packages-html-generator"
+    env.filters["safe_url"] = safe_url
+    return env
+
+
+def write_page(root: Path, path: Path, content: str) -> None:
+    """Write one generated page, refusing any path that escapes `root`.
+    Defense in depth behind NAME_RE: pathlib joins do not sanitize, and
+    an absolute or '..'-bearing name would otherwise leave the tree."""
+
+    resolved = path.parent.resolve()
+    root_resolved = root.resolve()
+    if root_resolved != resolved and root_resolved not in resolved.parents:
+        raise ValueError("refusing to write outside output root: {0}".format(path))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ## O_NOFOLLOW: resolving the parent does not stop a symlink planted at the
+    ## LEAF name, which write_text() would happily follow out of the tree.
+    ## O_EXCL: every page is written exactly once per run, so an existing file
+    ## here means someone else got there first.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+    handle = os.open(path, flags, 0o644)
+    with os.fdopen(handle, "w", encoding="utf-8") as stream:
+        stream.write(content)
+
+
+def render_site(
+    repo: Path,
+    output: Path,
+    site_name: str,
+    base_url: str,
+    suites: list[str],
+    data_dir: Path,
+) -> None:
+    """Render all HTML pages and copy static assets to output."""
+
+    env = build_jinja_env(data_dir)
+    tpl_root = env.get_template("root_index.html.j2")
+    tpl_suite = env.get_template("suite_index.html.j2")
+    tpl_pkg = env.get_template("package.html.j2")
+    tpl_src = env.get_template("source.html.j2")
+
+    if not base_url.endswith("/"):
+        base_url = base_url + "/"
+    if not suites:
+        suites = discover_suites(repo)
+
+    generated_at = datetime.datetime.now(datetime.timezone.utc).strftime(
+        "%Y-%m-%d %H:%M UTC"
+    )
+
+    common_ctx = {
+        "site_name": site_name,
+        "base_url": base_url,
+        "suites": suites,
+        "generated_at": generated_at,
+    }
+
+    suite_summaries: list[dict] = []
+
+    for suite in suites:
+        if not PATH_COMPONENT_RE.fullmatch(suite) or suite in RESERVED_SUITE_NAMES:
+            warn("skipping unsafe suite name: {0!r}".format(suite))
+            continue
+        ## One malformed suite must not cost the whole site.
+        try:
+            suite_summaries.append(
+                render_suite(
+                    repo=repo,
+                    output=output,
+                    suite=suite,
+                    base_url=base_url,
+                    common_ctx=common_ctx,
+                    tpl_suite=tpl_suite,
+                    tpl_pkg=tpl_pkg,
+                    tpl_src=tpl_src,
+                )
+            )
+        except (OSError, ValueError, IndexTooLargeError) as exc:
+            warn("suite {0} failed to render: {1}".format(suite, exc))
+
+    write_page(
+        output,
+        output / "index.html",
+        tpl_root.render(**common_ctx, suite_summaries=suite_summaries),
+    )
+
+    static_src = data_dir / "static"
+    static_dst = output / "static"
+    if static_src.is_dir():
+        shutil.copytree(static_src, static_dst)
+
+
+def render_suite(
+    repo: Path,
+    output: Path,
+    suite: str,
+    base_url: str,
+    common_ctx: dict,
+    tpl_suite,
+    tpl_pkg,
+    tpl_src,
+) -> dict:
+    """Render every page belonging to one suite. Returns the summary
+    row used by the site index."""
+
+    binaries = collect_binaries(repo, suite)
+    sources = collect_sources(repo, suite)
+    local_names = set(binaries.keys())
+    local_source_names = set(sources.keys())
+
+    for entry in binaries.values():
+        stanza = entry["stanza"]
+        summary, long_body = split_description(stanza.get("Description", ""))
+        entry["summary"] = summary
+        entry["long_html"] = format_long_description(long_body)
+        relations_html: dict[str, str] = {}
+        for field in RELATION_FIELDS:
+            raw = stanza.get(field, "")
+            if raw:
+                relations_html[field] = render_relations(
+                    raw, local_names, suite, base_url
+                )
+        entry["relations_html"] = relations_html
+        src_field = stanza.get("Source", "") or stanza.get("Package", "")
+        src_name = src_field.split(" ", 1)[0]
+        entry["source_name"] = src_name
+        entry["source_link"] = src_name in local_source_names
+        entry["arch_list"] = sorted(entry["architectures"])
+
+    for entry in sources.values():
+        stanza = entry["stanza"]
+        build_relations_html: dict[str, str] = {}
+        for field in BUILD_RELATION_FIELDS:
+            raw = stanza.get(field, "")
+            if raw:
+                build_relations_html[field] = render_relations(
+                    raw, local_names, suite, base_url
+                )
+        entry["build_relations_html"] = build_relations_html
+        binary_field = stanza.get("Binary", "")
+        binaries_list = [b.strip() for b in binary_field.split(",") if b.strip()]
+        entry["binaries"] = [
+            {"name": b, "local": b in local_names} for b in binaries_list
+        ]
+        entry["files"] = merge_source_files(stanza)
+
+    suite_dir = output / suite
+    sorted_bin = sorted(binaries.values(), key=lambda x: x["name"])
+    write_page(
+        output,
+        suite_dir / "index.html",
+        tpl_suite.render(
+            **common_ctx,
+            suite=suite,
+            packages=sorted_bin,
+            source_count=len(sources),
+        ),
+    )
+
+    for entry in binaries.values():
+        write_page(
+            output,
+            suite_dir / entry["name"] / "index.html",
+            tpl_pkg.render(
+                **common_ctx,
+                suite=suite,
+                pkg=entry,
+            ),
+        )
+
+    for entry in sources.values():
+        write_page(
+            output,
+            output / "source" / suite / entry["name"] / "index.html",
+            tpl_src.render(
+                **common_ctx,
+                suite=suite,
+                src=entry,
+                sibling_binaries=[
+                    b for b in binaries.values()
+                    if b["source_name"] == entry["name"]
+                ],
+            ),
+        )
+
+    return {
+        "name": suite,
+        "binary_count": len(binaries),
+        "source_count": len(sources),
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    """CLI surface."""
+
+    parser = argparse.ArgumentParser(
+        description=("Generate a packages.debian.org-style static HTML "
+                     "interface from a reprepro repository tree."),
+    )
+    parser.add_argument(
+        "--repo",
+        type=Path,
+        required=True,
+        help="Path to the reprepro repository root (contains conf/ and dists/).",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help=("Output directory. Rebuilt from scratch on every run; an "
+              "existing directory is replaced only if this tool generated it."),
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=None,
+        help=("Directory holding templates/ and static/. Defaults to the "
+              "installed location, or the in-tree copy when run from a "
+              "source checkout."),
+    )
+    parser.add_argument(
+        "--site-name",
+        default="Packages",
+        help="Site title shown in the page header.",
+    )
+    parser.add_argument(
+        "--base-url",
+        default="/",
+        help="Base URL for absolute links between pages (trailing slash recommended).",
+    )
+    parser.add_argument(
+        "--suites",
+        default="",
+        help=("Comma-separated allowlist of suites to render. If empty, "
+              "all suites with a Release file under dists/ are rendered."),
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    """Entry point."""
+
+    args = parse_args()
+    if not args.repo.is_dir():
+        print("FATAL: --repo path is not a directory: {0}".format(args.repo),
+              file=sys.stderr)
+        return 1
+    if not (args.repo / "dists").is_dir():
+        print("FATAL: --repo path has no dists/ subdir: {0}".format(args.repo),
+              file=sys.stderr)
+        return 1
+    output = args.output
+    ## with_name() below needs a real basename, and a root/relative-dot path
+    ## is never a sane site root anyway.
+    if output.name in ("", ".", ".."):
+        print("FATAL: --output must name a directory, not {0}".format(output),
+              file=sys.stderr)
+        return 1
+    if not safe_base_url(args.base_url):
+        print(
+            "FATAL: --base-url must be an absolute http(s) URL or a site-root "
+            "path starting with '/': {0}".format(args.base_url),
+            file=sys.stderr,
+        )
+        return 1
+    if output.exists() and not is_generated_site(output):
+        print(
+            "FATAL: --output exists and was not generated by this tool: {0}\n"
+            "Refusing to replace it. Remove it manually or pick another path."
+            .format(output),
+            file=sys.stderr,
+        )
+        return 1
+
+    data_dir = args.data_dir if args.data_dir is not None else find_data_dir()
+    if not (data_dir / "templates").is_dir():
+        print("FATAL: no templates/ under data dir: {0}".format(data_dir),
+              file=sys.stderr)
+        return 1
+
+    suites = [s.strip() for s in args.suites.split(",") if s.strip()]
+
+    ## Render into a staging tree and swap it in, so pages for packages
+    ## that have since been withdrawn do not linger and keep serving.
+    ##
+    ## The staging directory is created with a fresh unpredictable name
+    ## rather than a fixed '<output>.new'. A predictable sibling can be
+    ## pre-created by anyone with write access to the parent, which would
+    ## otherwise let them seed symlinks inside the tree the generator is
+    ## about to populate, and makes the delete-then-create step racy.
+    try:
+        staging = Path(tempfile.mkdtemp(
+            prefix="{0}.new-".format(output.name), dir=output.parent))
+    except OSError as exc:
+        print("FATAL: cannot create staging directory next to {0}: {1}"
+              .format(output, exc), file=sys.stderr)
+        return 1
+    (staging / SITE_MARKER).write_text(
+        "Generated by dm-packages-html-generator. Safe to delete.\n",
+        encoding="utf-8",
+    )
+    try:
+        render_site(
+            repo=args.repo,
+            output=staging,
+            site_name=args.site_name,
+            base_url=args.base_url,
+            suites=suites,
+            data_dir=data_dir,
+        )
+    except Exception:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+    ## Publish only a complete site. A missing package page is a silent
+    ## integrity gap in a package index, so a previous good site is better
+    ## than a partial new one; the staging tree is discarded and the
+    ## operator gets a loud failure instead.
+    if WARNING_COUNT:
+        shutil.rmtree(staging, ignore_errors=True)
+        print(
+            "FAILED: {0} warning(s); refusing to publish an incomplete site. "
+            "Existing output left untouched."
+            .format(WARNING_COUNT),
+            file=sys.stderr,
+        )
+        return 1
+
+    if output.exists():
+        shutil.rmtree(output)
+    staging.rename(output)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

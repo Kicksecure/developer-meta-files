@@ -1,0 +1,22 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ site_name }}{% endblock %}
+{% block content %}
+<h1>{{ site_name }}</h1>
+<p>Browse the binary and source packages distributed by this repository,
+organized by suite.</p>
+<h2>Suites</h2>
+<table class="suite-list">
+<thead>
+<tr><th>Suite</th><th class="num">Binary packages</th><th class="num">Source packages</th></tr>
+</thead>
+<tbody>
+{% for s in suite_summaries %}
+<tr>
+<td><a href="{{ base_url }}{{ s.name }}/">{{ s.name }}</a></td>
+<td class="num">{{ s.binary_count }}</td>
+<td class="num">{{ s.source_count }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

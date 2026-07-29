@@ -1,0 +1,238 @@
+/*
+ * Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+ * See the file COPYING for copying conditions.
+ *
+ * AI-Assisted
+ *
+ * Hand-written stylesheet for dm-packages-html-generator output.
+ * No external resources, no fonts, no JavaScript. Targets readable
+ * defaults across desktop and mobile. ASCII only.
+ */
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #222;
+    background: #fdfdfd;
+}
+
+.container {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.site-header {
+    background: #2a3a4a;
+    color: #fff;
+    padding: 0.75rem 0;
+    border-bottom: 3px solid #1a2530;
+}
+
+.site-header .container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.site-title {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.15rem;
+}
+
+.site-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.site-nav a {
+    color: #cfd8e0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+}
+
+.site-nav a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+main.container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+h1 {
+    font-size: 1.55rem;
+    margin: 0 0 0.5rem;
+    color: #1a2530;
+}
+
+h2 {
+    font-size: 1.2rem;
+    margin: 1.4rem 0 0.6rem;
+    border-bottom: 1px solid #d8dde2;
+    padding-bottom: 0.2rem;
+    color: #1a2530;
+}
+
+a { color: #1f5fa0; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+    font-family: ui-monospace, "SF Mono", Consolas, "Liberation Mono", monospace;
+    font-size: 0.92em;
+    background: #f0f2f4;
+    padding: 0 0.25rem;
+    border-radius: 2px;
+    word-break: break-all;
+}
+
+.breadcrumbs {
+    font-size: 0.9rem;
+    margin: 0 0 0.6rem;
+    color: #555;
+}
+
+.pkg-name {
+    font-family: ui-monospace, Consolas, monospace;
+    color: #1a2530;
+}
+
+.summary {
+    font-size: 1.05rem;
+    color: #444;
+    margin: 0 0 1rem;
+}
+
+dl.meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1.2rem;
+    margin: 0.5rem 0 1rem;
+}
+
+dl.meta dt {
+    font-weight: 600;
+    color: #555;
+}
+
+dl.meta dd {
+    margin: 0;
+    word-break: break-word;
+}
+
+section dl dt {
+    font-weight: 600;
+    margin-top: 0.4rem;
+}
+
+section dl dd {
+    margin: 0 0 0.3rem 1.5rem;
+    word-break: break-word;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+table.pkg-list th, table.pkg-list td,
+table.suite-list th, table.suite-list td,
+table.files th, table.files td {
+    text-align: left;
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid #e3e6e9;
+    vertical-align: top;
+}
+
+table th {
+    background: #f3f5f7;
+    font-weight: 600;
+    color: #333;
+}
+
+table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* A long version string must not force the table wider than a phone
+   viewport, so wrapping is allowed rather than suppressed. */
+.version {
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-wrap: anywhere;
+    color: #555;
+}
+
+.letter-row td {
+    background: #eef1f4;
+    font-weight: 700;
+    color: #1a2530;
+    padding-top: 0.5rem;
+}
+
+.alpha-jump {
+    margin: 0.6rem 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 0.85rem;
+}
+
+.alpha-jump a {
+    padding: 0.1rem 0.4rem;
+    border: 1px solid #d8dde2;
+    border-radius: 2px;
+    color: #1f5fa0;
+}
+
+.alpha-jump a:hover {
+    background: #f0f2f4;
+    text-decoration: none;
+}
+
+section.long-description p {
+    margin: 0.4rem 0;
+}
+
+.site-footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid #d8dde2;
+    color: #777;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+}
+
+ul {
+    margin: 0.4rem 0 0.6rem 1.4rem;
+    padding: 0;
+}
+
+ul li { margin: 0.1rem 0; }
+
+@media (max-width: 36rem) {
+    dl.meta {
+        grid-template-columns: 1fr;
+        gap: 0.1rem 0;
+    }
+    dl.meta dt { margin-top: 0.4rem; }
+    .site-header .container { flex-direction: column; align-items: flex-start; }
+}
