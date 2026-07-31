@@ -121,13 +121,13 @@ jobs:
 
       - name: Checkout component (code under test)
         ## https://github.com/actions/checkout/releases/tag/v6.0.2
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           path: component
           persist-credentials: false
 
       - name: Checkout dist-ai (test suites)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/dist-ai
           ref: ${{ inputs.dist-ai-ref }}
@@ -143,7 +143,7 @@ jobs:
 
       - name: Checkout helper-scripts (for suites that drive its tools)
         if: steps.cfg.outputs.helper_scripts == 'true'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/helper-scripts
           ref: master
@@ -165,7 +165,7 @@ jobs:
         ## wired when it never ran. Opt-in per repo via .github/dm-consumer.yml
         ## (dist-ai-tests.terminal-poc-corpus: true) so the clone is not imposed on
         ## every consumer. Sibling dir, matching component/ and dist-ai/ above.
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: secure-terminal/terminal-poc-corpus
           ref: master
