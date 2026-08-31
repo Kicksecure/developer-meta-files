@@ -286,13 +286,13 @@ jobs:
       DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 
       - name: Run Claude Code Review
         id: claude
-        uses: anthropics/claude-code-action@be7b93b1907a4abad570368f3c74b6fe3807510b  # v1.0.183
+        uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10  # v1.0.210
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ## No 'allowed_users' input exists on the action; the
@@ -329,7 +329,7 @@ jobs:
       ## whose github.sha names a commit in a different repository.
       - name: Checkout dist-ai (usage recorder)
         if: always() && steps.claude.outputs.execution_file != ''
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           repository: org-ai-assisted/dist-ai
           ref: ${{ env.DIST_AI_REF }}
