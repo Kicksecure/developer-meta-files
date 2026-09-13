@@ -1516,6 +1516,9 @@ pkg_git_diff_and_merge_branch_upstream() {
 }
 
 pkg_git_diff_and_merge_branch_arraybolt3() {
+   ## TODO: remove
+   repo_skip "privleap" || return 0
+
    pkg_git_diff_and_merge_branch "ArrayBolt3/arraybolt3/trixie"
 }
 
