@@ -57,7 +57,7 @@ unmount_vdi_force() {
 
    ## Delete temporary folder.
    ## It did not contain anything. It was only a mount point.
-   rmdir -r -- "${CHROOT_FOLDER}" || true
+   rmdir -- "${CHROOT_FOLDER}" || true
    sync || true
 }
 
