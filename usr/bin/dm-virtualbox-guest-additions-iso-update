@@ -32,8 +32,8 @@ source "${derivative_maker_source_code_dir}/help-steps/variables"
 
 ## 'helper-scripts' resolves via HELPER_SCRIPTS_PATH (exported by help-steps/pre
 ## above) for a from-source build; empty falls back to the installed system path.
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/strings.bsh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/strings.bsh
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/deb822-extract.bsh

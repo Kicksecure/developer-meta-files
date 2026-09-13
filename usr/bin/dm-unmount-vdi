@@ -20,8 +20,8 @@ cd -- "${MYDIR}"
 ## XXX: hardcoded path
 source "${HOME}/derivative-maker/help-steps/pre"
 source "${HOME}/derivative-maker/help-steps/variables"
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 
 exception_handler_unmount_vdi() {
    : printf '%s\n' "
@@ -48,7 +48,7 @@ unmount_vdi() {
 
    ## Delete temporary folder.
    ## It did not contain anything. It was only a mount point.
-   rmdir -r -- "${CHROOT_FOLDER}"
+   rmdir -- "${CHROOT_FOLDER}"
    sync
 }
 

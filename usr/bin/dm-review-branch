@@ -5,7 +5,9 @@
 
 ## No 'set -x': xtrace prints every command's EXPANDED form to the terminal,
 ## which would echo an untrusted ref name (git permits U+202E and other spoofing
-## codepoints in ref names) RAW, before any scan or stcat neutralization runs.
+## codepoints in ref names) RAW, before any scan or stcat neutralization runs --
+## defeating this tool's purpose. The sibling scan tools omit it for the same
+## reason. Use 'bash -x dm-review-branch ...' externally if a trace is needed.
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -16,19 +18,43 @@ export LC_ALL=C
 
 true "INFO: Currently running script: ${BASH_SOURCE[0]} $*"
 
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 # shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/log_run_die.sh
 source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 
-has stcat || die 1 "'stcat' not on PATH."
-has unicode-show || die 1 "'unicode-show' not on PATH."
+## Fail closed with a clear message if a neutralization/scan dependency is
+## absent. stcat neutralizes the attacker-controlled bytes the git log below
+## prints; a missing unicode-show makes check-ref-*-for-unicode return a
+## MISLEADING rc 1 (die_if_not_has) that review_prompt_or_die would take for a
+## detection and let the operator wave past -- reviewing with no working scanner.
+has stcat || die 1 "'stcat' not on PATH; cannot neutralize review output."
+has unicode-show || die 1 "'unicode-show' not on PATH; the unicode scans cannot run."
 
+## Validate the single ref argument up front: a clear usage message instead of
+## a bare 'unbound variable' crash, and reject a leading-dash ref so it cannot
+## be misparsed as an option by check-ref-commits-for-unicode below (which takes
+## a bare ref, not the '...' range the git tools further down receive).
 if [ "$#" -ne 1 ]; then
    die 2 "usage: ${0##*/} <ref>"
 fi
-if [[ "${1}" == -* ]]; then
-   die 2 "ref '${1}' must not start with '-'."
+case "${1}" in
+   -*)
+      die 2 "ref '${1}' must not start with '-'."
+      ;;
+esac
+
+## Resolve the ref to an IMMUTABLE commit ONCE, up front, and drive every step below from
+## that commit -- the scan and all four display steps must see the SAME content. The primary
+## caller (dm-packaging-helper-script) reviews refs/remotes/<remote>/<branch>; a concurrent or
+## automatic 'git fetch' can move that ref between the scan and the minutes-long git-meld /
+## git-kdiff3 windows, which each RE-RESOLVE a ref name and would then display commits that were
+## never unicode-scanned. A commit id cannot move, so pinning closes that TOCTOU.
+## Safe to name the ref if it fails: die routes through log -> sanitize-string + stecho, which
+## neutralizes a U+202E (or other spoofing codepoint) in the name -- same reason the
+## leading-dash check above can print it.
+if ! target_commit="$(git rev-parse --verify --end-of-options "${1}^{commit}" 2>/dev/null)"; then
+   die 2 "ref '${1}' does not resolve to a commit."
 fi
 
 ## Handle the result of a unicode-spoofing scan ($1 = its exit code, $2 = its
@@ -37,6 +63,11 @@ fi
 ##   1    = a look-alike was found;
 ##   >= 2 = the scan could not run (bad/absent ref, no new commits, not a work
 ##          tree, git failure).
+## rc 1 is a real detection -- ask the operator via prompt_yes_no_tty
+## (log_run_die.sh, the same consent helper git-review uses) rather than
+## hard-aborting under errexit. rc >= 2 is a setup/usage error, NOT a detection:
+## continuing is futile (the diff would be empty or fail), so fail closed with
+## the real error rather than a misleading "unicode spoofing" prompt.
 ## prompt rc: 0 = continue; 1 = declined; 2 = no controlling terminal to ask (a
 ## CI/batch run) -> fail closed.
 review_prompt_or_die() {
@@ -61,7 +92,7 @@ review_prompt_or_die() {
 
 ## Scan the ref's new commits (content, messages, author identity)...
 scan_rc=0
-check-ref-commits-for-unicode "${1}" || scan_rc="$?"
+check-ref-commits-for-unicode "${target_commit}" || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-commits-for-unicode
 
 ## ...and every ref NAME in the repo, for spoofing via non-ASCII unicode.
@@ -75,12 +106,18 @@ scan_rc=0
 check-ref-names-for-unicode || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-names-for-unicode
 
-git --no-pager log "...${1}" | NO_COLOR=1 stcat
+## Neutralize via stcat: a unicode/ANSI finding the operator consented past
+## (review_prompt_or_die) must not inject the terminal through the raw log.
+## NO_COLOR=1 so attacker SGR color (e.g. black-on-black to hide text) is
+## neutralized too -- stcat keeps SGR when color is enabled, and a commit
+## message is attacker-controlled. --no-pager matches the rest of the review
+## flow, which never pages (git-review-driver.sh disables it too).
+git --no-pager log "...${target_commit}" | NO_COLOR=1 stcat
 
-git-diff-review "...${1}"
+git-diff-review "...${target_commit}"
 
-git-meld "...${1}"
+git-meld "...${target_commit}"
 
-git-kdiff3 "...${1}"
+git-kdiff3 "...${target_commit}"
 
 true "$0: OK."

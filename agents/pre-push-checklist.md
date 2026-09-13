@@ -44,7 +44,7 @@ Wire as a hook so the gate is unmissable:
         cannot check "is it dist-ai tested", so confirm here.
         A pure sourced library keeps zero top-level strict-mode
         and no guard.
-    [ ] has from has.sh, not 'command -v X >/dev/null 2>&1'
+    [ ] has from has.bsh, not 'command -v X >/dev/null 2>&1'
         (R-090)
     [ ] safe-rm, not rm (R-120)
     [ ] temp-dir mkdir sets the mode atomically:
