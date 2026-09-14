@@ -805,11 +805,11 @@ producing an empty count.
 
 ## Command availability checks
 
-**R-090: `has` from `helper-scripts/has.sh`, not
+**R-090: `has` from `helper-scripts/has.bsh`, not
 `command -v X >/dev/null 2>&1`.**
 
-    # shellcheck source=/usr/libexec/helper-scripts/has.sh
-    source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+    # shellcheck source=/usr/libexec/helper-scripts/has.bsh
+    source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 
     has github-org-fork \
        || die 1 "'github-org-fork' not on PATH"

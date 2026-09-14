@@ -23,8 +23,8 @@ dist_build_source_run="true"
 source "${HOME}/derivative-maker/help-steps/pre"
 source "${HOME}/derivative-maker/help-steps/variables"
 
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/has.bsh
 
 if [ "$(id -u)" = "0" ]; then
    true "ERROR: Do not run this as root!"

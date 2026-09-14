@@ -222,7 +222,14 @@ jobs:
           # Must live INSIDE the run: script, with a single '#'. As a YAML
           # comment above 'run:' it never reached shellcheck at all, so the
           # suppression looked deliberate while doing nothing.
-          dist-ai/usr/bin/dist-ai-tests-all ${CATEGORIES} \
+          #
+          # dist-ai owns the CI-side run logic (dist-ai-tests-ci-run.sh): real
+          # derivative-maker builds start NON-ROOT and sudo internally, so when
+          # this container step runs as root the script drops to a non-root build
+          # user (passwordless sudo, owning the workspace) and runs the suite as
+          # it -- a faithful reproduction. Keeping it in dist-ai (not inlined here)
+          # means future CI-run changes land in dist-ai, not this reusable.
+          dist-ai/ci/dist-ai-tests-ci-run.sh ${CATEGORIES} \
             --component "${COMPONENT}" \
             --component-root "${GITHUB_WORKSPACE}/component" \
             --timeout-core 600 \

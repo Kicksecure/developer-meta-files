@@ -33,7 +33,7 @@ fi
 cd -- "${derivative_maker_source_code_dir}"
 
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/get_colors.sh"
-source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.sh"
+source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/has.bsh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/log_run_die.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/git.sh"
 source "${derivative_maker_source_code_dir}/packages/kicksecure/helper-scripts/usr/libexec/helper-scripts/parallel.bsh"
@@ -3142,9 +3142,9 @@ main() {
    parse_args "$@"
    batch_meta_dry_run="${parsed_dry_run}"
    if [ "${batch_meta_dry_run}" = "true" ]; then
-      ## function 'log_run' honors variable '$dry_run'
-      dry_run=1
-      export dry_run
+      ## function 'log_run' honors variable '$dry_run_skip_commands'
+      dry_run_skip_commands=1
+      export dry_run_skip_commands
    fi
 
    if [ -z "${parsed_mode}" ] && [ -n "${parsed_target}" ]; then

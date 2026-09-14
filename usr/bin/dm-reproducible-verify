@@ -63,8 +63,8 @@ source "${MYDIR}/../libexec/developer-meta-files/signing-lib.bsh"
 ## Do NOT remove this source from helper-scripts. This script runs with a full
 ## derivative-maker source tree above it.
 HELPER_SCRIPTS_PATH="${HELPER_SCRIPTS_PATH:-../../../helper-scripts}"
-# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.sh
-source "${HELPER_SCRIPTS_PATH}"/usr/libexec/helper-scripts/has.sh
+# shellcheck source=../../../helper-scripts/usr/libexec/helper-scripts/has.bsh
+source "${HELPER_SCRIPTS_PATH}"/usr/libexec/helper-scripts/has.bsh
 
 image_file=""
 ## Verification trust anchors the lib's verify_cmd_* read; defaults match

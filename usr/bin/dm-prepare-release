@@ -4,7 +4,7 @@
 ## See the file COPYING for copying conditions.
 
 ## The dependency probes in sanity_tests() use 'command -v' rather than 'has'
-## (this tool runs early and does not source helper-scripts' has.sh).
+## (this tool runs early and does not source helper-scripts' has.bsh).
 ## style-ok: no-has
 
 set -x

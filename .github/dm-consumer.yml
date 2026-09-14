@@ -19,7 +19,7 @@ dist-ai-tests:
   apt-packages: "jq python3-yaml shellcheck safe-rm curl pre-commit-hooks pv xz-utils"
   ## The developer-meta-files-tests (style gate, dm-review-branch) and
   ## github-org-tools-tests suites drive this repo's tools, which source
-  ## helper-scripts (sanitize-string, has.sh, log_run_die) via
+  ## helper-scripts (sanitize-string, has.bsh, log_run_die) via
   ## HELPER_SCRIPTS_PATH; check that repo out so the suites run instead of
   ## skipping.
   helper-scripts: true
