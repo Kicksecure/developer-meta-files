@@ -49,8 +49,7 @@ canonical_dependabot_yml="${derivative_maker_source_code_dir}/packages/kicksecur
 #[ -v DM_GITLAB_DEV ] || DM_GITLAB_DEV='gitlab-adrelanos'
 DM_GITLAB_DEV=''
 ## TODO
-#[ -v DM_GITHUB_MIRROR ] || DM_GITHUB_MIRROR='org-ai-assisted'
-DM_GITHUB_MIRROR=''
+[ -v DM_GITHUB_MIRROR ] || DM_GITHUB_MIRROR='org-ai-assisted'
 
 ## ArrayBolt3 (fetch-only) is intentionally excluded.
 [ -v DM_PUSH_REMOTES_UNIVERSE ] || DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" "${DM_GITLAB_DEV}")
@@ -1520,7 +1519,7 @@ pkg_git_diff_and_merge_branch_arraybolt3() {
 }
 
 pkg_git_diff_and_merge_branch_bot() {
-   pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/master"
+   pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/ai"
 }
 
 ### }}}
