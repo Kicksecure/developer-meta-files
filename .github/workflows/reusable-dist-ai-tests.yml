@@ -66,6 +66,11 @@ on:
         required: false
         type: string
         default: 'master'
+      timeout-minutes:
+        description: 'Job wall-clock budget in minutes. Default 20 (the fast --core lane); the slower --fuzz lane needs more.'
+        required: false
+        type: number
+        default: 20
 
 permissions:
   contents: read
@@ -92,7 +97,7 @@ jobs:
       ## Scope: the fork-PR guard below means only same-repo code reaches
       ## this job, so no untrusted contributor payload runs with it.
       options: --cap-add=SYS_ADMIN --security-opt=apparmor=unconfined
-    timeout-minutes: 20
+    timeout-minutes: ${{ inputs.timeout-minutes }}
     ## Fork-PR guard: forked PRs need maintainer review before consuming
     ## CI time. Same guard as the other reusables (agents/security.md).
     ## CI runs only where we enabled it. In a CALLED reusable the vars
