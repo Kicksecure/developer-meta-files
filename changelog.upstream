@@ -1,3 +1,39 @@
+commit 6f3e86d304fe76ec0b0bb8c685168d80d450875c
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 15 10:17:41 2026 -0400
+
+    .
+
+commit 0a2dd260a6becb93fee93069ffe5bb0792587245
+Merge: dff8d875 e77fbf70
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 15 10:15:19 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/ai'
+
+commit dff8d875efb78d51b380b90d02ed2422a65de4c5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 15 10:14:36 2026 -0400
+
+    .
+
+commit bb07116ff76472b0db9cc853da5aab6aa70db173
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 15 11:50:16 2026 +0000
+
+    bumped changelog version
+
+commit e77fbf70410d6d0609b71cfe60ba93b149d51a57
+Author: claude (dev556 4bdc306f-7204-4d7f-ba68-0c897dcf0291) <noreply@anthropic.com>
+Date:   Tue Sep 15 06:46:10 2026 -0400
+
+    reusable-dist-ai-tests: make job timeout an input (default 20)
+
+    - the --fuzz lane for a large consumer (helper-scripts) exceeds the fixed 20-min
+      wall and the run is killed/cancelled with no signal; --core and the small
+      --fuzz consumers finish well under it. Expose timeout-minutes (default 20, so
+      every current caller is unchanged) so the fuzz caller can request more.
+
 commit 95188adaa02cd23b7c18d1072bb150775a55add2
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 14 02:37:46 2026 -0400
