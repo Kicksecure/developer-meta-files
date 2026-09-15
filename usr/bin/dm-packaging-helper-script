@@ -49,8 +49,7 @@ canonical_dependabot_yml="${derivative_maker_source_code_dir}/packages/kicksecur
 #[ -v DM_GITLAB_DEV ] || DM_GITLAB_DEV='gitlab-adrelanos'
 DM_GITLAB_DEV=''
 ## TODO
-#[ -v DM_GITHUB_MIRROR ] || DM_GITHUB_MIRROR='org-ai-assisted'
-DM_GITHUB_MIRROR=''
+[ -v DM_GITHUB_MIRROR ] || DM_GITHUB_MIRROR='org-ai-assisted'
 
 ## ArrayBolt3 (fetch-only) is intentionally excluded.
 [ -v DM_PUSH_REMOTES_UNIVERSE ] || DM_PUSH_REMOTES_UNIVERSE=( github-kicksecure github-whonix "${DM_GITHUB_MIRROR}" "${DM_GITHUB_DEV}" "${DM_GITLAB_DEV}")
@@ -1516,14 +1515,11 @@ pkg_git_diff_and_merge_branch_upstream() {
 }
 
 pkg_git_diff_and_merge_branch_arraybolt3() {
-   ## TODO: remove
-   repo_skip "privleap" || return 0
-
    pkg_git_diff_and_merge_branch "ArrayBolt3/arraybolt3/trixie"
 }
 
 pkg_git_diff_and_merge_branch_bot() {
-   pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/master"
+   pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/ai"
 }
 
 ### }}}
@@ -1593,7 +1589,7 @@ pkg_git_diff_and_merge_branch() {
       ## '--no-ff' so the maintainer-signed merge commit authenticates
       ## the drive-by commits below it (sq-git policy).
       dry_run_or_run git merge --no-ff "${origin_ref}"
-   elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
+   elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/ai" ]; then
       ## TODO: Can't we verify against Claude's SSH key?
       #git verify-commit "${origin_ref}"
       ## '--no-ff': same sq-git policy rationale as above; maintainer
