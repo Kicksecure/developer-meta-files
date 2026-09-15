@@ -1589,7 +1589,7 @@ pkg_git_diff_and_merge_branch() {
       ## '--no-ff' so the maintainer-signed merge commit authenticates
       ## the drive-by commits below it (sq-git policy).
       dry_run_or_run git merge --no-ff "${origin_ref}"
-   elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/master" ]; then
+   elif [ "${origin_branch}" = "${DM_GITHUB_MIRROR}/ai" ]; then
       ## TODO: Can't we verify against Claude's SSH key?
       #git verify-commit "${origin_ref}"
       ## '--no-ff': same sq-git policy rationale as above; maintainer
