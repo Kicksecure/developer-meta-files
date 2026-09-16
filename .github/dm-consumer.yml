@@ -27,10 +27,11 @@ dist-ai-tests:
   ## package-build-freshness.bsh, which reads the changelog Source field.
   ## strip-nondeterminism: test_prepare_release_libvirt_compress_reproducible
   ## drives the real reproducible-image pipeline. dosfstools (mkfs.fat) + mtools
-  ## (mcopy, mmd): test_normalize_fat_partition builds and re-images a real FAT
-  ## partition. Each is a hard requirement -- a present subject with the tool
-  ## absent FATALs, not skips.
-  apt-packages: "jq python3-yaml python3-apt shellcheck shfmt safe-rm curl pre-commit-hooks pv xz-utils dpkg-dev strip-nondeterminism dosfstools mtools"
+  ## (mcopy, mmd) + xxd: test_normalize_fat_partition builds and re-images a real
+  ## FAT partition and reads its volume serial with 'xxd -p' (xxd is its own
+  ## package now, split from vim-common). Each is a hard requirement -- a present
+  ## subject with the tool absent FATALs, not skips.
+  apt-packages: "jq python3-yaml python3-apt shellcheck shfmt safe-rm curl pre-commit-hooks pv xz-utils dpkg-dev strip-nondeterminism dosfstools mtools xxd"
   ## The developer-meta-files-tests (style gate, dm-review-branch) and
   ## github-org-tools-tests suites drive this repo's tools, which source
   ## helper-scripts (sanitize-string, has.bsh, log_run_die) via
