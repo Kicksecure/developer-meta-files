@@ -19,12 +19,18 @@ dist-ai-tests:
   ## shfmt: the dist-ai-style / bash_ast gate (test_pre_push_static_style_rules,
   ## test_bash_ast_surrogate) FATALs "shfmt not on PATH" without it -- a hard
   ## requirement, not a skip.
+  ## python3-apt (apt_pkg): dist-ai-style's R-194 apt-hook rule parses apt.conf
+  ## with apt's own parser; the module is a declared hard dependency (it raises
+  ## ImportError, exit 3, not a silent skip), and the runner's stock python3 lacks
+  ## it. Without it test_pre_push_detect + test_pre_push_static_style_rules crash.
   ## dpkg-dev (dpkg-parsechangelog): test_package_needs_rebuild sources
   ## package-build-freshness.bsh, which reads the changelog Source field.
   ## strip-nondeterminism: test_prepare_release_libvirt_compress_reproducible
-  ## drives the real reproducible-image pipeline. Each is a hard requirement -- a
-  ## present subject with the tool absent FATALs, not skips.
-  apt-packages: "jq python3-yaml shellcheck shfmt safe-rm curl pre-commit-hooks pv xz-utils dpkg-dev strip-nondeterminism"
+  ## drives the real reproducible-image pipeline. dosfstools (mkfs.fat) + mtools
+  ## (mcopy, mmd): test_normalize_fat_partition builds and re-images a real FAT
+  ## partition. Each is a hard requirement -- a present subject with the tool
+  ## absent FATALs, not skips.
+  apt-packages: "jq python3-yaml python3-apt shellcheck shfmt safe-rm curl pre-commit-hooks pv xz-utils dpkg-dev strip-nondeterminism dosfstools mtools"
   ## The developer-meta-files-tests (style gate, dm-review-branch) and
   ## github-org-tools-tests suites drive this repo's tools, which source
   ## helper-scripts (sanitize-string, has.bsh, log_run_die) via
