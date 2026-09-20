@@ -89,10 +89,6 @@ val() {
       return 0
    fi
 
-   ## '${!1:-}', not '${!1}': under 'set -o nounset' an indirect expansion of an
-   ## unset variable aborts the command substitution, so the field renders EMPTY
-   ## instead of falling through to 'unknown' -- an empty Deb822 value is not a
-   ## well-formed record.
    local v="${!1:-}"
    printf '%s' "${v:-unknown}"
 }
