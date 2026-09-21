@@ -1,0 +1,215 @@
+## Copyright (C) 2026 - 2026 ENCRYPTED SUPPORT LLC <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+## AI-Assisted
+
+## Reusable workflow: coverage-guided fuzzing via ClusterFuzzLite.
+##
+## The OSS-Fuzz base-builder + compile_python_fuzzer (or the C/C++
+## build) pipeline wraps each of the caller's fuzz harnesses into a
+## libFuzzer-style runnable, then runs them under a sanitizer. The
+## build reads the CALLER's .clusterfuzzlite/ (Dockerfile + build.sh)
+## from the caller checkout -- a reusable runs in the caller's repo
+## context, so 'actions/checkout' with no 'repository' fetches the
+## code under test and ClusterFuzzLite finds its build integration.
+##
+## Two jobs, gated by the caller's triggering event:
+##   - pr:    short per-fuzzer budget, mode=code-change, on pull_request.
+##   - batch: longer per-fuzzer budget, mode=batch, on schedule /
+##            workflow_dispatch.
+##
+## Eliminates per-repo duplication: privleap and helper-scripts shipped
+## byte-identical ~187-line local-python-fuzz.yml files, each re-pinning
+## the same google/clusterfuzzlite action SHAs and repeating the job
+## split + step-summary. The action SHAs now have one owner here; a bump
+## propagates to every consumer that '@master'-tracks this file.
+##
+## Caller responsibilities (see agents/github-actions.md):
+##   - Own the triggers, the paths filter, and the schedule (G-A-002:
+##     schedule cannot live in workflow_call).
+##   - Own the concurrency group (G-A-006: a group here would deadlock
+##     with the caller's, since github.workflow resolves to the caller).
+##   - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
+##   - Grant 'security-events: write' on the calling job for SARIF upload.
+##
+## Caller example -- see consumer local-python-fuzz.yml.
+##
+## Reference:
+## https://google.github.io/clusterfuzzlite/running-clusterfuzzlite/github-actions/
+
+name: ClusterFuzzLite (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      language:
+        description: 'ClusterFuzzLite project language (python, c, c++, ...).'
+        required: false
+        type: string
+        default: 'python'
+      sanitizer:
+        description: 'Sanitizer to build + run with (address, undefined, ...).'
+        required: false
+        type: string
+        default: 'address'
+      fuzz-seconds-pr:
+        description: 'Per-fuzzer time budget (seconds) for the code-change PR job.'
+        required: false
+        ## string, not number: a caller forwards its workflow_dispatch
+        ## input (always a string) into fuzz-seconds-batch, and a number-
+        ## typed input would reject that string. The CFLite action takes
+        ## the value as a string regardless.
+        type: string
+        default: '60'
+      fuzz-seconds-batch:
+        description: 'Per-fuzzer time budget (seconds) for the scheduled/dispatch batch job.'
+        required: false
+        type: string
+        default: '600'
+
+permissions:
+  contents: read
+
+## No 'concurrency:' block -- see agents/github-actions.md G-A-006 (the
+## caller owns it; github.workflow here resolves to the caller's name).
+
+jobs:
+  pr:
+    name: ClusterFuzzLite PR fuzz
+    ## CI runs only where we enabled it; in a called reusable the vars
+    ## context resolves against the CALLER's repo/org, so this one
+    ## condition gates every consumer (upstream + forks skip with no
+    ## runner, run stays green). ANDed with the same-repo fork-PR guard.
+    if: >-
+      github.event_name == 'pull_request'
+      && vars.CI_ENABLED_ORG_AI_ASSISTED == 'true'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    env:
+      DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
+    steps:
+      - name: Checkout repository
+        ## https://github.com/actions/checkout/releases/tag/v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Build fuzzers
+        ## https://github.com/google/clusterfuzzlite/tree/v1
+        ## > 884713a6c30a92e5e8544c39945cd7cb630abcd1 (HEAD of v1; no release tag)
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          language: ${{ inputs.language }}
+          sanitizer: ${{ inputs.sanitizer }}
+
+      - name: Run fuzzers (code-change)
+        ## https://github.com/google/clusterfuzzlite/tree/v1
+        ## > 884713a6c30a92e5e8544c39945cd7cb630abcd1
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ## Per-fuzzer time budget. Total ~ N_fuzzers x this.
+          fuzz-seconds: ${{ inputs.fuzz-seconds-pr }}
+          mode: 'code-change'
+          sanitizer: ${{ inputs.sanitizer }}
+          output-sarif: true
+
+      - name: Checkout dist-ai (shared CI helper binaries)
+        if: always()
+        ## Needed for usr/bin/step-summary-emit. @master is the org's
+        ## single source of truth (github.sha when dist-ai tests itself).
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/dist-ai
+          ref: ${{ env.DIST_AI_REF }}
+          path: .github/dist-ai
+          persist-credentials: false
+
+      - name: Emit step summary
+        if: always()
+        ## Minimal panel for the PR Checks tab. Crash details / SARIF
+        ## live in the run_fuzzers step's outputs. Template values
+        ## routed through env: to avoid inline-${{...}}-in-run:
+        ## (CodeQL js/actions/command-injection).
+        env:
+          JOB_STATUS: ${{ job.status }}
+          FUZZ_SECONDS: ${{ inputs.fuzz-seconds-pr }}
+        run: |
+          ./.github/dist-ai/usr/bin/step-summary-emit \
+            --tool 'ClusterFuzzLite (code-change)' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "mode=code-change" \
+            --row "fuzz-seconds=${FUZZ_SECONDS}"
+
+  batch:
+    name: ClusterFuzzLite batch fuzz
+    ## CI runs only where we enabled it; the batch lane fires on
+    ## schedule / workflow_dispatch (no fork-PR case to guard).
+    if: >-
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      && vars.CI_ENABLED_ORG_AI_ASSISTED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      security-events: write
+      ## ClusterFuzzLite stores corpora / crashes via actions/cache,
+      ## which needs neither contents:write nor actions:write --
+      ## contents:read covers cache reads.
+    env:
+      DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
+    steps:
+      - name: Checkout repository
+        ## https://github.com/actions/checkout/releases/tag/v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Build fuzzers
+        ## https://github.com/google/clusterfuzzlite/tree/v1
+        ## > 884713a6c30a92e5e8544c39945cd7cb630abcd1 (HEAD of v1; no release tag)
+        uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          language: ${{ inputs.language }}
+          sanitizer: ${{ inputs.sanitizer }}
+
+      - name: Run fuzzers (batch)
+        ## https://github.com/google/clusterfuzzlite/tree/v1
+        ## > 884713a6c30a92e5e8544c39945cd7cb630abcd1
+        uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fuzz-seconds: ${{ inputs.fuzz-seconds-batch }}
+          mode: 'batch'
+          sanitizer: ${{ inputs.sanitizer }}
+          output-sarif: true
+
+      - name: Checkout dist-ai (shared CI helper binaries)
+        if: always()
+        ## Needed for usr/bin/step-summary-emit. See the 'pr' job.
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: org-ai-assisted/dist-ai
+          ref: ${{ env.DIST_AI_REF }}
+          path: .github/dist-ai
+          persist-credentials: false
+
+      - name: Emit step summary
+        if: always()
+        ## Same minimal pattern as the 'pr' job. Template values routed
+        ## through env: (CodeQL js/actions/command-injection).
+        env:
+          JOB_STATUS: ${{ job.status }}
+          FUZZ_SECONDS: ${{ inputs.fuzz-seconds-batch }}
+        run: |
+          ./.github/dist-ai/usr/bin/step-summary-emit \
+            --tool 'ClusterFuzzLite (batch)' \
+            --column-header field \
+            --row "outcome=${JOB_STATUS}" \
+            --row "mode=batch" \
+            --row "fuzz-seconds=${FUZZ_SECONDS}"
