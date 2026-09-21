@@ -30,7 +30,8 @@
 ##   - Own the concurrency group (G-A-006: a group here would deadlock
 ##     with the caller's, since github.workflow resolves to the caller).
 ##   - Hardcode the owner in 'jobs.<id>.uses:' (G-A-001).
-##   - Grant 'security-events: write' on the calling job for SARIF upload.
+##   - Grant 'actions: read' on the calling job so ClusterFuzzLite can
+##     download the prior-run corpus (stored as GitHub artifacts).
 ##
 ## Caller example -- see consumer local-python-fuzz.yml.
 ##
@@ -53,7 +54,7 @@ on:
         type: string
         default: 'address'
       fuzz-seconds-pr:
-        description: 'Per-fuzzer time budget (seconds) for the code-change PR job.'
+        description: 'Total fuzzing seconds for the code-change PR job (ClusterFuzzLite splits it across all fuzz targets).'
         required: false
         ## string, not number: a caller forwards its workflow_dispatch
         ## input (always a string) into fuzz-seconds-batch, and a number-
@@ -62,7 +63,7 @@ on:
         type: string
         default: '60'
       fuzz-seconds-batch:
-        description: 'Per-fuzzer time budget (seconds) for the scheduled/dispatch batch job.'
+        description: 'Total fuzzing seconds for the scheduled/dispatch batch job (ClusterFuzzLite splits it across all fuzz targets).'
         required: false
         type: string
         default: '600'
@@ -88,7 +89,11 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      security-events: write
+      ## actions: read lets run_fuzzers download the prior-run corpus,
+      ## which ClusterFuzzLite stores as GitHub artifacts when no
+      ## storage-repo is set; without it the download 403s, the error is
+      ## swallowed, and every run restarts from an empty corpus.
+      actions: read
     env:
       DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
     steps:
@@ -112,11 +117,10 @@ jobs:
         uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          ## Per-fuzzer time budget. Total ~ N_fuzzers x this.
+          ## Total budget; ClusterFuzzLite divides it across all targets.
           fuzz-seconds: ${{ inputs.fuzz-seconds-pr }}
           mode: 'code-change'
           sanitizer: ${{ inputs.sanitizer }}
-          output-sarif: true
 
       - name: Checkout dist-ai (shared CI helper binaries)
         if: always()
@@ -157,10 +161,11 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-      security-events: write
-      ## ClusterFuzzLite stores corpora / crashes via actions/cache,
-      ## which needs neither contents:write nor actions:write --
-      ## contents:read covers cache reads.
+      ## actions: read: run_fuzzers downloads the accumulated corpus,
+      ## which ClusterFuzzLite stores as GitHub artifacts (no storage-repo
+      ## set), via the artifacts REST API. Without it the 403 is swallowed
+      ## and the batch fuzzes from an empty corpus, losing all prior gains.
+      actions: read
     env:
       DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
     steps:
@@ -184,10 +189,10 @@ jobs:
         uses: google/clusterfuzzlite/actions/run_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          ## Total budget; ClusterFuzzLite divides it across all targets.
           fuzz-seconds: ${{ inputs.fuzz-seconds-batch }}
           mode: 'batch'
           sanitizer: ${{ inputs.sanitizer }}
-          output-sarif: true
 
       - name: Checkout dist-ai (shared CI helper binaries)
         if: always()
