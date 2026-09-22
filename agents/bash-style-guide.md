@@ -68,6 +68,7 @@ policy.
     set -o errtrace
     shopt -s inherit_errexit
     shopt -s shift_verbose
+    export LC_ALL=C
 
 Why: `errexit` aborts on first uncaught failure. `nounset` catches
 unset-variable typos. `pipefail` makes a pipeline's exit code the
@@ -76,6 +77,10 @@ is not masked by a later command's success.
 `errtrace` makes ERR traps inherit into shell functions.
 `inherit_errexit` makes `$()` subshells respect errexit (bash >= 4.4).
 `shift_verbose` logs when `shift` runs past argv end.
+`export LC_ALL=C` pins a deterministic C locale, so tool output,
+sorting and number formatting do not vary with the caller's locale.
+All seven are required and gate-enforced (R-010 checks each at column
+zero in the first 160 lines).
 
 **R-010b: Do not declare a versioned `bash` dependency (`bash (>= 4.4)`
 or similar) in `debian/control` for the strict block.** Supported Debian
