@@ -1,3 +1,103 @@
+commit 95aca6697a11a2f841384d26015ebba96f3b43eb
+Merge: 0f25a722 d5e9377e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Sep 21 22:48:38 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit d5e9377e8e53997437c3a65ab4b4a7bfe2de55f8
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Sep 20 14:17:35 2026 -0400
+
+    Polish
+
+commit 277cd1ded82ffda6316a21f4e2f0855785abb769
+Merge: 0f25a722 df535cc2
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Sun Sep 20 13:57:35 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit df535cc27406d8dbcfa396915df469666305293d
+Author: claude (dev587 08ab2fb0-aea7-4613-8ed9-e48e3ab2753e) <noreply@anthropic.com>
+Date:   Wed Sep 16 03:24:32 2026 -0400
+
+    dm-consumer.yml: add xxd test dep
+
+    - test_normalize_fat_partition reads the FAT volume serial with xxd -p; the stock runner lacks it (its own package now, split from vim-common)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 3e47eb3a07ab99cf7996e22298a68216e7f96042
+Author: claude (dev587 08ab2fb0-aea7-4613-8ed9-e48e3ab2753e) <noreply@anthropic.com>
+Date:   Wed Sep 16 03:11:09 2026 -0400
+
+    dm-consumer.yml: add python3-apt, dosfstools, mtools
+
+    - python3-apt (apt_pkg): dist-ai-style's R-194 apt-hook rule parses apt.conf with
+      apt's own parser; the module is a declared hard dependency (ImportError -> exit
+      3, not a silent skip) and the stock runner python lacks it, crashing
+      test_pre_push_detect + test_pre_push_static_style_rules
+    - dosfstools + mtools: test_normalize_fat_partition builds/re-images a real FAT
+      partition (mkfs.fat, mcopy, mmd)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 1c9a6db2924b9c39cab241614d8f70da0c96be3f
+Author: claude (dev587 08ab2fb0-aea7-4613-8ed9-e48e3ab2753e) <noreply@anthropic.com>
+Date:   Wed Sep 16 02:30:49 2026 -0400
+
+    fix reproducible-build tools + consumer test deps
+
+    - dm-reproducible-buildinfo: val() used '${!1}', which under 'set -o nounset'
+      aborts the command substitution for an unset variable, rendering that field
+      EMPTY instead of 'unknown' (an empty Deb822 value is malformed); use '${!1:-}'
+    - dm-reproducible-compare-artifacts: the identical verdict used 'tee >> report',
+      writing only to the report file, so it never reached stdout (the DIFFER verdict
+      does); restore the pipefail-safe two-printf form (report + stdout)
+    - dm-consumer.yml: add dpkg-dev + strip-nondeterminism, hard requirements of
+      test_package_needs_rebuild and test_prepare_release_libvirt_compress_reproducible
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 4d3460190d0259b4b93f1bba0882b4180b50134a
+Author: claude (dev564 a2a404cb-4dac-4fa1-a9e0-162f76f98950) <noreply@anthropic.com>
+Date:   Tue Sep 15 23:33:20 2026 -0400
+
+    dm-consumer: install shfmt for the dist-ai-tests style gate
+
+    - The dist-ai-style / bash_ast gate (test_pre_push_static_style_rules,
+      test_bash_ast_surrogate) FATALs "shfmt not on PATH" without it -- a hard
+      requirement, not a skip -- which was the bulk of the dmf dist-ai-tests
+      failures once the DEVELOPER_META_FILES_DIR FATAL stopped masking them.
+
+commit 6441d392d51a73631011554eec803c46ca9a0c8c
+Author: claude (dev564 a2a404cb-4dac-4fa1-a9e0-162f76f98950) <noreply@anthropic.com>
+Date:   Tue Sep 15 22:03:48 2026 -0400
+
+    Wire the companion-branch dist-ai ref resolver
+
+    - The resolve-dist-ai-ref action was built + tested but never wired: the
+      reusable still checked out dist-ai@master, so a coordinated dist-ai (tests)
+      + consumer (behaviour) change had no green path -- the "merge dist-ai first"
+      ordering the resolver exists to remove.
+    - Default dist-ai-ref empty and resolve it: same-named companion branch in
+      dist-ai if it exists, else master (master pushes + lone branches stay on
+      master). An explicit dist-ai-ref still overrides.
+
+commit e3c5d1e5f05e5c656e2275a6d66dc437ab997a65
+Merge: a90b9ee9 0f25a722
+Author: assisted-by-ai <assisted-by-ai@users.noreply.github.com>
+Date:   Tue Sep 15 12:48:04 2026 -0400
+
+    Merge master into ai (remaster)
+
+commit 0f25a72278fa429ea5bcf8c222fc639af82528ae
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 15 15:53:05 2026 +0000
+
+    bumped changelog version
+
 commit 980477552c7cb934c8521b57b8cdacdc3f060dad
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Sep 15 11:51:37 2026 -0400
