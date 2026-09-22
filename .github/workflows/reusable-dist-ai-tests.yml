@@ -62,10 +62,15 @@ on:
         type: string
         default: '--core'
       dist-ai-ref:
-        description: 'Ref of org-ai-assisted/dist-ai to check out.'
+        description: >-
+          Explicit org-ai-assisted/dist-ai ref to check out. Empty (the default)
+          auto-resolves: the same-named COMPANION branch in dist-ai if it exists,
+          else master -- so a coordinated dist-ai (tests) + consumer (behaviour)
+          change travels under one branch name and is tested together (see the
+          resolve-dist-ai-ref action). Set only to force a specific ref.
         required: false
         type: string
-        default: 'master'
+        default: ''
       timeout-minutes:
         description: 'Job wall-clock budget in minutes. Default 20 (the fast --core lane); the slower --fuzz lane needs more.'
         required: false
@@ -131,11 +136,21 @@ jobs:
           path: component
           persist-credentials: false
 
+      - name: Resolve dist-ai ref (companion branch, else master)
+        id: resolve_dist_ai
+        if: inputs.dist-ai-ref == ''
+        uses: org-ai-assisted/developer-meta-files/.github/actions/resolve-dist-ai-ref@master
+
       - name: Checkout dist-ai (test suites)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: org-ai-assisted/dist-ai
-          ref: ${{ inputs.dist-ai-ref }}
+          ## Explicit input wins; otherwise the resolved ref -- the component's
+          ## branch-under-test if a same-named branch exists in dist-ai, else master.
+          ## So a coordinated dist-ai (tests) + consumer (behaviour) change lands on
+          ## one branch name and is tested together: no "merge dist-ai first" ordering,
+          ## while master pushes and lone consumer branches stay on dist-ai master.
+          ref: ${{ inputs.dist-ai-ref || steps.resolve_dist_ai.outputs.ref }}
           path: dist-ai
           persist-credentials: false
 

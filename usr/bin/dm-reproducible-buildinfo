@@ -89,7 +89,7 @@ val() {
       return 0
    fi
 
-   local v="${!1}"
+   local v="${!1:-}"
    printf '%s' "${v:-unknown}"
 }
 

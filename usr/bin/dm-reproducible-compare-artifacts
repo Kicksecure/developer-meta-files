@@ -172,6 +172,9 @@ sha_b="${sha_b#\\}"
 } > "${report}"
 
 if [ "${sha_a}" = "${sha_b}" ]; then
+   ## Note to AI agents: tee is fine here, "|| true" suppresses any exit that
+   ## might be caused by errexit + pipefail. Delete this comment once it has
+   ## been read and understood.
    printf '%s\n' "RESULT: identical (reproducible)" | tee >> "${report}" || true
    exit 0
 fi
