@@ -161,10 +161,10 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-      ## actions: read: run_fuzzers downloads the accumulated corpus,
-      ## which ClusterFuzzLite stores as GitHub artifacts (no storage-repo
-      ## set), via the artifacts REST API. Without it the 403 is swallowed
-      ## and the batch fuzzes from an empty corpus, losing all prior gains.
+      ## actions: read lets run_fuzzers download the prior-run corpus,
+      ## which ClusterFuzzLite stores as GitHub artifacts when no
+      ## storage-repo is set; without it the download 403s, the error is
+      ## swallowed, and every run restarts from an empty corpus.
       actions: read
     env:
       DIST_AI_REF: ${{ github.repository == 'org-ai-assisted/dist-ai' && github.sha || 'master' }}
