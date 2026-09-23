@@ -1,9 +1,76 @@
+commit a0eb403dcbd8882375e4cb81218465b843116c20
+Merge: 1b063569 0dd3b4e0
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 23 03:45:10 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 0dd3b4e01f503c091dffcf5d3ac9b6c8d39c5da3
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Sep 22 23:31:29 2026 -0400
+
+    comment
+
+commit c646d3097ea2084788321073cb023f003b697a69
+Merge: 1b063569 c734e7a7
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Sep 22 22:29:11 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit c734e7a707e126c1dd3347edea18fd29ed5f9ca8
+Author: claude (dev642 9d48cdf5-f638-4345-b0b9-9d342733a234) <noreply@anthropic.com>
+Date:   Tue Sep 22 13:25:01 2026 -0400
+
+    R-010: document export LC_ALL=C as the 7th directive
+
+    - the dist-ai-style gate enforces 7 strict-mode directives
+      (dist_ai/rules/shell.py _STRICT_DIRECTIVES) but the doc listed only 6
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 1b0635699ab8a5b69615563b7d4c9ba2de34763e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 22 03:06:30 2026 +0000
+
+    bumped changelog version
+
 commit 95aca6697a11a2f841384d26015ebba96f3b43eb
 Merge: 0f25a722 d5e9377e
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 21 22:48:38 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 76614035d5c4d8053cc7f619f659a56e879f46c4
+Author: claude (dev618 cec5beeb-a999-4ee1-af89-39473b56f3f7) <noreply@anthropic.com>
+Date:   Mon Sep 21 05:47:05 2026 -0400
+
+    Fix clusterfuzzlite reusable: corpus perms, sarif, budget
+
+    - Add actions: read: corpus is stored as GitHub artifacts (no
+      storage-repo), so run_fuzzers needs it to download the prior
+      corpus; without it the 403 is swallowed and every run starts empty.
+    - Drop output-sarif + security-events: write: the SARIF file was
+      written but never uploaded (no upload-sarif step), so the write
+      scope was unused; crashes still fail the check.
+    - fuzz-seconds is the TOTAL budget split across targets, not
+      per-fuzzer; correct the input descriptions and comments.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit b5f3625dfee2e985694c4638b1b0406e43f065bb
+Author: claude (dev618 cec5beeb-a999-4ee1-af89-39473b56f3f7) <noreply@anthropic.com>
+Date:   Mon Sep 21 05:19:44 2026 -0400
+
+    Add reusable-clusterfuzzlite.yml
+
+    - Consumers shipped near-identical ~187-line local-python-fuzz.yml
+      files, each re-pinning the same google/clusterfuzzlite action SHAs.
+    - One owner for the pr/batch split, the action pins, and the step
+      summary; language/sanitizer/fuzz-seconds are inputs.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 
 commit d5e9377e8e53997437c3a65ab4b4a7bfe2de55f8
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
