@@ -52,3 +52,11 @@ live in the AI-maintained dist-ai repo, not here
     dm-virtualbox-wiki-links-tests "$PWD/usr/bin/dm-virtualbox-update-local-and-wiki-links"   # usr/share/dm-virtualbox-wiki-links-tests/
 
 CI wiring: see the ci (github/gh) skill.
+
+**Safe payloads only.** A test fixture or symlink target is a
+throwaway decoy under the test's own `mktemp` work dir (e.g.
+`${work}/decoy_file` holding `DECOY-NOT-A-SECRET`), never a real system
+file. A symlink / escape / deref case only needs the SHAPE ("is a
+symlink", "escapes the copied tree"), so never point one at
+`/etc/passwd` or `/etc` -- a test bug that dereferences the fixture
+must not read real host data.

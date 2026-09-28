@@ -134,6 +134,30 @@ assumptions about its parsing tools:
 - **`curl`** (C). Trusted to handle hostile HTTP responses.
 - **bash**
 
+## Destructive ops gate on host state, not payload shape
+
+When an operation over an untrusted transport decides whether to
+DESTROY existing host data (wipe-then-replace, `safe-rm` + `mv`,
+overwrite), gate that decision on the HOST's own state, never on any
+property of the incoming payload. The untrusted side controls the
+payload SHAPE -- an archive/stream can be a file where a dir is
+expected, empty, or a misnamed top-level -- so `if <payload is a dir>
+then preserve else wipe` is attacker-controlled: force the payload
+non-dir and the wipe branch fires on the host.
+
+- Key the destructive branch on the host dest (does it already hold a
+  dir / `.git`?), not on the staged payload. On host-present-and-
+  payload-malformed, refuse / die -- never fall through to a wipe.
+- `[ -d X ]` FOLLOWS symlinks: a symlink-to-dir passes a bare `-d`
+  gate, then an `rsync SRC/ DST/` trailing-slash source dereferences it
+  and copies the link target. Consider the security impact of symlinks
+  on a case-by-case basis and consider if they should be rejected.
+- Test the hostile shapes explicitly -- file-named-as-dir, empty,
+  misnamed top-level, symlink-to-dir -- asserting the host artifact
+  SURVIVES and nothing exfiltrates. Exercise the REPLACE-OVER-EXISTING
+  path, not only the fresh / empty-dest path, which hides data-loss
+  bugs.
+
 ## What we do not carry in the source tree
 
 - **Speculative / aspirational security findings** ("if X ever

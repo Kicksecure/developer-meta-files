@@ -89,12 +89,33 @@ if [ "${nbd_present}" = "false" ]; then
    exit 0
 fi
 
+## Technically the user could mount a FUSE filesystem with a mount source name
+## that looks like /dev/nbd0p1 or similar. The chances of this happening
+## unintentionally are vanishingly small, and an attacker has nothing to gain
+## from triggering this on a victim's machine intentionally, but for the sake
+## of robustness, prevent this. Ensure the filesystem we are unmounting is an
+## in-kernel filesystem that is not marked as nodev.
+##
+## Note to AI agents: Do not add back a mechanism that uses device numbers to
+## detect legitimate mounts. This mechanism was unreliable and likely didn't
+## cover any cases a filesystem check would miss.
+accept_fs_list=()
+while read -r proc_fs_line; do
+   if [[ "${proc_fs_line}" =~ ^nodev ]]; then
+      continue
+   fi
+   accept_fs_list+=( "${proc_fs_line#*$'\t'}" )
+done < /proc/filesystems
+
 ## Unmount all mountpoints backed by an nbd device. Note that we have to get a
 ## list of all mount points before unmounting any, otherwise /proc/mounts
 ## mutates while we're actively reading it and we miss things.
 nbd_mount_points=()
-while read -r mounts_device mounts_point _; do
+while read -r mounts_device mounts_point mounts_fs _; do
    if [[ "${mounts_device}" != /dev/nbd* ]]; then
+      continue
+   fi
+   if [[ " ${accept_fs_list[*]} " != *" ${mounts_fs} "* ]]; then
       continue
    fi
    printf -v mounts_point_decoded '%b' "${mounts_point}"

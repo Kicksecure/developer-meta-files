@@ -109,6 +109,10 @@ jobs:
         uses: google/clusterfuzzlite/actions/build_fuzzers@884713a6c30a92e5e8544c39945cd7cb630abcd1  # v1
         with:
           language: ${{ inputs.language }}
+          ## code-change mode deletes unaffected fuzzers, which needs the
+          ## token to fetch the batch-run coverage artifacts; without it the
+          ## download 403s (swallowed) and every affected fuzzer is kept.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           sanitizer: ${{ inputs.sanitizer }}
 
       - name: Run fuzzers (code-change)

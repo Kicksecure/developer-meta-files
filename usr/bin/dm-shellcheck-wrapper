@@ -14,18 +14,6 @@ if ! test -d "${1:-}" && ! test -f "${1:-}" ; then
    exit 1
 fi
 
-opts=(
-   --exclude SC2086
-   --exclude SC2016
-   --exclude SC2034
-   --exclude SC2129
-   --exclude SC2004
-   --exclude SC2088
-   --exclude SC2015
-   --exclude SC2068
-   --exclude SC2001
-)
-
 while IFS= read -r -d '' file_name; do
    true "file_name: ${file_name}"
    if ! test -f "${file_name}" ; then
@@ -33,10 +21,10 @@ while IFS= read -r -d '' file_name; do
    fi
    ## Match the shebang only on the first line; a file that just
    ## mentions `#!/bin/bash` in a comment shouldn't qualify.
-   if ! head -n 1 -- "$file_name" | grep -- '^#!/bin/bash' >/dev/null 2>&1; then
+   if ! head -n 1 -- "${file_name}" | grep -- '^#!/bin/bash' >/dev/null 2>&1; then
       continue
    fi
-   if shellcheck "${opts[@]}" "${file_name}" ; then
+   if shellcheck "${file_name}" ; then
       continue
    fi
    file_name_short="${file_name##*/}"
