@@ -329,7 +329,9 @@ _auto-detected: no | auto-fixed: no_
 
 Bad -- fails OPEN when `${n}` is a non-integer override:
 
-    if [ "${n}" -gt "${MAX}" ]; then die 1 "too big"; fi
+    if [ "${n}" -gt "${MAX}" ]; then
+       die 1 "too big"
+    fi
 
 Good -- keep the `||`, or negate with `!` (still fires on the `[` error):
 
