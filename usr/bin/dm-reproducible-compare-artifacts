@@ -172,10 +172,6 @@ sha_b="${sha_b#\\}"
 } > "${report}"
 
 if [ "${sha_a}" = "${sha_b}" ]; then
-   ## tee --append: echo the verdict to stdout AND append it to the report, like
-   ## the DIFFER path below. A plain 'tee >> "${report}"' redirects tee's stdout
-   ## into the report, so nothing reaches the terminal (the verdict is swallowed).
-   ## '|| true' guards against errexit + pipefail on a tee/write hiccup.
    printf '%s\n' "RESULT: identical (reproducible)" | tee --append -- "${report}" || true
    exit 0
 fi
