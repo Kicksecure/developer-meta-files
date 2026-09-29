@@ -38,9 +38,21 @@ if [[ "${review_spec}" == -* ]]; then
    die 2 "ref '${review_spec}' must not start with '-' (git-diff options go before the ref)."
 fi
 
+## A bare '--' would forward to 'git diff' as the pathspec separator, turning the
+## ref into a pathspec: an empty, silently-successful review. It is never a valid
+## diff option here (the ref is the final argument), so reject it.
+for review_opt in "${review_opts[@]}"; do
+   if [ "${review_opt}" = '--' ]; then
+      die 2 "'--' is not a valid option here; the ref/range is the final argument."
+   fi
+done
+
 ## Accept a full revision range (base...target or base..target) as well as a bare
-## ref (reviewed against HEAD, the historical default). Git forbids '..' inside a
-## ref name, so the first '...'/'..' is unambiguously the range operator.
+## ref (reviewed against HEAD, the historical default). Split on the FIRST '...'
+## or '..' -- correct for the ref/range forms this tool takes (branch names, tags,
+## SHAs, remote/branch). An exotic revision whose text embeds '..' (git's
+## '^{/regex}' commit search or ':/text') is unsupported: it fails to resolve
+## loudly rather than being mis-split silently.
 if [[ "${review_spec}" == *...* ]]; then
    range_op='...'
    range_base="${review_spec%%...*}"
