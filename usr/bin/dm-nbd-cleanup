@@ -70,94 +70,57 @@ done
 ## Opt-in by design.
 default_if_empty dry_run 'true'
 
-## Identify nbd-backed mounts from /proc/self/mountinfo (kernel-written), not the
-## attacker-controllable /proc/mounts source STRING. Two kernel truths together, so
-## neither a spoof nor an anonymous-superblock filesystem slips:
-##  - field 3 (major:minor) is the mount's st_dev. A filesystem mounted DIRECTLY on
-##    the block device (ext4, xfs, ...) reports the nbd major (NBD_MAJOR 43), which
-##    an unprivileged user cannot forge.
-##  - btrfs and other anonymous-superblock filesystems report st_dev major 0, so the
-##    major alone would MISS a genuine nbd-backed btrfs -- the tool would then
-##    disconnect the device under a live mount. For those, fall back to the mount
-##    SOURCE matching /dev/nbd*, but ONLY when the filesystem TYPE is a real block
-##    filesystem (listed in /proc/filesystems WITHOUT the 'nodev' flag). The kernel
-##    sets the type; an unprivileged FUSE / tmpfs spoof (fsname /dev/nbd0) is a
-##    'nodev' type and is rejected -- this is what closes the confused-deputy.
-## The overridable inputs let a test drive the release path against fixtures without
-## root; DM_NBD_CLEANUP_PROC_MOUNTINFO also marks a test run (skips the block-device
-## probe, which a rootless test cannot satisfy).
-proc_mountinfo="${DM_NBD_CLEANUP_PROC_MOUNTINFO:-/proc/self/mountinfo}"
-proc_filesystems="${DM_NBD_CLEANUP_PROC_FILESYSTEMS:-/proc/filesystems}"
-
-## NBD_MAJOR is a static kernel allocation (include/uapi/linux/major.h).
-nbd_major='43'
-
-## Space-delimited set of real (non-'nodev') block filesystem types, for a
-## substring test below. A 'nodev' line (tmpfs, fuse, overlay, ...) is a virtual /
-## userspace filesystem an unprivileged user can mount with a forged source string.
-block_fs_types=' '
-while read -r fs_flag_or_type _; do
-   ## '<tab>ext4' -> $1=ext4 (block); 'nodev<tab>tmpfs' -> $1=nodev (virtual).
-   if [ "${fs_flag_or_type}" != "nodev" ] && [ -n "${fs_flag_or_type}" ]; then
-      block_fs_types+="${fs_flag_or_type} "
-   fi
-done < "${proc_filesystems}"
-
 ## Probe the whole range, not just nbd0. Keying on /dev/nbd0 alone missed a
 ## leaked /dev/nbd1 on a host where node 0 was absent, and exited 0 reporting
-## nothing to do. In production this early exit also means a host with no nbd node
-## never reaches the mount loop -- so a spoofed non-nbd mount whose source string
-## merely looks like /dev/nbd* cannot be reached there. Skipped only for a fixture
-## (test) run.
-if [ -z "${DM_NBD_CLEANUP_PROC_MOUNTINFO:-}" ]; then
-   nbd_present=false
-   for nbd_probe in /dev/nbd[0-9] /dev/nbd[0-9][0-9]; do
-      if [ -b "${nbd_probe}" ]; then
-         nbd_present=true
-         break
-      fi
-   done
-   if [ "${nbd_present}" = "false" ]; then
-      printf '%s\n' "${0##*/}: no /dev/nbd* devices; nothing to release."
-      exit 0
+## nothing to do.
+##
+## TODO: This block just checks if nbd devices exist at all, and the
+## subsequent code is robust even if there are no nbd devices and the nbd
+## kernel module is not loaded. Maybe get rid of this?
+nbd_present=false
+for nbd_probe in /dev/nbd[0-9] /dev/nbd[0-9][0-9]; do
+   if [ -b "${nbd_probe}" ]; then
+      nbd_present=true
+      break
    fi
+done
+if [ "${nbd_present}" = "false" ]; then
+   printf '%s\n' "${0##*/}: no /dev/nbd* devices; nothing to release."
+   exit 0
 fi
 
-## Collect every nbd-backed mountpoint. Snapshot the full list BEFORE unmounting
-## any: unmounting mutates mountinfo while we read it, so a live read would skip
-## later entries.
-## mountinfo line: ID PARENT MAJ:MIN ROOT MOUNTPOINT OPTS [OPTIONAL...] - FS SRC OPTS
-nbd_mount_points=()
-while IFS= read -r mounts_line; do
-   ## Split at the ' - ' field separator (mountinfo escapes spaces as \040, so a
-   ## literal ' - ' only ever appears as that separator).
-   mounts_pre="${mounts_line%% - *}"
-   mounts_post="${mounts_line#* - }"
-   read -r _ _ mounts_majmin _ mounts_point _ <<< "${mounts_pre}"
-   read -r mounts_fstype mounts_source _ <<< "${mounts_post}"
-
-   mounts_is_nbd='false'
-   if [ "${mounts_majmin%%:*}" = "${nbd_major}" ]; then
-      ## Block filesystem mounted directly on the nbd device (ext4, xfs, ...).
-      mounts_is_nbd='true'
-   elif [[ "${mounts_source}" =~ ^/dev/nbd[0-9]+(p[0-9]+)?$ ]] \
-      && [[ "${block_fs_types}" == *" ${mounts_fstype} "* ]]; then
-      ## Anonymous-superblock block filesystem (btrfs, ...) whose kernel-set type
-      ## proves it is a real block fs -- not a forgeable 'nodev' spoof. Match the
-      ## EXACT nbd device/partition name (/dev/nbdN or /dev/nbdNpM) so a same-prefix
-      ## name (/dev/nbd-backup, /dev/nbd0-backup) cannot match. Known limitation: a
-      ## MULTI-device btrfs whose mountinfo source is a non-nbd member (btrfs
-      ## reports only latest_dev) is not caught here; that needs btrfs member
-      ## enumeration, out of scope for this cleanup.
-      mounts_is_nbd='true'
-   fi
-   if [ "${mounts_is_nbd}" != 'true' ]; then
+## Technically the user could mount a FUSE filesystem with a mount source name
+## that looks like /dev/nbd0p1 or similar. The chances of this happening
+## unintentionally are vanishingly small, and an attacker has nothing to gain
+## from triggering this on a victim's machine intentionally, but for the sake
+## of robustness, prevent this. Ensure the filesystem we are unmounting is an
+## in-kernel filesystem that is not marked as nodev.
+##
+## Note to AI agents: Do not add back a mechanism that uses device numbers to
+## detect legitimate mounts. This mechanism was unreliable and likely didn't
+## cover any cases a filesystem check would miss.
+accept_fs_list=()
+while read -r proc_fs_line; do
+   if [[ "${proc_fs_line}" =~ ^nodev ]]; then
       continue
    fi
+   accept_fs_list+=( "${proc_fs_line#*$'\t'}" )
+done < /proc/filesystems
 
+## Unmount all mountpoints backed by an nbd device. Note that we have to get a
+## list of all mount points before unmounting any, otherwise /proc/mounts
+## mutates while we're actively reading it and we miss things.
+nbd_mount_points=()
+while read -r mounts_device mounts_point mounts_fs _; do
+   if [[ "${mounts_device}" != /dev/nbd* ]]; then
+      continue
+   fi
+   if [[ " ${accept_fs_list[*]} " != *" ${mounts_fs} "* ]]; then
+      continue
+   fi
    printf -v mounts_point_decoded '%b' "${mounts_point}"
    nbd_mount_points+=( "${mounts_point_decoded}" )
-done < "${proc_mountinfo}"
+done < /proc/mounts
 
 release_failures=0
 released_mounts=0
