@@ -1520,11 +1520,15 @@ pkg_git_diff_and_merge_branch_arraybolt3() {
 
 pkg_git_diff_and_merge_branch_bot() {
    ## TODO HUMAN: assigned to ArrayBolt3
-   repo_skip 'derivative-maker' || return 0
+   repo_skip 'developer-meta-files' || return 0
    repo_skip 'helper-scripts' || return 0
    repo_skip 'security-misc' || return 0
 
-   pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/ai"
+   if [ "${batch_current_package_reponame}" = "derivative-maker" ]; then
+      pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/master"
+   else
+      pkg_git_diff_and_merge_branch "${DM_GITHUB_MIRROR}/ai"
+   fi
 }
 
 ### }}}
