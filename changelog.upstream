@@ -1,3 +1,209 @@
+commit e7f634985e0d7880356ff3916cd349809c78a113
+Merge: 39ff529c 83dfeff1
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Mon Sep 28 01:42:13 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit 83dfeff1e535009a972b019c0f07e9e95ea3746f
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Sep 25 00:47:49 2026 -0400
+
+    Remove a comment, greatly simplify the unmount guard in dm-nbd-cleanup
+
+commit d6e53a6be077546adbe1de00192791c5e36d9b19
+Merge: e7f4689d 3313bca9
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Fri Sep 25 00:02:59 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit 3313bca9b280382633e9852a9ce10e74483fe34c
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 22:27:52 2026 -0400
+
+    dm-reproducible-compare-artifacts: print the identical verdict to stdout
+
+    - 'tee >> "${report}"' redirected tee's stdout into the report, so the
+      "RESULT: identical" verdict never reached the terminal (swallowed); use
+      'tee --append' like the DIFFER path so it echoes to stdout AND appends
+    - fixes the identical-control assertion in test_compare_artifacts_differ.sh
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit e7f4689d90568656eac5dc4f0f04320229139281
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Sep 24 16:16:21 2026 -0400
+
+    Move ISO dependencies into metapackages where possible
+
+commit 10b8948aeacfe2cb5a6a50fba3a36cfca1f34bc4
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 14:15:29 2026 -0400
+
+    dm-nbd-cleanup: match the exact nbd device name, not a loose prefix glob
+
+    - '/dev/nbd[0-9]*' still accepted an arbitrary suffix after the digit
+      (/dev/nbd0-backup); use an anchored regex ^/dev/nbd[0-9]+(p[0-9]+)?$ so only a
+      real nbd device or partition name matches the block-fs source fallback
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit caef2317095490afabb76194c1c87c3d706f8b71
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 14:05:44 2026 -0400
+
+    dm-nbd-cleanup: tighten nbd source match; note multi-device btrfs limit
+
+    - require a digit after /dev/nbd in the block-fs source fallback so a same-prefix
+      name (e.g. /dev/nbd-backup symlinked elsewhere) no longer matches
+    - document the known limitation: a multi-device btrfs whose mountinfo source is a
+      non-nbd member is not caught (needs btrfs member enumeration, out of scope)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 6951c30726bbc4f2c42e787a2594608e013f4607
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 13:53:42 2026 -0400
+
+    dm-nbd-cleanup: also catch anonymous-superblock nbd mounts (btrfs)
+
+    - keying only on the mountinfo major (43) skipped a genuine nbd-backed btrfs:
+      btrfs uses an anonymous superblock (st_dev major 0), so the device would be
+      disconnected under a live mount (EIO half-state)
+    - accept major 43 OR (source /dev/nbd* AND fstype is a real block filesystem per
+      /proc/filesystems, i.e. not a forgeable 'nodev' fuse/tmpfs spoof)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 688f59def50a6bef1a679676e7c4b3b42808be63
+Merge: 9eda1ad5 7f1e9c32
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 13:33:58 2026 -0400
+
+    Merge arraybolt3/trixie into ai
+
+    Rebase our work onto the trixie contributor branch (reviewed: a CI
+    github-token fix, test-fixture safety guidance, bash-style R-017/R-018/R-019
+    docs, security.md destructive-ops guidance; no overlap with our changes).
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 9eda1ad5cc99f8ef74a5855e613d0f73e7ef17e2
+Author: claude (dev678 4b9d02c3-c9d0-4b67-840e-26e507db8cd0) <noreply@anthropic.com>
+Date:   Thu Sep 24 13:14:44 2026 -0400
+
+    dm-nbd-cleanup: key nbd mounts on the kernel major, not the source string
+
+    - select mounts to unmount from /proc/self/mountinfo by NBD_MAJOR (43), the
+      kernel-reported backing-device major, instead of the /proc/mounts source
+      string: an unprivileged FUSE mount can spoof fsname=/dev/nbd0 and get
+      sudo-umounted (confused deputy). The major is unforgeable without privilege.
+    - override renamed DM_NBD_CLEANUP_PROC_MOUNTS -> DM_NBD_CLEANUP_PROC_MOUNTINFO
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit e0728c46e4648e7929fad4c9aad7bba3cb591f7e
+Author: claude (dev662 4b77f4f1-dde2-476d-8afe-086330c1ba2c) <noreply@anthropic.com>
+Date:   Thu Sep 24 02:14:41 2026 -0400
+
+    dm-shellcheck-wrapper: drop the 9 mirroring shellcheck excludes
+
+    - These mirrored dist-ai's project .shellcheckrc, which is now removed
+      (dist-ai's shell tree is fully shellcheck-clean). Keep the two in sync:
+      the interactive dev wrapper no longer blanket-masks
+      SC2086/2016/2034/2129/2004/2088/2015/2068/2001.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 9ea4f55acabe00afcf9d373d5350d37be2ee339f
+Author: claude (dev658 64d917f9-4c0a-4c1d-be51-e9f3a269e197) <noreply@anthropic.com>
+Date:   Thu Sep 24 01:57:06 2026 -0400
+
+    dm-nbd-cleanup: keep the nbd probe in production
+
+    - Restore the /dev/nbd* block-device probe, skipping it only when the mounts
+      fixture override is set (a rootless test has no real nbd node). Removing it
+      outright widened a pre-existing confused-deputy: on a host with no nbd device
+      the tool would otherwise process /proc/mounts and could sudo-umount a mount
+      whose source string merely looks like /dev/nbd* (FUSE fsname spoof).
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 15678a62a7c4a3dec399a47aff54e02202f1eca2
+Author: claude (dev658 64d917f9-4c0a-4c1d-be51-e9f3a269e197) <noreply@anthropic.com>
+Date:   Wed Sep 23 19:11:58 2026 -0400
+
+    dm-nbd-cleanup: make mount release testable
+
+    - Add DM_NBD_CLEANUP_PROC_MOUNTS override (default /proc/mounts) so a
+      test can drive the snapshot-before-unmount path against a fixture
+      without root or mount namespaces.
+    - Drop the up-front /dev/nbd* block-device probe (resolves its TODO): the
+      mount-collection and device-disconnect loops are already correct with
+      no nbd node present, so the early "nothing to release" exit only hid
+      that robustness and blocked a rootless behavioral test.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 7f1e9c32999c911a3bef66c9674cd6b85fa9f7ba
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Sep 23 17:04:01 2026 -0400
+
+    polish
+
+commit 63d90ab0c0ca860c2c356d6d315071a57a4f3560
+Merge: 39ff529c 057e4d3f
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Sep 23 15:59:12 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit 057e4d3f13e3774992e9b8122dcf84780ca12eda
+Author: claude (dev651 634d00b5-7189-458b-ab09-5aa46e29e604) <noreply@anthropic.com>
+Date:   Wed Sep 23 12:04:08 2026 -0400
+
+    clusterfuzzlite: token on code-change build_fuzzers
+
+    - code-change mode deletes unaffected fuzzers via batch coverage
+      artifacts; without the token the fetch 403s and all are kept
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit b3c1e05a89d35d7ce876ab4f54f3da059c1fa4b0
+Author: claude (dev651 634d00b5-7189-458b-ab09-5aa46e29e604) <noreply@anthropic.com>
+Date:   Wed Sep 23 12:04:06 2026 -0400
+
+    bash-style-guide: R-010a example uses all seven
+
+    - guarded example omitted export LC_ALL=C (runs only when executed, so
+      no leak into a sourcing shell); align with R-010's seven-setting rule
+    - enforcement text said "all-six"; the top-level requirement is seven
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 39ff529c5f0327f01136ed7e3937794412675b1d
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 23 15:42:09 2026 +0000
+
+    bumped changelog version
+
+commit 10ba4b7734efe1e968a23336c476ee17d13d2618
+Author: claude (dev648 59a38bb7-cc6a-4a15-b5c1-3e3f39f98efd) <noreply@anthropic.com>
+Date:   Wed Sep 23 10:50:24 2026 -0400
+
+    Add R-019: no ! with -o/-a inside a single test
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 3b2a21b24fe92e74345c36eafa7b213eb75bcacd
+Author: claude (dev648 59a38bb7-cc6a-4a15-b5c1-3e3f39f98efd) <noreply@anthropic.com>
+Date:   Wed Sep 23 10:17:32 2026 -0400
+
+    Migrate memory rules into meta-files docs
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
 commit a0eb403dcbd8882375e4cb81218465b843116c20
 Merge: 1b063569 0dd3b4e0
 Author: Patrick Schleizer <adrelanos@whonix.org>
