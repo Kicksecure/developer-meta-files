@@ -24,17 +24,71 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 has stcat || die 1 "'stcat' not on PATH."
 has unicode-show || die 1 "'unicode-show' not on PATH."
 
-if [ "$#" -ne 1 ]; then
-   die 2 "usage: ${0##*/} <ref>"
-fi
-if [[ "${1}" == -* ]]; then
-   die 2 "ref '${1}' must not start with '-'."
+if [ "$#" -lt 1 ]; then
+   die 2 "usage: ${0##*/} [git-diff-option...] <ref-or-range>"
 fi
 
-## Resolve the ref once to avoid confusing results if someone pulls or
-## otherwise changes refs mid-review.
-if ! target_commit="$(git rev-parse --verify --end-of-options "${1}^{commit}" 2>/dev/null)"; then
-   die 2 "ref '${1}' does not resolve to a commit."
+## The FINAL argument is the ref or revision range to review; anything before it
+## is forwarded verbatim to the review tools (and thus to 'git diff'), e.g. -C /
+## --find-copies so a rename shows as a diff instead of a delete plus an add.
+review_spec="${!#}"
+review_opts=( "${@:1:$#-1}" )
+
+if [[ "${review_spec}" == -* ]]; then
+   die 2 "ref '${review_spec}' must not start with '-' (git-diff options go before the ref)."
+fi
+
+## A bare '--' would forward to 'git diff' as the pathspec separator, turning the
+## ref into a pathspec: an empty, silently-successful review. It is never a valid
+## diff option here (the ref is the final argument), so reject it.
+for review_opt in "${review_opts[@]}"; do
+   if [ "${review_opt}" = '--' ]; then
+      die 2 "'--' is not a valid option here; the ref/range is the final argument."
+   fi
+done
+
+## Accept a full revision range (base...target or base..target) as well as a bare
+## ref (reviewed against HEAD, the historical default). Split on the FIRST '...'
+## or '..' -- correct for the ref/range forms this tool takes (branch names, tags,
+## SHAs, remote/branch). An exotic revision whose text embeds '..' (git's
+## '^{/regex}' commit search or ':/text') is unsupported: it fails to resolve
+## loudly rather than being mis-split silently.
+if [[ "${review_spec}" == *...* ]]; then
+   range_op='...'
+   range_base="${review_spec%%...*}"
+   range_target="${review_spec#*...}"
+elif [[ "${review_spec}" == *..* ]]; then
+   range_op='..'
+   range_base="${review_spec%%..*}"
+   range_target="${review_spec#*..}"
+else
+   range_op=''
+   range_base=''
+   range_target="${review_spec}"
+fi
+if [ -z "${range_target}" ]; then
+   die 2 "ref/range '${review_spec}' has no target ref."
+fi
+
+## Resolve every side to an IMMUTABLE commit up front, so a concurrent fetch that
+## moves a ref mid-review cannot make a later step act on commits the scan never
+## saw.
+if ! target_commit="$(git rev-parse --verify --end-of-options "${range_target}^{commit}" 2>/dev/null)"; then
+   die 2 "ref '${range_target}' does not resolve to a commit."
+fi
+if [ -n "${range_base}" ]; then
+   if ! base_commit="$(git rev-parse --verify --end-of-options "${range_base}^{commit}" 2>/dev/null)"; then
+      die 2 "base ref '${range_base}' does not resolve to a commit."
+   fi
+   review_range="${base_commit}${range_op}${target_commit}"
+   ## Scan the commits introduced relative to the explicit base.
+   scan_base_arg=( "${base_commit}" )
+else
+   ## Bare ref (or an empty-base range like '...feature'): review against HEAD. A
+   ## bare ref keeps the three-dot form; an empty-base range keeps the operator
+   ## the user typed. The scan uses HEAD as its base (single argument).
+   review_range="${range_op:-...}${target_commit}"
+   scan_base_arg=()
 fi
 
 ## Handle the result of a unicode-spoofing scan ($1 = its exit code, $2 = its
@@ -67,7 +121,7 @@ review_prompt_or_die() {
 
 ## Scan the ref's new commits (content, messages, author identity)...
 scan_rc=0
-check-ref-commits-for-unicode "${target_commit}" || scan_rc="$?"
+check-ref-commits-for-unicode "${target_commit}" "${scan_base_arg[@]}" || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-commits-for-unicode
 
 ## ...and every ref NAME in the repo, for spoofing via non-ASCII unicode.
@@ -81,12 +135,12 @@ scan_rc=0
 check-ref-names-for-unicode || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-names-for-unicode
 
-git --no-pager log "...${target_commit}" | NO_COLOR=1 stcat
+git --no-pager log "${review_range}" | NO_COLOR=1 stcat
 
-git-diff-review "...${target_commit}"
+git-diff-review "${review_opts[@]}" "${review_range}"
 
-git-meld "...${target_commit}"
+git-meld "${review_opts[@]}" "${review_range}"
 
-git-kdiff3 "...${target_commit}"
+git-kdiff3 "${review_opts[@]}" "${review_range}"
 
 true "$0: OK."

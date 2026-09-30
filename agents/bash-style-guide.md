@@ -329,12 +329,16 @@ _auto-detected: no | auto-fixed: no_
 
 Bad -- fails OPEN when `${n}` is a non-integer override:
 
-    if [ "${n}" -gt "${MAX}" ]; then die 1 "too big"; fi
+    if [ "${n}" -gt "${MAX}" ]; then
+       die 1 "too big"
+    fi
 
 Good -- keep the `||`, or negate with `!` (still fires on the `[` error):
 
     [ "${n}" -le "${MAX}" ] || die 1 "too big"
-    if ! [ "${n}" -le "${MAX}" ]; then die 1 "too big"; fi
+    if ! [ "${n}" -le "${MAX}" ]; then
+       die 1 "too big"
+    fi
 
 Why: matters most for a guard whose operands are attacker- or
 user-controlled (a numeric ceiling from an env override). Adding a
@@ -356,7 +360,9 @@ Bad -- always true, the negation is silently lost:
 
 Good -- negate OUTSIDE the brackets, one test per bracket:
 
-    if ! [ -o xtrace ]; then do_thing; fi
+    if ! [ -o xtrace ]; then
+       do_thing
+    fi
 
 Why: `test -o <opt>` checks a shell option only as a lone unary test;
 add a `!` operand and the parser re-reads `-o` as OR. Applies to `-a`
@@ -1100,8 +1106,11 @@ not ad-hoc `printf >&2; exit N`.**
     [ "$#" -ge 2 ] || die 64 "missing value for --include"
 
 Why: `die <code> <msg>` is the one-liner for "log error then
-exit." Inside a function that should return rather than exit, use
-`log error "..."; return N`.
+exit." Inside a function that should return rather than exit, keep
+each statement on its own line (R-074):
+
+    log error "..."
+    return N
 
 
 ## File deletion
@@ -1285,7 +1294,10 @@ Longer description ...
   --opt VALUE   ..."
     }
     # -h and --help are the SAME: both print the full help.
-    #   -h|--help) print_help; exit 0 ;;
+    #   -h|--help)
+    #      print_help
+    #      exit 0
+    #      ;;
     # A tool that REQUIRES arguments prints the short usage when they are
     # missing (like 'mv'); one that runs argless (like 'nano') does not.
     #   if [ -n "${arg}" ]; then
