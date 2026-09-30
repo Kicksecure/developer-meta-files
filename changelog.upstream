@@ -1,8 +1,101 @@
+commit a3421bcc2d232bec2c81e77db40c0920c84ae2d9
+Merge: 0f150699 f3acf1cf
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 30 04:16:07 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit f3acf1cf83a5220ace0eb67ee07b606ab2e36616
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Sep 29 21:55:28 2026 -0400
+
+    Polish, simplify implementation of dm-review-branch
+
+commit ce62eb9b29fbf5cda5d31a1f242a25e53c2d6440
+Merge: 0f150699 8373047e
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Tue Sep 29 20:00:39 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit 0f1506999404e8a568b29ad03a447e3a85c1a29e
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Tue Sep 29 16:07:23 2026 +0000
+
+    bumped changelog version
+
+commit 8373047e146474474a06e4d83cf4445e4ae69f0f
+Merge: 04797396 33cb51c7
+Author: assisted-by-ai <assisted-by-ai@users.noreply.github.com>
+Date:   Tue Sep 29 11:23:55 2026 -0400
+
+    Merge master into ai (remaster)
+
 commit 33cb51c7f57445e971bc8d0777966d54230a140c
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Tue Sep 29 10:12:01 2026 -0400
 
     .
+
+commit 04797396415a1b1cba02580429b3a9ebf097e951
+Author: claude (dev735 a9815679-58af-4230-b97a-27a9e8ef15e8) <noreply@anthropic.com>
+Date:   Tue Sep 29 09:57:28 2026 -0400
+
+    dm-reprepro-wrapper: resolve source tree via shared resolver
+
+    - installed copy hardcoded ${HOME}/derivative-maker (the "XXX" note); when the
+      build tree is elsewhere (source_code_folder_dist), it sourced a mismatched
+      help-steps/variables and died on a moved file (buildconfig.d/05_lib.bsh)
+    - use source-tree-lib.bsh's derivative_maker_source_tree_resolve, like
+      dm-prepare-release / dm-upload-images already do
+
+commit 067a997c36436201548a3b38ff1d5a6985de29e3
+Author: claude (dev735 a9815679-58af-4230-b97a-27a9e8ef15e8) <noreply@anthropic.com>
+Date:   Tue Sep 29 09:00:01 2026 -0400
+
+    dm-virtualbox-guest-additions-iso-update: do not export dist_build_one_parsed
+
+    - same-shell parse-skip guard; export leaks it into --function/unknown-flag
+      children which then skip validating their own argv
+
+commit ce5acf23e2204e9eba008dd1ce662a9896ac9c8c
+Author: claude (dev735 a9815679-58af-4230-b97a-27a9e8ef15e8) <noreply@anthropic.com>
+Date:   Tue Sep 29 07:13:30 2026 -0400
+
+    dm-tor-update-repository: do not export dist_build_one_parsed
+
+commit 7266524c801b55193c663deed34eefc50922965d
+Merge: 42bb8d53 23d6f468
+Author: claude (dev736 c2fee6dd-5e8a-41b4-b092-680adf684562) <noreply@anthropic.com>
+Date:   Tue Sep 29 05:10:49 2026 -0400
+
+    Merge remote-tracking branch 'org-ai-assisted/ai' into ai
+
+commit 42bb8d536f425e23127bcc802498519696b86994
+Author: claude (dev736 c2fee6dd-5e8a-41b4-b092-680adf684562) <noreply@anthropic.com>
+Date:   Tue Sep 29 05:06:51 2026 -0400
+
+    dm-review-branch: reject a bare '--' option
+
+    ai-review: a forwarded '--' becomes git diff's pathspec separator,
+    turning the ref into a pathspec -- an empty, silently-successful review.
+    Reject it up front. Also scope the range-split comment: exotic revisions
+    embedding '..' ('^{/regex}', ':/text') are unsupported and fail loud.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit fbc0a77294376a96d410c96859d3b9a4fa92bbdb
+Author: claude (dev736 c2fee6dd-5e8a-41b4-b092-680adf684562) <noreply@anthropic.com>
+Date:   Tue Sep 29 04:22:42 2026 -0400
+
+    dm-review-branch: accept ranges and forward diff options
+
+    - Final arg may be base...target or base..target, not just a bare ref;
+      both sides resolve to immutable commits (base defaults to HEAD).
+    - Args before it forward verbatim to the review tools (hence git diff),
+      so -C / --find-copies renders a rename as a diff, not delete+add.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 
 commit e70a505a991765741f2ac7623bf4810491b12482
 Author: Patrick Schleizer <adrelanos@whonix.org>
@@ -10,12 +103,42 @@ Date:   Tue Sep 29 07:58:49 2026 +0000
 
     bumped changelog version
 
+commit 23d6f468c068c0405af3ee5f1ef9622a2f46c09a
+Author: claude (dev717 da9a1cbf-0b2c-4731-b02a-b7b0139a73b0) <noreply@anthropic.com>
+Date:   Mon Sep 28 01:55:41 2026 -0400
+
+    Multi-line the R-018 bad example; its badness is logic not line count
+
+    - Good counterpart is multi-line; one-line bad falsely implied a formatting fix
+    - Kept R-074 bad one-liners (their one-line-ness IS the violation)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 6c7b52757f9610e3b52d02dce4073e0b2503b58e
+Author: claude (dev717 da9a1cbf-0b2c-4731-b02a-b7b0139a73b0) <noreply@anthropic.com>
+Date:   Mon Sep 28 01:47:17 2026 -0400
+
+    Fix single-line examples that violate the guide's own multi-line rules
+
+    - R-153 canonical case arm, R-110 log/return: were ;-chained (R-074)
+    - R-018/R-019 good guards: one-line if...then X; fi expanded multi-line
+    - Bad-block one-liners left as-is (negative examples)
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
 commit e7f634985e0d7880356ff3916cd349809c78a113
 Merge: 39ff529c 83dfeff1
 Author: Patrick Schleizer <adrelanos@whonix.org>
 Date:   Mon Sep 28 01:42:13 2026 -0400
 
     Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit c59b5a58d2bb772ce4fe7c2b51a8e24c66c892e6
+Merge: 3313bca9 83dfeff1
+Author: assisted-by-ai <assisted-by-ai@users.noreply.github.com>
+Date:   Mon Sep 28 01:41:56 2026 -0400
+
+    Merge arraybolt3/trixie into ai (remaster)
 
 commit 83dfeff1e535009a972b019c0f07e9e95ea3746f
 Author: Aaron Rainbolt <arraybolt3@gmail.com>
