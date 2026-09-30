@@ -1551,6 +1551,35 @@ until do then`), or a `\` line-continuation is flagged.
 
 Waiver: `# style-ok: allow-embedded-script` anywhere in the unit.
 
+**R-192: A shell script does not embed a multi-statement shell program inline in
+a `bash -c` / `sh -c`.** The shell-script sibling of R-191 (systemd units):
+_auto-detected: yes | auto-fixed: no_
+
+    ## Bad -- invisible to shellcheck, no importable home, no coverage:
+    bash -c 'mkdir -p /run/foo && chown x:y /run/foo; start'
+
+    ## Good:
+    /usr/libexec/foo/start
+
+Why: the same defect R-191 catches in a systemd unit and R-190 in a heredoc. The
+`-c` body is hidden from shellcheck, has no importable home a unit test can
+reach, and no coverage tool sees it. Move the logic into a script with a shebang
+and call that.
+
+Flagged: a `sh -c` / `bash -c` / `dash -c` value that is multi-statement --
+more than one top-level statement (a `;`, a newline, or a `&` background), a `|`
+pipe, a `&&` / `||` chain, or a shell control keyword (`for while if case until
+do then`) -- OR a substantial inline program (more than 5 lines). A
+single-command wrapper (`bash -c 'touch /run/foo'`) is glue, not a program, and
+is spared.
+
+Scope: shell scripts, where the shell is in command position, directly or behind
+an allowlisted wrapper (`ssh host -- bash -lc PROG`, `sudo`, `timeout`, `nice`,
+...). An implicit-shell form (`su -c PROG`, `ssh host PROG`) carries no shell
+token and is out of scope. Unlike R-191 there is no line-continuation signal: a
+short single-statement payload spanning lines is not flagged. Waiver:
+`## style-ok: allow-embedded-script` anywhere in the file.
+
 **R-194: An apt configuration hook does not embed a multi-statement shell
 command.** A `Pre-Invoke` / `Post-Invoke` / `Pre-Install-Pkgs` directive runs
 its double-quoted value through `sh -c`:
