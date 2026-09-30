@@ -28,31 +28,22 @@ if [ "$#" -lt 1 ]; then
    die 2 "usage: ${0##*/} [git-diff-option...] <ref-or-range>"
 fi
 
-## The FINAL argument is the ref or revision range to review; anything before it
-## is forwarded verbatim to the review tools (and thus to 'git diff'), e.g. -C /
-## --find-copies so a rename shows as a diff instead of a delete plus an add.
 review_spec="${!#}"
 review_opts=( "${@:1:$#-1}" )
 
 if [[ "${review_spec}" == -* ]]; then
-   die 2 "ref '${review_spec}' must not start with '-' (git-diff options go before the ref)."
+   die 2 "ref '${review_spec}' must not start with '-'."
 fi
 
-## A bare '--' would forward to 'git diff' as the pathspec separator, turning the
-## ref into a pathspec: an empty, silently-successful review. It is never a valid
-## diff option here (the ref is the final argument), so reject it.
+## Don't allow the use of '--' as it could cause options to be misinterpreted
+## by the various Git tools.
 for review_opt in "${review_opts[@]}"; do
    if [ "${review_opt}" = '--' ]; then
-      die 2 "'--' is not a valid option here; the ref/range is the final argument."
+      die 2 "'--' is not a valid option here, ref-or-range is always the last argument."
    fi
 done
 
-## Accept a full revision range (base...target or base..target) as well as a bare
-## ref (reviewed against HEAD, the historical default). Split on the FIRST '...'
-## or '..' -- correct for the ref/range forms this tool takes (branch names, tags,
-## SHAs, remote/branch). An exotic revision whose text embeds '..' (git's
-## '^{/regex}' commit search or ':/text') is unsupported: it fails to resolve
-## loudly rather than being mis-split silently.
+## Allow both ranges ('..') and merge-base ranges ('...').
 if [[ "${review_spec}" == *...* ]]; then
    range_op='...'
    range_base="${review_spec%%...*}"
@@ -62,33 +53,30 @@ elif [[ "${review_spec}" == *..* ]]; then
    range_base="${review_spec%%..*}"
    range_target="${review_spec#*..}"
 else
-   range_op=''
+   range_op='...'
    range_base=''
    range_target="${review_spec}"
 fi
 if [ -z "${range_target}" ]; then
    die 2 "ref/range '${review_spec}' has no target ref."
 fi
+if [ -z "${range_base}" ]; then
+   range_base='HEAD'
+fi
 
-## Resolve every side to an IMMUTABLE commit up front, so a concurrent fetch that
-## moves a ref mid-review cannot make a later step act on commits the scan never
-## saw.
+## Resolve all refs once to avoid confusing results if someone pulls or
+## otherwise changes refs mid-review. Always resolve into a form that can be
+## used with '..' in each tool to reduce tool calling complexity.
 if ! target_commit="$(git rev-parse --verify --end-of-options "${range_target}^{commit}" 2>/dev/null)"; then
    die 2 "ref '${range_target}' does not resolve to a commit."
 fi
-if [ -n "${range_base}" ]; then
-   if ! base_commit="$(git rev-parse --verify --end-of-options "${range_base}^{commit}" 2>/dev/null)"; then
-      die 2 "base ref '${range_base}' does not resolve to a commit."
+if ! base_commit="$(git rev-parse --verify --end-of-options "${range_base}^{commit}" 2>/dev/null)"; then
+   die 2 "base ref '${range_base}' does not resolve to a commit."
+fi
+if [ "${range_op}" = '...' ]; then
+   if ! base_commit="$(git merge-base --end-of-options "${base_commit}" "${target_commit}")"; then
+      die 2 "Could not find merge base between '${base_commit}' and '${target_commit}'."
    fi
-   review_range="${base_commit}${range_op}${target_commit}"
-   ## Scan the commits introduced relative to the explicit base.
-   scan_base_arg=( "${base_commit}" )
-else
-   ## Bare ref (or an empty-base range like '...feature'): review against HEAD. A
-   ## bare ref keeps the three-dot form; an empty-base range keeps the operator
-   ## the user typed. The scan uses HEAD as its base (single argument).
-   review_range="${range_op:-...}${target_commit}"
-   scan_base_arg=()
 fi
 
 ## Handle the result of a unicode-spoofing scan ($1 = its exit code, $2 = its
@@ -121,7 +109,7 @@ review_prompt_or_die() {
 
 ## Scan the ref's new commits (content, messages, author identity)...
 scan_rc=0
-check-ref-commits-for-unicode "${target_commit}" "${scan_base_arg[@]}" || scan_rc="$?"
+check-ref-commits-for-unicode "${target_commit}" "${base_commit}" || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-commits-for-unicode
 
 ## ...and every ref NAME in the repo, for spoofing via non-ASCII unicode.
@@ -134,6 +122,8 @@ review_prompt_or_die "${scan_rc}" check-ref-commits-for-unicode
 scan_rc=0
 check-ref-names-for-unicode || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-names-for-unicode
+
+review_range="${base_commit}..${target_commit}"
 
 git --no-pager log "${review_range}" | NO_COLOR=1 stcat
 

@@ -21,8 +21,6 @@ dist_build_source_run="true"
 dist_build_one_parsed="true"
 
 MYDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd )"
-
-## variables (sourced below) reassigns MYDIR; capture the dirs we need first.
 dmf_libexec_dir="${MYDIR}/../libexec/developer-meta-files"
 
 # shellcheck source=../libexec/developer-meta-files/source-tree-lib.bsh

@@ -26,10 +26,7 @@ else
 fi
 
 export dist_build_source_run=true
-## NOT exported: a same-shell parse-skip guard, like dm-reprepro-wrapper. Exporting
-## it leaks the "already parsed" state into child PROCESSES (dm-get-tor-from-tpo-repo
-## -> *_create-debian-packages --function ...), which then skip parsing their OWN argv
-## and ignore --function -> build ALL packages instead of the one named.
+## Don't export, child processes need to parse command-line options.
 dist_build_one_parsed=true
 source "${derivative_maker_source_code_dir}/help-steps/pre"
 source "${derivative_maker_source_code_dir}/help-steps/variables"

@@ -1106,8 +1106,7 @@ not ad-hoc `printf >&2; exit N`.**
     [ "$#" -ge 2 ] || die 64 "missing value for --include"
 
 Why: `die <code> <msg>` is the one-liner for "log error then
-exit." Inside a function that should return rather than exit, keep
-each statement on its own line (R-074):
+exit." Inside a function that should return rather than exit, use:
 
     log error "..."
     return N
