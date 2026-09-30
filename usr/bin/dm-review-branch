@@ -24,17 +24,59 @@ source "${HELPER_SCRIPTS_PATH:-}"/usr/libexec/helper-scripts/log_run_die.sh
 has stcat || die 1 "'stcat' not on PATH."
 has unicode-show || die 1 "'unicode-show' not on PATH."
 
-if [ "$#" -ne 1 ]; then
-   die 2 "usage: ${0##*/} <ref>"
-fi
-if [[ "${1}" == -* ]]; then
-   die 2 "ref '${1}' must not start with '-'."
+if [ "$#" -lt 1 ]; then
+   die 2 "usage: ${0##*/} [git-diff-option...] <ref-or-range>"
 fi
 
-## Resolve the ref once to avoid confusing results if someone pulls or
-## otherwise changes refs mid-review.
-if ! target_commit="$(git rev-parse --verify --end-of-options "${1}^{commit}" 2>/dev/null)"; then
-   die 2 "ref '${1}' does not resolve to a commit."
+review_spec="${!#}"
+review_opts=( "${@:1:$#-1}" )
+
+if [[ "${review_spec}" == -* ]]; then
+   die 2 "ref '${review_spec}' must not start with '-'."
+fi
+
+## Don't allow the use of '--' as it could cause options to be misinterpreted
+## by the various Git tools.
+for review_opt in "${review_opts[@]}"; do
+   if [ "${review_opt}" = '--' ]; then
+      die 2 "'--' is not a valid option here, ref-or-range is always the last argument."
+   fi
+done
+
+## Allow both ranges ('..') and merge-base ranges ('...').
+if [[ "${review_spec}" == *...* ]]; then
+   range_op='...'
+   range_base="${review_spec%%...*}"
+   range_target="${review_spec#*...}"
+elif [[ "${review_spec}" == *..* ]]; then
+   range_op='..'
+   range_base="${review_spec%%..*}"
+   range_target="${review_spec#*..}"
+else
+   range_op='...'
+   range_base=''
+   range_target="${review_spec}"
+fi
+if [ -z "${range_target}" ]; then
+   die 2 "ref/range '${review_spec}' has no target ref."
+fi
+if [ -z "${range_base}" ]; then
+   range_base='HEAD'
+fi
+
+## Resolve all refs once to avoid confusing results if someone pulls or
+## otherwise changes refs mid-review. Always resolve into a form that can be
+## used with '..' in each tool to reduce tool calling complexity.
+if ! target_commit="$(git rev-parse --verify --end-of-options "${range_target}^{commit}" 2>/dev/null)"; then
+   die 2 "ref '${range_target}' does not resolve to a commit."
+fi
+if ! base_commit="$(git rev-parse --verify --end-of-options "${range_base}^{commit}" 2>/dev/null)"; then
+   die 2 "base ref '${range_base}' does not resolve to a commit."
+fi
+if [ "${range_op}" = '...' ]; then
+   if ! base_commit="$(git merge-base --end-of-options "${base_commit}" "${target_commit}")"; then
+      die 2 "Could not find merge base between '${base_commit}' and '${target_commit}'."
+   fi
 fi
 
 ## Handle the result of a unicode-spoofing scan ($1 = its exit code, $2 = its
@@ -67,7 +109,7 @@ review_prompt_or_die() {
 
 ## Scan the ref's new commits (content, messages, author identity)...
 scan_rc=0
-check-ref-commits-for-unicode "${target_commit}" || scan_rc="$?"
+check-ref-commits-for-unicode "${target_commit}" "${base_commit}" || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-commits-for-unicode
 
 ## ...and every ref NAME in the repo, for spoofing via non-ASCII unicode.
@@ -81,12 +123,14 @@ scan_rc=0
 check-ref-names-for-unicode || scan_rc="$?"
 review_prompt_or_die "${scan_rc}" check-ref-names-for-unicode
 
-git --no-pager log "...${target_commit}" | NO_COLOR=1 stcat
+review_range="${base_commit}..${target_commit}"
 
-git-diff-review "...${target_commit}"
+git --no-pager log "${review_range}" | NO_COLOR=1 stcat
 
-git-meld "...${target_commit}"
+git-diff-review "${review_opts[@]}" "${review_range}"
 
-git-kdiff3 "...${target_commit}"
+git-meld "${review_opts[@]}" "${review_range}"
+
+git-kdiff3 "${review_opts[@]}" "${review_range}"
 
 true "$0: OK."

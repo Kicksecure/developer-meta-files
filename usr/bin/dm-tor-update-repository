@@ -26,7 +26,8 @@ else
 fi
 
 export dist_build_source_run=true
-export dist_build_one_parsed=true
+## Don't export, child processes need to parse command-line options.
+dist_build_one_parsed=true
 source "${derivative_maker_source_code_dir}/help-steps/pre"
 source "${derivative_maker_source_code_dir}/help-steps/variables"
 
