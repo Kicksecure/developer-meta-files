@@ -1,3 +1,83 @@
+commit 848767633ca967c592f1c0b5f3c5c434a47f9830
+Merge: 2bde1c9c f7cdd1b5
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Fri Oct 2 04:07:04 2026 -0400
+
+    Merge remote-tracking branch 'refs/remotes/ArrayBolt3/arraybolt3/trixie'
+
+commit f7cdd1b57148c5596bab2cf050c3a6f1d488848d
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Oct 1 23:25:52 2026 -0400
+
+    Remove unneeded comments and unnecessary code from dm-nbd-cleanup
+
+commit 82ef51ff2bc30d48d27deb21f97d0fcdbc07483d
+Merge: 511ee399 57d20d17
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Thu Oct 1 23:13:14 2026 -0400
+
+    Merge branch 'ai' into arraybolt3/trixie
+
+commit 511ee399c822e66df7e20333a6372cabdfca2136
+Author: Aaron Rainbolt <arraybolt3@gmail.com>
+Date:   Wed Sep 30 23:51:05 2026 -0400
+
+    Add keyutils as a dependency, as calamares-settings-debian previously installed it if LUKS is being used
+
+commit 57d20d17b27a7d7883d8a3ee589a8cdc59264e7d
+Author: claude (dev789 58018f9f-aeb6-4245-8633-2caf69609bb7) <noreply@anthropic.com>
+Date:   Wed Sep 30 15:26:53 2026 -0400
+
+    Document R-192 in bash style guide
+
+    - R-192 was gate-enforced but undocumented; record the
+      multi-statement (and >5-line) inline bash -c criterion
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit 1bf689cd840cdccc0e97656d09ddd1a45dac0a7c
+Author: claude (dev779 b56c0d4a-c594-4b06-9077-0c7083cb8b50) <noreply@anthropic.com>
+Date:   Wed Sep 30 14:39:26 2026 -0400
+
+    reusable-dist-ai-tests: fix stale umount_kill.sh comment
+
+    umount_kill.sh was renamed to mount-cleanup; update the mount-capability
+    rationale comment to the current name.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit dd00942cf603e05bb54c3c69985a4678364f5e82
+Author: claude (dev779 b56c0d4a-c594-4b06-9077-0c7083cb8b50) <noreply@anthropic.com>
+Date:   Wed Sep 30 14:32:26 2026 -0400
+
+    dm-prepare-release: call mount-cleanup, not removed umount_kill.sh
+
+    help-steps/umount_kill.sh was renamed to mount-cleanup (all main-repo
+    callers migrated); dm-prepare-release's virtualbox_export lagged and
+    called the gone script, aborting the VirtualBox .ova export with
+    "umount_kill.sh: command not found". Match 4600_create-vbox-vm's form.
+
+    Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+commit dd4f1d7d80ee043d6ca9ebe131487151794cf822
+Author: claude (dev774 5ef9f669-4e6f-4dad-a8ac-ac545ca71d4f) <noreply@anthropic.com>
+Date:   Wed Sep 30 11:16:05 2026 -0400
+
+    dm-nbd-cleanup: exact nbd-name match + test seams
+
+    - a loose /dev/nbd* source glob also matched /dev/nbd-backup and
+      /dev/nbd0-backup; require an exact /dev/nbd<N>[p<M>] name (source string,
+      not device numbers)
+    - add DM_NBD_CLEANUP_PROC_MOUNTS / _PROC_FILESYSTEMS seams and skip the
+      block-device presence probe when a mounts fixture is injected, so the real
+      release logic can be driven against fixtures
+
+commit 2bde1c9c4ab4897bbcecaf2ba4e5262678013269
+Author: Patrick Schleizer <adrelanos@whonix.org>
+Date:   Wed Sep 30 08:29:36 2026 +0000
+
+    bumped changelog version
+
 commit a3421bcc2d232bec2c81e77db40c0920c84ae2d9
 Merge: 0f150699 f3acf1cf
 Author: Patrick Schleizer <adrelanos@whonix.org>
