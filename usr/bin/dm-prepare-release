@@ -527,7 +527,7 @@ Please donate! [C]
                || { cowbuilder_exit_code="$?" ; true; };
 
    if [ -d "${base_folder}" ]; then
-      ${SUDO_TO_ROOT} "${dist_source_help_steps_folder}/umount_kill.sh" "${base_folder}"
+      ${SUDO_TO_ROOT} "${dist_source_help_steps_folder}/mount-cleanup" -- "${base_folder}"
    fi
 
    if [ ! "${cowbuilder_exit_code:-}" = "0" ]; then
