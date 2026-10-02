@@ -70,32 +70,8 @@ done
 ## Opt-in by design.
 default_if_empty dry_run 'true'
 
-## Test seams: env-injectable /proc sources so the real logic can be driven
-## against fixtures (testability only; production reads the real /proc).
 proc_mounts="${DM_NBD_CLEANUP_PROC_MOUNTS:-/proc/mounts}"
 proc_filesystems="${DM_NBD_CLEANUP_PROC_FILESYSTEMS:-/proc/filesystems}"
-
-## Probe the whole range, not just nbd0. Keying on /dev/nbd0 alone missed a
-## leaked /dev/nbd1 on a host where node 0 was absent, and exited 0 reporting
-## nothing to do. Skip the probe when a mounts fixture is injected -- there the
-## fixture, not the live /dev tree, defines what to release.
-##
-## TODO: This block just checks if nbd devices exist at all, and the
-## subsequent code is robust even if there are no nbd devices and the nbd
-## kernel module is not loaded. Maybe get rid of this?
-if [ "${proc_mounts}" = "/proc/mounts" ]; then
-   nbd_present=false
-   for nbd_probe in /dev/nbd[0-9] /dev/nbd[0-9][0-9]; do
-      if [ -b "${nbd_probe}" ]; then
-         nbd_present=true
-         break
-      fi
-   done
-   if [ "${nbd_present}" = "false" ]; then
-      printf '%s\n' "${0##*/}: no /dev/nbd* devices; nothing to release."
-      exit 0
-   fi
-fi
 
 ## Technically the user could mount a FUSE filesystem with a mount source name
 ## that looks like /dev/nbd0p1 or similar. The chances of this happening
@@ -120,8 +96,6 @@ done < "${proc_filesystems}"
 ## mutates while we're actively reading it and we miss things.
 nbd_mount_points=()
 while read -r mounts_device mounts_point mounts_fs _; do
-   ## Exact nbd device-name match (source string, not device numbers): a loose
-   ## /dev/nbd* glob also matched /dev/nbd-backup and /dev/nbd0-backup.
    if [[ ! "${mounts_device}" =~ ^/dev/nbd[0-9]+(p[0-9]+)?$ ]]; then
       continue
    fi
