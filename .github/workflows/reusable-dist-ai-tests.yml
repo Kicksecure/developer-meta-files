@@ -87,7 +87,7 @@ jobs:
     container:
       image: debian:trixie-slim
       ## Mount capability, for suites whose subject is mount-handling code
-      ## (dm-help-steps: umount_kill.sh, unmount-tree). Without it the
+      ## (dm-help-steps: mount-cleanup, unmount-tree). Without it the
       ## container can neither mount nor create a user namespace, so those
       ## assertions cannot run at all.
       ##

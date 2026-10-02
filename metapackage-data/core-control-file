@@ -92,6 +92,7 @@ Depends: apparmor-profile-dist,
  squashfs-tools,
  wget,
  zstd,
+ keyutils,
  ${misc:Depends}
 Breaks: kicksecure-dependencies-system,
  kicksecure-dependencies-cli,
