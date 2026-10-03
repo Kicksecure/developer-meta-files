@@ -48,30 +48,6 @@ cd -- "${derivative_maker_source_code_dir}"
 
 declare -A symlink_whitelist
 
-symlink_whitelist["./live-build/share/bootloaders/isolinux/isolinux.bin"]="/usr/lib/ISOLINUX/isolinux.bin"
-symlink_whitelist["./live-build/share/bootloaders/isolinux/ldlinux.c32"]="/usr/lib/syslinux/modules/bios/ldlinux.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/hdt.c32"]="/usr/lib/syslinux/modules/bios/hdt.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libgpl.c32"]="/usr/lib/syslinux/modules/bios/libgpl.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libutil.c32"]="/usr/lib/syslinux/modules/bios/libutil.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libcom32.c32"]="/usr/lib/syslinux/modules/bios/libcom32.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/vesamenu.c32"]="/usr/lib/syslinux/modules/bios/vesamenu.c32"
-symlink_whitelist["./live-build/share/bootloaders/syslinux_common/libmenu.c32"]="/usr/lib/syslinux/modules/bios/libmenu.c32"
-symlink_whitelist["./live-build/share/bootloaders/pxelinux/pxelinux.0"]="/usr/lib/PXELINUX/pxelinux.0"
-symlink_whitelist["./live-build/share/bootloaders/pxelinux/ldlinux.c32"]="/usr/lib/syslinux/modules/bios/ldlinux.c32"
-symlink_whitelist["./live-build/data/debian-cd/bullseye"]="squeeze/"
-symlink_whitelist["./live-build/data/debian-cd/jessie"]="squeeze"
-symlink_whitelist["./live-build/data/debian-cd/stretch"]="squeeze"
-symlink_whitelist["./live-build/data/debian-cd/unstable"]="sid"
-symlink_whitelist["./live-build/data/debian-cd/buster"]="squeeze"
-symlink_whitelist["./live-build/data/debian-cd/kali-last-snapshot"]="sid"
-symlink_whitelist["./live-build/data/debian-cd/sid"]="trixie"
-symlink_whitelist["./live-build/data/debian-cd/bookworm"]="squeeze/"
-symlink_whitelist["./live-build/data/debian-cd/kali-dev"]="sid"
-symlink_whitelist["./live-build/data/debian-cd/kali-rolling"]="sid"
-symlink_whitelist["./live-build/data/debian-cd/testing"]="trixie"
-symlink_whitelist["./live-build-data/d-i-branding/logo_installer_dark.png"]="logo_debian.png"
-symlink_whitelist["./live-build-data/d-i-branding/logo_debian_dark.png"]="logo_debian.png"
-symlink_whitelist["./live-build-data/d-i-branding/logo_installer.png"]="logo_debian.png"
 symlink_whitelist["./qubes/qubes-template-whonix/whonix-workstation"]="whonix-gateway"
 
 ## Detect symlinks from Git metadata. This works even when 'core.symlinks' is
@@ -180,13 +156,6 @@ grep_find_unicode_wrapper_output="$(\
    || true
 
 whitelist_list=(
-   './live-build/share/bootloaders/syslinux_common/menu.cfg'
-   './live-build/debian/control'
-   './live-build/debian/copyright'
-   './live-build/manpages/po/fr/.*'
-   './live-build/manpages/fr/*'
-   './live-build/manpages/ja/*'
-   './live-build/manpages/po/ja/.*'
    './packages/kicksecure/kicksecure-base-files/debian/copyright'
    './packages/kicksecure/helper-scripts/usr/lib/python3/dist-packages/stdisplay/tests/stdisplay.py'
    './windows/Whonix-Starter/COPYING.txt'
@@ -243,6 +212,8 @@ fi
 ##
 ## '--null-data' unfortunately breaks '--binary-files'. Hence,
 ## binary file types need to be manually excluded.
+##
+## FIXME: full path to qubes/qubes-template-whonix/whonix-workstation
 grep_missing_newline_result_raw="$( \
    grep \
       --recursive \
@@ -254,6 +225,7 @@ grep_missing_newline_result_raw="$( \
       --perl-regexp --null-data --files-with-matches --invert-match \
       --exclude="control.authcookie" \
       --exclude="RecommendedTBBVersions" \
+      --exclude="whonix-workstation" \
       --exclude-dir="live-build" \
       --exclude-dir=".git" \
       -- \

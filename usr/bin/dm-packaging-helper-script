@@ -831,6 +831,9 @@ set_batch_context_from_pwd() {
    reponame="${pwd_abs##*/}"
    parent="${pwd_abs%/*}"
    parent_basename="${parent##*/}"
+   ## XXX: hardcoded
+   project_root=~/derivative-maker
+   repo_submodule_path="${pwd_abs#"$project_root"/}"
 
    batch_current_package_path="${pwd_abs}"
    batch_current_package_reponame="${reponame}"
@@ -2321,7 +2324,7 @@ pkg_git_submodule_file_writer() {
 
    dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" "\
 [submodule \"${batch_current_package_reponame}\"]
-        path = packages/${batch_current_project_name,,}/${batch_current_package_reponame}
+        path = ${repo_submodule_path}
 ${url}" >/dev/null
 
    dry_run_or_run append "${derivative_maker_source_code_dir}/.gitmodules" "" >/dev/null
