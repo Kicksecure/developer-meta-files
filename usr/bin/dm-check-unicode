@@ -224,7 +224,7 @@ grep_missing_newline_result_raw="$( \
       --perl-regexp --null-data --files-with-matches --invert-match \
       --exclude="control.authcookie" \
       --exclude="RecommendedTBBVersions" \
-      --exclude="whonix-workstation" \
+      --exclude="qubes/qubes-template-whonix/whonix-workstation" \
       --exclude-dir="live-build" \
       --exclude-dir=".git" \
       -- \
