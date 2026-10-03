@@ -211,8 +211,6 @@ fi
 ##
 ## '--null-data' unfortunately breaks '--binary-files'. Hence,
 ## binary file types need to be manually excluded.
-##
-## FIXME: full path to qubes/qubes-template-whonix/whonix-workstation
 grep_missing_newline_result_raw="$( \
    grep \
       --recursive \
